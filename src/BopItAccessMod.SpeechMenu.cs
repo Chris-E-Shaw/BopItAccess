@@ -4,6 +4,8 @@ using Il2CppTMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.Events;
+using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 namespace BopItAccess;
@@ -37,6 +39,7 @@ public sealed partial class BopItAccessMod
     private bool _speechMenuIntroductionPending;
     private long _speechMenuOpenedAt;
     private int _speechMenuOpenedFrame;
+    private bool _speechMenuInputReady;
     private int _lastSpeechMenuRowId;
     private string? _lastSpeechMenuValue;
 
@@ -52,10 +55,20 @@ public sealed partial class BopItAccessMod
                 if (Environment.TickCount64 - _speechMenuOpenedAt < 500)
                     WriteStatus("Speech settings menu left the panel stack immediately after opening.");
                 _speechMenuOpen = false;
+                _speechMenuInputReady = false;
                 ResetSpeechMenuFocus();
             }
             else
             {
+                if (!_speechMenuInputReady && Time.frameCount > _speechMenuOpenedFrame &&
+                    !IsUiSubmitHeld())
+                {
+                    _speechMenuInputReady = true;
+                    GameObject? selected = EventSystem.current?.currentSelectedGameObject;
+                    if (_speechOutputToggle != null &&
+                        (selected == null || !selected.transform.IsChildOf(_speechMenuRoot.transform)))
+                        EventSystem.current?.SetSelectedGameObject(_speechOutputToggle.gameObject);
+                }
                 if (_speechOutputToggle != null && _speechOutputToggle.IsOn != _speechEnabled)
                     SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
                 ScrollSelectedRowIntoView(_speechMenuScroll);
@@ -166,11 +179,13 @@ public sealed partial class BopItAccessMod
             _speechMenuPanel.lastSelectedButton = null;
             _speechMenuPanel.firstSelectedButton = _speechOutputToggle?.gameObject;
             _speechMenuOpenedFrame = Time.frameCount;
+            _speechMenuInputReady = false;
             _speechMenuPanel.Show();
             main.panels.Push(_speechMenuPanel);
             pushed = true;
-            if (_speechOutputToggle != null)
-                EventSystem.current?.SetSelectedGameObject(_speechOutputToggle.gameObject);
+            // The opening submit can be sent again to a newly selected row.
+            // Leave focus empty until that press is released on a later frame.
+            EventSystem.current?.SetSelectedGameObject(null);
             _speechMenuOpen = true;
             _speechMenuIntroductionPending = true;
             _speechMenuOpenedAt = Environment.TickCount64;
@@ -188,7 +203,27 @@ public sealed partial class BopItAccessMod
             if (settingsHidden)
                 settings.Show();
             _speechMenuOpen = false;
+            _speechMenuInputReady = false;
         }
+    }
+
+    private bool IsUiSubmitHeld()
+    {
+        InputSystemUIInputModule? module =
+            EventSystem.current?.GetComponent<InputSystemUIInputModule>();
+        InputAction? submit = module?.submit?.action;
+        if (submit != null && submit.enabled && submit.IsPressed())
+            return true;
+
+        // The game's ControlRow uses PlayerInput's Submit action. Check it
+        // too so both the native and EventSystem routes must be released.
+        MainMenuUIManager? main = _mainMenu;
+        if (main == null)
+            main = UnityEngine.Object.FindFirstObjectByType<MainMenuUIManager>();
+        InputRebindingManager? manager = main?.controlsPanel?
+            .GetComponentInChildren<InputRebindingManager>(true);
+        submit = manager?.playerInput?.actions?.FindAction("Submit", false);
+        return submit != null && submit.enabled && submit.IsPressed();
     }
 
     private void BuildSpeechMenu(SettingsPanel settings, MainMenuUIManager main)
@@ -494,6 +529,11 @@ public sealed partial class BopItAccessMod
 
     private void OnSpeechOutputSubmitted()
     {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+        {
+            WriteStatus("Ignored a SPEECH OUTPUT submit from the input that opened the menu.");
+            return;
+        }
         SetSpeechEnabledFromMenu(!_speechEnabled);
         // SettingsToggle.Start also registers its native Toggle listener on
         // Submitted. It runs after this callback and updates the visual row.
@@ -502,6 +542,8 @@ public sealed partial class BopItAccessMod
 
     private void OnSpeechModeMoved(int movement)
     {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
         int direction = Math.Sign(movement);
         if (direction == 0)
             return;
@@ -517,6 +559,8 @@ public sealed partial class BopItAccessMod
 
     private void OnSpeechVoiceMoved(int movement)
     {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
         int direction = Math.Sign(movement);
         if (direction == 0 || _sapiVoices.Count == 0)
             return;
@@ -531,6 +575,8 @@ public sealed partial class BopItAccessMod
 
     private void OnSpeechVolumeMoved(int movement)
     {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
         int next = Math.Clamp(_sapiVolume + Math.Sign(movement) * 5, 5, 100);
         if (next == _sapiVolume)
             return;
@@ -540,6 +586,8 @@ public sealed partial class BopItAccessMod
 
     private void OnSpeechRateMoved(int movement)
     {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
         int next = Math.Clamp(_sapiRate + Math.Sign(movement) * 5, 0, 100);
         if (next == _sapiRate)
             return;
@@ -549,6 +597,8 @@ public sealed partial class BopItAccessMod
 
     private void OnSpeechPitchMoved(int movement)
     {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
         int next = Math.Clamp(_sapiPitch + Math.Sign(movement) * 5, 0, 100);
         if (next == _sapiPitch)
             return;
@@ -558,13 +608,11 @@ public sealed partial class BopItAccessMod
 
     private void OnSpeechBackSubmitted()
     {
-        // A submit already in progress when SPEECH opens must not be reused
-        // by the formerly selected BACK row in the same frame.
         if (!_speechMenuOpen)
             return;
-        if (Time.frameCount == _speechMenuOpenedFrame)
+        if (!_speechMenuInputReady)
         {
-            WriteStatus("Ignored a BACK submit in the same frame that SPEECH opened.");
+            WriteStatus("Ignored a BACK submit from the input that opened SPEECH.");
             return;
         }
         _mainMenu?.GoBack();
@@ -583,6 +631,7 @@ public sealed partial class BopItAccessMod
             if (Environment.TickCount64 - _speechMenuOpenedAt < 500)
                 WriteStatus("Speech settings menu lost focus immediately after opening.");
             _speechMenuOpen = false;
+            _speechMenuInputReady = false;
             ResetSpeechMenuFocus();
             return false;
         }
@@ -590,7 +639,8 @@ public sealed partial class BopItAccessMod
         GameObject? selected = EventSystem.current?.currentSelectedGameObject;
         if (selected == null || !selected.transform.IsChildOf(_speechMenuRoot.transform))
         {
-            if (Environment.TickCount64 - _speechMenuOpenedAt > 500 &&
+            if (_speechMenuInputReady &&
+                Environment.TickCount64 - _speechMenuOpenedAt > 500 &&
                 _speechUiOptions.Count > 0)
                 EventSystem.current?.SetSelectedGameObject(_speechUiOptions[0].Row.gameObject);
             if (_speechMenuIntroductionPending &&

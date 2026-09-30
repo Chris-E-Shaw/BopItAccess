@@ -38,6 +38,7 @@ public sealed partial class BopItAccessMod
         UpdateFpsLimitSetting();
         InitializeSpeechToggleOnMainThread();
         UpdateSpeechMenuUi();
+        UpdateControlsSubmitGate();
         UpdateDescriptionControlRebinding();
         UpdateScoreControlRebinding();
         UpdateToggleSpeechControlRebinding();

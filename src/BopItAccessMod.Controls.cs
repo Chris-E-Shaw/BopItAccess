@@ -23,6 +23,38 @@ public sealed partial class BopItAccessMod
     private bool _controlsIntroductionPending;
     private long _controlsOpenedAt;
     private long _nextControlsPanelSearchAt;
+    private bool _controlsSubmitPanelVisible;
+    private bool _controlsSubmitReady;
+    private int _controlsSubmitPanelId;
+    private int _controlsSubmitOpenedFrame;
+
+    private void UpdateControlsSubmitGate()
+    {
+        MainMenuUIManager? main = _mainMenu;
+        if (main == null)
+            main = UnityEngine.Object.FindFirstObjectByType<MainMenuUIManager>();
+        Panel? panel = main?.controlsPanel;
+        if (panel == null || !panel.IsVisible || !panel.gameObject.activeInHierarchy)
+        {
+            _controlsSubmitPanelVisible = false;
+            _controlsSubmitReady = false;
+            return;
+        }
+
+        int panelId = panel.GetInstanceID();
+        if (!_controlsSubmitPanelVisible || _controlsSubmitPanelId != panelId)
+        {
+            _controlsSubmitPanelVisible = true;
+            _controlsSubmitPanelId = panelId;
+            _controlsSubmitOpenedFrame = Time.frameCount;
+            _controlsSubmitReady = false;
+            return;
+        }
+
+        if (!_controlsSubmitReady && Time.frameCount > _controlsSubmitOpenedFrame &&
+            !IsUiSubmitHeld())
+            _controlsSubmitReady = true;
+    }
 
     private bool ReadControlsFocus()
     {

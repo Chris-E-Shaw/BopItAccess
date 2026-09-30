@@ -1,4 +1,4 @@
-Bop It Access 0.5.16 - Speech Menu Reopen Fix
+Bop It Access 0.5.17 - Menu Submit Fix
 
 What this does
 --------------
@@ -37,6 +37,10 @@ navigation remains on Settings rows after SPEECH is added.
 It also starts the SPEECH submenu on SPEECH OUTPUT each time it opens,
 preventing a previously selected BACK row from closing the menu immediately
 when Enter is used to reopen it.
+The input that opens SPEECH is now ignored by its rows until that input is
+released, so reopening the menu cannot also toggle speech off. The mod's
+added Controls binding rows likewise wait for the opening input to be
+released before accepting a rebinding request.
 
 Inside Play, the mod reads Solo, Party, Pass It, and One on One when focused.
 On the following song-selection screen, it announces the current theme

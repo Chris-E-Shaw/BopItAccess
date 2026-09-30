@@ -114,11 +114,18 @@ public sealed partial class BopItAccessMod
         StartLeaderboardControlRebinding(focused, manager);
     }
 
-    private static bool WasControlsSubmitPressed(InputRebindingManager manager)
+    private bool WasControlsSubmitPressed(InputRebindingManager manager)
     {
         // This is the action ControlRow.Start subscribes to in the game.
         InputAction? submit = manager.playerInput?.actions?.FindAction("Submit", false);
-        return submit != null && submit.enabled && submit.WasPerformedThisFrame();
+        if (submit == null || !submit.enabled || !submit.WasPerformedThisFrame())
+            return false;
+        if (!_controlsSubmitReady)
+        {
+            WriteStatus("Ignored a Controls binding submit from the input that opened the panel.");
+            return false;
+        }
+        return true;
     }
 
     private void StartLeaderboardControlRebinding(AddedLeaderboardControlRow row,
