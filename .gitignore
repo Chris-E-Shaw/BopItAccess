@@ -1,0 +1,13 @@
+# Keep the source and project documents in Git. Generated files stay local.
+/build/
+/local-appdata/
+/package/
+/runtime/
+/source-package/
+/tools/
+/src/bin/
+/src/obj/
+
+# Release archives and installed backups are preserved outside Git history.
+/*.zip
+/*-installed-backup.dll

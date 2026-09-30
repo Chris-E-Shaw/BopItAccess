@@ -1,0 +1,10 @@
+This package contains the following third-party software:
+
+Tolk.dll — Tolk screen-reader library by Christopher T. D. Kager.
+nvdaControllerClient64.dll — NVDA Controller Client library, included with Tolk.
+Tolk's applicable license is GNU Lesser General Public License, version 3.
+Copies of the LGPL and the GNU GPL version 3 are included in this package under
+THIRD-PARTY-LICENSES. Tolk source: https://github.com/dkager/tolk
+
+Bop It Access dynamically loads Tolk.dll at runtime using Tolk's C API. The Tolk
+DLL remains a separate file so it can be replaced with a compatible version.
