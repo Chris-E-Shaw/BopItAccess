@@ -16,6 +16,7 @@ public sealed partial class BopItAccessMod
     private bool? _lastTrackSelectExtreme;
     private int _lastTrackSelectFocusedId;
     private int _lastTrackSelectObservedSelectionId;
+    private int _lastTrackSelectPanelId;
 
     // The song and difficulty screen is the game's start screen in the game
     // scene. Mode selection happens in the main-menu scene immediately before it.
@@ -23,6 +24,9 @@ public sealed partial class BopItAccessMod
     {
         if (_trackSelectUi == null)
         {
+            // Returning to the main-menu scene destroys GameUIManager. Clear
+            // the previous visit even while the next search is throttled.
+            ResetTrackSelectFocus();
             long now = Environment.TickCount64;
             if (now < _nextTrackSelectSearchAt)
                 return false;
@@ -38,6 +42,13 @@ public sealed partial class BopItAccessMod
         {
             ResetTrackSelectFocus();
             return false;
+        }
+
+        int panelId = panel.GetInstanceID();
+        if (panelId != _lastTrackSelectPanelId)
+        {
+            ResetTrackSelectFocus();
+            _lastTrackSelectPanelId = panelId;
         }
 
         if (_trackSelectApp == null)
@@ -163,5 +174,6 @@ public sealed partial class BopItAccessMod
         _lastTrackSelectExtreme = null;
         _lastTrackSelectFocusedId = 0;
         _lastTrackSelectObservedSelectionId = 0;
+        _lastTrackSelectPanelId = 0;
     }
 }

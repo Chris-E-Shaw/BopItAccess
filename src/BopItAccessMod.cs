@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.0", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.1", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -20,6 +20,9 @@ public sealed partial class BopItAccessMod : MelonMod
     private readonly object _speechLock = new();
     private Thread? _tolkThread;
     private string? _pendingSpeech;
+    private string? _pendingPrioritySpeech;
+    private string? _pendingPriorityFollowUpSpeech;
+    private bool _pendingSpeechInterrupt = true;
     private MainMenuUIManager? _mainMenu;
     private SettingsPanel? _settingsPanel;
     private SettingOption[]? _settingsOptions;
@@ -36,6 +39,7 @@ public sealed partial class BopItAccessMod : MelonMod
     private long _nextControlsErrorLogAt;
     private long _nextTrackSelectErrorLogAt;
     private long _nextPlayModesErrorLogAt;
+    private long _nextGameOverErrorLogAt;
     private bool _mainMenuWasVisible;
     private bool _settingsWasVisible;
     private static readonly object StatusLogLock = new();
@@ -75,6 +79,8 @@ public sealed partial class BopItAccessMod : MelonMod
 
     public override void OnLateUpdate()
     {
+        ObserveResultRank();
+
         bool calibrationVisible = false;
         try
         {
@@ -118,8 +124,35 @@ public sealed partial class BopItAccessMod : MelonMod
             ResetControlsFocus();
         }
 
-        bool trackSelectVisible = false;
+        bool gameOverVisible = false;
         if (!calibrationVisible && !controlsVisible)
+        {
+            try
+            {
+                gameOverVisible = ReadGameOverFocus();
+            }
+            catch (Exception ex)
+            {
+                long now = Environment.TickCount64;
+                if (now >= _nextGameOverErrorLogAt)
+                {
+                    WriteStatus($"Game over speech check failed: {ex}");
+                    MelonLogger.Warning($"Game over speech check failed: {ex.Message}");
+                    _nextGameOverErrorLogAt = now + 5000;
+                }
+
+                _gameOverUi = null;
+                _gameOverApp = null;
+                ResetGameOverFocus();
+            }
+        }
+        else
+        {
+            ResetGameOverFocus();
+        }
+
+        bool trackSelectVisible = false;
+        if (!calibrationVisible && !controlsVisible && !gameOverVisible)
         {
             try
             {
@@ -146,7 +179,7 @@ public sealed partial class BopItAccessMod : MelonMod
         }
 
         bool playModesVisible = false;
-        if (!calibrationVisible && !controlsVisible && !trackSelectVisible)
+        if (!calibrationVisible && !controlsVisible && !gameOverVisible && !trackSelectVisible)
         {
             try
             {
@@ -170,7 +203,7 @@ public sealed partial class BopItAccessMod : MelonMod
             ResetPlayModesFocus();
         }
 
-        if (calibrationVisible || controlsVisible || trackSelectVisible || playModesVisible)
+        if (calibrationVisible || controlsVisible || gameOverVisible || trackSelectVisible || playModesVisible)
         {
             ResetSettingsFocus();
             ResetMenuFocus();
@@ -482,7 +515,7 @@ public sealed partial class BopItAccessMod : MelonMod
         _mainMenuWasVisible = false;
     }
 
-    private void QueueSpeech(string text)
+    private void QueueSpeech(string text, bool interrupt = true)
     {
         if (_shutdownRequested.IsSet)
             return;
@@ -491,6 +524,25 @@ public sealed partial class BopItAccessMod : MelonMod
         {
             // Keep the newest focus announcement when navigation is faster than speech.
             _pendingSpeech = text;
+            _pendingSpeechInterrupt = interrupt;
+        }
+
+        _speechRequested.Set();
+    }
+
+    private void QueueScoreThenMenu(string score, string? menu)
+    {
+        if (_shutdownRequested.IsSet)
+            return;
+
+        lock (_speechLock)
+        {
+            // The score has its own slot, so a focus change cannot replace it
+            // before the Tolk worker picks up the request.
+            _pendingPrioritySpeech = score;
+            _pendingPriorityFollowUpSpeech = menu;
+            _pendingSpeech = null;
+            _pendingSpeechInterrupt = false;
         }
 
         _speechRequested.Set();
@@ -533,18 +585,41 @@ public sealed partial class BopItAccessMod : MelonMod
             WaitHandle[] signals = { _shutdownRequested.WaitHandle, _speechRequested };
             while (WaitHandle.WaitAny(signals) != 0)
             {
+                string? priority;
+                string? priorityFollowUp;
                 string? announcement;
+                bool interrupt;
                 lock (_speechLock)
                 {
+                    priority = _pendingPrioritySpeech;
+                    _pendingPrioritySpeech = null;
+                    priorityFollowUp = _pendingPriorityFollowUpSpeech;
+                    _pendingPriorityFollowUpSpeech = null;
                     announcement = _pendingSpeech;
                     _pendingSpeech = null;
+                    interrupt = _pendingSpeechInterrupt;
                 }
 
-                if (announcement == null)
-                    continue;
+                if (priority != null)
+                {
+                    bool scoreAccepted = TolkNative.Tolk_Output(priority, true);
+                    WriteStatus($"Priority speech announcement '{priority}' {(scoreAccepted ? "accepted" : "rejected")} by Tolk.");
+                }
 
-                bool accepted = TolkNative.Tolk_Output(announcement, true);
-                WriteStatus($"Speech announcement '{announcement}' {(accepted ? "accepted" : "rejected")} by Tolk.");
+                if (priorityFollowUp != null)
+                {
+                    bool menuAccepted = TolkNative.Tolk_Output(priorityFollowUp, false);
+                    WriteStatus($"Queued menu announcement '{priorityFollowUp}' {(menuAccepted ? "accepted" : "rejected")} by Tolk.");
+                }
+
+                if (announcement != null)
+                {
+                    // A score sent in this batch always goes first. The
+                    // following menu speech is queued without interruption.
+                    bool followUpInterrupt = priority == null && priorityFollowUp == null && interrupt;
+                    bool accepted = TolkNative.Tolk_Output(announcement, followUpInterrupt);
+                    WriteStatus($"Speech announcement '{announcement}' (interrupt {followUpInterrupt}) {(accepted ? "accepted" : "rejected")} by Tolk.");
+                }
             }
         }
         catch (Exception ex)
