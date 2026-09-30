@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.1", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.2", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -22,6 +22,7 @@ public sealed partial class BopItAccessMod : MelonMod
     private string? _pendingSpeech;
     private string? _pendingPrioritySpeech;
     private string? _pendingPriorityFollowUpSpeech;
+    private readonly Queue<string> _sequentialSpeech = new();
     private bool _pendingSpeechInterrupt = true;
     private MainMenuUIManager? _mainMenu;
     private SettingsPanel? _settingsPanel;
@@ -40,6 +41,9 @@ public sealed partial class BopItAccessMod : MelonMod
     private long _nextTrackSelectErrorLogAt;
     private long _nextPlayModesErrorLogAt;
     private long _nextGameOverErrorLogAt;
+    private long _nextLeaderboardsErrorLogAt;
+    private long _nextAchievementsErrorLogAt;
+    private long _nextCreditsErrorLogAt;
     private bool _mainMenuWasVisible;
     private bool _settingsWasVisible;
     private static readonly object StatusLogLock = new();
@@ -124,8 +128,87 @@ public sealed partial class BopItAccessMod : MelonMod
             ResetControlsFocus();
         }
 
-        bool gameOverVisible = false;
+        bool leaderboardsVisible = false;
         if (!calibrationVisible && !controlsVisible)
+        {
+            try
+            {
+                leaderboardsVisible = ReadLeaderboardsFocus();
+            }
+            catch (Exception ex)
+            {
+                long now = Environment.TickCount64;
+                if (now >= _nextLeaderboardsErrorLogAt)
+                {
+                    WriteStatus($"Leaderboard speech check failed: {ex}");
+                    MelonLogger.Warning($"Leaderboard speech check failed: {ex.Message}");
+                    _nextLeaderboardsErrorLogAt = now + 5000;
+                }
+
+                _leaderboardMainMenu = null;
+                _leaderboardGameUi = null;
+                ResetLeaderboardsFocus();
+            }
+        }
+        else
+        {
+            ResetLeaderboardsFocus();
+        }
+
+        bool achievementsVisible = false;
+        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible)
+        {
+            try
+            {
+                achievementsVisible = ReadAchievementsFocus();
+            }
+            catch (Exception ex)
+            {
+                long now = Environment.TickCount64;
+                if (now >= _nextAchievementsErrorLogAt)
+                {
+                    WriteStatus($"Achievements speech check failed: {ex}");
+                    MelonLogger.Warning($"Achievements speech check failed: {ex.Message}");
+                    _nextAchievementsErrorLogAt = now + 5000;
+                }
+
+                _achievementsPanel = null;
+                ResetAchievementsFocus();
+            }
+        }
+        else
+        {
+            ResetAchievementsFocus();
+        }
+
+        bool creditsVisible = false;
+        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible && !achievementsVisible)
+        {
+            try
+            {
+                creditsVisible = ReadCreditsFocus();
+            }
+            catch (Exception ex)
+            {
+                long now = Environment.TickCount64;
+                if (now >= _nextCreditsErrorLogAt)
+                {
+                    WriteStatus($"Credits speech check failed: {ex}");
+                    MelonLogger.Warning($"Credits speech check failed: {ex.Message}");
+                    _nextCreditsErrorLogAt = now + 5000;
+                }
+
+                ResetCreditsFocus();
+            }
+        }
+        else
+        {
+            ResetCreditsFocus();
+        }
+
+        bool gameOverVisible = false;
+        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible &&
+            !achievementsVisible && !creditsVisible)
         {
             try
             {
@@ -152,7 +235,8 @@ public sealed partial class BopItAccessMod : MelonMod
         }
 
         bool trackSelectVisible = false;
-        if (!calibrationVisible && !controlsVisible && !gameOverVisible)
+        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible &&
+            !achievementsVisible && !creditsVisible && !gameOverVisible)
         {
             try
             {
@@ -179,7 +263,8 @@ public sealed partial class BopItAccessMod : MelonMod
         }
 
         bool playModesVisible = false;
-        if (!calibrationVisible && !controlsVisible && !gameOverVisible && !trackSelectVisible)
+        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible &&
+            !achievementsVisible && !creditsVisible && !gameOverVisible && !trackSelectVisible)
         {
             try
             {
@@ -203,7 +288,8 @@ public sealed partial class BopItAccessMod : MelonMod
             ResetPlayModesFocus();
         }
 
-        if (calibrationVisible || controlsVisible || gameOverVisible || trackSelectVisible || playModesVisible)
+        if (calibrationVisible || controlsVisible || leaderboardsVisible || achievementsVisible ||
+            creditsVisible || gameOverVisible || trackSelectVisible || playModesVisible)
         {
             ResetSettingsFocus();
             ResetMenuFocus();
@@ -525,7 +611,20 @@ public sealed partial class BopItAccessMod : MelonMod
             // Keep the newest focus announcement when navigation is faster than speech.
             _pendingSpeech = text;
             _pendingSpeechInterrupt = interrupt;
+            if (interrupt)
+                _sequentialSpeech.Clear();
         }
+
+        _speechRequested.Set();
+    }
+
+    private void QueueSequentialSpeech(string text)
+    {
+        if (_shutdownRequested.IsSet)
+            return;
+
+        lock (_speechLock)
+            _sequentialSpeech.Enqueue(text);
 
         _speechRequested.Set();
     }
@@ -543,6 +642,7 @@ public sealed partial class BopItAccessMod : MelonMod
             _pendingPriorityFollowUpSpeech = menu;
             _pendingSpeech = null;
             _pendingSpeechInterrupt = false;
+            _sequentialSpeech.Clear();
         }
 
         _speechRequested.Set();
@@ -588,6 +688,7 @@ public sealed partial class BopItAccessMod : MelonMod
                 string? priority;
                 string? priorityFollowUp;
                 string? announcement;
+                List<string>? sequential;
                 bool interrupt;
                 lock (_speechLock)
                 {
@@ -598,6 +699,9 @@ public sealed partial class BopItAccessMod : MelonMod
                     announcement = _pendingSpeech;
                     _pendingSpeech = null;
                     interrupt = _pendingSpeechInterrupt;
+                    sequential = _sequentialSpeech.Count == 0
+                        ? null : new List<string>(_sequentialSpeech);
+                    _sequentialSpeech.Clear();
                 }
 
                 if (priority != null)
@@ -619,6 +723,15 @@ public sealed partial class BopItAccessMod : MelonMod
                     bool followUpInterrupt = priority == null && priorityFollowUp == null && interrupt;
                     bool accepted = TolkNative.Tolk_Output(announcement, followUpInterrupt);
                     WriteStatus($"Speech announcement '{announcement}' (interrupt {followUpInterrupt}) {(accepted ? "accepted" : "rejected")} by Tolk.");
+                }
+
+                if (sequential != null)
+                {
+                    foreach (string line in sequential)
+                    {
+                        bool accepted = TolkNative.Tolk_Output(line, false);
+                        WriteStatus($"Queued sequential announcement '{line}' {(accepted ? "accepted" : "rejected")} by Tolk.");
+                    }
                 }
             }
         }
