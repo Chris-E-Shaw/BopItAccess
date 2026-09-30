@@ -1,4 +1,4 @@
-Bop It Access 0.5.15 - Settings Navigation Fix
+Bop It Access 0.5.16 - Speech Menu Reopen Fix
 
 What this does
 --------------
@@ -34,6 +34,9 @@ steps of five. They apply to SAPI mode and Auto's SAPI fallback.
 Speech settings are remembered between sessions. Back returns to Settings.
 This update restores the game's native Settings row layout so up/down
 navigation remains on Settings rows after SPEECH is added.
+It also starts the SPEECH submenu on SPEECH OUTPUT each time it opens,
+preventing a previously selected BACK row from closing the menu immediately
+when Enter is used to reopen it.
 
 Inside Play, the mod reads Solo, Party, Pass It, and One on One when focused.
 On the following song-selection screen, it announces the current theme

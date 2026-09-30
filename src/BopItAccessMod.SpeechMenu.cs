@@ -36,6 +36,7 @@ public sealed partial class BopItAccessMod
     private bool _speechMenuOpen;
     private bool _speechMenuIntroductionPending;
     private long _speechMenuOpenedAt;
+    private int _speechMenuOpenedFrame;
     private int _lastSpeechMenuRowId;
     private string? _lastSpeechMenuValue;
 
@@ -48,6 +49,8 @@ public sealed partial class BopItAccessMod
                 _mainMenu.panels.Count == 0 ||
                 _mainMenu.panels.Peek().GetInstanceID() != _speechMenuPanel.GetInstanceID())
             {
+                if (Environment.TickCount64 - _speechMenuOpenedAt < 500)
+                    WriteStatus("Speech settings menu left the panel stack immediately after opening.");
                 _speechMenuOpen = false;
                 ResetSpeechMenuFocus();
             }
@@ -157,9 +160,17 @@ public sealed partial class BopItAccessMod
             settings.Hide();
             settingsHidden = true;
             _speechMenuRoot.SetActive(true);
+            // Panel.Hide remembers the selected row. If that row was BACK,
+            // reopening with Enter can submit BACK during the same UI event
+            // and close this panel before it has a visible frame.
+            _speechMenuPanel.lastSelectedButton = null;
+            _speechMenuPanel.firstSelectedButton = _speechOutputToggle?.gameObject;
+            _speechMenuOpenedFrame = Time.frameCount;
             _speechMenuPanel.Show();
             main.panels.Push(_speechMenuPanel);
             pushed = true;
+            if (_speechOutputToggle != null)
+                EventSystem.current?.SetSelectedGameObject(_speechOutputToggle.gameObject);
             _speechMenuOpen = true;
             _speechMenuIntroductionPending = true;
             _speechMenuOpenedAt = Environment.TickCount64;
@@ -547,8 +558,16 @@ public sealed partial class BopItAccessMod
 
     private void OnSpeechBackSubmitted()
     {
-        if (_speechMenuOpen)
-            _mainMenu?.GoBack();
+        // A submit already in progress when SPEECH opens must not be reused
+        // by the formerly selected BACK row in the same frame.
+        if (!_speechMenuOpen)
+            return;
+        if (Time.frameCount == _speechMenuOpenedFrame)
+        {
+            WriteStatus("Ignored a BACK submit in the same frame that SPEECH opened.");
+            return;
+        }
+        _mainMenu?.GoBack();
     }
 
     private bool ReadSpeechMenuFocus()
@@ -561,6 +580,8 @@ public sealed partial class BopItAccessMod
         if (_mainMenu?.panels == null || _mainMenu.panels.Count == 0 ||
             _mainMenu.panels.Peek().GetInstanceID() != _speechMenuPanel.GetInstanceID())
         {
+            if (Environment.TickCount64 - _speechMenuOpenedAt < 500)
+                WriteStatus("Speech settings menu lost focus immediately after opening.");
             _speechMenuOpen = false;
             ResetSpeechMenuFocus();
             return false;
