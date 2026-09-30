@@ -27,7 +27,14 @@ public sealed partial class BopItAccessMod
             {
                 (string Key, string Hint)? context = ResolveButtonHintContext();
                 if (context != null)
-                    text = text.TrimEnd() + " " + context.Value.Hint;
+                {
+                    string focused = text.TrimEnd();
+                    if (focused.Length > 0 &&
+                        focused[^1] != '.' && focused[^1] != '!' &&
+                        focused[^1] != '?')
+                        focused += ".";
+                    text = focused + " " + context.Value.Hint;
+                }
             }
             catch (Exception ex)
             {

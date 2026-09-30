@@ -1,4 +1,4 @@
-Bop It Access 0.6.3 - Button Hint Controls
+Bop It Access 0.6.4 - Button Hint Speech
 
 What this does
 --------------
@@ -44,8 +44,9 @@ Off suppresses all button-hint speech. BUTTON HINTS DELAY has None, 5 seconds
 (May interrupt speech), 10 seconds, 15 seconds, 30 seconds, and 60 seconds.
 It defaults to None. With None, the valid inputs for the current screen and
 their actions are included in the focused item's ordinary speech string,
-without a separate first hint announcement. With a timed delay, the first
-hint announcement follows that much inactivity. The 5-second option can
+after a full stop. The action for the focused control is spoken before general
+menu navigation. There is no separate first hint announcement. With a timed
+delay, the first hint announcement follows that much inactivity. The 5-second option can
 interrupt speech already in progress; longer delays queue behind it. After
 the first hint announcement, another delay starts only when the player gives
 input, unless repeats are enabled.

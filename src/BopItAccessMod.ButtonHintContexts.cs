@@ -3,6 +3,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.UI;
 
 namespace BopItAccess;
 
@@ -40,8 +41,8 @@ public sealed partial class BopItAccessMod
                 state == CalibrateState.Finished)
                 return null;
             return ("Calibration:" + state,
-                WithGlobalToggleHint("Use up and down to choose Calibrate or Back. " +
-                    UiSubmitHint("activate the chosen option") + " " +
+                WithGlobalToggleHint(UiSubmitHint("activate the chosen option") +
+                    " Use up and down to choose Calibrate or Back. " +
                     UiBackHint("return to Settings")));
         }
 
@@ -64,8 +65,9 @@ public sealed partial class BopItAccessMod
                 ? UiSubmitHint("restore the default bindings")
                 : UiSubmitHint("reassign the focused control");
             return ("Controls:" + focused,
-                WithGlobalToggleHint("Use up and down to choose a control. " +
-                    use + " " + UiBackHint("return to Settings")));
+                WithGlobalToggleHint(use +
+                    " Use up and down to choose a control. " +
+                    UiBackHint("return to Settings")));
         }
 
         if (gameState == GameState.GameOver &&
@@ -76,13 +78,28 @@ public sealed partial class BopItAccessMod
                 IsHintPanelVisible(party?.leaderboardWrapper))
             {
                 string nameHint = party!.State == PartyLeaderboardState.Input
-                    ? "Type a name, then confirm it. "
-                    : "Choose a name for your score, then continue. ";
+                    ? "Type a name, then confirm it."
+                    : "Choose a name for your score, then continue.";
                 string rowsHint = _leaderboardCachedRows.Count > 0
-                    ? "Use Page Up and Page Down to read score rows. " : string.Empty;
+                    ? "Use Page Up and Page Down to read score rows." : string.Empty;
+                string backHint = UiBackHint("return to the result screen");
+                string? focused = ReadLeaderboardFocusedItem(party.transform).Label;
+                string? focusedHint = focused switch
+                {
+                    "Back" => backHint,
+                    "Continue" => UiSubmitHint("continue"),
+                    _ when focused != null && focused.StartsWith("Rank ",
+                        StringComparison.OrdinalIgnoreCase) => rowsHint,
+                    _ => null
+                };
+                var hints = new List<string>(4);
+                if (!string.IsNullOrEmpty(focusedHint))
+                    hints.Add(focusedHint);
+                foreach (string hint in new[] { nameHint, rowsHint, backHint })
+                    if (hint.Length > 0 && hint != focusedHint)
+                        hints.Add(hint);
                 return ("Leaderboard:Party:" + party.State,
-                    WithGlobalToggleHint(nameHint + rowsHint +
-                        UiBackHint("return to the result screen")));
+                    WithGlobalToggleHint(string.Join(" ", hints)));
             }
 
             CombinedLeaderboardPanel? gameBoard = gameUi?.combinedLeaderboardPanel;
@@ -132,8 +149,8 @@ public sealed partial class BopItAccessMod
         {
             bool solo = IsHintPanelVisible(final!.soloKillScreenPanel);
             string menu = solo
-                ? "Use up and down to choose Replay or Leaderboard. " +
-                    UiSubmitHint("activate the selected option")
+                ? UiSubmitHint("activate the selected option") +
+                    " Use up and down to choose Replay or Leaderboard."
                 : UiSubmitHint("activate the Continue or Replay prompt shown on the result screen");
             return ("GameOver:" + (solo ? "Solo" : "WithFriends"),
                 WithGlobalToggleHint(menu + " " + UiBackHint("return") + " " +
@@ -142,15 +159,39 @@ public sealed partial class BopItAccessMod
 
         StartScreenPanel? start = gameUi?.startScreen;
         if (gameState == GameState.WaitingToStart && IsHintPanelVisible(start))
+        {
+            string songHint = "Twist to change song.";
+            string difficultyHint = "Pull to change difficulty.";
+            string descriptionHint = ReadDescriptionsBindingInstruction();
+            string startHint = "Bop to start.";
+            string backHint = UiBackHint("return to mode selection");
+            GameObject? selected = EventSystem.current?.currentSelectedGameObject;
+            Selectable? focused = selected != null &&
+                selected.transform.IsChildOf(start!.transform)
+                ? selected.GetComponentInParent<Selectable>() : null;
+            string? label = focused == null ? null :
+                ReadTrackSelectControlLabel(focused);
+            string? primary = label switch
+            {
+                "Start" => startHint,
+                "Back" => backHint,
+                _ when label != null && label.Contains("Extreme",
+                    StringComparison.OrdinalIgnoreCase) => difficultyHint,
+                _ => songHint
+            };
+            var hints = new List<string>(5) { primary };
+            foreach (string hint in new[] { songHint, difficultyHint,
+                descriptionHint, startHint, backHint })
+                if (hint != primary)
+                    hints.Add(hint);
             return ("SongSelect",
-                WithGlobalToggleHint("Twist to change song. Pull to change difficulty. " +
-                    ReadDescriptionsBindingInstruction() +
-                    " Bop to start. " + UiBackHint("return to mode selection")));
+                WithGlobalToggleHint(string.Join(" ", hints)));
+        }
 
         if (IsHintPanelVisible(main?.gameModePanel))
             return ("PlayModes",
-                WithGlobalToggleHint("Use up and down to choose Solo, Party, Pass It, or One on One. " +
-                    UiSubmitHint("select the focused mode") + " " +
+                WithGlobalToggleHint(UiSubmitHint("select the focused mode") +
+                    " Use up and down to choose Solo, Party, Pass It, or One on One. " +
                     UiBackHint("return to the main menu")));
 
         if (IsHintPanelVisible(_settingsPanel))
@@ -163,8 +204,8 @@ public sealed partial class BopItAccessMod
 
         if (IsHintPanelVisible(main?.mainMenuPanel))
             return ("MainMenu",
-                WithGlobalToggleHint("Use up and down to choose a menu item. " +
-                    UiSubmitHint("activate the focused item")));
+                WithGlobalToggleHint(UiSubmitHint("activate the focused item") +
+                    " Use up and down to choose a menu item."));
 
         return null;
     }
@@ -172,17 +213,57 @@ public sealed partial class BopItAccessMod
     private (string Key, string Hint) CombinedLeaderboardHint(
         CombinedLeaderboardPanel panel, bool result)
     {
-        string rows = _leaderboardCachedRows.Count > 0
-            ? "Use Page Up and Page Down to read score rows. " : string.Empty;
-        string filters = "Twist to change song. Pull to change Classic or Extreme. " +
-            LeaderboardAxisHint("ChangeGroup", "group", "Local, Friends, and Global") + " " +
-            LeaderboardAxisHint("ChangeDateRange", "date", "Today, This month, and All time");
-        string returnHint = result
-            ? UiSubmitHint("continue") + " " + UiBackHint("return")
-            : UiBackHint("return to the main menu");
+        string songHint = "Twist to change song.";
+        string difficultyHint = "Pull to change Classic or Extreme.";
+        string groupHint = LeaderboardAxisHint("ChangeGroup", "group",
+            "Local, Friends, and Global");
+        string dateHint = LeaderboardAxisHint("ChangeDateRange", "date",
+            "Today, This month, and All time");
+        string rowsHint = _leaderboardCachedRows.Count > 0
+            ? "Use Page Up and Page Down to read score rows." : string.Empty;
+        string continueHint = result ? UiSubmitHint("continue") : string.Empty;
+        string backHint = result ? UiBackHint("return") :
+            UiBackHint("return to the main menu");
+
+        GameObject? selected = EventSystem.current?.currentSelectedGameObject;
+        bool selectedInPanel = selected != null &&
+            selected.transform.IsChildOf(panel.transform);
+        string? focusedLabel = selectedInPanel
+            ? ReadLeaderboardFocusedItem(panel.transform).Label : null;
+        string? primary = null;
+        if (selectedInPanel)
+        {
+            if (selected!.GetComponentInParent<GroupFilterTab>() != null)
+                primary = groupHint;
+            else if (selected.GetComponentInParent<DateFilterTab>() != null)
+                primary = dateHint;
+            else if (selected.GetComponentInParent<LeaderboardLineItem>() != null ||
+                selected.GetComponentInParent<PartyLeaderboardLineItem>() != null)
+                primary = rowsHint;
+            else if (string.Equals(focusedLabel, "Continue",
+                StringComparison.OrdinalIgnoreCase))
+                primary = continueHint;
+            else if (string.Equals(focusedLabel, "Back",
+                StringComparison.OrdinalIgnoreCase))
+                primary = backHint;
+            else if (string.Equals(focusedLabel, "Classic",
+                StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(focusedLabel, "Extreme",
+                    StringComparison.OrdinalIgnoreCase))
+                primary = difficultyHint;
+            else if (focusedLabel is "Shapes" or "Space" or "City" or "Office")
+                primary = songHint;
+        }
+        var hints = new List<string>(7);
+        if (!string.IsNullOrEmpty(primary))
+            hints.Add(primary);
+        foreach (string hint in new[] { songHint, difficultyHint, groupHint,
+            dateHint, rowsHint, continueHint, backHint })
+            if (hint.Length > 0 && hint != primary)
+                hints.Add(hint);
         return ("Leaderboard:Combined:" + (result ? "Result" : "Main") +
                 ":" + panel.Mode,
-            WithGlobalToggleHint(filters + " " + rows + returnHint));
+            WithGlobalToggleHint(string.Join(" ", hints)));
     }
 
     private string LeaderboardAxisHint(string actionName, string noun, string choices)
@@ -232,7 +313,7 @@ public sealed partial class BopItAccessMod
             "toggle" => UiSubmitHint("change the focused toggle"),
             _ => UiSubmitHint("activate the focused button")
         };
-        return "Use up and down to choose an option. " + focused + " " +
+        return focused + " Use up and down to choose an option. " +
             UiBackHint("return to " + returnTo);
     }
 
