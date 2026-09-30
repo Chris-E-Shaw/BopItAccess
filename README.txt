@@ -1,4 +1,4 @@
-Bop It Access 0.6.6 - Background Muting and Speech Detail
+Bop It Access 0.6.7 - One-on-One Feedback
 
 What this does
 --------------
@@ -19,6 +19,8 @@ The MUTE AUDIO IN BACKGROUND toggle appears directly below VOICE OVER in
 Settings. When enabled, it mutes game audio while the game window is not
 focused, then restores the previous game audio state when focus returns.
 It starts Off and is saved between sessions.
+Settings indexing now waits for the mod's audio, FPS, and SPEECH rows before
+announcing the first focused item on a newly opened Settings screen.
 
 Below Controls, Settings now has a SPEECH menu. SPEECH OUTPUT uses the same
 saved master switch as F8 or controller Select, including the spoken recovery
@@ -52,6 +54,11 @@ SLIDER RANGES is a saved toggle, Off by default. When enabled, focused sliders
 also report their available endpoints after the current value, such as
 "MUSIC slider, 30, range 0 to 100, 1 of 12" when indexing and control types
 are enabled. Moving a slider still speaks only the new value.
+ONE-ON-ONE FEEDBACK is a saved toggle, Off by default. When enabled, it
+announces the active colour at the start of a One on One round and when that
+colour changes. A lost life announces the remaining count, such as "2 lives"
+or "1 life". If both players lose a life on the same shared Bop cue, both
+counts are identified by colour. The feature runs only during One on One play.
 
 READ BUTTON HINTS is a saved SPEECH toggle and is On by default. Turning it
 Off suppresses all button-hint speech. BUTTON HINTS DELAY has None, 5 seconds
@@ -147,6 +154,9 @@ default because the game already binds it to Reset Gyro and Auto Play.
 Requested repeats speak immediately and can be interrupted by result-menu
 navigation. Only the automatic result announcement delays the initial menu
 speech so the score is heard first.
+ONE-ON-ONE FEEDBACK can be enabled in Settings > Speech for spoken active
+colour and remaining lives during that mode. Shared Bop cues do not by
+themselves identify one colour, so the mod retains the last definite colour.
 
 TOGGLE SPEECH turns all ordinary mod speech on or off from any screen. Its
 defaults are F8 on keyboard and Select on controller. When turned off, the mod

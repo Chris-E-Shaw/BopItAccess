@@ -27,6 +27,7 @@ public sealed partial class BopItAccessMod
     private SettingsToggle? _indexingToggle;
     private SettingsToggle? _readControlTypesToggle;
     private SettingsToggle? _sliderRangesToggle;
+    private SettingsToggle? _oneOnOneFeedbackToggle;
     private SettingsToggle? _readButtonHintsToggle;
     private SettingsSlider? _hintsTypeSlider;
     private SettingsSlider? _buttonHintsDelaySlider;
@@ -43,6 +44,7 @@ public sealed partial class BopItAccessMod
     private UnityAction? _indexingSubmitListener;
     private UnityAction? _readControlTypesSubmitListener;
     private UnityAction? _sliderRangesSubmitListener;
+    private UnityAction? _oneOnOneFeedbackSubmitListener;
     private UnityAction? _readButtonHintsSubmitListener;
     private UnityAction? _trimSilenceSubmitListener;
     private UnityAction? _speechBackSubmitListener;
@@ -123,6 +125,10 @@ public sealed partial class BopItAccessMod
                 if (_sliderRangesToggle != null &&
                     _sliderRangesToggle.IsOn != _sliderRangesEnabled)
                     SetSpeechToggleDisplay(_sliderRangesToggle, _sliderRangesEnabled);
+                if (_oneOnOneFeedbackToggle != null &&
+                    _oneOnOneFeedbackToggle.IsOn != _oneOnOneFeedbackEnabled)
+                    SetSpeechToggleDisplay(_oneOnOneFeedbackToggle,
+                        _oneOnOneFeedbackEnabled);
                 if (_readButtonHintsToggle != null &&
                     _readButtonHintsToggle.IsOn != _readButtonHintsEnabled)
                     SetSpeechToggleDisplay(_readButtonHintsToggle,
@@ -360,6 +366,11 @@ public sealed partial class BopItAccessMod
                 "SLIDER RANGES",
                 _sliderRangesSubmitListener ??= (UnityAction)OnSliderRangesSubmitted,
                 _sliderRangesEnabled);
+            _oneOnOneFeedbackToggle = AddSpeechToggle(settings.vibration, content,
+                "ONE-ON-ONE FEEDBACK",
+                _oneOnOneFeedbackSubmitListener ??=
+                    (UnityAction)OnOneOnOneFeedbackSubmitted,
+                _oneOnOneFeedbackEnabled);
             _readButtonHintsToggle = AddSpeechToggle(settings.vibration, content,
                 "READ BUTTON HINTS",
                 _readButtonHintsSubmitListener ??=
@@ -404,6 +415,9 @@ public sealed partial class BopItAccessMod
                 () => _readControlTypesEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("SLIDER RANGES", "toggle", _sliderRangesToggle,
                 () => _sliderRangesEnabled ? "On" : "Off"));
+            _speechUiOptions.Add(new("ONE-ON-ONE FEEDBACK", "toggle",
+                _oneOnOneFeedbackToggle,
+                () => _oneOnOneFeedbackEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("READ BUTTON HINTS", "toggle",
                 _readButtonHintsToggle,
                 () => _readButtonHintsEnabled ? "On" : "Off"));
@@ -461,6 +475,7 @@ public sealed partial class BopItAccessMod
             _indexingToggle = null;
             _readControlTypesToggle = null;
             _sliderRangesToggle = null;
+            _oneOnOneFeedbackToggle = null;
             _readButtonHintsToggle = null;
             _hintsTypeSlider = null;
             _buttonHintsDelaySlider = null;
@@ -659,6 +674,9 @@ public sealed partial class BopItAccessMod
             SetSpeechToggleDisplay(_readControlTypesToggle, _readControlTypesEnabled);
         if (_sliderRangesToggle != null)
             SetSpeechToggleDisplay(_sliderRangesToggle, _sliderRangesEnabled);
+        if (_oneOnOneFeedbackToggle != null)
+            SetSpeechToggleDisplay(_oneOnOneFeedbackToggle,
+                _oneOnOneFeedbackEnabled);
         if (_readButtonHintsToggle != null)
             SetSpeechToggleDisplay(_readButtonHintsToggle, _readButtonHintsEnabled);
         _hintsTypeSlider?.SetValue(_hintsType);
@@ -725,6 +743,13 @@ public sealed partial class BopItAccessMod
         if (!_speechMenuOpen || !_speechMenuInputReady)
             return;
         SetSliderRangesFromMenu(!_sliderRangesEnabled);
+    }
+
+    private void OnOneOnOneFeedbackSubmitted()
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
+        SetOneOnOneFeedbackFromMenu(!_oneOnOneFeedbackEnabled);
     }
 
     private void OnReadButtonHintsSubmitted()

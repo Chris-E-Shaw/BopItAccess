@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.6", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.7", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -388,6 +388,11 @@ public sealed partial class BopItAccessMod : MelonMod
         {
             // Serialized row references are guaranteed to be ready by the time
             // the panel becomes visible, even if we found it earlier in a scene.
+            // The added rows normally probe on 250 ms timers in OnUpdate. If
+            // Settings opens between probes, the first focused item would be
+            // announced with only the native row count. Add them now, before
+            // taking the option snapshot used for this first announcement.
+            EnsureCustomSettingsRowsBeforeFocus(_settingsPanel);
             _settingsOptions = CreateSettingsOptions(_settingsPanel);
             WriteStatus("Settings panel is visible; monitoring its settings rows.");
             _settingsWasVisible = true;
@@ -443,6 +448,29 @@ public sealed partial class BopItAccessMod : MelonMod
         }
 
         return true;
+    }
+
+    private void EnsureCustomSettingsRowsBeforeFocus(SettingsPanel panel)
+    {
+        int panelId = panel.GetInstanceID();
+        if (_backgroundAudioToggle == null ||
+            _backgroundAudioSettingsPanelId != panelId)
+        {
+            _nextBackgroundAudioSettingsProbeAt = 0;
+            UpdateBackgroundAudioSettingsRow();
+        }
+
+        if (_fpsSettingsSlider == null || _fpsSettingsPanelId != panelId)
+        {
+            _nextFpsSettingsProbeAt = 0;
+            UpdateFpsLimitSetting();
+        }
+
+        if (_speechSettingsButton == null || _speechSettingsPanelId != panelId)
+        {
+            _nextSpeechSettingsProbeAt = 0;
+            UpdateSpeechMenuUi();
+        }
     }
 
     private SettingOption? GetFocusedSettingsOption(GameObject? selected)
