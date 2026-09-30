@@ -3,7 +3,6 @@ using Il2CppTMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
-using UnityEngine.InputSystem.UI;
 using UnityEngine.UI;
 
 namespace BopItAccess;
@@ -22,8 +21,6 @@ public sealed partial class BopItAccessMod
     private bool _descriptionRebindActionWasEnabled;
     private int _descriptionRebindIndex;
     private string? _descriptionRebindOriginalPath;
-    private readonly List<SuppressedDescriptionBinding> _descriptionSuppressedBindings = new();
-    private int _descriptionSuppressedAssetId;
     private long _nextDescriptionControlErrorAt;
 
     private InputAction EnsureDescriptionAction()
@@ -36,7 +33,7 @@ public sealed partial class BopItAccessMod
         _descriptionActionAsset = ScriptableObject.CreateInstance<InputActionAsset>();
         InputActionMap map = _descriptionActionAsset.AddActionMap("BopItAccess");
         InputAction action = map.AddAction("ReadDescriptions", InputActionType.Button);
-        action.AddBinding("<Keyboard>/d");
+        action.AddBinding("<Keyboard>/r");
         action.AddBinding("<Gamepad>/leftTrigger");
         string keyboard = PlayerPrefs.GetString(DescriptionKeyboardKey, string.Empty);
         string gamepad = PlayerPrefs.GetString(DescriptionGamepadKey, string.Empty);
@@ -59,14 +56,10 @@ public sealed partial class BopItAccessMod
                 // before the action has been created.
                 if (_descriptionAction?.enabled == true)
                     _descriptionAction.Disable();
-                if (_descriptionSuppressedAssetId != 0 || _descriptionSuppressedBindings.Count != 0)
-                    RestoreNativeDescriptionBindings();
                 return false;
             }
 
             InputAction action = EnsureDescriptionAction();
-            if (!SuppressNativeDescriptionConflicts(action))
-                return false;
             if (!action.enabled)
                 action.Enable();
             return action.WasPressedThisFrame();
@@ -77,8 +70,6 @@ public sealed partial class BopItAccessMod
             {
                 if (_descriptionAction?.enabled == true)
                     _descriptionAction.Disable();
-                if (_descriptionSuppressedAssetId != 0 || _descriptionSuppressedBindings.Count != 0)
-                    RestoreNativeDescriptionBindings();
             }
             catch (Exception cleanup)
             {
@@ -99,7 +90,7 @@ public sealed partial class BopItAccessMod
         {
             InputAction action = EnsureDescriptionAction();
             string keyboard = CleanSpeechValue(
-                InputActionRebindingExtensions.GetBindingDisplayString(action, 0)) ?? "D";
+                InputActionRebindingExtensions.GetBindingDisplayString(action, 0)) ?? "R";
             string gamepad = CleanSpeechValue(
                 InputActionRebindingExtensions.GetBindingDisplayString(action, 1)) ?? "left trigger";
             return $"Press {keyboard} on keyboard or {gamepad} on controller to read the selected stage description.";
@@ -235,24 +226,49 @@ public sealed partial class BopItAccessMod
         }
         catch (Exception ex)
         {
+            bool wasRebinding = _descriptionRebindOperation != null;
             if (Environment.TickCount64 >= _nextDescriptionControlErrorAt)
             {
                 WriteStatus("Read Descriptions rebinding failed: " + ex);
                 _nextDescriptionControlErrorAt = Environment.TickCount64 + 5000;
             }
-            if (_descriptionRebindOperation != null)
-                RestoreDescriptionOriginalOverride();
-            CancelDescriptionControlRebinding(false);
-            QueueSpeech("Rebinding failed");
+            try
+            {
+                if (wasRebinding)
+                    RestoreDescriptionOriginalOverride();
+                CancelDescriptionControlRebinding(false);
+            }
+            catch (Exception cleanup)
+            {
+                WriteStatus("Read Descriptions rebind cleanup failed: " + cleanup.Message);
+            }
+            if (!wasRebinding)
+                _descriptionControlRow = null;
+            if (wasRebinding)
+                QueueSpeech("Rebinding failed");
         }
     }
 
     private void UpdateDescriptionControlRebindingCore()
     {
         AddedDescriptionControlRow? row = _descriptionControlRow;
-        Panel? panel = row?.Root?.GetComponentInParent<Panel>();
-        if (row?.Root == null || !row.Root.activeInHierarchy ||
-            panel == null || !panel.IsVisible || !panel.gameObject.activeInHierarchy)
+        // Destroyed Unity objects still have a managed wrapper; null
+        // propagation does not detect them. Check before calling Unity.
+        if (row == null || row.Root == null)
+        {
+            _descriptionControlRow = null;
+            if (_descriptionRebindOperation != null)
+            {
+                RestoreDescriptionOriginalOverride();
+                CancelDescriptionControlRebinding(false);
+            }
+            return;
+        }
+
+        MainMenuUIManager? main = _mainMenu;
+        Panel? panel = main == null ? null : main.controlsPanel;
+        if (panel == null || !panel.IsVisible || !panel.gameObject.activeInHierarchy ||
+            !row.Root.activeInHierarchy)
         {
             if (_descriptionRebindOperation != null)
             {
@@ -412,7 +428,7 @@ public sealed partial class BopItAccessMod
         PlayerPrefs.DeleteKey(DescriptionGamepadKey);
         PlayerPrefs.Save();
         RefreshDescriptionControlPrompts();
-        WriteStatus("Reset Read Descriptions bindings to D and left trigger.");
+        WriteStatus("Reset Read Descriptions bindings to R and left trigger.");
     }
 
     private void CancelDescriptionControlRebinding(bool announce = true)
@@ -476,114 +492,6 @@ public sealed partial class BopItAccessMod
         }
     }
 
-    private bool SuppressNativeDescriptionConflicts(InputAction description)
-    {
-        if (_descriptionSuppressedAssetId != 0)
-            return true;
-
-        Player? currentPlayer = _trackSelectUi?.gameManager?.Player;
-        PlayerInput? player = currentPlayer?.GetComponent<PlayerInput>() ??
-            currentPlayer?.GetComponentInChildren<PlayerInput>(true) ??
-            currentPlayer?.GetComponentInParent<PlayerInput>() ??
-            UnityEngine.Object.FindFirstObjectByType<PlayerInput>();
-        InputSystemUIInputModule? uiModule = EventSystem.current?
-            .GetComponent<InputSystemUIInputModule>();
-        var assets = new List<InputActionAsset>(2);
-        AddDescriptionNativeAsset(assets, player?.actions);
-        AddDescriptionNativeAsset(assets, uiModule?.actionsAsset);
-        AddDescriptionNativeAsset(assets, uiModule?.move?.action?.actionMap?.asset);
-        if (assets.Count == 0)
-            return true;
-
-        string keyboard = description.bindings[0].effectivePath;
-        string gamepad = description.bindings[1].effectivePath;
-        var conflicts = new List<SuppressedDescriptionBinding>();
-        foreach (InputActionAsset asset in assets)
-        {
-            for (int m = 0; m < asset.actionMaps.Count; m++)
-            {
-                InputActionMap map = asset.actionMaps[m];
-                for (int a = 0; a < map.actions.Count; a++)
-                {
-                    InputAction action = map.actions[a];
-                    for (int b = 0; b < action.bindings.Count; b++)
-                    {
-                        InputBinding binding = action.bindings[b];
-                        if (binding.isComposite || string.IsNullOrEmpty(binding.effectivePath) ||
-                            (!DescriptionPathsMatch(binding.effectivePath, keyboard) &&
-                             !DescriptionPathsMatch(binding.effectivePath, gamepad)))
-                            continue;
-                        if (IsEssentialDescriptionAction(action.name))
-                        {
-                            if (_descriptionAction?.enabled == true)
-                                _descriptionAction.Disable();
-                            if (Environment.TickCount64 >= _nextDescriptionControlErrorAt)
-                            {
-                                WriteStatus($"Read Descriptions binding conflicts with essential {action.name}; input left to the game.");
-                                _nextDescriptionControlErrorAt = Environment.TickCount64 + 5000;
-                            }
-                            return false;
-                        }
-                        conflicts.Add(new(action, b, binding.overridePath));
-                    }
-                }
-            }
-        }
-        foreach (SuppressedDescriptionBinding binding in conflicts)
-        {
-            _descriptionSuppressedBindings.Add(binding);
-            InputActionRebindingExtensions.ApplyBindingOverride(binding.Action,
-                binding.Index, string.Empty);
-        }
-        _descriptionSuppressedAssetId = assets[0].GetInstanceID();
-        if (_descriptionSuppressedBindings.Count != 0)
-            WriteStatus($"Temporarily isolated {_descriptionSuppressedBindings.Count} native binding(s) from Read Descriptions.");
-        return true;
-    }
-
-    private static void AddDescriptionNativeAsset(List<InputActionAsset> assets,
-        InputActionAsset? candidate)
-    {
-        if (candidate == null)
-            return;
-        int id = candidate.GetInstanceID();
-        foreach (InputActionAsset existing in assets)
-        {
-            if (existing.GetInstanceID() == id)
-                return;
-        }
-        assets.Add(candidate);
-    }
-
-    private static bool IsEssentialDescriptionAction(string name) =>
-        name == "Bop" || name == "Twist" || name == "Pull" ||
-        name == "Spin" || name == "Flick" || name == "Submit" ||
-        name == "Back" || name == "Cancel";
-
-    private void RestoreNativeDescriptionBindings()
-    {
-        foreach (SuppressedDescriptionBinding binding in _descriptionSuppressedBindings)
-        {
-            try
-            {
-                if (binding.OriginalOverridePath == null)
-                    InputActionRebindingExtensions.RemoveBindingOverride(binding.Action,
-                        binding.Index);
-                else
-                    InputActionRebindingExtensions.ApplyBindingOverride(binding.Action,
-                        binding.Index, binding.OriginalOverridePath);
-            }
-            catch (Exception ex)
-            {
-                WriteStatus("Could not restore a native binding after song selection: " + ex.Message);
-            }
-        }
-        if (_descriptionSuppressedBindings.Count != 0)
-            WriteStatus($"Restored {_descriptionSuppressedBindings.Count} native binding(s).");
-        _descriptionSuppressedBindings.Clear();
-        _descriptionSuppressedAssetId = 0;
-    }
-
     private static bool DescriptionPathsMatch(string? a, string? b)
     {
         if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b))
@@ -601,6 +509,4 @@ public sealed partial class BopItAccessMod
         ControlPromptSpriteSwapperV2? ActiveDisplayPrompt,
         ControlPromptSpriteSwapperV2? DefaultDisplayPrompt);
 
-    private sealed record SuppressedDescriptionBinding(
-        InputAction Action, int Index, string? OriginalOverridePath);
 }

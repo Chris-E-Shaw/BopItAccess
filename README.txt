@@ -1,4 +1,4 @@
-Bop It Access 0.5.7 - On-demand stage descriptions
+Bop It Access 0.5.8 - Read Descriptions input fix
 
 What this does
 --------------
@@ -18,10 +18,13 @@ This full introduction is repeated whenever a mode is selected and the song
 screen opens again, with the current theme and Extreme state.
 The READ DESCRIPTIONS control speaks a visual description of the selected
 Shapes, Space, City, or Office stage on demand. It is available on this screen
-only, before gameplay starts. Its default inputs are D on keyboard and LT
+only, before gameplay starts. Its default inputs are R on keyboard and LT
 (left trigger) on controller. The screen introduction announces the current
 binding. If a description is still being spoken when play starts, the mod
 stops it so it cannot mask the game's verbal cues.
+R is also listed as Reset Gyro in the game's input asset. The mod does not
+change that or any other native binding, and its own action is disabled during
+gameplay.
 
 On the final result screen, Solo, Party, and Pass It announce the final score
 before the menu speech. Solo reads the focused Replay and Leaderboard buttons
@@ -68,8 +71,11 @@ D-pad left/right on a controller. Focus a row to hear its current binding,
 then use the game's normal Bop/confirm action to rebind it. The rows scroll
 inside the existing Controls panel. READ DESCRIPTIONS can also be rebound for
 keyboard and controller. Its binding is saved by the mod, and Reset to Default
-restores D and LT. The game's original binding rows and the four leaderboard
+restores R and LT. The game's original binding rows and the four leaderboard
 rows retain their current rebinding behavior.
+This update stops the stale Controls row from announcing "Rebinding failed"
+repeatedly after its scene closes. Read Descriptions no longer temporarily
+overrides any of the game's own input bindings.
 
 Inside Audio Calibration, the mod reads the Calibrate, Back, and Bop controls,
 announces the instructions and calibration stages, reads the warmup countdown,
@@ -95,7 +101,7 @@ Try the supported screens
 -------------------------
 Open Play and move among the four modes. Choose one to reach song selection.
 Twist to cycle through themes and Pull to switch Extreme mode on or off. The
-mod announces each change. Press D or LT to hear the currently selected stage
+mod announces each change. Press R or LT to hear the currently selected stage
 description. Bop starts the chosen mode; Back returns.
 At the end of a game, listen for the score or One on One winner before the
 result-screen controls are announced.
