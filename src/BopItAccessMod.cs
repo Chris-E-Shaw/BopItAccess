@@ -8,12 +8,12 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.3.0", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.4.0", "Bop It Access project")]
 
 namespace BopItAccess;
 
 [SupportedOSPlatform("windows")]
-public sealed class BopItAccessMod : MelonMod
+public sealed partial class BopItAccessMod : MelonMod
 {
     private readonly ManualResetEventSlim _shutdownRequested = new(false);
     private readonly AutoResetEvent _speechRequested = new(false);
@@ -32,6 +32,8 @@ public sealed class BopItAccessMod : MelonMod
     private long _nextSettingsSearchAt;
     private long _nextFocusErrorLogAt;
     private long _nextSettingsErrorLogAt;
+    private long _nextCalibrationErrorLogAt;
+    private long _nextControlsErrorLogAt;
     private bool _mainMenuWasVisible;
     private bool _settingsWasVisible;
     private static readonly object StatusLogLock = new();
@@ -71,6 +73,56 @@ public sealed class BopItAccessMod : MelonMod
 
     public override void OnLateUpdate()
     {
+        bool calibrationVisible = false;
+        try
+        {
+            calibrationVisible = ReadCalibrationFocus();
+        }
+        catch (Exception ex)
+        {
+            long now = Environment.TickCount64;
+            if (now >= _nextCalibrationErrorLogAt)
+            {
+                WriteStatus($"Audio calibration speech check failed: {ex}");
+                MelonLogger.Warning($"Audio calibration speech check failed: {ex.Message}");
+                _nextCalibrationErrorLogAt = now + 5000;
+            }
+
+            ResetCalibrationFocus();
+        }
+
+        bool controlsVisible = false;
+        if (!calibrationVisible)
+        {
+            try
+            {
+                controlsVisible = ReadControlsFocus();
+            }
+            catch (Exception ex)
+            {
+                long now = Environment.TickCount64;
+                if (now >= _nextControlsErrorLogAt)
+                {
+                    WriteStatus($"Controls speech check failed: {ex}");
+                    MelonLogger.Warning($"Controls speech check failed: {ex.Message}");
+                    _nextControlsErrorLogAt = now + 5000;
+                }
+
+                ResetControlsFocus();
+            }
+        }
+        else
+        {
+            ResetControlsFocus();
+        }
+
+        if (calibrationVisible || controlsVisible)
+        {
+            ResetSettingsFocus();
+            ResetMenuFocus();
+            return;
+        }
+
         bool settingsVisible = false;
         try
         {
@@ -229,9 +281,9 @@ public sealed class BopItAccessMod : MelonMod
             ToggleOption("VIBRATION", panel.vibration),
             ToggleOption("FULLSCREEN", panel.fullscreen),
             SliderOption("RESOLUTION", panel.resolution),
-            ButtonOption("AUDIO LATENCY", panel.audioLatency),
-            ButtonOption("CONTROLS", panel.controls),
-            ButtonOption("GO ONLINE", goOnline)
+            ActionOption("AUDIO LATENCY", panel.audioLatency),
+            ActionOption("CONTROLS", panel.controls),
+            ActionOption("GO ONLINE", goOnline)
         };
     }
 
@@ -241,9 +293,8 @@ public sealed class BopItAccessMod : MelonMod
     private static SettingOption ToggleOption(string label, SettingsToggle? row) =>
         new(label, row, () => row == null ? null : row.IsOn ? "On" : "Off");
 
-    private static SettingOption ButtonOption(string label, SettingsButton? row) =>
-        new(label, row, () => row == null ? null :
-            CleanSpeechValue(row.Value) ?? ReadDisplayedValue(row, null));
+    private static SettingOption ActionOption(string label, SettingsButton? row) =>
+        new(label, row, () => null);
 
     private static string? ReadDisplayedValue(SettingsRow row, string? gameValue)
     {
