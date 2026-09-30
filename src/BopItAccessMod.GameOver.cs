@@ -155,10 +155,6 @@ public sealed partial class BopItAccessMod
             return true;
         }
 
-        if (WasReadScorePressed(readScoreAvailable))
-            AnnounceFinalResultOnDemand(soloVisible ? solo : null,
-                friendsVisible ? friends : null, mode);
-
         if (soloVisible)
         {
             var resultChanges = new List<string>(1);
@@ -222,6 +218,13 @@ public sealed partial class BopItAccessMod
             AnnounceGameOverUpdates(resultChanges, menuChange, "With-friends");
         }
 
+        // Handle a manual repeat after focus updates, so a focus change in
+        // the same frame cannot replace the requested result before Tolk
+        // receives it. Later focus changes may interrupt it normally.
+        if (WasReadScorePressed(readScoreAvailable))
+            AnnounceFinalResultOnDemand(soloVisible ? solo : null,
+                friendsVisible ? friends : null, mode);
+
         return true;
     }
 
@@ -254,10 +257,9 @@ public sealed partial class BopItAccessMod
         else
             return;
 
-        // Give an on-demand result the same protected turn as the automatic
-        // result. Focus changes during it will be spoken afterward.
-        ProtectGameOverScoreSpeech(result);
-        QueueScoreThenMenu(result, null);
+        // A requested repeat can be requested again at any time. Speak it
+        // immediately and let subsequent menu navigation interrupt it.
+        QueueSpeech(result);
         WriteStatus($"Read Score on final result screen: {result}");
     }
 

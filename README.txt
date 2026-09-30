@@ -1,4 +1,4 @@
-Bop It Access 0.5.10 - On-demand final result speech
+Bop It Access 0.5.11 - Interruptible on-demand result speech
 
 What this does
 --------------
@@ -44,6 +44,9 @@ controller. Solo, Party, and Pass It repeat their final score; One on One
 repeats the winner shown by the game. The action is disabled during gameplay,
 song selection, and all other screens. RT (right trigger) was not used as the
 default because the game already binds it to Reset Gyro and Auto Play.
+Requested repeats speak immediately and can be interrupted by result-menu
+navigation. Only the automatic result announcement delays the initial menu
+speech so the score is heard first.
 
 The leaderboards reached from the main menu, Solo results, and Party results
 announce the selected song, device, group, and date where available. They read
