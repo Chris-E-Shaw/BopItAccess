@@ -197,21 +197,28 @@ public sealed partial class BopItAccessMod
         InputRebindingManager? manager = _leaderboardRebindManager;
         AddedLeaderboardControlRow? row = _leaderboardRebindRow;
         int index = _leaderboardRebindIndex;
-        string? selectedPath = _leaderboardRebindOperation?.selectedControl?.path;
         string? path = action == null || index < 0 || index >= action.bindings.Count
             ? null : action.bindings[index].overridePath;
 
         if (action == null || manager == null || row == null || string.IsNullOrEmpty(path))
         {
             ReleaseLeaderboardControlRebinding();
+            _lastControlsRebinding = false;
             QueueSpeech("Binding unchanged");
             return;
         }
 
+        // Unity clears its candidate list immediately after completion, so
+        // selectedControl is null by the time OnUpdate polls the operation.
+        // The applied override remains available on the exact target binding.
+        string? selectedPath = InputSystem.FindControl(path)?.path;
+        WriteStatus($"Leaderboard rebind candidate for {row.Part.Label}: " +
+            $"override {path}, resolved control {selectedPath ?? "none"}.");
         if (string.IsNullOrEmpty(selectedPath))
         {
             RestoreLeaderboardOriginalOverride();
             ReleaseLeaderboardControlRebinding();
+            _lastControlsRebinding = false;
             QueueSpeech("Binding unavailable");
             return;
         }
@@ -223,6 +230,8 @@ public sealed partial class BopItAccessMod
         if (!manager.ValidateBinding(normalized, selectedPath, action,
                 out string invalidMessage))
         {
+            WriteStatus($"Leaderboard rebind rejected for {row.Part.Label}: " +
+                (string.IsNullOrEmpty(invalidMessage) ? "no reason supplied" : invalidMessage));
             RestoreLeaderboardOriginalOverride();
             ReleaseLeaderboardControlRebinding();
             _lastControlsRebinding = false;
@@ -264,9 +273,10 @@ public sealed partial class BopItAccessMod
     {
         bool wasActive = _leaderboardRebindOperation != null;
         ReleaseLeaderboardControlRebinding();
+        if (wasActive)
+            _lastControlsRebinding = false;
         if (wasActive && announce)
         {
-            _lastControlsRebinding = false;
             QueueSpeech("Binding unchanged");
         }
     }

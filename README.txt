@@ -1,4 +1,4 @@
-Bop It Access 0.5.5 - Controls rebinding repair
+Bop It Access 0.5.6 - Leaderboard rebinding completion fix
 
 What this does
 --------------
@@ -64,6 +64,9 @@ rebinding hook and the cloned native row listeners that could affect the
 game's original controls. The four added rows now rebind their specific
 leaderboard direction through the game's input system. Their operation and
 Reset to Default still need an in-game check.
+This update uses the binding that Unity applied when listening finishes, so
+the new rows can accept and save a selected key instead of rejecting it as
+"Binding unavailable."
 
 Inside Audio Calibration, the mod reads the Calibrate, Back, and Bop controls,
 announces the instructions and calibration stages, reads the warmup countdown,
