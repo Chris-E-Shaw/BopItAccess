@@ -15,7 +15,6 @@ public sealed partial class BopItAccessMod
     private int _speechSettingsPanelId;
     private long _nextSpeechSettingsProbeAt;
     private long _nextSpeechSettingsErrorAt;
-    private ScrollRect? _speechSettingsScroll;
 
     private GameObject? _speechMenuRoot;
     private Panel? _speechMenuPanel;
@@ -58,10 +57,6 @@ public sealed partial class BopItAccessMod
                     SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
                 ScrollSelectedRowIntoView(_speechMenuScroll);
             }
-        }
-        else
-        {
-            ScrollSelectedRowIntoView(_speechSettingsScroll);
         }
 
         long now = Environment.TickCount64;
@@ -122,7 +117,6 @@ public sealed partial class BopItAccessMod
             clone.SetActive(true);
             if (content.GetComponent<RectTransform>() is RectTransform contentRect)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
-            AddSpeechSettingsViewport(content);
             if (_settingsWasVisible)
                 _settingsOptions = CreateSettingsOptions(settings);
             WriteStatus("Added SPEECH menu below Controls in Settings.");
@@ -134,17 +128,6 @@ public sealed partial class BopItAccessMod
             UnityEngine.Object.Destroy(clone);
             throw;
         }
-    }
-
-    private void AddSpeechSettingsViewport(Transform content)
-    {
-        RectTransform? contentRect = content.GetComponent<RectTransform>();
-        RectTransform? table = content.parent?.GetComponent<RectTransform>();
-        if (contentRect == null || table == null || table.GetComponent<ScrollRect>() != null)
-            return;
-
-        _speechSettingsScroll = AddSpeechViewport(table, contentRect,
-            "BopItAccess Settings Viewport");
     }
 
     private void OpenSpeechMenu()

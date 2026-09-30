@@ -1,4 +1,4 @@
-Bop It Access 0.5.14 - Speech Settings
+Bop It Access 0.5.15 - Settings Navigation Fix
 
 What this does
 --------------
@@ -32,6 +32,8 @@ lists the system default and installed 64-bit SAPI voices. Volume starts at
 notices remain audible. Rate and Pitch range from 0 to 100. All three move in
 steps of five. They apply to SAPI mode and Auto's SAPI fallback.
 Speech settings are remembered between sessions. Back returns to Settings.
+This update restores the game's native Settings row layout so up/down
+navigation remains on Settings rows after SPEECH is added.
 
 Inside Play, the mod reads Solo, Party, Pass It, and One on One when focused.
 On the following song-selection screen, it announces the current theme
