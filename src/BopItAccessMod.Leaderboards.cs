@@ -663,8 +663,12 @@ public sealed partial class BopItAccessMod
         if (selected.GetComponentInParent<GroupFilterTab>() != null ||
             selected.GetComponentInParent<DateFilterTab>() != null)
             return WithControlType(label, "tab");
-        if (selected.GetComponentInParent<Slider>() != null)
-            return WithControlType(label, "slider");
+        Slider? slider = selected.GetComponentInParent<Slider>();
+        if (slider != null)
+            return WithUnitySliderRange(WithControlType(label, "slider"), slider);
+        Scrollbar? scrollbar = selected.GetComponentInParent<Scrollbar>();
+        if (scrollbar != null)
+            return WithUnitySliderRange(WithControlType(label, "slider"), scrollbar);
         if (selected.GetComponentInParent<Toggle>() != null)
             return WithControlType(label, "toggle");
         return WithControlType(label, "button");

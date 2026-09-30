@@ -93,7 +93,8 @@ public sealed partial class BopItAccessMod
                 InputActionRebindingExtensions.GetBindingDisplayString(action, 0)) ?? "T";
             string gamepad = CleanSpeechValue(
                 InputActionRebindingExtensions.GetBindingDisplayString(action, 1)) ?? "left stick press";
-            return $"Press {keyboard} on keyboard or {gamepad} on controller to read the final result again.";
+            return FormatHintPress(keyboard, gamepad,
+                "read the final result again");
         }
         catch (Exception ex)
         {
@@ -101,7 +102,8 @@ public sealed partial class BopItAccessMod
             string keyboard = HintSavedBinding(ScoreKeyboardKey, "T");
             string gamepad = HintSavedBinding(ScoreGamepadKey,
                 "left stick press");
-            return $"Press {keyboard} on keyboard or {gamepad} on controller to read the final result again.";
+            return FormatHintPress(keyboard, gamepad,
+                "read the final result again");
         }
     }
 

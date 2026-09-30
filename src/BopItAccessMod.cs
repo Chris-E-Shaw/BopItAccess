@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.5", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.6", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -420,6 +420,8 @@ public sealed partial class BopItAccessMod : MelonMod
             _lastSettingsValue = value;
             string label = WithControlType(focused.Label, focused.ControlType);
             string announcement = value == null ? label : $"{label}, {value}";
+            announcement = WithSliderRange(announcement, focused.Label,
+                focused.ControlType);
             int index = -1;
             int count = 0;
             foreach (SettingOption option in _settingsOptions!)
@@ -483,6 +485,7 @@ public sealed partial class BopItAccessMod : MelonMod
             SliderOption("MUSIC", panel.music),
             SliderOption("SFX", panel.sfx),
             SliderOption("VOICE OVER", panel.voiceOver),
+            ToggleOption("MUTE AUDIO IN BACKGROUND", _backgroundAudioToggle),
             SliderOption("LANGUAGE", panel.language),
             ToggleOption("VIBRATION", panel.vibration),
             ToggleOption("FULLSCREEN", panel.fullscreen),
@@ -658,12 +661,13 @@ public sealed partial class BopItAccessMod : MelonMod
 
     private void QueueSpeech(string text, bool interrupt = true)
     {
-        if (_shutdownRequested.IsSet || !_speechEnabled)
+        if (_shutdownRequested.IsSet || !_speechEnabled ||
+            _speechSuppressedForBackground)
             return;
 
         lock (_speechLock)
         {
-            if (!_speechEnabled)
+            if (!_speechEnabled || _speechSuppressedForBackground)
                 return;
             // Keep the newest focus announcement when navigation is faster than speech.
             _pendingSpeech = text;
@@ -681,12 +685,13 @@ public sealed partial class BopItAccessMod : MelonMod
 
     private void QueueDescriptionSpeech(string text)
     {
-        if (_shutdownRequested.IsSet || !_speechEnabled)
+        if (_shutdownRequested.IsSet || !_speechEnabled ||
+            _speechSuppressedForBackground)
             return;
 
         lock (_speechLock)
         {
-            if (!_speechEnabled)
+            if (!_speechEnabled || _speechSuppressedForBackground)
                 return;
             _pendingSpeech = text;
             _pendingSpeechInterrupt = true;
@@ -700,12 +705,13 @@ public sealed partial class BopItAccessMod : MelonMod
 
     private void CancelDescriptionSpeech()
     {
-        if (_shutdownRequested.IsSet || !_speechEnabled)
+        if (_shutdownRequested.IsSet || !_speechEnabled ||
+            _speechSuppressedForBackground)
             return;
 
         lock (_speechLock)
         {
-            if (!_speechEnabled)
+            if (!_speechEnabled || _speechSuppressedForBackground)
                 return;
             bool hadDescription = _pendingSpeechIsDescription ||
                 _descriptionSpeechMayBeActive;
@@ -730,12 +736,13 @@ public sealed partial class BopItAccessMod : MelonMod
 
     private void StopSpeechForGameStart()
     {
-        if (_shutdownRequested.IsSet || !_speechEnabled)
+        if (_shutdownRequested.IsSet || !_speechEnabled ||
+            _speechSuppressedForBackground)
             return;
 
         lock (_speechLock)
         {
-            if (!_speechEnabled)
+            if (!_speechEnabled || _speechSuppressedForBackground)
                 return;
             // Bop has started play. Drop any unsent song-selection message
             // and silence one that has already reached the screen reader.
@@ -758,12 +765,13 @@ public sealed partial class BopItAccessMod : MelonMod
 
     private void QueueSequentialSpeech(string text)
     {
-        if (_shutdownRequested.IsSet || !_speechEnabled)
+        if (_shutdownRequested.IsSet || !_speechEnabled ||
+            _speechSuppressedForBackground)
             return;
 
         lock (_speechLock)
         {
-            if (!_speechEnabled)
+            if (!_speechEnabled || _speechSuppressedForBackground)
                 return;
             _sequentialSpeech.Enqueue(text);
         }
@@ -773,12 +781,13 @@ public sealed partial class BopItAccessMod : MelonMod
 
     private void QueueScoreThenMenu(string score, string? menu)
     {
-        if (_shutdownRequested.IsSet || !_speechEnabled)
+        if (_shutdownRequested.IsSet || !_speechEnabled ||
+            _speechSuppressedForBackground)
             return;
 
         lock (_speechLock)
         {
-            if (!_speechEnabled)
+            if (!_speechEnabled || _speechSuppressedForBackground)
                 return;
             // The score has its own slot, so a focus change cannot replace it
             // before the Tolk worker picks up the request.
@@ -840,7 +849,8 @@ public sealed partial class BopItAccessMod : MelonMod
 
             // A toggle can happen between preparing startup text and sending
             // it. Let the normal worker loop announce the newer state instead.
-            if (startupGeneration == Interlocked.Read(ref _speechGeneration))
+            if (startupGeneration == Interlocked.Read(ref _speechGeneration) &&
+                !_speechSuppressedForBackground)
             {
                 bool queued = OutputSpeechOnWorker(startupAnnouncement, true);
                 if (queued)
@@ -909,6 +919,7 @@ public sealed partial class BopItAccessMod : MelonMod
                 if (priority != null)
                 {
                     bool scoreAccepted = _speechEnabled &&
+                        !_speechSuppressedForBackground &&
                         generation == Interlocked.Read(ref _speechGeneration) &&
                         OutputSpeechOnWorker(priority, true,
                             protectedCapture: true);
@@ -917,6 +928,7 @@ public sealed partial class BopItAccessMod : MelonMod
                 }
 
                 if (priorityFollowUp != null && _speechEnabled &&
+                    !_speechSuppressedForBackground &&
                     generation == Interlocked.Read(ref _speechGeneration))
                 {
                     bool menuAccepted = OutputSpeechOnWorker(priorityFollowUp, false);
@@ -924,6 +936,7 @@ public sealed partial class BopItAccessMod : MelonMod
                 }
 
                 if (announcement != null && _speechEnabled &&
+                    !_speechSuppressedForBackground &&
                     generation == Interlocked.Read(ref _speechGeneration))
                 {
                     // A score sent in this batch always goes first. The
@@ -938,7 +951,7 @@ public sealed partial class BopItAccessMod : MelonMod
                 {
                     foreach (string line in sequential)
                     {
-                        if (!_speechEnabled ||
+                        if (!_speechEnabled || _speechSuppressedForBackground ||
                             generation != Interlocked.Read(ref _speechGeneration))
                             break;
                         bool accepted = OutputSpeechOnWorker(line, false);
@@ -974,6 +987,7 @@ public sealed partial class BopItAccessMod : MelonMod
     public override void OnDeinitializeMelon()
     {
         WriteStatus("Mod shutdown requested.");
+        StopBackgroundAudio();
         _shutdownRequested.Set();
     }
 

@@ -35,8 +35,10 @@ public sealed partial class BopItAccessMod
 
     public override void OnUpdate()
     {
+        UpdateBackgroundAudio();
         UpdateFpsLimitSetting();
         InitializeSpeechToggleOnMainThread();
+        UpdateBackgroundSpeechFocus();
         UpdateSpeechMenuUi();
         UpdateControlsSubmitGate();
         UpdateDescriptionControlRebinding();
@@ -44,6 +46,7 @@ public sealed partial class BopItAccessMod
         UpdateToggleSpeechControlRebinding();
         UpdateLeaderboardControlRebinding();
         UpdateSpeechToggleFromInput();
+        UpdateHintInputDevice();
         UpdateRepeatButtonHints();
         if (_leaderboardControlsScroll != null)
             ScrollSelectedControlIntoView();

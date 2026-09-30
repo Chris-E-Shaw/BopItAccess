@@ -23,9 +23,12 @@ public sealed partial class BopItAccessMod
     private ScrollRect? _speechMenuScroll;
     private readonly List<SpeechUiOption> _speechUiOptions = new();
     private SettingsToggle? _speechOutputToggle;
+    private SettingsToggle? _muteSpeechInBackgroundToggle;
     private SettingsToggle? _indexingToggle;
     private SettingsToggle? _readControlTypesToggle;
+    private SettingsToggle? _sliderRangesToggle;
     private SettingsToggle? _readButtonHintsToggle;
+    private SettingsSlider? _hintsTypeSlider;
     private SettingsSlider? _buttonHintsDelaySlider;
     private SettingsSlider? _repeatButtonHintsSlider;
     private SettingsSlider? _repeatButtonHintsIntervalSlider;
@@ -36,12 +39,15 @@ public sealed partial class BopItAccessMod
     private SettingsSlider? _speechRateSlider;
     private SettingsSlider? _speechPitchSlider;
     private UnityAction? _speechOutputSubmitListener;
+    private UnityAction? _muteSpeechInBackgroundSubmitListener;
     private UnityAction? _indexingSubmitListener;
     private UnityAction? _readControlTypesSubmitListener;
+    private UnityAction? _sliderRangesSubmitListener;
     private UnityAction? _readButtonHintsSubmitListener;
     private UnityAction? _trimSilenceSubmitListener;
     private UnityAction? _speechBackSubmitListener;
     private UnityAction<int>? _speechModeMoveListener;
+    private UnityAction<int>? _hintsTypeMoveListener;
     private UnityAction<int>? _buttonHintsDelayMoveListener;
     private UnityAction<int>? _repeatButtonHintsMoveListener;
     private UnityAction<int>? _repeatButtonHintsIntervalMoveListener;
@@ -104,12 +110,19 @@ public sealed partial class BopItAccessMod
                 }
                 if (_speechOutputToggle != null && _speechOutputToggle.IsOn != _speechEnabled)
                     SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
+                if (_muteSpeechInBackgroundToggle != null &&
+                    _muteSpeechInBackgroundToggle.IsOn != _muteSpeechInBackground)
+                    SetSpeechToggleDisplay(_muteSpeechInBackgroundToggle,
+                        _muteSpeechInBackground);
                 if (_indexingToggle != null && _indexingToggle.IsOn != _indexingEnabled)
                     SetSpeechToggleDisplay(_indexingToggle, _indexingEnabled);
                 if (_readControlTypesToggle != null &&
                     _readControlTypesToggle.IsOn != _readControlTypesEnabled)
                     SetSpeechToggleDisplay(_readControlTypesToggle,
                         _readControlTypesEnabled);
+                if (_sliderRangesToggle != null &&
+                    _sliderRangesToggle.IsOn != _sliderRangesEnabled)
+                    SetSpeechToggleDisplay(_sliderRangesToggle, _sliderRangesEnabled);
                 if (_readButtonHintsToggle != null &&
                     _readButtonHintsToggle.IsOn != _readButtonHintsEnabled)
                     SetSpeechToggleDisplay(_readButtonHintsToggle,
@@ -329,6 +342,11 @@ public sealed partial class BopItAccessMod
                 "SPEECH OUTPUT",
                 _speechOutputSubmitListener ??= (UnityAction)OnSpeechOutputSubmitted,
                 _speechEnabled);
+            _muteSpeechInBackgroundToggle = AddSpeechToggle(settings.vibration, content,
+                "MUTE SPEECH IN BACKGROUND",
+                _muteSpeechInBackgroundSubmitListener ??=
+                    (UnityAction)OnMuteSpeechInBackgroundSubmitted,
+                _muteSpeechInBackground);
             _indexingToggle = AddSpeechToggle(settings.vibration, content,
                 "INDEXING",
                 _indexingSubmitListener ??= (UnityAction)OnIndexingSubmitted,
@@ -338,11 +356,17 @@ public sealed partial class BopItAccessMod
                 _readControlTypesSubmitListener ??=
                     (UnityAction)OnReadControlTypesSubmitted,
                 _readControlTypesEnabled);
+            _sliderRangesToggle = AddSpeechToggle(settings.vibration, content,
+                "SLIDER RANGES",
+                _sliderRangesSubmitListener ??= (UnityAction)OnSliderRangesSubmitted,
+                _sliderRangesEnabled);
             _readButtonHintsToggle = AddSpeechToggle(settings.vibration, content,
                 "READ BUTTON HINTS",
                 _readButtonHintsSubmitListener ??=
                     (UnityAction)OnReadButtonHintsSubmitted,
                 _readButtonHintsEnabled);
+            _hintsTypeSlider = AddSpeechSlider(settings.resolution, content,
+                "HINTS TYPE");
             _buttonHintsDelaySlider = AddSpeechSlider(settings.resolution, content,
                 "BUTTON HINTS DELAY");
             _repeatButtonHintsSlider = AddSpeechSlider(settings.resolution, content,
@@ -370,14 +394,21 @@ public sealed partial class BopItAccessMod
 
             _speechUiOptions.Add(new("SPEECH OUTPUT", "toggle", _speechOutputToggle,
                 () => _speechEnabled ? "On" : "Off"));
+            _speechUiOptions.Add(new("MUTE SPEECH IN BACKGROUND", "toggle",
+                _muteSpeechInBackgroundToggle,
+                () => _muteSpeechInBackground ? "On" : "Off"));
             _speechUiOptions.Add(new("INDEXING", "toggle", _indexingToggle,
                 () => _indexingEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("READ CONTROL TYPES", "toggle",
                 _readControlTypesToggle,
                 () => _readControlTypesEnabled ? "On" : "Off"));
+            _speechUiOptions.Add(new("SLIDER RANGES", "toggle", _sliderRangesToggle,
+                () => _sliderRangesEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("READ BUTTON HINTS", "toggle",
                 _readButtonHintsToggle,
                 () => _readButtonHintsEnabled ? "On" : "Off"));
+            _speechUiOptions.Add(new("HINTS TYPE", "slider", _hintsTypeSlider,
+                () => _hintsType));
             _speechUiOptions.Add(new("BUTTON HINTS DELAY", "slider",
                 _buttonHintsDelaySlider,
                 () => ButtonHintsDelayValue(_buttonHintsDelaySeconds)));
@@ -426,9 +457,12 @@ public sealed partial class BopItAccessMod
             UnityEngine.Object.Destroy(root);
             _speechUiOptions.Clear();
             _speechOutputToggle = null;
+            _muteSpeechInBackgroundToggle = null;
             _indexingToggle = null;
             _readControlTypesToggle = null;
+            _sliderRangesToggle = null;
             _readButtonHintsToggle = null;
+            _hintsTypeSlider = null;
             _buttonHintsDelaySlider = null;
             _repeatButtonHintsSlider = null;
             _repeatButtonHintsIntervalSlider = null;
@@ -480,6 +514,7 @@ public sealed partial class BopItAccessMod
         UnityAction<int> listener = label switch
         {
             "OUTPUT MODE" => _speechModeMoveListener ??= (UnityAction<int>)OnSpeechModeMoved,
+            "HINTS TYPE" => _hintsTypeMoveListener ??= (UnityAction<int>)OnHintsTypeMoved,
             "BUTTON HINTS DELAY" => _buttonHintsDelayMoveListener ??=
                 (UnityAction<int>)OnButtonHintsDelayMoved,
             "REPEAT BUTTON HINTS" => _repeatButtonHintsMoveListener ??=
@@ -615,12 +650,18 @@ public sealed partial class BopItAccessMod
     {
         if (_speechOutputToggle != null)
             SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
+        if (_muteSpeechInBackgroundToggle != null)
+            SetSpeechToggleDisplay(_muteSpeechInBackgroundToggle,
+                _muteSpeechInBackground);
         if (_indexingToggle != null)
             SetSpeechToggleDisplay(_indexingToggle, _indexingEnabled);
         if (_readControlTypesToggle != null)
             SetSpeechToggleDisplay(_readControlTypesToggle, _readControlTypesEnabled);
+        if (_sliderRangesToggle != null)
+            SetSpeechToggleDisplay(_sliderRangesToggle, _sliderRangesEnabled);
         if (_readButtonHintsToggle != null)
             SetSpeechToggleDisplay(_readButtonHintsToggle, _readButtonHintsEnabled);
+        _hintsTypeSlider?.SetValue(_hintsType);
         _buttonHintsDelaySlider?.SetValue(ButtonHintsDelayValue(_buttonHintsDelaySeconds));
         _repeatButtonHintsSlider?.SetValue(RepeatButtonHintsValue(_repeatButtonHintsCount));
         _repeatButtonHintsIntervalSlider?.SetValue(_repeatButtonHintsIntervalSeconds + " seconds");
@@ -665,11 +706,25 @@ public sealed partial class BopItAccessMod
         // runs after this callback.
     }
 
+    private void OnMuteSpeechInBackgroundSubmitted()
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
+        SetMuteSpeechInBackgroundFromMenu(!_muteSpeechInBackground);
+    }
+
     private void OnReadControlTypesSubmitted()
     {
         if (!_speechMenuOpen || !_speechMenuInputReady)
             return;
         SetReadControlTypesFromMenu(!_readControlTypesEnabled);
+    }
+
+    private void OnSliderRangesSubmitted()
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
+        SetSliderRangesFromMenu(!_sliderRangesEnabled);
     }
 
     private void OnReadButtonHintsSubmitted()
@@ -704,6 +759,23 @@ public sealed partial class BopItAccessMod
             return;
         SetOutputModeFromMenu(OutputModes[next]);
         _speechModeSlider?.SetValue(_outputMode);
+    }
+
+    private void OnHintsTypeMoved(int movement)
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
+        int direction = Math.Sign(movement);
+        if (direction == 0)
+            return;
+        int current = Array.FindIndex(HintsTypes, option =>
+            string.Equals(option, _hintsType, StringComparison.OrdinalIgnoreCase));
+        int next = Math.Clamp(Math.Max(0, current) + direction, 0,
+            HintsTypes.Length - 1);
+        if (next == current)
+            return;
+        SetHintsTypeFromMenu(HintsTypes[next]);
+        _hintsTypeSlider?.SetValue(_hintsType);
     }
 
     private void OnRepeatButtonHintsMoved(int movement)
@@ -874,6 +946,7 @@ public sealed partial class BopItAccessMod
             _lastSpeechMenuValue = value;
             string label = WithControlType(focused.Label, focused.ControlType);
             string message = value == null ? label : label + ", " + value;
+            message = WithSliderRange(message, focused.Label, focused.ControlType);
             message = WithMenuIndex(message, _speechUiOptions.IndexOf(focused),
                 _speechUiOptions.Count);
             if (_speechMenuIntroductionPending)

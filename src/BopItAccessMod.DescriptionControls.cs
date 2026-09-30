@@ -93,14 +93,16 @@ public sealed partial class BopItAccessMod
                 InputActionRebindingExtensions.GetBindingDisplayString(action, 0)) ?? "R";
             string gamepad = CleanSpeechValue(
                 InputActionRebindingExtensions.GetBindingDisplayString(action, 1)) ?? "left trigger";
-            return $"Press {keyboard} on keyboard or {gamepad} on controller to read the selected stage description.";
+            return FormatHintPress(keyboard, gamepad,
+                "read the selected stage description");
         }
         catch (Exception ex)
         {
             WriteStatus("Could not read the Read Descriptions bindings: " + ex.Message);
             string keyboard = HintSavedBinding(DescriptionKeyboardKey, "R");
             string gamepad = HintSavedBinding(DescriptionGamepadKey, "left trigger");
-            return $"Press {keyboard} on keyboard or {gamepad} on controller to read the selected stage description.";
+            return FormatHintPress(keyboard, gamepad,
+                "read the selected stage description");
         }
     }
 

@@ -281,6 +281,12 @@ public sealed partial class BopItAccessMod
 
     private void CompleteGameOverScoreSpeechDispatch(string score, bool accepted)
     {
+        if (_speechSuppressedForBackground)
+        {
+            Volatile.Write(ref _gameOverScoreSpeechProtectedUntil, 0);
+            Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
+            return;
+        }
         if (accepted)
             ExtendGameOverScoreProtection(EstimateGameOverScoreSpeechMs(score));
         // Publish the deadline before releasing the hold on menu focus.

@@ -21,7 +21,7 @@ public sealed partial class BopItAccessMod
     private void QueueFocusSpeech(string text, bool interrupt = true)
     {
         if (_readButtonHintsEnabled && _buttonHintsDelaySeconds == 0 &&
-            _speechEnabled)
+            _speechEnabled && !_speechSuppressedForBackground)
         {
             try
             {
@@ -71,7 +71,8 @@ public sealed partial class BopItAccessMod
 
         int signature = HashCode.Combine(_readButtonHintsEnabled,
             _buttonHintsDelaySeconds, _repeatButtonHintsCount,
-            _repeatButtonHintsIntervalSeconds);
+            _repeatButtonHintsIntervalSeconds, _hintsType,
+            EffectiveHintDevice);
         if (signature != _lastButtonHintSettingsSignature)
         {
             _lastButtonHintSettingsSignature = signature;
@@ -80,6 +81,7 @@ public sealed partial class BopItAccessMod
         }
 
         if (!_readButtonHintsEnabled || !_speechEnabled ||
+            _speechSuppressedForBackground ||
             _shutdownRequested.IsSet)
         {
             _buttonHintContextKey = null;

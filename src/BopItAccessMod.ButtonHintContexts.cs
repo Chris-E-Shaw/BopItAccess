@@ -337,7 +337,8 @@ public sealed partial class BopItAccessMod
             "<Keyboard>/f8", "F8");
         string controller = ReadToggleSpeechBindingLabel(1, ToggleSpeechGamepadKey,
             "<Gamepad>/select", "Select");
-        return hint + $" Press {keyboard} on keyboard or {controller} on controller to toggle speech.";
+        return hint.TrimEnd() + " " + FormatHintPress(keyboard, controller,
+            "toggle speech");
     }
 
     private static bool IsHintPanelVisible(Panel? panel) =>

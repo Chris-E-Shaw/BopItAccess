@@ -41,7 +41,7 @@ public sealed partial class BopItAccessMod
             keyboardFallback, controllerFallback, null,
             controllerIsAxis ? "axis" : "press");
 
-    private static string HintActionSentence(InputAction? preferred,
+    private string HintActionSentence(InputAction? preferred,
         InputAction? secondary, string purpose, string keyboardFallback,
         string controllerFallback, string? partName = null,
         string controllerVerb = "press")
@@ -56,9 +56,7 @@ public sealed partial class BopItAccessMod
                 StringComparison.OrdinalIgnoreCase) &&
                 !controller.Contains("press", StringComparison.OrdinalIgnoreCase)
                 ? "move" : "press";
-        string controllerInstruction = controllerVerb == "press"
-            ? controller : controllerVerb + " " + controller;
-        return $"Press {keyboard} on keyboard or {controllerInstruction} on controller to {purpose}.";
+        return FormatHintPress(keyboard, controller, purpose, controllerVerb);
     }
 
     private static string? ReadHintKeyboardBinding(InputAction? action,
@@ -227,7 +225,7 @@ public sealed partial class BopItAccessMod
         string controller = ReadHintDirections(action, first, second, true,
             vertical) ?? (vertical ? "D-Pad or either stick up and down" :
             "D-Pad or either stick left and right");
-        return $"Use {keyboard} on keyboard or {controller} on controller to {purpose}.";
+        return FormatHintUse(keyboard, controller, purpose);
     }
 
     private string HintAchievementPages() =>
@@ -235,7 +233,7 @@ public sealed partial class BopItAccessMod
             "negative", "positive", "Left and Right arrows",
             "left and right shoulder buttons", "turn pages");
 
-    private static string HintDirectionalAction(InputAction? action,
+    private string HintDirectionalAction(InputAction? action,
         string firstPart, string secondPart, string keyboardFallback,
         string controllerFallback, string purpose)
     {
@@ -243,7 +241,7 @@ public sealed partial class BopItAccessMod
             false, false) ?? keyboardFallback;
         string controller = ReadHintDirections(action, firstPart, secondPart,
             true, false) ?? controllerFallback;
-        return $"Use {keyboard} on keyboard or {controller} on controller to {purpose}.";
+        return FormatHintUse(keyboard, controller, purpose);
     }
 
     private static string? ReadHintDirections(InputAction? action,
@@ -321,10 +319,16 @@ public sealed partial class BopItAccessMod
     {
         const string keyboard = "Use Page Up and Page Down on keyboard to read score rows.";
         if (!controllerMoveAvailable)
-            return keyboard;
+            return EffectiveHintDevice == HintDevice.Controller ? string.Empty : keyboard;
         InputAction? move = HintUiMoveAction();
         string? controller = ReadHintDirections(move, "up", "down", true, true);
-        return controller == null ? keyboard : keyboard +
-            $" Use {controller} on controller when no menu control has focus.";
+        string controllerHint = controller == null ? string.Empty :
+            $"Use {controller} on controller when no menu control has focus to read score rows.";
+        return EffectiveHintDevice switch
+        {
+            HintDevice.Keyboard => keyboard,
+            HintDevice.Controller => controllerHint,
+            _ => controllerHint.Length == 0 ? keyboard : keyboard + " " + controllerHint
+        };
     }
 }

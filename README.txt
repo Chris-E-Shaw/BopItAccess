@@ -1,9 +1,9 @@
-Bop It Access 0.6.5 - Keyboard and Controller Hints
+Bop It Access 0.6.6 - Background Muting and Speech Detail
 
 What this does
 --------------
 Speech is on by default. When the mod loads with speech on, it announces
-"Bop It Access Ready" through Tolk. It reads
+"Bop It Access speech is ready. The game is still loading. Wait for the main menu announcement before using the controls." through Tolk. It reads
 the focused main-menu button and the focused Settings row. Settings values are
 spoken with the row name on focus. Changing a value while focus stays on that
 row speaks only the new value. AUDIO LATENCY, CONTROLS, and GO ONLINE are action
@@ -15,6 +15,10 @@ speaks only the new value. The cap changes Unity's target frame rate while
 leaving game time scale, fixed update timing, and audio untouched.
 Like any frame cap, a lower setting also means fewer frame-based input polls.
 If 30 FPS feels less responsive in a fast game, choose 60, 120, or UNLIMITED.
+The MUTE AUDIO IN BACKGROUND toggle appears directly below VOICE OVER in
+Settings. When enabled, it mutes game audio while the game window is not
+focused, then restores the previous game audio state when focus returns.
+It starts Off and is saved between sessions.
 
 Below Controls, Settings now has a SPEECH menu. SPEECH OUTPUT uses the same
 saved master switch as F8 or controller Select, including the spoken recovery
@@ -25,6 +29,12 @@ System Access, and ZoomText. Direct NVDA output is available when NVDA is
 running. The other named readers are used when Tolk detects them as the active
 driver; if the chosen reader is unavailable, the mod announces a SAPI fallback.
 Tolk's 64-bit build does not support SuperNova, so it is not listed.
+MUTE SPEECH IN BACKGROUND is a saved toggle, Off by default. When enabled,
+the mod stops speaking as soon as the game loses window focus. Speech created
+while the game is in the background is discarded, and announcements resume
+with new activity after focus returns. If speech itself is Off when the game
+regains focus, the mod gives the current keyboard and controller recovery
+instructions once.
 
 The SPEECH menu also has INDEXING, off by default and saved between sessions.
 When enabled, a focused menu item includes its position, such as "PLAY, 1 of 6".
@@ -38,6 +48,10 @@ the focused item's type follows its name and precedes its value and index:
 "MUSIC slider, 30, 1 of 11", "VIBRATION toggle, On, 5 of 11", or
 "PLAY button, 1 of 6". Menus also identify tabs, text fields, and readable
 list items where relevant. Value changes continue to speak only the new value.
+SLIDER RANGES is a saved toggle, Off by default. When enabled, focused sliders
+also report their available endpoints after the current value, such as
+"MUSIC slider, 30, range 0 to 100, 1 of 12" when indexing and control types
+are enabled. Moving a slider still speaks only the new value.
 
 READ BUTTON HINTS is a saved SPEECH toggle and is On by default. Turning it
 Off suppresses all button-hint speech. BUTTON HINTS DELAY has None, 5 seconds
@@ -50,6 +64,12 @@ delay, the first hint announcement follows that much inactivity. The 5-second op
 interrupt speech already in progress; longer delays queue behind it. After
 the first hint announcement, another delay starts only when the player gives
 input, unless repeats are enabled.
+HINTS TYPE is a saved slider with Automatic, Keyboard, Controller, and Both.
+Automatic is the default and follows the most recently used keyboard or
+controller input. Mouse use counts as keyboard. Keyboard and Controller speak
+only that device's hints; Both gives the full dual-device instructions from
+previous versions. Speech-off recovery always includes both devices so the
+player can find the control that turns speech back on.
 
 Button hints now name keyboard and controller inputs for menu selection,
 navigation, Back, sliders, song selection, achievement pages, and other
@@ -57,9 +77,9 @@ supported controls. The mod reads the game's current bindings so native
 rebinding changes are reflected in these hints. When no controller is
 connected and the game has different face-button names on different controller
 types, the hint uses "confirm button" or "back button" rather than assuming an
-Xbox layout. Leaderboard score rows use Page Up and Page Down on keyboard at
-all times. Controller up/down reads rows only when no leaderboard control has
-focus; the hint says so in that state.
+Xbox layout. Leaderboard score rows use Page Up and Page Down on keyboard.
+Controller up/down reads rows only when no leaderboard control has focus;
+hints report only the controls available for the selected HINTS TYPE.
 
 REPEAT BUTTON HINTS is a separate saved slider: Off, 2x, 3x, 4x, 5x, or
 Infinitely. It defaults to Off. When enabled, it sends that many extra hint
@@ -133,7 +153,7 @@ defaults are F8 on keyboard and Select on controller. When turned off, the mod
 stops current speech and announces that speech is off, along with the current
 keyboard and controller controls for turning it back on. The off state is
 saved between game sessions. If the game starts with speech off, the mod gives
-those recovery instructions instead of its usual Ready message. Turning
+those recovery instructions instead of its usual loading message. Turning
 speech back on announces "Speech on." Other mod speech stays silent while off.
 The Toggle Speech control remains active even while speech is off.
 
@@ -215,6 +235,7 @@ result-screen controls are announced. Press T or left stick press to repeat the
 final result while the game-over screen is visible.
 Press F8 or controller Select to turn mod speech off or on from any screen.
 In Settings > Speech, use READ BUTTON HINTS to enable or disable instructions.
+HINTS TYPE chooses Automatic, Keyboard, Controller, or Both for those hints.
 BUTTON HINTS DELAY chooses whether they accompany focus speech or follow a
 period of inactivity. REPEAT BUTTON HINTS and REPEAT INTERVAL control any
 additional reminders.

@@ -125,6 +125,9 @@ public sealed partial class BopItAccessMod
             {
                 string focusedControl = WithControlType(focusedLabel,
                     focusedType ?? "button");
+                if (focusedType == "slider")
+                    focusedControl = WithUnitySliderRange(focusedControl,
+                        EventSystem.current?.currentSelectedGameObject?.GetComponentInParent<Selectable>());
                 introduction += " " + WithMenuIndex(focusedControl,
                     focusedIndex, focusedCount) + ".";
             }
@@ -152,8 +155,13 @@ public sealed partial class BopItAccessMod
             _lastTrackSelectFocusedId = focusedId;
             if (focusedLabel != null)
             {
-                string indexedLabel = WithMenuIndex(WithControlType(focusedLabel,
-                    focusedType ?? "button"), focusedIndex, focusedCount);
+                string focusLabel = WithControlType(focusedLabel,
+                    focusedType ?? "button");
+                if (focusedType == "slider")
+                    focusLabel = WithUnitySliderRange(focusLabel,
+                        EventSystem.current?.currentSelectedGameObject?.GetComponentInParent<Selectable>());
+                string indexedLabel = WithMenuIndex(focusLabel,
+                    focusedIndex, focusedCount);
                 changed = changed == null ? indexedLabel : $"{changed}. {indexedLabel}";
             }
         }

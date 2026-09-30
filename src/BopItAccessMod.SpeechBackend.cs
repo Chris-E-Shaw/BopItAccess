@@ -16,6 +16,8 @@ public sealed partial class BopItAccessMod
     private const string LegacyRepeatButtonHintsPreferenceKey =
         "BopItAccess.RepeatButtonHintsSeconds";
     private const string ReadButtonHintsPreferenceKey = "BopItAccess.ReadButtonHints";
+    private const string MuteSpeechInBackgroundPreferenceKey =
+        "BopItAccess.MuteSpeechInBackground";
     private const string ButtonHintsDelayPreferenceKey =
         "BopItAccess.ButtonHintsDelaySeconds";
     private const string RepeatButtonHintsCountPreferenceKey =
@@ -37,6 +39,7 @@ public sealed partial class BopItAccessMod
     private int _sapiPitch = 50;
     private bool _trimSilence;
     private bool _readButtonHintsEnabled = true;
+    private bool _muteSpeechInBackground;
     // Zero includes hints in ordinary menu announcements. Timed hints use
     // one of the positive delay options instead.
     private int _buttonHintsDelaySeconds;
@@ -77,6 +80,8 @@ public sealed partial class BopItAccessMod
             _sapiRate = Math.Clamp(PlayerPrefs.GetInt(SapiRatePreferenceKey, 50), 0, 100);
             _sapiPitch = Math.Clamp(PlayerPrefs.GetInt(SapiPitchPreferenceKey, 50), 0, 100);
             _readButtonHintsEnabled = PlayerPrefs.GetInt(ReadButtonHintsPreferenceKey, 1) != 0;
+            _muteSpeechInBackground =
+                PlayerPrefs.GetInt(MuteSpeechInBackgroundPreferenceKey, 0) != 0;
             // Preserve the delay existing users selected in version 0.6.2.
             // A new delay preference takes priority after they change it.
             int savedHintsDelay = PlayerPrefs.HasKey(ButtonHintsDelayPreferenceKey)
@@ -108,6 +113,8 @@ public sealed partial class BopItAccessMod
             (string.IsNullOrEmpty(_sapiVoiceId) ? "system default" : _sapiVoiceId) +
             $"; volume {_sapiVolume}, rate {_sapiRate}, pitch {_sapiPitch}; " +
             "read button hints " + (_readButtonHintsEnabled ? "on" : "off") +
+            "; mute speech in background " +
+            (_muteSpeechInBackground ? "on" : "off") +
             "; button hints delay " + ButtonHintsDelayValue(_buttonHintsDelaySeconds) +
             "; repeat button hints " + RepeatButtonHintsValue(_repeatButtonHintsCount) +
             "; repeat interval " + _repeatButtonHintsIntervalSeconds + " seconds." +
@@ -247,6 +254,18 @@ public sealed partial class BopItAccessMod
         WriteStatus("Read button hints " + (enabled ? "enabled" : "disabled") + ".");
     }
 
+    private void SetMuteSpeechInBackgroundFromMenu(bool enabled)
+    {
+        if (_muteSpeechInBackground == enabled)
+            return;
+        _muteSpeechInBackground = enabled;
+        SaveButtonHintsPreference(MuteSpeechInBackgroundPreferenceKey,
+            enabled ? 1 : 0);
+        UpdateBackgroundSpeechFocus();
+        WriteStatus("Mute speech in background " +
+            (enabled ? "enabled" : "disabled") + ".");
+    }
+
     private void SetButtonHintsDelayFromMenu(int seconds)
     {
         if (seconds is not (0 or 5 or 10 or 15 or 30 or 60) ||
@@ -330,7 +349,11 @@ public sealed partial class BopItAccessMod
     {
         string mode;
         lock (_speechLock)
+        {
+            if (_speechSuppressedForBackground)
+                return false;
             mode = _outputMode;
+        }
 
         string? detected = Marshal.PtrToStringUni(TolkNative.Tolk_DetectScreenReader());
         if (string.Equals(mode, "Auto", StringComparison.OrdinalIgnoreCase))
