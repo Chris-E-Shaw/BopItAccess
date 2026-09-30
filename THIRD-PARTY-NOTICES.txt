@@ -1,10 +1,21 @@
-This package contains the following third-party software:
+Bop It Access uses these third-party runtime libraries:
 
-Tolk.dll — Tolk screen-reader library by Christopher T. D. Kager.
-nvdaControllerClient64.dll — NVDA Controller Client library, included with Tolk.
-Tolk's applicable license is GNU Lesser General Public License, version 3.
-Copies of the LGPL and the GNU GPL version 3 are included in this package under
-THIRD-PARTY-LICENSES. Tolk source: https://github.com/dkager/tolk
+Tolk.dll — Tolk screen-reader abstraction library by Davy Kager and contributors.
+Project and source: https://github.com/dkager/tolk
+License: GNU Lesser General Public License, version 3.
+License text: https://github.com/dkager/tolk/blob/master/LICENSE.txt
 
-Bop It Access dynamically loads Tolk.dll at runtime using Tolk's C API. The Tolk
-DLL remains a separate file so it can be replaced with a compatible version.
+nvdaControllerClient64.dll — NVDA Controller Client library, used with Tolk.
+Project and source: https://github.com/nvaccess/nvda/tree/master/extras/controllerClient
+Tolk's x64 copy: https://github.com/dkager/tolk/tree/master/libs/x64
+License: GNU Lesser General Public License, version 2.1.
+License text: https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt
+
+This source repository does not include either native DLL or a compiled Bop It
+Access DLL. A person building the mod must obtain or build compatible x64
+native DLLs separately. Bop It Access loads them dynamically at runtime, so a
+compatible Tolk.dll can be replaced without rebuilding the mod.
+
+Previously prepared local install packages contained these DLLs and included
+their applicable license texts. Those packages are not GitHub releases and are
+not part of this source repository.
