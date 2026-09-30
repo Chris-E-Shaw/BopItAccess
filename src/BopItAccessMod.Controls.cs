@@ -90,6 +90,14 @@ public sealed partial class BopItAccessMod
             return true;
         }
 
+        AddedToggleSpeechControlRow? toggleSpeechRow =
+            FindAddedToggleSpeechControlRow(selected);
+        if (toggleSpeechRow != null && toggleSpeechRow.Root.activeInHierarchy)
+        {
+            ReadToggleSpeechControlRow(toggleSpeechRow);
+            return true;
+        }
+
         ControlRow? focusedRow = FindFocusedControlRow(panel, selected);
         if (focusedRow != null)
         {
@@ -351,7 +359,8 @@ public sealed partial class BopItAccessMod
 
         string[] values = new string[_controlsRows.Length + _leaderboardControlRows.Count +
             (_descriptionControlRow == null ? 0 : 1) +
-            (_scoreControlRow == null ? 0 : 1)];
+            (_scoreControlRow == null ? 0 : 1) +
+            (_toggleSpeechControlRow == null ? 0 : 1)];
         for (int i = 0; i < _controlsRows.Length; i++)
         {
             ControlRow row = _controlsRows[i];
@@ -385,6 +394,14 @@ public sealed partial class BopItAccessMod
         if (_scoreControlRow != null)
         {
             string? value = ReadScoreControlSnapshot();
+            if (value == null)
+                return null;
+            values[next++] = value;
+        }
+
+        if (_toggleSpeechControlRow != null)
+        {
+            string? value = ReadToggleSpeechControlSnapshot();
             if (value == null)
                 return null;
             values[next] = value;

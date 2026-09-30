@@ -1,8 +1,9 @@
-Bop It Access 0.5.11 - Interruptible on-demand result speech
+Bop It Access 0.5.12 - Toggle Speech
 
 What this does
 --------------
-When the mod loads, it announces "Bop It Access Ready" through Tolk. It reads
+Speech is on by default. When the mod loads with speech on, it announces
+"Bop It Access Ready" through Tolk. It reads
 the focused main-menu button and the focused Settings row. Settings values are
 spoken with the row name on focus. Changing a value while focus stays on that
 row speaks only the new value. AUDIO LATENCY, CONTROLS, and GO ONLINE are action
@@ -48,6 +49,15 @@ Requested repeats speak immediately and can be interrupted by result-menu
 navigation. Only the automatic result announcement delays the initial menu
 speech so the score is heard first.
 
+TOGGLE SPEECH turns all ordinary mod speech on or off from any screen. Its
+defaults are F8 on keyboard and Select on controller. When turned off, the mod
+stops current speech and announces that speech is off, along with the current
+keyboard and controller controls for turning it back on. The off state is
+saved between game sessions. If the game starts with speech off, the mod gives
+those recovery instructions instead of its usual Ready message. Turning
+speech back on announces "Speech on." Other mod speech stays silent while off.
+The Toggle Speech control remains active even while speech is off.
+
 The leaderboards reached from the main menu, Solo results, and Party results
 announce the selected song, device, group, and date where available. They read
 rank, player name, and score, including loading and empty-result states. Page Up
@@ -76,8 +86,9 @@ announces changed bindings, and reads the game's visible rebinding feedback.
 It announces how to return to Settings once per visit. When Reset to Default changes a
 binding, it reports that the bindings were reset.
 
-The mod adds six rows to the game's Controls menu: Group Previous,
-Group Next, Date Previous, Date Next, READ DESCRIPTIONS, and READ SCORE. The first four
+The mod adds seven rows to the game's Controls menu: Group Previous,
+Group Next, Date Previous, Date Next, READ DESCRIPTIONS, READ SCORE, and
+TOGGLE SPEECH. The first four
 address the leaderboard filters
 reached with O/P and K/L on the default keyboard layout, or the bumpers and
 D-pad left/right on a controller. Focus a row to hear its current binding,
@@ -87,6 +98,9 @@ keyboard and controller. Its binding is saved by the mod, and Reset to Default
 restores R and LT. READ SCORE can also be rebound for keyboard and controller;
 Reset to Default restores T and left stick press. The game's original binding rows and the four leaderboard
 rows retain their current rebinding behavior.
+TOGGLE SPEECH can be rebound for keyboard and controller. Its bindings are
+saved by the mod, and Reset to Default restores F8 and Select. If the binding
+is changed while speech is off, the mod announces the new recovery controls.
 This update stops the stale Controls row from announcing "Rebinding failed"
 repeatedly after its scene closes. Read Descriptions no longer temporarily
 overrides any of the game's own input bindings.
@@ -120,6 +134,7 @@ description. Bop starts the chosen mode; Back returns.
 At the end of a game, listen for the score or One on One winner before the
 result-screen controls are announced. Press T or left stick press to repeat the
 final result while the game-over screen is visible.
+Press F8 or controller Select to turn mod speech off or on from any screen.
 Open Leaderboards from the main menu or a result screen. Change a filter to
 hear its new selection and read individual scores with Page Up and Page Down.
 By default, O/P move between leaderboard groups and K/L move between date

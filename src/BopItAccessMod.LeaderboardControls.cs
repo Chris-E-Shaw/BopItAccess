@@ -35,9 +35,12 @@ public sealed partial class BopItAccessMod
 
     public override void OnUpdate()
     {
+        InitializeSpeechToggleOnMainThread();
         UpdateDescriptionControlRebinding();
         UpdateScoreControlRebinding();
+        UpdateToggleSpeechControlRebinding();
         UpdateLeaderboardControlRebinding();
+        UpdateSpeechToggleFromInput();
         if (_leaderboardControlsScroll != null)
             ScrollSelectedControlIntoView();
 
@@ -77,7 +80,7 @@ public sealed partial class BopItAccessMod
         try
         {
             if (TryAddLeaderboardControls(panel, out string reason))
-                WriteStatus("Added four leaderboard binding rows, Read Descriptions, and Read Score to Controls.");
+                WriteStatus("Added four leaderboard binding rows, Read Descriptions, Read Score, and Toggle Speech to Controls.");
             else
                 WriteStatus("Leaderboard binding rows were not added: " + reason);
         }
@@ -218,7 +221,8 @@ public sealed partial class BopItAccessMod
             }
 
             AddDescriptionControlRow(template, parent, insertAt++);
-            AddScoreControlRow(template, parent, insertAt);
+            AddScoreControlRow(template, parent, insertAt++);
+            AddToggleSpeechControlRow(template, parent, insertAt);
 
             AddLeaderboardControlsViewport(tableRect, contentRect);
             foreach (GameObject row in _leaderboardAddedRows)
@@ -323,11 +327,14 @@ public sealed partial class BopItAccessMod
         AddedLeaderboardControlRow? added = FindAddedLeaderboardControlRow(selected);
         AddedDescriptionControlRow? description = FindAddedDescriptionControlRow(selected);
         AddedScoreControlRow? score = FindAddedScoreControlRow(selected);
+        AddedToggleSpeechControlRow? toggleSpeech =
+            FindAddedToggleSpeechControlRow(selected);
         ControlRow? control = selected.GetComponentInParent<ControlRow>();
         ResetToDefaultRow? reset = selected.GetComponentInParent<ResetToDefaultRow>();
         Transform item = added != null ? added.Root.transform :
             description != null ? description.Root.transform :
             score != null ? score.Root.transform :
+            toggleSpeech != null ? toggleSpeech.Root.transform :
             control != null ? control.transform :
             reset != null ? reset.transform : selected.transform;
         Bounds bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(
@@ -449,6 +456,7 @@ public sealed partial class BopItAccessMod
     {
         CancelDescriptionControlRebinding(false);
         CancelScoreControlRebinding(false);
+        CancelToggleSpeechControlRebinding(false);
         CancelLeaderboardControlRebinding(false);
         if (_leaderboardControlsContent != null &&
             _leaderboardControlsOriginalParent != null)
@@ -485,6 +493,7 @@ public sealed partial class BopItAccessMod
         _leaderboardControlRows.Clear();
         _descriptionControlRow = null;
         _scoreControlRow = null;
+        _toggleSpeechControlRow = null;
         _leaderboardControlsScroll = null;
         _leaderboardControlsFitter = null;
         _leaderboardControlsViewport = null;
