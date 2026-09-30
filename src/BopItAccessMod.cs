@@ -1,9 +1,13 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
+using Il2Cpp;
 using MelonLoader;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.1.0", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.2.0", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -11,7 +15,16 @@ namespace BopItAccess;
 public sealed class BopItAccessMod : MelonMod
 {
     private readonly ManualResetEventSlim _shutdownRequested = new(false);
+    private readonly AutoResetEvent _speechRequested = new(false);
+    private readonly object _speechLock = new();
     private Thread? _tolkThread;
+    private string? _pendingSpeech;
+    private MainMenuUIManager? _mainMenu;
+    private int _lastFocusedButtonId;
+    private int _lastObservedSelectionId;
+    private long _nextMenuSearchAt;
+    private long _nextFocusErrorLogAt;
+    private bool _mainMenuWasVisible;
     private static readonly object StatusLogLock = new();
 
     private static string StatusLogPath
@@ -43,6 +56,124 @@ public sealed class BopItAccessMod : MelonMod
         {
             MelonLogger.Error($"Could not start the Tolk background thread: {ex}");
         }
+    }
+
+    public override void OnLateUpdate()
+    {
+        try
+        {
+            ReadMainMenuFocus();
+        }
+        catch (Exception ex)
+        {
+            long now = Environment.TickCount64;
+            if (now >= _nextFocusErrorLogAt)
+            {
+                WriteStatus($"Main menu focus check failed: {ex}");
+                MelonLogger.Warning($"Main menu focus check failed: {ex.Message}");
+                _nextFocusErrorLogAt = now + 5000;
+            }
+
+            _mainMenu = null;
+            ResetMenuFocus();
+            _nextMenuSearchAt = now + 1000;
+        }
+    }
+
+    private void ReadMainMenuFocus()
+    {
+        if (_mainMenu == null)
+        {
+            long now = Environment.TickCount64;
+            if (now < _nextMenuSearchAt)
+                return;
+
+            _nextMenuSearchAt = now + 500;
+            _mainMenu = UnityEngine.Object.FindFirstObjectByType<MainMenuUIManager>();
+            if (_mainMenu == null)
+                return;
+
+            WriteStatus("Found the main menu manager; waiting for menu focus.");
+            ResetMenuFocus();
+        }
+
+        Panel? panel = _mainMenu.mainMenuPanel;
+        if (panel == null || !panel.IsVisible || !panel.gameObject.activeInHierarchy)
+        {
+            ResetMenuFocus();
+            return;
+        }
+
+        if (!_mainMenuWasVisible)
+        {
+            WriteStatus("Main menu is visible; monitoring the six menu buttons.");
+            _mainMenuWasVisible = true;
+        }
+
+        EventSystem? eventSystem = EventSystem.current;
+        GameObject? selected = eventSystem == null ? null : eventSystem.currentSelectedGameObject;
+        int selectedId = selected == null ? 0 : selected.GetInstanceID();
+        if (selectedId == _lastObservedSelectionId)
+            return;
+
+        WriteStatus($"Main menu selected object: {(selected == null ? "none" : selected.name)}.");
+        _lastObservedSelectionId = selectedId;
+
+        Button? focusedButton = selected == null ? null : selected.GetComponentInParent<Button>();
+        if (focusedButton == null)
+        {
+            _lastFocusedButtonId = 0;
+            return;
+        }
+
+        int focusedButtonId = focusedButton.GetInstanceID();
+        string? label = GetMainMenuLabel(focusedButtonId);
+        if (label == null)
+        {
+            _lastFocusedButtonId = 0;
+            return;
+        }
+
+        if (focusedButtonId == _lastFocusedButtonId)
+            return;
+
+        _lastFocusedButtonId = focusedButtonId;
+        QueueSpeech(label);
+    }
+
+    private string? GetMainMenuLabel(int focusedButtonId)
+    {
+        if (Matches(_mainMenu!.playButton, focusedButtonId)) return "PLAY";
+        if (Matches(_mainMenu.leaderboardButton, focusedButtonId)) return "LEADERBOARDS";
+        if (Matches(_mainMenu.achievementsButton, focusedButtonId)) return "ACHIEVEMENTS";
+        if (Matches(_mainMenu.settingsButton, focusedButtonId)) return "SETTINGS";
+        if (Matches(_mainMenu.creditsButton, focusedButtonId)) return "CREDITS";
+        if (Matches(_mainMenu.quitButton, focusedButtonId)) return "QUIT";
+        return null;
+    }
+
+    private static bool Matches(Button? button, int focusedButtonId) =>
+        button != null && button.GetInstanceID() == focusedButtonId;
+
+    private void ResetMenuFocus()
+    {
+        _lastFocusedButtonId = 0;
+        _lastObservedSelectionId = 0;
+        _mainMenuWasVisible = false;
+    }
+
+    private void QueueSpeech(string text)
+    {
+        if (_shutdownRequested.IsSet)
+            return;
+
+        lock (_speechLock)
+        {
+            // Keep the newest focus announcement when navigation is faster than speech.
+            _pendingSpeech = text;
+        }
+
+        _speechRequested.Set();
     }
 
     private void InitializeTolkAndAnnounce()
@@ -79,7 +210,22 @@ public sealed class BopItAccessMod : MelonMod
                 MelonLogger.Warning("Tolk initialized, but it could not send the ready announcement.");
             }
 
-            _shutdownRequested.Wait();
+            WaitHandle[] signals = { _shutdownRequested.WaitHandle, _speechRequested };
+            while (WaitHandle.WaitAny(signals) != 0)
+            {
+                string? announcement;
+                lock (_speechLock)
+                {
+                    announcement = _pendingSpeech;
+                    _pendingSpeech = null;
+                }
+
+                if (announcement == null)
+                    continue;
+
+                bool accepted = TolkNative.Tolk_Output(announcement, true);
+                WriteStatus($"Main menu announcement '{announcement}' {(accepted ? "accepted" : "rejected")} by Tolk.");
+            }
         }
         catch (Exception ex)
         {
