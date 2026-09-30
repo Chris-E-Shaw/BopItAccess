@@ -122,7 +122,7 @@ public sealed partial class BopItAccessMod
                 _lastGameOverFocusedId = focusedId != 0
                     ? focusedId : solo.replayButton?.GetInstanceID() ?? 0;
                 ProtectGameOverScoreSpeech(score);
-                _deferredGameOverMenuUpdate = "Replay. Leaderboard. Back to return.";
+                _deferredGameOverMenuUpdate = ReadSoloResultPrompts(solo);
                 _soloBackInstructionPending = true;
                 QueueScoreThenMenu(score, null);
                 WriteStatus($"Solo game over visible; {score}");
@@ -365,7 +365,7 @@ public sealed partial class BopItAccessMod
         return _gameOverApp == null ? null : _gameOverApp.GameMode;
     }
 
-    private static (int Id, string? Label) GetFocusedSoloResultButton(SoloKillScreenPanel panel)
+    private (int Id, string? Label) GetFocusedSoloResultButton(SoloKillScreenPanel panel)
     {
         GameObject? selected = EventSystem.current == null
             ? null : EventSystem.current.currentSelectedGameObject;
@@ -376,12 +376,38 @@ public sealed partial class BopItAccessMod
         if (button == null || !button.transform.IsChildOf(panel.transform))
             return (0, null);
 
-        if (panel.replayButton != null && button.GetInstanceID() == panel.replayButton.GetInstanceID())
-            return (button.GetInstanceID(), "Replay");
-        if (panel.leaderboardButton != null && button.GetInstanceID() == panel.leaderboardButton.GetInstanceID())
-            return (button.GetInstanceID(), "Leaderboard");
+        List<(Button Button, string Label)> choices = GetAvailableSoloResultButtons(panel);
+        for (int index = 0; index < choices.Count; index++)
+        {
+            if (choices[index].Button.GetInstanceID() == button.GetInstanceID())
+                return (button.GetInstanceID(),
+                    WithMenuIndex(choices[index].Label, index, choices.Count));
+        }
         return (0, null);
     }
+
+    private string ReadSoloResultPrompts(SoloKillScreenPanel panel)
+    {
+        // Result buttons can be non-interactable during the score animation.
+        // They are still the two choices that appear when the menu opens.
+        return WithMenuIndex("Replay", 0, 2) + ". " +
+            WithMenuIndex("Leaderboard", 1, 2) + ". Back to return.";
+    }
+
+    private static List<(Button Button, string Label)> GetAvailableSoloResultButtons(
+        SoloKillScreenPanel panel)
+    {
+        var choices = new List<(Button Button, string Label)>(2);
+        if (IsAvailableSoloResultButton(panel, panel.replayButton))
+            choices.Add((panel.replayButton!, "Replay"));
+        if (IsAvailableSoloResultButton(panel, panel.leaderboardButton))
+            choices.Add((panel.leaderboardButton!, "Leaderboard"));
+        return choices;
+    }
+
+    private static bool IsAvailableSoloResultButton(SoloKillScreenPanel panel, Button? button) =>
+        button != null && button.gameObject.activeInHierarchy && button.interactable &&
+        button.transform.IsChildOf(panel.transform);
 
     private static string? ReadFriendsPrompts(WithFriendsKillScreenPanel panel, GameMode mode)
     {

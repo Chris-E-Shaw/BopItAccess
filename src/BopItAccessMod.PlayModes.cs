@@ -69,7 +69,7 @@ public sealed partial class BopItAccessMod
         if (buttonId != _lastFocusedPlayModeButtonId)
         {
             _lastFocusedPlayModeButtonId = buttonId;
-            QueueSpeech(label);
+            QueueSpeech(IndexPlayModeLabel(panel, button, label));
         }
 
         return true;
@@ -82,6 +82,43 @@ public sealed partial class BopItAccessMod
         if (Matches(_mainMenu.passItButton, buttonId)) return "PASS IT";
         if (Matches(_mainMenu.oneOnOneButton, buttonId)) return "ONE ON ONE";
         return null;
+    }
+
+    private string IndexPlayModeLabel(Panel panel, Button focused, string label)
+    {
+        var choices = new List<Button>(5);
+        AddAvailablePlayModeButton(choices, panel, _mainMenu!.soloButton);
+        AddAvailablePlayModeButton(choices, panel, _mainMenu.partyButton);
+        AddAvailablePlayModeButton(choices, panel, _mainMenu.passItButton);
+        AddAvailablePlayModeButton(choices, panel, _mainMenu.oneOnOneButton);
+
+        // The Back control is a selectable on some builds. Include it only
+        // when present and available, rather than counting a Back prompt.
+        foreach (Button candidate in panel.GetComponentsInChildren<Button>(true))
+        {
+            if (candidate.name.Contains("Back", StringComparison.OrdinalIgnoreCase) &&
+                candidate.gameObject.activeInHierarchy && candidate.interactable)
+            {
+                AddAvailablePlayModeButton(choices, panel, candidate);
+                break;
+            }
+        }
+
+        int focusedId = focused.GetInstanceID();
+        for (int index = 0; index < choices.Count; index++)
+        {
+            if (choices[index].GetInstanceID() == focusedId)
+                return WithMenuIndex(label, index, choices.Count);
+        }
+
+        return label;
+    }
+
+    private static void AddAvailablePlayModeButton(List<Button> choices, Panel panel, Button? button)
+    {
+        if (button != null && button.gameObject.activeInHierarchy && button.interactable &&
+            button.transform.IsChildOf(panel.transform))
+            choices.Add(button);
     }
 
     private void ResetPlayModesFocus()

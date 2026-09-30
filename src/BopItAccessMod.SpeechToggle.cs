@@ -33,6 +33,7 @@ public sealed partial class BopItAccessMod
         string recovery = GetSpeechToggleRecoveryInstruction();
 
         InitializeSpeechBackendPreferencesOnMainThread();
+        InitializeIndexingPreferenceOnMainThread();
 
         lock (_speechLock)
         {

@@ -163,18 +163,30 @@ public sealed partial class BopItAccessMod
         if (selected == null)
             return (0, null);
 
-        Transform selectedTransform = selected.transform;
+        var choices = new List<(Transform Action, string Label)>(3);
         if (_calibrationPanel?.actionContainer?.IsVisible == true)
         {
-            if (IsCalibrationAction(selectedTransform, _calibrateAction))
-                return (_calibrateAction!.GetInstanceID(), "Calibrate");
-            if (IsCalibrationAction(selectedTransform, _backCalibrationAction))
-                return (_backCalibrationAction!.GetInstanceID(), "Back");
+            AddAvailableCalibrationAction(choices, _calibrateAction, "Calibrate");
+            AddAvailableCalibrationAction(choices, _backCalibrationAction, "Back");
         }
-        if ((state == CalibrateState.Warmup || state == CalibrateState.Calibrate) &&
-            IsCalibrationAction(selectedTransform, _bopCalibrationAction))
-            return (_bopCalibrationAction!.GetInstanceID(), "Bop");
+        if (state == CalibrateState.Warmup || state == CalibrateState.Calibrate)
+            AddAvailableCalibrationAction(choices, _bopCalibrationAction, "Bop");
+
+        Transform selectedTransform = selected.transform;
+        for (int index = 0; index < choices.Count; index++)
+        {
+            (Transform action, string label) = choices[index];
+            if (IsCalibrationAction(selectedTransform, action))
+                return (action.GetInstanceID(), WithMenuIndex(label, index, choices.Count));
+        }
         return (0, null);
+    }
+
+    private static void AddAvailableCalibrationAction(
+        List<(Transform Action, string Label)> choices, Transform? action, string label)
+    {
+        if (action != null && action.gameObject.activeInHierarchy)
+            choices.Add((action, label));
     }
 
     private static bool IsCalibrationAction(Transform selected, Transform? action) =>

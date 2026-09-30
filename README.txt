@@ -1,4 +1,4 @@
-Bop It Access 0.5.19 - Speech Menu Update
+Bop It Access 0.6.0 - Menu Indexing
 
 What this does
 --------------
@@ -25,6 +25,13 @@ System Access, and ZoomText. Direct NVDA output is available when NVDA is
 running. The other named readers are used when Tolk detects them as the active
 driver; if the chosen reader is unavailable, the mod announces a SAPI fallback.
 Tolk's 64-bit build does not support SuperNova, so it is not listed.
+
+The SPEECH menu also has INDEXING, off by default and saved between sessions.
+When enabled, a focused menu item includes its position, such as "PLAY, 1 of 6".
+This applies across the main and Settings menus, Controls, play modes, speech
+settings, game-over choices, leaderboards, achievements, credits, and other
+supported screens. The count follows the currently available choices. Changing
+a slider or toggle while it remains focused still announces only the new value.
 
 The SPEECH menu also has VOICE, VOLUME, RATE, and PITCH controls. Voice
 lists the system default and installed 64-bit SAPI voices. Volume starts at

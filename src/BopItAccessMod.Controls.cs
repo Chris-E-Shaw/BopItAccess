@@ -500,11 +500,64 @@ public sealed partial class BopItAccessMod
 
     private string WithControlsIntroduction(string message)
     {
+        message = WithControlsRowIndex(message);
         if (!_controlsIntroductionPending)
             return message;
 
         _controlsIntroductionPending = false;
         return $"Controls. Use Back to return to Settings. {message}";
+    }
+
+    private string WithControlsRowIndex(string message)
+    {
+        if (!_indexingEnabled || _mainMenu?.controlsPanel == null)
+            return message;
+
+        var rootIds = new HashSet<int>();
+        int focusedRootId = 0;
+        void AddRow(GameObject? root, int focusId)
+        {
+            if (root == null || !root.activeInHierarchy)
+                return;
+            int rootId = root.GetInstanceID();
+            rootIds.Add(rootId);
+            if (focusId == _lastFocusedControlsRowId)
+                focusedRootId = rootId;
+        }
+
+        if (_controlsRows != null)
+        {
+            foreach (ControlRow row in _controlsRows)
+            {
+                if (row != null && row.enabled)
+                    AddRow(row.gameObject, row.GetInstanceID());
+            }
+        }
+        if (_controlsResetRow != null)
+            AddRow(_controlsResetRow.gameObject, _controlsResetRow.GetInstanceID());
+        foreach (AddedLeaderboardControlRow row in _leaderboardControlRows.Values)
+            AddRow(row.Root, row.Root.GetInstanceID());
+        if (_descriptionControlRow != null)
+            AddRow(_descriptionControlRow.Root,
+                _descriptionControlRow.Root.GetInstanceID());
+        if (_scoreControlRow != null)
+            AddRow(_scoreControlRow.Root, _scoreControlRow.Root.GetInstanceID());
+        if (_toggleSpeechControlRow != null)
+            AddRow(_toggleSpeechControlRow.Root,
+                _toggleSpeechControlRow.Root.GetInstanceID());
+
+        int index = -1;
+        int count = 0;
+        foreach (Transform child in _mainMenu.controlsPanel.GetComponentsInChildren<Transform>(true))
+        {
+            int id = child.gameObject.GetInstanceID();
+            if (!rootIds.Contains(id))
+                continue;
+            if (id == focusedRootId)
+                index = count;
+            count++;
+        }
+        return WithMenuIndex(message, index, count);
     }
 
     private void ResetControlsFocus()

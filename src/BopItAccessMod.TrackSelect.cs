@@ -94,7 +94,8 @@ public sealed partial class BopItAccessMod
 
         string? theme = ReadTrackSelectTheme(_trackSelectApp);
         bool? extreme = ReadTrackSelectExtreme(_trackSelectUi);
-        (int focusedId, string? focusedLabel) = ReadTrackSelectSelectedControl(panel);
+        (int focusedId, string? focusedLabel, int focusedIndex, int focusedCount) =
+            ReadTrackSelectSelectedControl(panel);
         bool waitingToStart = _trackSelectUi.gameManager != null &&
             _trackSelectUi.gameManager.GameState == GameState.WaitingToStart;
         bool descriptionPressed = WasReadDescriptionsPressed(waitingToStart);
@@ -119,8 +120,9 @@ public sealed partial class BopItAccessMod
                 introduction += $". {FormatExtreme(extreme)}";
             introduction += ". Twist to change song. Pull to change difficulty. " +
                 ReadDescriptionsBindingInstruction() + " Bop to start. Back to return.";
-            if (focusedLabel != null && !string.Equals(focusedLabel, "Start", StringComparison.OrdinalIgnoreCase))
-                introduction += $" {focusedLabel}.";
+            if (focusedLabel != null && (_indexingEnabled ||
+                !string.Equals(focusedLabel, "Start", StringComparison.OrdinalIgnoreCase)))
+                introduction += $" {WithMenuIndex(focusedLabel, focusedIndex, focusedCount)}.";
             QueueSpeech(introduction);
             return true;
         }
@@ -143,7 +145,10 @@ public sealed partial class BopItAccessMod
         {
             _lastTrackSelectFocusedId = focusedId;
             if (focusedLabel != null)
-                changed = changed == null ? focusedLabel : $"{changed}. {focusedLabel}";
+            {
+                string indexedLabel = WithMenuIndex(focusedLabel, focusedIndex, focusedCount);
+                changed = changed == null ? indexedLabel : $"{changed}. {indexedLabel}";
+            }
         }
 
         if (descriptionPressed)
@@ -202,7 +207,8 @@ public sealed partial class BopItAccessMod
     private static string? FormatExtreme(bool? extreme) =>
         extreme.HasValue ? (extreme.Value ? "Extreme mode on" : "Extreme mode off") : null;
 
-    private (int Id, string? Label) ReadTrackSelectSelectedControl(StartScreenPanel panel)
+    private (int Id, string? Label, int Index, int Count) ReadTrackSelectSelectedControl(
+        StartScreenPanel panel)
     {
         GameObject? selected = EventSystem.current == null
             ? null : EventSystem.current.currentSelectedGameObject;
@@ -214,23 +220,44 @@ public sealed partial class BopItAccessMod
         }
 
         if (selected == null || !selected.transform.IsChildOf(panel.transform))
-            return (0, null);
+            return (0, null, -1, 0);
 
         Selectable? control = selected.GetComponentInParent<Selectable>();
         if (control == null || !control.transform.IsChildOf(panel.transform))
-            return (0, null);
+            return (0, null, -1, 0);
 
-        string? label = CleanSpeechValue(control.GetComponentInChildren<TMP_Text>(true)?.text);
+        string? label = ReadTrackSelectControlLabel(control);
         if (label == null)
+            return (control.GetInstanceID(), null, -1, 0);
+
+        int index = -1;
+        int count = 0;
+        int focusedId = control.GetInstanceID();
+        foreach (Selectable candidate in panel.GetComponentsInChildren<Selectable>(true))
         {
-            if (control.name.Contains("Start", StringComparison.OrdinalIgnoreCase) ||
-                control.name.Contains("Play", StringComparison.OrdinalIgnoreCase))
-                label = "Start";
-            else if (control.name.Contains("Back", StringComparison.OrdinalIgnoreCase))
-                label = "Back";
+            if (!candidate.gameObject.activeInHierarchy || !candidate.interactable ||
+                ReadTrackSelectControlLabel(candidate) == null)
+                continue;
+
+            if (candidate.GetInstanceID() == focusedId)
+                index = count;
+            count++;
         }
 
-        return (control.GetInstanceID(), label);
+        return (focusedId, label, index, count);
+    }
+
+    private static string? ReadTrackSelectControlLabel(Selectable control)
+    {
+        string? label = CleanSpeechValue(control.GetComponentInChildren<TMP_Text>(true)?.text);
+        if (label != null)
+            return label;
+        if (control.name.Contains("Start", StringComparison.OrdinalIgnoreCase) ||
+            control.name.Contains("Play", StringComparison.OrdinalIgnoreCase))
+            return "Start";
+        if (control.name.Contains("Back", StringComparison.OrdinalIgnoreCase))
+            return "Back";
+        return null;
     }
 
     private void ResetTrackSelectFocus()

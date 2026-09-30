@@ -158,14 +158,15 @@ public sealed partial class BopItAccessMod
                     // When the book has no navigation action, text that
                     // finishes populating after the heading must still be
                     // spoken without interrupting the opening instructions.
-                    foreach (string line in _achievementLines)
+                    for (int index = 0; index < _achievementLines.Count; index++)
                     {
+                        string line = _achievementLines[index];
                         if (previousLineCounts.TryGetValue(line, out int count) && count > 0)
                         {
                             previousLineCounts[line] = count - 1;
                             continue;
                         }
-                        QueueSequentialSpeech(line);
+                        QueueSequentialSpeech(WithMenuIndex(line, index, _achievementLines.Count));
                     }
                 }
                 WriteStatus($"Achievements page {spread} updated to {_achievementLines.Count} readable lines.");
@@ -183,18 +184,23 @@ public sealed partial class BopItAccessMod
                     instructions += " Reading the entries on this page.";
                 instructions += " Use left and right arrows or controller shoulder buttons to turn pages. Back to return.";
                 QueueSpeech(instructions);
-                QueueSequentialSpeech(_achievementLines[0]);
+                QueueSequentialSpeech(WithMenuIndex(_achievementLines[0], 0,
+                    _achievementLines.Count));
                 if (GetAchievementMoveAction(controller) == null)
                 {
-                    foreach (string line in _achievementLines.Skip(1))
-                        QueueSequentialSpeech(line);
+                    for (int index = 1; index < _achievementLines.Count; index++)
+                        QueueSequentialSpeech(WithMenuIndex(_achievementLines[index], index,
+                            _achievementLines.Count));
                 }
             }
             else
             {
-                string announcement = "Achievements page. " + _achievementLines[0];
+                string announcement = "Achievements page. " +
+                    WithMenuIndex(_achievementLines[0], 0, _achievementLines.Count);
                 if (_achievementLines.Count > 1 && GetAchievementMoveAction(controller) == null)
-                    announcement += " " + string.Join(". ", _achievementLines.Skip(1));
+                    announcement += " " + string.Join(". ",
+                        _achievementLines.Skip(1).Select((line, index) =>
+                            WithMenuIndex(line, index + 1, _achievementLines.Count)));
                 QueueSpeech(announcement, !firstPage);
             }
             _achievementOpeningSpoken = true;
@@ -238,7 +244,8 @@ public sealed partial class BopItAccessMod
             return;
 
         _achievementLineIndex = nextIndex;
-        QueueSpeech(_achievementLines[nextIndex]);
+        QueueSpeech(WithMenuIndex(_achievementLines[nextIndex], nextIndex,
+            _achievementLines.Count));
     }
 
     private static InputAction? GetAchievementMoveAction(BookController controller)

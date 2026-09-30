@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.19", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.0", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -418,7 +418,19 @@ public sealed partial class BopItAccessMod : MelonMod
         {
             _lastFocusedSettingRowId = focused.Id;
             _lastSettingsValue = value;
-            QueueSpeech(value == null ? focused.Label : $"{focused.Label}, {value}");
+            string announcement = value == null ? focused.Label :
+                $"{focused.Label}, {value}";
+            int index = -1;
+            int count = 0;
+            foreach (SettingOption option in _settingsOptions!)
+            {
+                if (option.Row == null || !option.Row.gameObject.activeInHierarchy)
+                    continue;
+                if (option.Id == focused.Id)
+                    index = count;
+                count++;
+            }
+            QueueSpeech(WithMenuIndex(announcement, index, count));
             return true;
         }
 
@@ -600,7 +612,23 @@ public sealed partial class BopItAccessMod : MelonMod
             return;
 
         _lastFocusedButtonId = focusedButtonId;
-        QueueSpeech(label);
+        Button?[] menuButtons =
+        {
+            _mainMenu!.playButton, _mainMenu.leaderboardButton,
+            _mainMenu.achievementsButton, _mainMenu.settingsButton,
+            _mainMenu.creditsButton, _mainMenu.quitButton
+        };
+        int index = -1;
+        int count = 0;
+        foreach (Button? button in menuButtons)
+        {
+            if (button == null || !button.gameObject.activeInHierarchy)
+                continue;
+            if (button.GetInstanceID() == focusedButtonId)
+                index = count;
+            count++;
+        }
+        QueueSpeech(WithMenuIndex(label, index, count));
     }
 
     private string? GetMainMenuLabel(int focusedButtonId)
