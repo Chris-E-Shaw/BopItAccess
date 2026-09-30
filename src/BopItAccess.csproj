@@ -46,5 +46,9 @@
       <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Bop It!\MelonLoader\Il2CppAssemblies\Unity.InputSystem.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="Il2CppDOTween">
+      <HintPath>C:\Program Files (x86)\Steam\steamapps\common\Bop It!\MelonLoader\Il2CppAssemblies\Il2CppDOTween.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 </Project>

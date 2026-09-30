@@ -32,6 +32,8 @@ public sealed partial class BopItAccessMod
 
         string recovery = GetSpeechToggleRecoveryInstruction();
 
+        InitializeSpeechBackendPreferencesOnMainThread();
+
         lock (_speechLock)
         {
             _speechEnabled = enabled;
@@ -51,7 +53,20 @@ public sealed partial class BopItAccessMod
         if (!_speechToggleInitialized || !WasToggleSpeechPressed())
             return;
 
-        bool enabled = !_speechEnabled;
+        SetSpeechEnabled(!_speechEnabled);
+    }
+
+    private void SetSpeechEnabledFromMenu(bool enabled)
+    {
+        if (_speechToggleInitialized)
+            SetSpeechEnabled(enabled);
+    }
+
+    private void SetSpeechEnabled(bool enabled)
+    {
+        if (enabled == _speechEnabled)
+            return;
+
         string notice = enabled ? "Speech on." :
             "Speech off. " + GetSpeechToggleRecoveryInstruction();
 

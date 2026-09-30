@@ -1,4 +1,4 @@
-Bop It Access 0.5.13 - Limit FPS
+Bop It Access 0.5.14 - Speech Settings
 
 What this does
 --------------
@@ -15,6 +15,23 @@ speaks only the new value. The cap changes Unity's target frame rate while
 leaving game time scale, fixed update timing, and audio untouched.
 Like any frame cap, a lower setting also means fewer frame-based input polls.
 If 30 FPS feels less responsive in a fast game, choose 60, 120, or UNLIMITED.
+
+Below Controls, Settings now has a SPEECH menu. SPEECH OUTPUT uses the same
+saved master switch as F8 or controller Select, including the spoken recovery
+instructions when speech is turned off. OUTPUT MODE starts at Auto: the mod
+speaks through a detected screen reader, or uses SAPI when none is running.
+SAPI can be selected directly. The menu also lists JAWS, Window-Eyes, NVDA,
+System Access, and ZoomText. Direct NVDA output is available when NVDA is
+running. The other named readers are used when Tolk detects them as the active
+driver; if the chosen reader is unavailable, the mod announces a SAPI fallback.
+Tolk's 64-bit build does not support SuperNova, so it is not listed.
+
+The SPEECH menu also has VOICE, VOLUME, RATE, and PITCH controls. Voice
+lists the system default and installed 64-bit SAPI voices. Volume starts at
+100; Rate and Pitch start at 50. Volume ranges from 5 to 100 so SAPI recovery
+notices remain audible. Rate and Pitch range from 0 to 100. All three move in
+steps of five. They apply to SAPI mode and Auto's SAPI fallback.
+Speech settings are remembered between sessions. Back returns to Settings.
 
 Inside Play, the mod reads Solo, Party, Pass It, and One on One when focused.
 On the following song-selection screen, it announces the current theme

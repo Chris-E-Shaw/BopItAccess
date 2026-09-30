@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.13", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.14", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -88,6 +88,23 @@ public sealed partial class BopItAccessMod : MelonMod
     public override void OnLateUpdate()
     {
         ObserveResultRank();
+
+        bool speechMenuVisible = false;
+        try
+        {
+            speechMenuVisible = ReadSpeechMenuFocus();
+        }
+        catch (Exception ex)
+        {
+            WriteStatus("Speech settings focus check failed: " + ex);
+            ResetSpeechMenuFocus();
+        }
+        if (speechMenuVisible)
+        {
+            ResetSettingsFocus();
+            ResetMenuFocus();
+            return;
+        }
 
         bool calibrationVisible = false;
         try
@@ -461,6 +478,7 @@ public sealed partial class BopItAccessMod : MelonMod
             SliderOption("LIMIT FPS", _fpsSettingsSlider),
             ActionOption("AUDIO LATENCY", panel.audioLatency),
             ActionOption("CONTROLS", panel.controls),
+            ActionOption("SPEECH", _speechSettingsButton),
             ActionOption("GO ONLINE", goOnline)
         };
     }
@@ -739,20 +757,22 @@ public sealed partial class BopItAccessMod : MelonMod
         bool tolkLoaded = false;
         try
         {
-            WriteStatus("Calling Tolk_TrySAPI(true).");
-            TolkNative.Tolk_TrySAPI(true);
+            // Direct SAPI is used for the fallback so its voice, volume,
+            // rate and pitch can be configured independently of Tolk.
+            WriteStatus("Calling Tolk_TrySAPI(false).");
+            TolkNative.Tolk_TrySAPI(false);
             WriteStatus("Tolk_TrySAPI returned; calling Tolk_Load.");
             TolkNative.Tolk_Load();
             tolkLoaded = TolkNative.Tolk_IsLoaded();
 
             if (!tolkLoaded)
             {
-                WriteStatus("Tolk_IsLoaded returned false; no announcement was sent.");
-                MelonLogger.Error("Tolk did not initialize. No ready announcement was sent.");
-                return;
+                WriteStatus("Tolk_IsLoaded returned false; direct SAPI fallback will be attempted.");
+                MelonLogger.Warning("Tolk did not initialize; trying SAPI for speech output.");
             }
 
-            string? reader = Marshal.PtrToStringUni(TolkNative.Tolk_DetectScreenReader());
+            string? reader = tolkLoaded
+                ? Marshal.PtrToStringUni(TolkNative.Tolk_DetectScreenReader()) : null;
             WriteStatus($"Tolk initialized; active output driver: {reader ?? "none detected"}.");
             MelonLogger.Msg($"Tolk initialized. Active output driver: {reader ?? "none detected"}.");
 
@@ -780,7 +800,7 @@ public sealed partial class BopItAccessMod : MelonMod
             // it. Let the normal worker loop announce the newer state instead.
             if (startupGeneration == Interlocked.Read(ref _speechGeneration))
             {
-                bool queued = TolkNative.Tolk_Output(startupAnnouncement, true);
+                bool queued = OutputSpeechOnWorker(startupAnnouncement, true);
                 if (queued)
                 {
                     WriteStatus($"Tolk accepted the startup announcement '{startupAnnouncement}'.");
@@ -833,29 +853,29 @@ public sealed partial class BopItAccessMod : MelonMod
 
                 if (silence)
                 {
-                    bool silenced = TolkNative.Tolk_Silence();
+                    bool silenced = SilenceOutputOnWorker();
                     WriteStatus($"Stopped screen-reader speech: {silenced}.");
                 }
 
                 if (toggleNotice != null &&
                     generation == Interlocked.Read(ref _speechGeneration))
                 {
-                    bool accepted = TolkNative.Tolk_Output(toggleNotice, true);
-                    WriteStatus($"Speech toggle notice '{toggleNotice}' {(accepted ? "accepted" : "rejected")} by Tolk.");
+                    bool accepted = OutputSpeechOnWorker(toggleNotice, true);
+                    WriteStatus($"Speech toggle notice '{toggleNotice}' {(accepted ? "accepted" : "rejected")} by output backend.");
                 }
 
                 if (priority != null && _speechEnabled &&
                     generation == Interlocked.Read(ref _speechGeneration))
                 {
-                    bool scoreAccepted = TolkNative.Tolk_Output(priority, true);
-                    WriteStatus($"Priority speech announcement '{priority}' {(scoreAccepted ? "accepted" : "rejected")} by Tolk.");
+                    bool scoreAccepted = OutputSpeechOnWorker(priority, true);
+                    WriteStatus($"Priority speech announcement '{priority}' {(scoreAccepted ? "accepted" : "rejected")} by output backend.");
                 }
 
                 if (priorityFollowUp != null && _speechEnabled &&
                     generation == Interlocked.Read(ref _speechGeneration))
                 {
-                    bool menuAccepted = TolkNative.Tolk_Output(priorityFollowUp, false);
-                    WriteStatus($"Queued menu announcement '{priorityFollowUp}' {(menuAccepted ? "accepted" : "rejected")} by Tolk.");
+                    bool menuAccepted = OutputSpeechOnWorker(priorityFollowUp, false);
+                    WriteStatus($"Queued menu announcement '{priorityFollowUp}' {(menuAccepted ? "accepted" : "rejected")} by output backend.");
                 }
 
                 if (announcement != null && _speechEnabled &&
@@ -865,8 +885,8 @@ public sealed partial class BopItAccessMod : MelonMod
                     // following menu speech is queued without interruption.
                     bool followUpInterrupt = toggleNotice == null &&
                         priority == null && priorityFollowUp == null && interrupt;
-                    bool accepted = TolkNative.Tolk_Output(announcement, followUpInterrupt);
-                    WriteStatus($"Speech announcement '{announcement}' (interrupt {followUpInterrupt}) {(accepted ? "accepted" : "rejected")} by Tolk.");
+                    bool accepted = OutputSpeechOnWorker(announcement, followUpInterrupt);
+                    WriteStatus($"Speech announcement '{announcement}' (interrupt {followUpInterrupt}) {(accepted ? "accepted" : "rejected")} by output backend.");
                 }
 
                 if (sequential != null)
@@ -876,8 +896,8 @@ public sealed partial class BopItAccessMod : MelonMod
                         if (!_speechEnabled ||
                             generation != Interlocked.Read(ref _speechGeneration))
                             break;
-                        bool accepted = TolkNative.Tolk_Output(line, false);
-                        WriteStatus($"Queued sequential announcement '{line}' {(accepted ? "accepted" : "rejected")} by Tolk.");
+                        bool accepted = OutputSpeechOnWorker(line, false);
+                        WriteStatus($"Queued sequential announcement '{line}' {(accepted ? "accepted" : "rejected")} by output backend.");
                     }
                 }
             }
@@ -889,6 +909,7 @@ public sealed partial class BopItAccessMod : MelonMod
         }
         finally
         {
+            ReleaseSapiOnWorker();
             if (tolkLoaded)
             {
                 try

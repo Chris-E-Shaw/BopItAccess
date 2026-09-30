@@ -37,6 +37,7 @@ public sealed partial class BopItAccessMod
     {
         UpdateFpsLimitSetting();
         InitializeSpeechToggleOnMainThread();
+        UpdateSpeechMenuUi();
         UpdateDescriptionControlRebinding();
         UpdateScoreControlRebinding();
         UpdateToggleSpeechControlRebinding();
