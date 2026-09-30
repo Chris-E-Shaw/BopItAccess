@@ -130,6 +130,14 @@ public sealed partial class BopItAccessMod
             return true;
         }
 
+        AddedSpeakHintsControlRow? speakHintsRow =
+            FindAddedSpeakHintsControlRow(selected);
+        if (speakHintsRow != null && speakHintsRow.Root.activeInHierarchy)
+        {
+            SpeakHintsControlRow(speakHintsRow);
+            return true;
+        }
+
         ControlRow? focusedRow = FindFocusedControlRow(panel, selected);
         if (focusedRow != null)
         {
@@ -392,7 +400,8 @@ public sealed partial class BopItAccessMod
         string[] values = new string[_controlsRows.Length + _leaderboardControlRows.Count +
             (_descriptionControlRow == null ? 0 : 1) +
             (_scoreControlRow == null ? 0 : 1) +
-            (_toggleSpeechControlRow == null ? 0 : 1)];
+            (_toggleSpeechControlRow == null ? 0 : 1) +
+            (_speakHintsControlRow == null ? 0 : 1)];
         for (int i = 0; i < _controlsRows.Length; i++)
         {
             ControlRow row = _controlsRows[i];
@@ -434,6 +443,14 @@ public sealed partial class BopItAccessMod
         if (_toggleSpeechControlRow != null)
         {
             string? value = ReadToggleSpeechControlSnapshot();
+            if (value == null)
+                return null;
+            values[next++] = value;
+        }
+
+        if (_speakHintsControlRow != null)
+        {
+            string? value = SpeakHintsControlSnapshot();
             if (value == null)
                 return null;
             values[next] = value;
@@ -545,6 +562,9 @@ public sealed partial class BopItAccessMod
         if (_toggleSpeechControlRow != null)
             AddRow(_toggleSpeechControlRow.Root,
                 _toggleSpeechControlRow.Root.GetInstanceID());
+        if (_speakHintsControlRow != null)
+            AddRow(_speakHintsControlRow.Root,
+                _speakHintsControlRow.Root.GetInstanceID());
 
         int index = -1;
         int count = 0;

@@ -381,13 +381,13 @@ public sealed partial class BopItAccessMod
                 _oneOnOneFeedbackSubmitListener ??=
                     (UnityAction)OnOneOnOneFeedbackSubmitted,
                 _oneOnOneFeedbackEnabled);
+            _hintsTypeSlider = AddSpeechSlider(settings.resolution, content,
+                "HINTS TYPE");
             _readButtonHintsToggle = AddSpeechToggle(settings.vibration, content,
-                "READ BUTTON HINTS",
+                "AUTO-SPEAK BUTTON HINTS",
                 _readButtonHintsSubmitListener ??=
                     (UnityAction)OnReadButtonHintsSubmitted,
                 _readButtonHintsEnabled);
-            _hintsTypeSlider = AddSpeechSlider(settings.resolution, content,
-                "HINTS TYPE");
             _buttonHintsDelaySlider = AddSpeechSlider(settings.resolution, content,
                 "BUTTON HINTS DELAY");
             _repeatButtonHintsSlider = AddSpeechSlider(settings.resolution, content,
@@ -430,11 +430,11 @@ public sealed partial class BopItAccessMod
             _speechUiOptions.Add(new("ONE-ON-ONE FEEDBACK", "toggle",
                 _oneOnOneFeedbackToggle,
                 () => _oneOnOneFeedbackEnabled ? "On" : "Off"));
-            _speechUiOptions.Add(new("READ BUTTON HINTS", "toggle",
-                _readButtonHintsToggle,
-                () => _readButtonHintsEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("HINTS TYPE", "slider", _hintsTypeSlider,
                 () => _hintsType));
+            _speechUiOptions.Add(new("AUTO-SPEAK BUTTON HINTS", "toggle",
+                _readButtonHintsToggle,
+                () => _readButtonHintsEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("BUTTON HINTS DELAY", "slider",
                 _buttonHintsDelaySlider,
                 () => ButtonHintsDelayValue(_buttonHintsDelaySeconds)));

@@ -52,12 +52,14 @@ public sealed partial class BopItAccessMod
                 _leaderboardRebindOperation != null ||
                 _descriptionRebindOperation != null ||
                 _scoreRebindOperation != null ||
+                _speakHintsRebindOperation != null ||
                 _toggleSpeechRebindOperation != null;
             if (rebinding)
             {
                 bool custom = _leaderboardRebindOperation != null ||
                     _descriptionRebindOperation != null ||
                     _scoreRebindOperation != null ||
+                    _speakHintsRebindOperation != null ||
                     _toggleSpeechRebindOperation != null;
                 string device = _controlsRebindingManager?.ActiveDevice ??
                     _controlsRebindingManager?.deviceTracker?.ActiveDevice ??
@@ -333,7 +335,8 @@ public sealed partial class BopItAccessMod
     {
         if (_controlsRebindingManager?.IsRebinding == true ||
             _leaderboardRebindOperation != null || _descriptionRebindOperation != null ||
-            _scoreRebindOperation != null || _toggleSpeechRebindOperation != null)
+            _scoreRebindOperation != null || _speakHintsRebindOperation != null ||
+            _toggleSpeechRebindOperation != null)
             return hint;
         string keyboard = ReadToggleSpeechBindingLabel(0, ToggleSpeechKeyboardKey,
             "<Keyboard>/f8", "F8");

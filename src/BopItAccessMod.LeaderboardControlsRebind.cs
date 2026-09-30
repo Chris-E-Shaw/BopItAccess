@@ -230,6 +230,19 @@ public sealed partial class BopItAccessMod
             return;
         }
 
+        InputAction speakHints = EnsureSpeakHintsAction();
+        for (int i = 0; i < speakHints.bindings.Count; i++)
+        {
+            if (!SpeakHintsPathsMatch(selectedPath,
+                    speakHints.bindings[i].effectivePath))
+                continue;
+            RestoreLeaderboardOriginalOverride();
+            ReleaseLeaderboardControlRebinding();
+            _lastControlsRebinding = false;
+            QueueSpeech("That input is used by Speak Hints");
+            return;
+        }
+
         // Use the game's reserved-input and conflict checks. Its joystick
         // normalization is for single-binding actions and can overwrite an
         // entire composite, so keep this selected part's path unchanged.

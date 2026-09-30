@@ -402,9 +402,14 @@ public sealed partial class BopItAccessMod
         QueueSpeech(_lastControlsBinding ?? "Binding changed");
     }
 
-    private static bool IsEssentialNativeScoreBinding(InputRebindingManager manager,
+    private bool IsEssentialNativeScoreBinding(InputRebindingManager manager,
         string path)
     {
+        InputAction speakHints = EnsureSpeakHintsAction();
+        for (int i = 0; i < speakHints.bindings.Count; i++)
+            if (ScorePathsMatch(speakHints.bindings[i].effectivePath, path))
+                return true;
+
         InputActionAsset? asset = manager.inputActions ?? manager.playerInput?.actions;
         if (asset == null)
             return false;

@@ -1,4 +1,4 @@
-Bop It Access 0.6.9 - Concise Button Hints
+Bop It Access 0.6.10 - Speak Hints on Demand
 
 What this does
 --------------
@@ -67,8 +67,10 @@ the game's three-life limit. If both players' life counts change together,
 both counts are identified by colour. The feature runs only during One on One
 play.
 
-READ BUTTON HINTS is a saved SPEECH toggle and is On by default. Turning it
-Off suppresses all button-hint speech. BUTTON HINTS DELAY has None, 5 seconds
+HINTS TYPE now appears above AUTO-SPEAK BUTTON HINTS in the Speech menu.
+AUTO-SPEAK BUTTON HINTS is a saved toggle and is On by default. Turning it
+Off suppresses automatic hints, while SPEAK HINTS remains available on demand.
+BUTTON HINTS DELAY has None, 5 seconds
 (May interrupt speech), 10 seconds, 15 seconds, 30 seconds, and 60 seconds.
 It defaults to None. With None, the valid inputs for the current screen and
 their actions are included in the focused item's ordinary speech string,
@@ -97,12 +99,16 @@ Controller up/down reads rows only when no leaderboard control has focus;
 hints report only the controls available for the selected HINTS TYPE.
 
 REPEAT BUTTON HINTS is a separate saved slider: Off, 2x, 3x, 4x, 5x, or
-Infinitely. It defaults to Off. When enabled, it sends that many extra hint
-announcements after the first one; for example, 2x means two additional
-reminders. REPEAT INTERVAL sets the delay between them to 15, 30, 45, or
+Infinitely. It defaults to Off. The number is the total readings in one
+cycle: 2x means the first hint and one repeat; 3x means the first hint and
+two repeats. Off still allows the first automatic or manual hint.
+REPEAT INTERVAL sets the delay between repeats to 15, 30, 45, or
 60 seconds and defaults to 15 seconds. With BUTTON HINTS DELAY set to None,
 the repeat timer begins immediately after input. Input or a screen change
-restarts the hint cycle for the current screen. Hints are suppressed during
+restarts the hint cycle for the current screen. SPEAK HINTS replaces the
+pending automatic hint for that cycle, then uses REPEAT INTERVAL for any
+configured repeats. This also works with AUTO-SPEAK BUTTON HINTS Off.
+Hints are suppressed during
 active gameplay and the beat-timing phases of Audio Calibration, where extra
 speech could mask a cue. An existing saved 15-, 30-, or 60-second reminder
 delay from version 0.6.2 becomes the new BUTTON HINTS DELAY value.
@@ -203,9 +209,9 @@ announces changed bindings, and reads the game's visible rebinding feedback.
 It announces how to return to Settings once per visit. When Reset to Default changes a
 binding, it reports that the bindings were reset.
 
-The mod adds seven rows to the game's Controls menu: Group Previous,
-Group Next, Date Previous, Date Next, READ DESCRIPTIONS, READ SCORE, and
-TOGGLE SPEECH. The first four
+The mod adds eight rows to the game's Controls menu: Group Previous,
+Group Next, Date Previous, Date Next, READ DESCRIPTIONS, READ SCORE,
+TOGGLE SPEECH, and SPEAK HINTS. The first four
 address the leaderboard filters
 reached with O/P and K/L on the default keyboard layout, or the bumpers and
 D-pad left/right on a controller. Focus a row to hear its current binding,
@@ -218,6 +224,10 @@ rows retain their current rebinding behavior.
 TOGGLE SPEECH can be rebound for keyboard and controller. Its bindings are
 saved by the mod, and Reset to Default restores F8 and Select. If the binding
 is changed while speech is off, the mod announces the new recovery controls.
+SPEAK HINTS can also be rebound. Its defaults are H and right stick press.
+It speaks the current screen's hint immediately without scheduling a second
+automatic first hint. The configured repeats can still follow. It is silent
+during gameplay and the timed Audio Calibration cues.
 This update stops the stale Controls row from announcing "Rebinding failed"
 repeatedly after its scene closes. Read Descriptions no longer temporarily
 overrides any of the game's own input bindings.
@@ -257,7 +267,9 @@ can display the braille and its text equivalent without a physical display.
 For an ON/OFF comparison, use NVDA's follow-cursors braille mode with Show
 Messages enabled; its display-speech-output mode would mirror speech even
 when the mod's BRAILLE OUTPUT setting is Off.
-In Settings > Speech, use READ BUTTON HINTS to enable or disable instructions.
+In Settings > Speech, use AUTO-SPEAK BUTTON HINTS to enable or disable
+automatic instructions. Press H or right stick press to hear the current hint
+on demand.
 HINTS TYPE chooses Automatic, Keyboard, Controller, or Both for those hints.
 BUTTON HINTS DELAY chooses whether they accompany focus speech or follow a
 period of inactivity. REPEAT BUTTON HINTS and REPEAT INTERVAL control any

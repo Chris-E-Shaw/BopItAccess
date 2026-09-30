@@ -57,6 +57,7 @@ public sealed partial class BopItAccessMod
             bool rebinding = _toggleSpeechRebindOperation != null ||
                 _descriptionRebindOperation != null ||
                 _scoreRebindOperation != null ||
+                _speakHintsRebindOperation != null ||
                 _leaderboardRebindOperation != null ||
                 _controlsRebindingManager?.IsRebinding == true;
             if (rebinding)
@@ -476,7 +477,7 @@ public sealed partial class BopItAccessMod
         // The toggle operates on every screen, so sharing a binding with
         // another mod control would make that action mute speech as well.
         InputAction[] modActions =
-            { EnsureDescriptionAction(), EnsureScoreAction() };
+            { EnsureDescriptionAction(), EnsureScoreAction(), EnsureSpeakHintsAction() };
         foreach (InputAction action in modActions)
         {
             for (int i = 0; i < action.bindings.Count; i++)

@@ -15,6 +15,14 @@ public sealed partial class BopItAccessMod
     private (string Key, string Hint)? _cachedButtonHintContext;
     private long _nextButtonHintContextProbeAt;
     private long _nextButtonHintErrorAt;
+    private bool _manualButtonHintCycleActive;
+    private bool _manualButtonHintInputLatched;
+
+    // The slider describes total readings, including the first inline or
+    // delayed hint. For example, 2X permits one additional timed reading.
+    // -1 means indefinitely, and Off (0) permits no additional readings.
+    private int MaximumButtonHintRepeats => _repeatButtonHintsCount > 0
+        ? _repeatButtonHintsCount - 1 : _repeatButtonHintsCount;
 
     // Focus announcements use this instead of QueueSpeech so a None delay
     // places the complete hint in the same speech string as the focused item.
@@ -26,7 +34,9 @@ public sealed partial class BopItAccessMod
             try
             {
                 (string Key, string Hint)? context = ResolveButtonHintContext();
-                if (context != null)
+                if (context != null && (!_manualButtonHintCycleActive ||
+                    !string.Equals(_buttonHintContextKey, context.Value.Key,
+                        StringComparison.Ordinal)))
                 {
                     string focused = text.TrimEnd();
                     if (focused.Length > 0 &&
@@ -48,6 +58,7 @@ public sealed partial class BopItAccessMod
         }
 
         QueueSpeech(text, interrupt);
+        _nextButtonHintContextProbeAt = 0;
     }
 
     private void UpdateRepeatButtonHints()
@@ -80,8 +91,7 @@ public sealed partial class BopItAccessMod
             _nextButtonHintContextProbeAt = 0;
         }
 
-        if (!_readButtonHintsEnabled || !_speechEnabled ||
-            _speechSuppressedForBackground ||
+        if (!_speechEnabled || _speechSuppressedForBackground ||
             _shutdownRequested.IsSet)
         {
             _buttonHintContextKey = null;
@@ -90,8 +100,24 @@ public sealed partial class BopItAccessMod
             return;
         }
 
-        if (inputDetected)
+        if (_manualButtonHintInputLatched)
         {
+            // A held Speak Hints binding, including its release frame, must
+            // not restart the automatic first-hint delay. Repeats begin after
+            // input becomes idle again.
+            if (inputDetected || IsSpeakHintsHeld())
+            {
+                _lastButtonHintActivityAt = now;
+                if (MaximumButtonHintRepeats != 0)
+                    _nextButtonHintDueAt = now +
+                        _repeatButtonHintsIntervalSeconds * 1000L;
+            }
+            else
+                _manualButtonHintInputLatched = false;
+        }
+        else if (inputDetected)
+        {
+            _manualButtonHintCycleActive = false;
             _lastButtonHintActivityAt = now;
             _buttonHintInitialSent = false;
             _buttonHintRepeatsSent = 0;
@@ -132,6 +158,8 @@ public sealed partial class BopItAccessMod
         if (!string.Equals(_buttonHintContextKey, context.Value.Key,
             StringComparison.Ordinal))
         {
+            _manualButtonHintCycleActive = false;
+            _manualButtonHintInputLatched = false;
             _buttonHintContextKey = context.Value.Key;
             _buttonHintInitialSent = false;
             _buttonHintRepeatsSent = 0;
@@ -154,6 +182,14 @@ public sealed partial class BopItAccessMod
             return;
         }
 
+        // AUTO-SPEAK controls the initial hint. A manual request can still
+        // run the selected number of repeats while this setting is Off.
+        if (!_readButtonHintsEnabled && !_manualButtonHintCycleActive)
+        {
+            ResetButtonHintTimers(now);
+            return;
+        }
+
         if (now < _nextButtonHintDueAt)
             return;
 
@@ -167,9 +203,9 @@ public sealed partial class BopItAccessMod
             _buttonHintInitialSent = true;
             _buttonHintRepeatsSent = 0;
         }
-        else if (_repeatButtonHintsCount == 0 ||
-            (_repeatButtonHintsCount > 0 &&
-             _buttonHintRepeatsSent >= _repeatButtonHintsCount))
+        else if (MaximumButtonHintRepeats == 0 ||
+            (MaximumButtonHintRepeats > 0 &&
+             _buttonHintRepeatsSent >= MaximumButtonHintRepeats))
         {
             _nextButtonHintDueAt = long.MaxValue;
             return;
@@ -195,9 +231,9 @@ public sealed partial class BopItAccessMod
             QueueSpeech(context.Value.Hint);
         else
             QueueSequentialSpeech(context.Value.Hint);
-        _nextButtonHintDueAt = _repeatButtonHintsCount == 0 ||
-            (_repeatButtonHintsCount > 0 &&
-             _buttonHintRepeatsSent >= _repeatButtonHintsCount)
+        _nextButtonHintDueAt = MaximumButtonHintRepeats == 0 ||
+            (MaximumButtonHintRepeats > 0 &&
+             _buttonHintRepeatsSent >= MaximumButtonHintRepeats)
             ? long.MaxValue
             : now + _repeatButtonHintsIntervalSeconds * 1000L;
         WriteStatus($"Button hints for {context.Value.Key}: " +
@@ -205,8 +241,87 @@ public sealed partial class BopItAccessMod
                 ? "initial" : $"repeat {_buttonHintRepeatsSent}") + ".");
     }
 
+    private void UpdateSpeakHintsOnDemand()
+    {
+        bool available = _speechEnabled && !_speechSuppressedForBackground &&
+            !_shutdownRequested.IsSet && UnityEngine.Application.isFocused;
+        if (available && _cachedButtonHintContext == null)
+        {
+            // Make the shortcut available as soon as a new menu appears,
+            // including when automatic hints are disabled. The ordinary
+            // timer still refreshes established contexts every 250 ms.
+            try
+            {
+                _cachedButtonHintContext = ResolveButtonHintContext();
+            }
+            catch (Exception ex)
+            {
+                long now = Environment.TickCount64;
+                if (now >= _nextButtonHintErrorAt)
+                {
+                    WriteStatus("Speak Hints screen check failed: " + ex.Message);
+                    _nextButtonHintErrorAt = now + 5000;
+                }
+            }
+        }
+        available &= _cachedButtonHintContext != null;
+        if (!WasSpeakHintsPressed(available))
+            return;
+
+        try
+        {
+            // Resolve again on the press: focus may have changed since the
+            // timer's last low-frequency screen probe.
+            (string Key, string Hint)? context = ResolveButtonHintContext();
+            if (context == null)
+                return;
+
+            long now = Environment.TickCount64;
+            bool protectedOutput;
+            lock (_speechLock)
+                protectedOutput = _pendingPrioritySpeech != null ||
+                    _pendingPriorityFollowUpSpeech != null ||
+                    _pendingSpeechIsDescription || _descriptionSpeechMayBeActive;
+            if (protectedOutput ||
+                now < Volatile.Read(ref _gameOverScoreDispatchPendingUntil) ||
+                now < Volatile.Read(ref _gameOverScoreSpeechProtectedUntil))
+                QueueSequentialSpeech(context.Value.Hint);
+            else
+                QueueSpeech(context.Value.Hint);
+
+            // The manual request supplies the first hint for this cycle.
+            // It replaces the pending automatic hint, but still permits the
+            // configured number of later repeats.
+            _manualButtonHintCycleActive = true;
+            _manualButtonHintInputLatched = true;
+            _buttonHintContextKey = context.Value.Key;
+            _cachedButtonHintContext = context;
+            _nextButtonHintContextProbeAt = now + 250;
+            _lastButtonHintActivityAt = now;
+            _buttonHintInitialSent = true;
+            _buttonHintRepeatsSent = 0;
+            _buttonHintNoneRepeatArmed = _buttonHintsDelaySeconds == 0 &&
+                MaximumButtonHintRepeats != 0;
+            _nextButtonHintDueAt = MaximumButtonHintRepeats == 0
+                ? long.MaxValue
+                : now + _repeatButtonHintsIntervalSeconds * 1000L;
+            WriteStatus("Button hints for " + context.Value.Key + ": manual.");
+        }
+        catch (Exception ex)
+        {
+            long now = Environment.TickCount64;
+            if (now >= _nextButtonHintErrorAt)
+            {
+                WriteStatus("Manual button hints failed: " + ex.Message);
+                _nextButtonHintErrorAt = now + 5000;
+            }
+        }
+    }
+
     private void ResetButtonHintTimers(long now)
     {
+        _manualButtonHintCycleActive = false;
+        _manualButtonHintInputLatched = false;
         _lastButtonHintActivityAt = 0;
         _buttonHintInitialSent = false;
         _buttonHintNoneRepeatArmed = false;

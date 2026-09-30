@@ -113,7 +113,7 @@ public sealed partial class BopItAccessMod
         WriteStatus($"Output mode: {_outputMode}; SAPI voice: " +
             (string.IsNullOrEmpty(_sapiVoiceId) ? "system default" : _sapiVoiceId) +
             $"; volume {_sapiVolume}, rate {_sapiRate}, pitch {_sapiPitch}; " +
-            "read button hints " + (_readButtonHintsEnabled ? "on" : "off") +
+            "auto-speak button hints " + (_readButtonHintsEnabled ? "on" : "off") +
             "; mute speech in background " +
             (_muteSpeechInBackground ? "on" : "off") +
             "; button hints delay " + ButtonHintsDelayValue(_buttonHintsDelaySeconds) +
@@ -252,7 +252,8 @@ public sealed partial class BopItAccessMod
             return;
         _readButtonHintsEnabled = enabled;
         SaveButtonHintsPreference(ReadButtonHintsPreferenceKey, enabled ? 1 : 0);
-        WriteStatus("Read button hints " + (enabled ? "enabled" : "disabled") + ".");
+        WriteStatus("Auto-speak button hints " +
+            (enabled ? "enabled" : "disabled") + ".");
     }
 
     private void SetMuteSpeechInBackgroundFromMenu(bool enabled)
