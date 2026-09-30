@@ -84,6 +84,7 @@ public sealed partial class BopItAccessMod
             _pendingToggleSpeechNotice = notice;
             _silenceRequested = true;
             _speechGeneration++;
+            _sapiRenderSerial++;
         }
 
         if (!enabled)
@@ -91,7 +92,8 @@ public sealed partial class BopItAccessMod
             // A protected automatic result can still hold menu text outside
             // the worker queue. Drop it when muting so it cannot surface
             // later if speech is restored before that timer expires.
-            _gameOverScoreSpeechProtectedUntil = 0;
+            Volatile.Write(ref _gameOverScoreSpeechProtectedUntil, 0);
+            Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
             _deferredGameOverResultUpdates.Clear();
             _deferredGameOverMenuUpdate = null;
             _soloBackInstructionPending = false;

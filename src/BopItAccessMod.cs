@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.17", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.18", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -638,7 +638,10 @@ public sealed partial class BopItAccessMod : MelonMod
             _pendingSpeechInterrupt = interrupt;
             _pendingSpeechIsDescription = false;
             if (interrupt)
+            {
+                _sapiRenderSerial++;
                 _sequentialSpeech.Clear();
+            }
         }
 
         _speechRequested.Set();
@@ -656,6 +659,7 @@ public sealed partial class BopItAccessMod : MelonMod
             _pendingSpeech = text;
             _pendingSpeechInterrupt = true;
             _pendingSpeechIsDescription = true;
+            _sapiRenderSerial++;
             _sequentialSpeech.Clear();
         }
 
@@ -671,6 +675,8 @@ public sealed partial class BopItAccessMod : MelonMod
         {
             if (!_speechEnabled)
                 return;
+            bool hadDescription = _pendingSpeechIsDescription ||
+                _descriptionSpeechMayBeActive;
             if (_pendingSpeechIsDescription)
             {
                 _pendingSpeech = null;
@@ -683,6 +689,8 @@ public sealed partial class BopItAccessMod : MelonMod
             if (_descriptionSpeechMayBeActive)
                 _silenceRequested = true;
             _descriptionSpeechMayBeActive = false;
+            if (hadDescription)
+                _sapiRenderSerial++;
         }
 
         _speechRequested.Set();
@@ -710,6 +718,7 @@ public sealed partial class BopItAccessMod : MelonMod
             _pendingToggleSpeechNotice = null;
             _silenceRequested = true;
             _speechGeneration++;
+            _sapiRenderSerial++;
         }
 
         _speechRequested.Set();
@@ -746,6 +755,7 @@ public sealed partial class BopItAccessMod : MelonMod
             _pendingSpeech = null;
             _pendingSpeechInterrupt = false;
             _pendingSpeechIsDescription = false;
+            _sapiRenderSerial++;
             _sequentialSpeech.Clear();
         }
 
@@ -864,10 +874,13 @@ public sealed partial class BopItAccessMod : MelonMod
                     WriteStatus($"Speech toggle notice '{toggleNotice}' {(accepted ? "accepted" : "rejected")} by output backend.");
                 }
 
-                if (priority != null && _speechEnabled &&
-                    generation == Interlocked.Read(ref _speechGeneration))
+                if (priority != null)
                 {
-                    bool scoreAccepted = OutputSpeechOnWorker(priority, true);
+                    bool scoreAccepted = _speechEnabled &&
+                        generation == Interlocked.Read(ref _speechGeneration) &&
+                        OutputSpeechOnWorker(priority, true,
+                            protectedCapture: true);
+                    CompleteGameOverScoreSpeechDispatch(priority, scoreAccepted);
                     WriteStatus($"Priority speech announcement '{priority}' {(scoreAccepted ? "accepted" : "rejected")} by output backend.");
                 }
 

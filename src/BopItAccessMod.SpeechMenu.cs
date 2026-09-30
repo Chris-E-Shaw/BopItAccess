@@ -24,11 +24,13 @@ public sealed partial class BopItAccessMod
     private readonly List<SpeechUiOption> _speechUiOptions = new();
     private SettingsToggle? _speechOutputToggle;
     private SettingsSlider? _speechModeSlider;
+    private SettingsToggle? _trimSilenceToggle;
     private SettingsSlider? _speechVoiceSlider;
     private SettingsSlider? _speechVolumeSlider;
     private SettingsSlider? _speechRateSlider;
     private SettingsSlider? _speechPitchSlider;
     private UnityAction? _speechOutputSubmitListener;
+    private UnityAction? _trimSilenceSubmitListener;
     private UnityAction? _speechBackSubmitListener;
     private UnityAction<int>? _speechModeMoveListener;
     private UnityAction<int>? _speechVoiceMoveListener;
@@ -71,6 +73,8 @@ public sealed partial class BopItAccessMod
                 }
                 if (_speechOutputToggle != null && _speechOutputToggle.IsOn != _speechEnabled)
                     SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
+                if (_trimSilenceToggle != null && _trimSilenceToggle.IsOn != _trimSilence)
+                    SetSpeechToggleDisplay(_trimSilenceToggle, _trimSilence);
                 ScrollSelectedRowIntoView(_speechMenuScroll);
             }
         }
@@ -281,9 +285,15 @@ public sealed partial class BopItAccessMod
 
             _speechUiOptions.Clear();
             _speechOutputToggle = AddSpeechToggle(settings.vibration, content,
-                "SPEECH OUTPUT");
+                "SPEECH OUTPUT",
+                _speechOutputSubmitListener ??= (UnityAction)OnSpeechOutputSubmitted,
+                _speechEnabled);
             _speechModeSlider = AddSpeechSlider(settings.resolution, content,
                 "OUTPUT MODE");
+            _trimSilenceToggle = AddSpeechToggle(settings.vibration, content,
+                "TRIM SILENCE",
+                _trimSilenceSubmitListener ??= (UnityAction)OnTrimSilenceSubmitted,
+                _trimSilence);
             _speechVoiceSlider = AddSpeechSlider(settings.resolution, content,
                 "VOICE");
             _speechVolumeSlider = AddSpeechSlider(settings.resolution, content,
@@ -299,6 +309,8 @@ public sealed partial class BopItAccessMod
                 () => _speechEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("OUTPUT MODE", _speechModeSlider,
                 () => _outputMode));
+            _speechUiOptions.Add(new("TRIM SILENCE", _trimSilenceToggle,
+                () => _trimSilence ? "On" : "Off"));
             _speechUiOptions.Add(new("VOICE", _speechVoiceSlider,
                 ReadCurrentSapiVoiceName));
             _speechUiOptions.Add(new("VOLUME", _speechVolumeSlider,
@@ -326,7 +338,7 @@ public sealed partial class BopItAccessMod
 
             _speechMenuRoot = root;
             _speechMenuPanel = speechPanel;
-            WriteStatus("Built Speech settings submenu with seven native-style rows.");
+            WriteStatus("Built Speech settings submenu with eight native-style rows.");
         }
         catch
         {
@@ -334,6 +346,7 @@ public sealed partial class BopItAccessMod
             _speechUiOptions.Clear();
             _speechOutputToggle = null;
             _speechModeSlider = null;
+            _trimSilenceToggle = null;
             _speechVoiceSlider = null;
             _speechVolumeSlider = null;
             _speechRateSlider = null;
@@ -344,7 +357,7 @@ public sealed partial class BopItAccessMod
     }
 
     private SettingsToggle AddSpeechToggle(SettingsToggle? source, Transform parent,
-        string label)
+        string label, UnityAction listener, bool enabled)
     {
         if (source == null)
             throw new InvalidOperationException("The native toggle row is unavailable.");
@@ -357,9 +370,8 @@ public sealed partial class BopItAccessMod
         SetSpeechRowLabel(row, label);
         row.Submitted = new UnityEvent();
         row.ValueChanged = new UnityEvent<bool>();
-        _speechOutputSubmitListener ??= (UnityAction)OnSpeechOutputSubmitted;
-        row.Submitted.AddListener(_speechOutputSubmitListener);
-        SetSpeechToggleDisplay(row, _speechEnabled);
+        row.Submitted.AddListener(listener);
+        SetSpeechToggleDisplay(row, enabled);
         clone.SetActive(true);
         return row;
     }
@@ -511,6 +523,8 @@ public sealed partial class BopItAccessMod
         if (_speechOutputToggle != null)
             SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
         _speechModeSlider?.SetValue(_outputMode);
+        if (_trimSilenceToggle != null)
+            SetSpeechToggleDisplay(_trimSilenceToggle, _trimSilence);
         _speechVoiceSlider?.SetValue(ReadCurrentSapiVoiceName());
         _speechVolumeSlider?.SetValue(_sapiVolume + "%");
         _speechRateSlider?.SetValue(_sapiRate.ToString());
@@ -538,6 +552,15 @@ public sealed partial class BopItAccessMod
         // SettingsToggle.Start also registers its native Toggle listener on
         // Submitted. It runs after this callback and updates the visual row.
         // UpdateSpeechMenuUi reconciles it if that listener is delayed.
+    }
+
+    private void OnTrimSilenceSubmitted()
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
+        SetTrimSilenceFromMenu(!_trimSilence);
+        // SettingsToggle.Start also registers its native visual listener.
+        // UpdateSpeechMenuUi reconciles the row with the saved setting.
     }
 
     private void OnSpeechModeMoved(int movement)
@@ -647,7 +670,7 @@ public sealed partial class BopItAccessMod
                 Environment.TickCount64 - _speechMenuOpenedAt > 800)
             {
                 _speechMenuIntroductionPending = false;
-                QueueSpeech("Speech. Use Back to return to Settings. Voice, volume, rate, and pitch apply to SAPI.");
+                QueueSpeech("Speech. Use Back to return to Settings. Voice, volume, rate, pitch, and trim silence apply to SAPI output.");
             }
             return true;
         }
@@ -677,7 +700,7 @@ public sealed partial class BopItAccessMod
             if (_speechMenuIntroductionPending)
             {
                 message = "Speech. Use Back to return to Settings. " +
-                    "Voice, volume, rate, and pitch apply to SAPI. " + message;
+                    "Voice, volume, rate, pitch, and trim silence apply to SAPI output. " + message;
                 _speechMenuIntroductionPending = false;
             }
             QueueSpeech(message);

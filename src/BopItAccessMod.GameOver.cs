@@ -20,6 +20,9 @@ public sealed partial class BopItAccessMod
     private long _backOnlyPromptDueAt;
     private bool _backOnlyPromptSpoken;
     private long _gameOverScoreSpeechProtectedUntil;
+    // The SAPI trim path renders a complete memory stream before playback.
+    // Hold focus announcements while that initial score is being dispatched.
+    private long _gameOverScoreDispatchPendingUntil;
     private readonly List<string> _deferredGameOverResultUpdates = new();
     private string? _deferredGameOverMenuUpdate;
     private bool _soloBackInstructionPending;
@@ -267,9 +270,48 @@ public sealed partial class BopItAccessMod
     {
         // NVDA does not expose speech completion through Tolk. Estimate the
         // time needed for the short score sentence before speaking the menu.
+        long now = Environment.TickCount64;
+        Volatile.Write(ref _gameOverScoreSpeechProtectedUntil,
+            now + EstimateGameOverScoreSpeechMs(score));
+        Volatile.Write(ref _gameOverScoreDispatchPendingUntil,
+            _speechEnabled ? now + 30000 : 0);
+    }
+
+    private static long EstimateGameOverScoreSpeechMs(string score)
+    {
         int wordCount = score.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
-        long protectionMs = Math.Clamp(1000L + wordCount * 550L, 2200L, 4500L);
-        _gameOverScoreSpeechProtectedUntil = Environment.TickCount64 + protectionMs;
+        return Math.Clamp(1000L + wordCount * 550L, 2200L, 4500L);
+    }
+
+    private void CompleteGameOverScoreSpeechDispatch(string score, bool accepted)
+    {
+        if (accepted)
+            ExtendGameOverScoreProtection(EstimateGameOverScoreSpeechMs(score));
+        // Publish the deadline before releasing the hold on menu focus.
+        Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
+    }
+
+    private void ExtendGameOverScoreProtectionForSapiPlayback(int pcmByteLength)
+    {
+        // The capture format is 22,050 Hz, 16-bit mono. Give playback a
+        // short device-start margin after its actual PCM duration.
+        long durationMs = Math.Clamp(pcmByteLength * 1000L / (22050 * 2) + 500,
+            1500L, 30000L);
+        ExtendGameOverScoreProtection(durationMs);
+    }
+
+    private void ExtendGameOverScoreProtection(long durationMs)
+    {
+        long requested = Environment.TickCount64 + durationMs;
+        long current;
+        do
+        {
+            current = Volatile.Read(ref _gameOverScoreSpeechProtectedUntil);
+            if (current >= requested)
+                return;
+        }
+        while (Interlocked.CompareExchange(
+            ref _gameOverScoreSpeechProtectedUntil, requested, current) != current);
     }
 
     private void AnnounceGameOverUpdates(List<string> resultChanges,
@@ -281,7 +323,9 @@ public sealed partial class BopItAccessMod
         if (menuChange != null)
             _deferredGameOverMenuUpdate = menuChange;
 
-        if (Environment.TickCount64 < _gameOverScoreSpeechProtectedUntil)
+        long now = Environment.TickCount64;
+        if (now < Volatile.Read(ref _gameOverScoreDispatchPendingUntil) ||
+            now < Volatile.Read(ref _gameOverScoreSpeechProtectedUntil))
             return;
 
         if (_deferredGameOverResultUpdates.Count == 0 &&
@@ -386,7 +430,8 @@ public sealed partial class BopItAccessMod
         _lastGameOverRank = 0;
         _backOnlyPromptDueAt = 0;
         _backOnlyPromptSpoken = false;
-        _gameOverScoreSpeechProtectedUntil = 0;
+        Volatile.Write(ref _gameOverScoreSpeechProtectedUntil, 0);
+        Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
         _deferredGameOverResultUpdates.Clear();
         _deferredGameOverMenuUpdate = null;
         _soloBackInstructionPending = false;

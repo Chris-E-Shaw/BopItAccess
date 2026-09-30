@@ -12,6 +12,7 @@ public sealed partial class BopItAccessMod
     private const string SapiVolumePreferenceKey = "BopItAccess.SapiVolume";
     private const string SapiRatePreferenceKey = "BopItAccess.SapiRate";
     private const string SapiPitchPreferenceKey = "BopItAccess.SapiPitch";
+    private const string SapiTrimSilencePreferenceKey = "BopItAccess.SapiTrimSilence";
     private static readonly string[] OutputModes =
     {
         "Auto", "SAPI", "JAWS", "Window-Eyes", "NVDA", "System Access", "ZoomText"
@@ -22,14 +23,22 @@ public sealed partial class BopItAccessMod
     private int _sapiVolume = 100;
     private int _sapiRate = 50;
     private int _sapiPitch = 50;
+    private bool _trimSilence;
     private List<SpeechVoiceOption> _sapiVoices = new();
     private int _sapiSettingsVersion;
+    // Incremented by the main thread when an interrupting request supersedes
+    // an utterance that may still be rendering into an in-memory SAPI stream.
+    private long _sapiRenderSerial;
 
     // These objects are owned and touched only by the existing STA speech
     // worker. Unity/PlayerPrefs and the menu stay on the main thread.
     private object? _sapiComVoice;
+    private object? _sapiCaptureVoice;
+    private readonly List<(int Number, object Stream)> _sapiPlaybackStreams = new();
     private int _sapiAppliedSettingsVersion = -1;
     private string _sapiAppliedVoiceId = string.Empty;
+    private int _sapiCaptureAppliedSettingsVersion = -1;
+    private string _sapiCaptureAppliedVoiceId = string.Empty;
     private OutputBackend _lastOutputBackend;
     private string? _lastFallbackNoticeMode;
     private long _nextSapiErrorLogAt;
@@ -48,6 +57,7 @@ public sealed partial class BopItAccessMod
             _sapiVolume = Math.Clamp(PlayerPrefs.GetInt(SapiVolumePreferenceKey, 100), 5, 100);
             _sapiRate = Math.Clamp(PlayerPrefs.GetInt(SapiRatePreferenceKey, 50), 0, 100);
             _sapiPitch = Math.Clamp(PlayerPrefs.GetInt(SapiPitchPreferenceKey, 50), 0, 100);
+            _trimSilence = PlayerPrefs.GetInt(SapiTrimSilencePreferenceKey, 0) != 0;
         }
         catch (Exception ex)
         {
@@ -57,7 +67,8 @@ public sealed partial class BopItAccessMod
         RefreshSapiVoices();
         WriteStatus($"Output mode: {_outputMode}; SAPI voice: " +
             (string.IsNullOrEmpty(_sapiVoiceId) ? "system default" : _sapiVoiceId) +
-            $"; volume {_sapiVolume}, rate {_sapiRate}, pitch {_sapiPitch}.");
+            $"; volume {_sapiVolume}, rate {_sapiRate}, pitch {_sapiPitch}, " +
+            $"trim silence {(_trimSilence ? "on" : "off")}.");
     }
 
     private void RefreshSapiVoices()
@@ -127,6 +138,7 @@ public sealed partial class BopItAccessMod
             _outputMode = mode;
             _silenceRequested = true;
             _speechGeneration++;
+            _sapiRenderSerial++;
             _pendingSpeech = null;
             _pendingPrioritySpeech = null;
             _pendingPriorityFollowUpSpeech = null;
@@ -160,6 +172,24 @@ public sealed partial class BopItAccessMod
 
     private void SetSapiPitchFromMenu(int value) => SetSapiNumberFromMenu(
         SapiPitchPreferenceKey, ref _sapiPitch, value, "pitch");
+
+    private void SetTrimSilenceFromMenu(bool enabled)
+    {
+        if (_trimSilence == enabled)
+            return;
+        lock (_speechLock)
+            _trimSilence = enabled;
+        try
+        {
+            PlayerPrefs.SetInt(SapiTrimSilencePreferenceKey, enabled ? 1 : 0);
+            PlayerPrefs.Save();
+        }
+        catch (Exception ex)
+        {
+            WriteStatus("Could not save SAPI trim silence setting: " + ex.Message);
+        }
+        WriteStatus("SAPI trim silence " + (enabled ? "enabled" : "disabled") + ".");
+    }
 
     private void SetSapiNumberFromMenu(string key, ref int field, int value, string name)
     {
@@ -196,7 +226,8 @@ public sealed partial class BopItAccessMod
         }
     }
 
-    private bool OutputSpeechOnWorker(string text, bool interrupt)
+    private bool OutputSpeechOnWorker(string text, bool interrupt,
+        bool protectedCapture = false)
     {
         string mode;
         lock (_speechLock)
@@ -210,12 +241,13 @@ public sealed partial class BopItAccessMod
                 _lastOutputBackend = OutputBackend.Tolk;
                 return true;
             }
-            return SpeakSapiOnWorker(text, interrupt) || TryTolkAsLastResort(text, interrupt);
+            return SpeakSapiOnWorker(text, interrupt, protectedCapture) ||
+                TryTolkAsLastResort(text, interrupt);
         }
 
         if (string.Equals(mode, "SAPI", StringComparison.OrdinalIgnoreCase))
         {
-            if (SpeakSapiOnWorker(text, interrupt))
+            if (SpeakSapiOnWorker(text, interrupt, protectedCapture))
             {
                 _lastFallbackNoticeMode = null;
                 return true;
@@ -265,7 +297,7 @@ public sealed partial class BopItAccessMod
         bool announceFallback = _lastFallbackNoticeMode != mode;
         string sapiText = announceFallback
             ? $"{mode} is unavailable. Using SAPI. {text}" : text;
-        if (SpeakSapiOnWorker(sapiText, interrupt))
+        if (SpeakSapiOnWorker(sapiText, interrupt, protectedCapture))
         {
             _lastFallbackNoticeMode = mode;
             return true;
@@ -288,7 +320,8 @@ public sealed partial class BopItAccessMod
         return true;
     }
 
-    private bool SpeakSapiOnWorker(string text, bool interrupt)
+    private bool SpeakSapiOnWorker(string text, bool interrupt,
+        bool protectedCapture)
     {
         try
         {
@@ -296,14 +329,44 @@ public sealed partial class BopItAccessMod
                 return false;
             dynamic voice = _sapiComVoice!;
             int pitch;
+            bool trimSilence;
+            long generation;
+            long renderSerial;
             lock (_speechLock)
+            {
                 pitch = _sapiPitch;
+                trimSilence = _trimSilence;
+                generation = _speechGeneration;
+                renderSerial = _sapiRenderSerial;
+            }
             int mappedPitch = (int)Math.Round((pitch - 50) / 5.0);
             string xml = $"<pitch absmiddle=\"{mappedPitch:+0;-0;0}\">" +
                 SecurityElement.Escape(text) + "</pitch>";
+
+            if (trimSilence)
+            {
+                try
+                {
+                    TrimmedSpeechResult result = SpeakTrimmedSapiOnWorker(xml,
+                        interrupt, generation, renderSerial, protectedCapture);
+                    if (result != TrimmedSpeechResult.Failed)
+                        return true;
+                }
+                catch (Exception ex)
+                {
+                    LogSapiError("SAPI in-memory silence trimming failed; using direct output", ex);
+                    ReleaseSapiCaptureOnWorker();
+                }
+
+                // A capture failure must not make the menu or score silent.
+                if (SapiCaptureIsStale(generation, renderSerial, protectedCapture))
+                    return true;
+            }
+
             // SVSFlagsAsync | SVSFIsXML, plus SVSFPurgeBeforeSpeak when
             // this message should interrupt an earlier SAPI utterance.
             voice.Speak(xml, interrupt ? 11 : 9);
+            ReleaseCompletedSapiPlaybackStreamsOnWorker();
             _lastOutputBackend = OutputBackend.Sapi;
             return true;
         }
@@ -313,6 +376,331 @@ public sealed partial class BopItAccessMod
             ReleaseSapiOnWorker();
             return false;
         }
+    }
+
+    private enum TrimmedSpeechResult { Played, Cancelled, Failed }
+
+    private TrimmedSpeechResult SpeakTrimmedSapiOnWorker(string xml,
+        bool interrupt, long generation, long renderSerial,
+        bool protectedCapture)
+    {
+        if (!EnsureSapiCaptureOnWorker())
+            return TrimmedSpeechResult.Failed;
+
+        object? captureFormat = null;
+        object? captureStream = null;
+        object? playbackStream = null;
+        try
+        {
+            Type? formatType = Type.GetTypeFromProgID("SAPI.SpAudioFormat");
+            Type? streamType = Type.GetTypeFromProgID("SAPI.SpMemoryStream");
+            if (formatType == null || streamType == null)
+                return TrimmedSpeechResult.Failed;
+
+            captureFormat = Activator.CreateInstance(formatType);
+            captureStream = Activator.CreateInstance(streamType);
+            if (captureFormat == null || captureStream == null)
+                return TrimmedSpeechResult.Failed;
+
+            dynamic format = captureFormat;
+            dynamic stream = captureStream;
+            dynamic captureVoice = _sapiCaptureVoice!;
+            // SAFT22kHz16BitMono is 22. Fix the output format before assigning
+            // the stream so the byte array is known to be signed 16-bit PCM.
+            format.Type = 22;
+            stream.Format = format;
+            captureVoice.AllowAudioOutputFormatChangesOnNextSet = false;
+            captureVoice.AudioOutputStream = stream;
+            // Render asynchronously to keep the worker responsive to a newer
+            // interrupt, speech-off command, or game start while SAPI renders.
+            captureVoice.Speak(xml, 9); // asynchronous, XML
+            long startedAt = Environment.TickCount64;
+            while (!(bool)captureVoice.WaitUntilDone(20))
+            {
+                if (SapiCaptureIsStale(generation, renderSerial, protectedCapture))
+                {
+                    PurgeSapiCaptureOnWorker();
+                    return TrimmedSpeechResult.Cancelled;
+                }
+                if (Environment.TickCount64 - startedAt > 15000)
+                {
+                    PurgeSapiCaptureOnWorker();
+                    WriteStatus("SAPI in-memory capture exceeded 15 seconds; using direct output.");
+                    return TrimmedSpeechResult.Failed;
+                }
+            }
+            if (SapiCaptureIsStale(generation, renderSerial, protectedCapture))
+                return TrimmedSpeechResult.Cancelled;
+
+            dynamic actualFormat = stream.Format;
+            if ((int)actualFormat.Type != 22)
+            {
+                WriteStatus("SAPI changed the capture format; using direct output.");
+                return TrimmedSpeechResult.Failed;
+            }
+
+            if (stream.GetData() is not byte[] pcm || pcm.Length < 2 ||
+                (pcm.Length & 1) != 0 ||
+                (pcm.Length >= 4 && pcm[0] == (byte)'R' &&
+                 pcm[1] == (byte)'I' && pcm[2] == (byte)'F' &&
+                 pcm[3] == (byte)'F'))
+            {
+                WriteStatus("SAPI in-memory capture returned unsupported PCM; using direct output.");
+                return TrimmedSpeechResult.Failed;
+            }
+
+            byte[]? trimmed = TrimSapiPcmSilence(pcm);
+            if (trimmed == null)
+            {
+                WriteStatus("SAPI in-memory capture contained no audible PCM; using direct output.");
+                return TrimmedSpeechResult.Failed;
+            }
+            playbackStream = Activator.CreateInstance(streamType);
+            if (playbackStream == null)
+                return TrimmedSpeechResult.Failed;
+            dynamic playback = playbackStream;
+            playback.Format = format;
+            playback.SetData(trimmed); // also rewinds the stream for playback
+            if (SapiCaptureIsStale(generation, renderSerial, protectedCapture))
+                return TrimmedSpeechResult.Cancelled;
+
+            dynamic outputVoice = _sapiComVoice!;
+            // SpeakStream uses SAPI's audio device and existing queue. Purge
+            // on interrupt; otherwise append behind the current utterance.
+            ReleaseCompletedSapiPlaybackStreamsOnWorker();
+            int configuredRate = (int)outputVoice.Rate;
+            int streamNumber;
+            try
+            {
+                // The capture voice already applied the requested rate while
+                // synthesizing PCM. Keep playback neutral so SpeakStream does
+                // not apply the same rate adjustment a second time.
+                outputVoice.Rate = 0;
+                streamNumber = (int)outputVoice.SpeakStream(playback,
+                    interrupt ? 3 : 1);
+            }
+            finally
+            {
+                try
+                {
+                    outputVoice.Rate = configuredRate;
+                }
+                catch (Exception ex)
+                {
+                    _sapiAppliedSettingsVersion = -1;
+                    LogSapiError("Could not restore SAPI playback rate", ex);
+                }
+            }
+            // SAPI plays this asynchronously. Keep the managed COM wrapper
+            // alive until the voice has advanced past this stream or stopped.
+            _sapiPlaybackStreams.Add((streamNumber, playbackStream));
+            playbackStream = null;
+            ReleaseCompletedSapiPlaybackStreamsOnWorker();
+            _lastOutputBackend = OutputBackend.Sapi;
+            if (protectedCapture)
+                ExtendGameOverScoreProtectionForSapiPlayback(trimmed.Length);
+            return TrimmedSpeechResult.Played;
+        }
+        finally
+        {
+            if (_sapiCaptureVoice != null)
+            {
+                try
+                {
+                    dynamic captureVoice = _sapiCaptureVoice;
+                    captureVoice.AudioOutputStream = null;
+                }
+                catch (Exception ex)
+                {
+                    LogSapiError("Could not detach SAPI capture stream", ex);
+                    ReleaseSapiCaptureOnWorker();
+                }
+            }
+            ReleaseTemporarySapiComObject(playbackStream);
+            ReleaseTemporarySapiComObject(captureStream);
+            ReleaseTemporarySapiComObject(captureFormat);
+        }
+    }
+
+    private bool SapiCaptureIsStale(long generation, long renderSerial,
+        bool protectedCapture)
+    {
+        lock (_speechLock)
+            return _shutdownRequested.IsSet || generation != _speechGeneration ||
+                (!protectedCapture && renderSerial != _sapiRenderSerial);
+    }
+
+    private static byte[]? TrimSapiPcmSilence(byte[] pcm)
+    {
+        const int silenceThreshold = 128; // about -48 dBFS
+        const int samplesPerSecond = 22050;
+        const int paddingSamples = samplesPerSecond / 50; // preserve 20 ms
+        int first = -1;
+        int last = -1;
+        int sampleCount = pcm.Length / 2;
+        for (int sampleIndex = 0; sampleIndex < sampleCount; sampleIndex++)
+        {
+            int offset = sampleIndex * 2;
+            short amplitude = (short)(pcm[offset] | pcm[offset + 1] << 8);
+            if (Math.Abs((int)amplitude) < silenceThreshold)
+                continue;
+            if (first < 0)
+                first = sampleIndex;
+            last = sampleIndex;
+        }
+        if (first < 0)
+            return null; // uncertain capture: use direct SAPI output
+
+        int startSample = Math.Max(0, first - paddingSamples);
+        int endSample = Math.Min(sampleCount, last + paddingSamples + 1);
+        if (startSample == 0 && endSample == sampleCount)
+            return pcm;
+        byte[] trimmed = new byte[(endSample - startSample) * 2];
+        Buffer.BlockCopy(pcm, startSample * 2, trimmed, 0, trimmed.Length);
+        return trimmed;
+    }
+
+    private bool EnsureSapiCaptureOnWorker()
+    {
+        string voiceId;
+        int rate;
+        int version;
+        lock (_speechLock)
+        {
+            voiceId = _sapiVoiceId;
+            rate = _sapiRate;
+            version = _sapiSettingsVersion;
+        }
+        if (_sapiCaptureVoice != null &&
+            !string.Equals(voiceId, _sapiCaptureAppliedVoiceId,
+                StringComparison.OrdinalIgnoreCase))
+            ReleaseSapiCaptureOnWorker();
+
+        if (_sapiCaptureVoice == null)
+        {
+            Type? type = Type.GetTypeFromProgID("SAPI.SpVoice");
+            if (type == null)
+                return false;
+            _sapiCaptureVoice = Activator.CreateInstance(type);
+            _sapiCaptureAppliedSettingsVersion = -1;
+        }
+        if (_sapiCaptureVoice == null)
+            return false;
+        if (version == _sapiCaptureAppliedSettingsVersion)
+            return true;
+
+        dynamic voice = _sapiCaptureVoice;
+        if (!string.IsNullOrEmpty(voiceId))
+        {
+            try
+            {
+                dynamic tokens = voice.GetVoices();
+                for (int i = 0; i < (int)tokens.Count; i++)
+                {
+                    dynamic token = tokens.Item(i);
+                    if (!string.Equals((string)token.Id, voiceId,
+                            StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    voice.Voice = token;
+                    break;
+                }
+            }
+            catch (Exception ex)
+            {
+                LogSapiError("Could not select SAPI capture voice", ex);
+            }
+        }
+        // Render at full volume. The output voice applies the user's volume
+        // during SpeakStream, avoiding attenuation twice.
+        voice.Volume = 100;
+        voice.Rate = (int)Math.Round((rate - 50) / 5.0);
+        _sapiCaptureAppliedVoiceId = voiceId;
+        _sapiCaptureAppliedSettingsVersion = version;
+        return true;
+    }
+
+    private void ReleaseSapiCaptureOnWorker()
+    {
+        object? capture = _sapiCaptureVoice;
+        _sapiCaptureVoice = null;
+        _sapiCaptureAppliedSettingsVersion = -1;
+        _sapiCaptureAppliedVoiceId = string.Empty;
+        ReleaseTemporarySapiComObject(capture);
+    }
+
+    private void PurgeSapiCaptureOnWorker()
+    {
+        if (_sapiCaptureVoice == null)
+            return;
+        try
+        {
+            dynamic captureVoice = _sapiCaptureVoice;
+            captureVoice.Speak(string.Empty, 3); // asynchronous purge
+            // Let the capture engine stop writing before its memory stream is
+            // detached and released by the caller's finally block.
+            if (!(bool)captureVoice.WaitUntilDone(100))
+                ReleaseSapiCaptureOnWorker();
+        }
+        catch (Exception ex)
+        {
+            LogSapiError("Could not purge SAPI capture", ex);
+            ReleaseSapiCaptureOnWorker();
+        }
+    }
+
+    private static void ReleaseTemporarySapiComObject(object? value)
+    {
+        try
+        {
+            if (value != null && Marshal.IsComObject(value))
+                Marshal.FinalReleaseComObject(value);
+        }
+        catch (Exception ex)
+        {
+            WriteStatus("Could not release a temporary SAPI object: " + ex.Message);
+        }
+    }
+
+    private void ReleaseCompletedSapiPlaybackStreamsOnWorker()
+    {
+        if (_sapiPlaybackStreams.Count == 0 || _sapiComVoice == null)
+            return;
+        try
+        {
+            dynamic voice = _sapiComVoice;
+            if ((bool)voice.WaitUntilDone(0))
+            {
+                ReleaseAllSapiPlaybackStreamsOnWorker();
+                return;
+            }
+
+            // A stream number lower than the one playing has finished. Keep
+            // the current and all queued memory streams alive for SAPI.
+            dynamic status = voice.Status;
+            int current = (int)status.CurrentStreamNumber;
+            if (current <= 0)
+                return;
+            for (int i = _sapiPlaybackStreams.Count - 1; i >= 0; i--)
+            {
+                if (_sapiPlaybackStreams[i].Number >= current)
+                    continue;
+                ReleaseTemporarySapiComObject(_sapiPlaybackStreams[i].Stream);
+                _sapiPlaybackStreams.RemoveAt(i);
+            }
+        }
+        catch (Exception ex)
+        {
+            // The audio remains usable even when a voice does not expose
+            // status. Retain streams until a later poll or voice release.
+            WriteStatus("Could not inspect SAPI playback progress: " + ex.Message);
+        }
+    }
+
+    private void ReleaseAllSapiPlaybackStreamsOnWorker()
+    {
+        foreach (var item in _sapiPlaybackStreams)
+            ReleaseTemporarySapiComObject(item.Stream);
+        _sapiPlaybackStreams.Clear();
     }
 
     private bool EnsureSapiOnWorker()
@@ -388,6 +776,7 @@ public sealed partial class BopItAccessMod
             {
                 dynamic voice = _sapiComVoice;
                 voice.Speak(string.Empty, 3); // asynchronous, purge previous speech
+                ReleaseCompletedSapiPlaybackStreamsOnWorker();
                 return true;
             }
             if (_lastOutputBackend == OutputBackend.Tolk)
@@ -404,8 +793,12 @@ public sealed partial class BopItAccessMod
 
     private void ReleaseSapiOnWorker()
     {
+        ReleaseSapiCaptureOnWorker();
         if (_sapiComVoice == null)
+        {
+            ReleaseAllSapiPlaybackStreamsOnWorker();
             return;
+        }
         try
         {
             if (Marshal.IsComObject(_sapiComVoice))
@@ -422,6 +815,7 @@ public sealed partial class BopItAccessMod
             _sapiAppliedVoiceId = string.Empty;
             if (_lastOutputBackend == OutputBackend.Sapi)
                 _lastOutputBackend = OutputBackend.None;
+            ReleaseAllSapiPlaybackStreamsOnWorker();
         }
     }
 

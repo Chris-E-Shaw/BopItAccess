@@ -1,4 +1,4 @@
-Bop It Access 0.5.17 - Menu Submit Fix
+Bop It Access 0.5.18 - Experimental SAPI Silence Trim
 
 What this does
 --------------
@@ -31,6 +31,15 @@ lists the system default and installed 64-bit SAPI voices. Volume starts at
 100; Rate and Pitch start at 50. Volume ranges from 5 to 100 so SAPI recovery
 notices remain audible. Rate and Pitch range from 0 to 100. All three move in
 steps of five. They apply to SAPI mode and Auto's SAPI fallback.
+TRIM SILENCE is an experimental toggle in the SPEECH menu, off by default.
+When enabled, SAPI speech is first rendered into memory as 16-bit PCM;
+near-silent audio at the beginning and end is removed with a small safety
+margin, then the audio is played through SAPI. It applies to SAPI mode and
+Auto's SAPI fallback, and has no effect on output from a running screen
+reader. The choice is saved between sessions. Synthesis must complete before
+the trimmed audio can start, so long descriptions may begin later than with
+normal SAPI output. If in-memory rendering fails, the mod uses normal SAPI
+output for that announcement.
 Speech settings are remembered between sessions. Back returns to Settings.
 This update restores the game's native Settings row layout so up/down
 navigation remains on Settings rows after SPEECH is added.
