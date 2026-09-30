@@ -1,4 +1,4 @@
-Bop It Access 0.5.4 - Leaderboard binding preview
+Bop It Access 0.5.5 - Controls rebinding repair
 
 What this does
 --------------
@@ -54,13 +54,16 @@ announces changed bindings, and reads the game's visible rebinding feedback.
 It also announces how to return to Settings. When Reset to Default changes a
 binding, it reports that the bindings were reset.
 
-This preview adds four rows to the game's Controls menu: Group Previous,
+The mod adds four rows to the game's Controls menu: Group Previous,
 Group Next, Date Previous, and Date Next. These address the leaderboard filters
 reached with O/P and K/L on the default keyboard layout, or the bumpers and
 D-pad left/right on a controller. Focus a row to hear its current binding,
 then use the game's normal Bop/confirm action to rebind it. The rows scroll
-inside the existing Controls panel. This new rebinding path still needs an
-in-game check for display, navigation, saving, and Reset to Default.
+inside the existing Controls panel. This build removes the global native
+rebinding hook and the cloned native row listeners that could affect the
+game's original controls. The four added rows now rebind their specific
+leaderboard direction through the game's input system. Their operation and
+Reset to Default still need an in-game check.
 
 Inside Audio Calibration, the mod reads the Calibrate, Back, and Bop controls,
 announces the instructions and calibration stages, reads the warmup countdown,

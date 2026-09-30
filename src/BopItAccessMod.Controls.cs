@@ -43,9 +43,15 @@ public sealed partial class BopItAccessMod
         {
             _controlsRebindingManager = panel.GetComponentInChildren<InputRebindingManager>(true);
             var foundRows = panel.GetComponentsInChildren<ControlRow>(true);
-            _controlsRows = new ControlRow[foundRows.Length];
-            for (int i = 0; i < foundRows.Length; i++)
-                _controlsRows[i] = foundRows[i];
+            var nativeRows = new List<ControlRow>(foundRows.Length);
+            foreach (ControlRow row in foundRows)
+            {
+                // Added leaderboard visuals may still have their disabled
+                // ControlRow component until Unity destroys it this frame.
+                if (row != null && row.enabled)
+                    nativeRows.Add(row);
+            }
+            _controlsRows = nativeRows.ToArray();
             _controlsResetRow = panel.GetComponentInChildren<ResetToDefaultRow>(true);
             _controlsIntroductionPending = true;
             _controlsOpenedAt = Environment.TickCount64;
@@ -61,6 +67,13 @@ public sealed partial class BopItAccessMod
         {
             WriteStatus($"Controls selected object: {(selected == null ? "none" : selected.name)}.");
             _lastObservedControlsSelectionId = selectedId;
+        }
+
+        AddedLeaderboardControlRow? addedRow = FindAddedLeaderboardControlRow(selected);
+        if (addedRow != null && addedRow.Root.activeInHierarchy)
+        {
+            ReadAddedLeaderboardControlRow(addedRow);
+            return true;
         }
 
         ControlRow? focusedRow = FindFocusedControlRow(panel, selected);
@@ -146,7 +159,6 @@ public sealed partial class BopItAccessMod
     private void ReadControlRow(ControlRow row)
     {
         int id = row.GetInstanceID();
-        _leaderboardLastFocusedRowId = _leaderboardControlParts.ContainsKey(id) ? id : 0;
         InputRebindingManager? manager = row.InputRebindingManager ?? _controlsRebindingManager;
         string? binding = ReadControlBinding(row, manager);
         bool rebinding = manager != null && manager.IsRebinding;
@@ -205,9 +217,76 @@ public sealed partial class BopItAccessMod
         _lastControlsRebinding = rebinding;
     }
 
+    private void ReadAddedLeaderboardControlRow(AddedLeaderboardControlRow row)
+    {
+        int id = row.Root.GetInstanceID();
+        InputRebindingManager? manager = row.Root.GetComponentInParent<InputRebindingManager>()
+            ?? _controlsRebindingManager;
+        string? binding = ReadAddedLeaderboardBinding(row, manager);
+        bool rebinding = _leaderboardRebindOperation != null &&
+            ReferenceEquals(_leaderboardRebindRow, row);
+
+        if (id != _lastFocusedControlsRowId)
+        {
+            _lastFocusedControlsRowId = id;
+            _lastControlsBinding = binding;
+            _lastControlsFeedback = null;
+            _lastControlsRebinding = rebinding;
+            _controlsBindingChangedDuringRebind = false;
+            _lastControlsResetSnapshot = null;
+            string message = binding == null
+                ? row.Part.Label : $"{row.Part.Label}, {binding}";
+            if (rebinding)
+                message += ". Listening for input";
+            QueueSpeech(WithControlsIntroduction(message));
+            return;
+        }
+
+        if (binding != null &&
+            !string.Equals(binding, _lastControlsBinding, StringComparison.Ordinal))
+        {
+            _lastControlsBinding = binding;
+            _lastControlsRebinding = rebinding;
+            _controlsBindingChangedDuringRebind = true;
+            QueueSpeech(binding);
+            return;
+        }
+
+        if (rebinding && !_lastControlsRebinding)
+        {
+            _controlsBindingChangedDuringRebind = false;
+            QueueSpeech("Listening for input");
+        }
+        else if (!rebinding && _lastControlsRebinding &&
+            !_controlsBindingChangedDuringRebind)
+            QueueSpeech("Binding unchanged");
+
+        _lastControlsRebinding = rebinding;
+    }
+
+    private string? ReadAddedLeaderboardBinding(AddedLeaderboardControlRow row,
+        InputRebindingManager? manager)
+    {
+        if (manager == null)
+            return null;
+
+        string device = manager.ActiveDevice ?? manager.deviceTracker?.ActiveDevice
+            ?? string.Empty;
+        InputAction? action = FindLeaderboardAction(manager.playerInput?.actions,
+            row.Part) ?? FindLeaderboardAction(manager.inputActions, row.Part);
+        if (action == null)
+            return null;
+
+        int index = FindCompositePartIndex(action, device, -1, row.Part.PartName);
+        if (index < 0)
+            return null;
+
+        return CleanSpeechValue(InputActionRebindingExtensions.GetBindingDisplayString(
+            action, index));
+    }
+
     private void ReadResetRow(ResetToDefaultRow row)
     {
-        _leaderboardLastFocusedRowId = 0;
         int id = row.GetInstanceID();
         InputRebindingManager? manager = row.InputRebindingManager ?? _controlsRebindingManager;
         string device = manager?.ActiveDevice ?? manager?.deviceTracker?.ActiveDevice ?? string.Empty;
@@ -256,7 +335,7 @@ public sealed partial class BopItAccessMod
         if (_controlsRows == null || _controlsRows.Length == 0)
             return null;
 
-        string[] values = new string[_controlsRows.Length];
+        string[] values = new string[_controlsRows.Length + _leaderboardControlRows.Count];
         for (int i = 0; i < _controlsRows.Length; i++)
         {
             ControlRow row = _controlsRows[i];
@@ -268,6 +347,15 @@ public sealed partial class BopItAccessMod
                 return null;
 
             values[i] = value;
+        }
+
+        int next = _controlsRows.Length;
+        foreach (AddedLeaderboardControlRow row in _leaderboardControlRows.Values)
+        {
+            string? value = ReadAddedLeaderboardBinding(row, _controlsRebindingManager);
+            if (value == null)
+                return null;
+            values[next++] = value;
         }
 
         return string.Join("\u001f", values);
@@ -294,9 +382,6 @@ public sealed partial class BopItAccessMod
         if (action != null)
         {
             int index = manager.FindAppropriateBindingIndex(action, device);
-            if (_leaderboardControlParts.TryGetValue(row.GetInstanceID(), out LeaderboardControlPart? part) &&
-                part != null)
-                index = FindCompositePartIndex(action, device, index, part.PartName);
             if (index >= 0)
             {
                 string? displayed = CleanSpeechValue(
@@ -320,10 +405,6 @@ public sealed partial class BopItAccessMod
 
     private string GetControlRowLabel(ControlRow row)
     {
-        if (_leaderboardControlParts.TryGetValue(row.GetInstanceID(), out LeaderboardControlPart? part) &&
-            part != null)
-            return part.Label;
-
         return row.ActionName switch
         {
             "Bop" => "Bop",
@@ -347,7 +428,6 @@ public sealed partial class BopItAccessMod
 
     private void ResetControlsFocus()
     {
-        _leaderboardLastFocusedRowId = 0;
         _controlsRebindingManager = null;
         _controlsRows = null;
         _controlsResetRow = null;

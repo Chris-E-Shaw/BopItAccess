@@ -1,5 +1,3 @@
-using System.Reflection;
-using HarmonyLib;
 using Il2Cpp;
 using Il2CppInterop.Runtime;
 using Il2CppTMPro;
@@ -10,20 +8,17 @@ using UnityEngine.UI;
 
 namespace BopItAccess;
 
-// Prototype: extend the game's own Controls panel with the four parts of its
-// two existing leaderboard axes. This is deliberately guarded. If the game's
-// scene stops using a vertically navigated layout, it leaves the
-// native panel untouched instead of creating overlapping or unreachable rows.
+// Extend the game's Controls panel with the four leaderboard axis parts.
+// The added rows use their own interactive rebind operation; patching the
+// game's global native binding selector caused an access violation in 0.5.4.
 public sealed partial class BopItAccessMod
 {
     private const string LeaderboardControlsMap = "Leaderboard";
     private const string GroupAction = "ChangeGroup";
     private const string DateAction = "ChangeDateRange";
-    private static readonly string LeaderboardControlsPatchId =
-        "BopItAccess.LeaderboardCompositeRebinding";
-
-    private readonly Dictionary<int, LeaderboardControlPart> _leaderboardControlParts = new();
+    private readonly Dictionary<int, AddedLeaderboardControlRow> _leaderboardControlRows = new();
     private readonly List<GameObject> _leaderboardAddedRows = new();
+    private readonly List<InputActionReference> _leaderboardPromptReferences = new();
     private GameObject? _leaderboardControlsViewport;
     private ScrollRect? _leaderboardControlsScroll;
     private ContentSizeFitter? _leaderboardControlsFitter;
@@ -34,16 +29,13 @@ public sealed partial class BopItAccessMod
     private Vector2 _leaderboardContentOriginalPivot;
     private Vector2 _leaderboardContentOriginalPosition;
     private Vector2 _leaderboardContentOriginalSize;
-    private static BopItAccessMod? _leaderboardControlsOwner;
-    private static bool _leaderboardBindingPatchInstalled;
     private int _leaderboardControlsPanelId;
-    private int _leaderboardControlsManagerId;
-    private int _leaderboardLastFocusedRowId;
     private long _nextLeaderboardControlsProbeAt;
     private bool _leaderboardControlsAttempted;
 
     public override void OnUpdate()
     {
+        UpdateLeaderboardControlRebinding();
         if (_leaderboardControlsScroll != null)
             ScrollSelectedControlIntoView();
 
@@ -165,12 +157,6 @@ public sealed partial class BopItAccessMod
             return false;
         }
 
-        if (!InstallLeaderboardBindingPatch())
-        {
-            reason = "the native rebinding hook could not be installed";
-            return false;
-        }
-
         LeaderboardControlPart[] parts =
         {
             new(GroupAction, "negative", "Leaderboard group previous", "GROUP PREVIOUS"),
@@ -204,6 +190,7 @@ public sealed partial class BopItAccessMod
                 SetClonedLabel(activeLabel, part.VisibleLabel);
 
                 InputActionReference actionReference = InputActionReference.Create(action);
+                _leaderboardPromptReferences.Add(actionReference);
                 ControlPromptSpriteSwapper.CompositePart composite =
                     part.PartName == "negative"
                         ? ControlPromptSpriteSwapper.CompositePart.Negative
@@ -211,17 +198,24 @@ public sealed partial class BopItAccessMod
                 SetDisplayPrompt(row.ActiveDisplayPrompt, actionReference, composite);
                 SetDisplayPrompt(row.DefaultDisplayPrompt, actionReference, composite);
 
-                // Keep the native row's input listeners and submit/cancel actions.
-                // Only its target action and display prompts change.
+                // The selectable is a separate component. Remove the cloned
+                // ControlRow before activation so its native OnSubmit and
+                // rebinding listeners cannot start a second operation.
                 Navigation navigation = selectable.navigation;
                 navigation.mode = Navigation.Mode.Vertical;
                 selectable.navigation = navigation;
-                _leaderboardControlParts[row.GetInstanceID()] = part;
+                GameObject? active = row.ActiveContainer;
+                GameObject? inactive = row.DefaultContainer;
+                if (active == null || inactive == null)
+                    throw new InvalidOperationException("A cloned row lost its focus containers.");
+                _leaderboardControlRows[clone.GetInstanceID()] = new(
+                    clone, part, active, inactive,
+                    row.ActiveDisplayPrompt, row.DefaultDisplayPrompt);
+                row.enabled = false;
+                UnityEngine.Object.Destroy(row);
             }
 
             AddLeaderboardControlsViewport(tableRect, contentRect);
-            _leaderboardControlsManagerId = manager.GetInstanceID();
-            _leaderboardControlsOwner = this;
             foreach (GameObject row in _leaderboardAddedRows)
                 row.SetActive(true);
 
@@ -322,9 +316,11 @@ public sealed partial class BopItAccessMod
         if (selected == null || !selected.transform.IsChildOf(scroll.content))
             return;
 
+        AddedLeaderboardControlRow? added = FindAddedLeaderboardControlRow(selected);
         ControlRow? control = selected.GetComponentInParent<ControlRow>();
         ResetToDefaultRow? reset = selected.GetComponentInParent<ResetToDefaultRow>();
-        Transform item = control != null ? control.transform :
+        Transform item = added != null ? added.Root.transform :
+            control != null ? control.transform :
             reset != null ? reset.transform : selected.transform;
         Bounds bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(
             scroll.viewport, item);
@@ -374,78 +370,6 @@ public sealed partial class BopItAccessMod
         }
 
         return keyboardNegative && keyboardPositive && gamepadNegative && gamepadPositive;
-    }
-
-    private static bool InstallLeaderboardBindingPatch()
-    {
-        if (_leaderboardBindingPatchInstalled)
-            return true;
-
-        MethodInfo? target = typeof(InputRebindingManager).GetMethod(
-            "FindAppropriateBindingIndex",
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        MethodInfo? postfix = typeof(BopItAccessMod).GetMethod(
-            nameof(SelectLeaderboardCompositePart), BindingFlags.Static | BindingFlags.NonPublic);
-        if (target == null || postfix == null)
-            return false;
-
-        new HarmonyLib.Harmony(LeaderboardControlsPatchId).Patch(target,
-            postfix: new HarmonyMethod(postfix));
-        _leaderboardBindingPatchInstalled = true;
-        return true;
-    }
-
-    // The game's rebinding manager normally chooses just one binding from an
-    // action. For the four added rows only, select the negative/positive part of
-    // the same device's 1DAxis composite. All native validation, conflict
-    // handling, completion, and override saving remain in the game's manager.
-    private static void SelectLeaderboardCompositePart(InputRebindingManager __instance,
-        InputAction action, string deviceType, ref int __result)
-    {
-        BopItAccessMod? owner = _leaderboardControlsOwner;
-        if (owner == null || __instance == null ||
-            __instance.GetInstanceID() != owner._leaderboardControlsManagerId)
-            return;
-
-        GameObject? selected = EventSystem.current?.currentSelectedGameObject;
-        ControlRow? row = selected?.GetComponentInParent<ControlRow>();
-        if (row == null || !owner._leaderboardControlParts.ContainsKey(row.GetInstanceID()))
-        {
-            foreach (GameObject added in owner._leaderboardAddedRows)
-            {
-                ControlRow? candidate = added == null ? null : added.GetComponent<ControlRow>();
-                if (candidate != null && candidate.IsFocused)
-                {
-                    row = candidate;
-                    break;
-                }
-            }
-        }
-        if ((row == null || !owner._leaderboardControlParts.ContainsKey(row.GetInstanceID())) &&
-            owner._leaderboardLastFocusedRowId != 0)
-        {
-            foreach (GameObject added in owner._leaderboardAddedRows)
-            {
-                ControlRow? candidate = added == null ? null : added.GetComponent<ControlRow>();
-                if (candidate != null &&
-                    candidate.GetInstanceID() == owner._leaderboardLastFocusedRowId)
-                {
-                    row = candidate;
-                    break;
-                }
-            }
-        }
-        if (row == null ||
-            !owner._leaderboardControlParts.TryGetValue(row.GetInstanceID(), out LeaderboardControlPart? part) ||
-            part == null ||
-            action == null ||
-            !string.Equals(action.name, part.Action, StringComparison.Ordinal) ||
-            !string.Equals(action.actionMap?.name, LeaderboardControlsMap, StringComparison.Ordinal))
-            return;
-
-        int selectedIndex = FindCompositePartIndex(action, deviceType, __result, part.PartName);
-        if (selectedIndex >= 0)
-            __result = selectedIndex;
     }
 
     private static int FindCompositePartIndex(InputAction action, string deviceType,
@@ -515,6 +439,7 @@ public sealed partial class BopItAccessMod
 
     private void RemoveAddedLeaderboardControls()
     {
+        CancelLeaderboardControlRebinding(false);
         if (_leaderboardControlsContent != null &&
             _leaderboardControlsOriginalParent != null)
         {
@@ -539,20 +464,27 @@ public sealed partial class BopItAccessMod
             if (row != null)
                 UnityEngine.Object.Destroy(row);
         }
+        foreach (InputActionReference reference in _leaderboardPromptReferences)
+        {
+            if (reference != null)
+                UnityEngine.Object.Destroy(reference);
+        }
 
         _leaderboardAddedRows.Clear();
-        _leaderboardControlParts.Clear();
-        _leaderboardControlsManagerId = 0;
-        _leaderboardLastFocusedRowId = 0;
+        _leaderboardPromptReferences.Clear();
+        _leaderboardControlRows.Clear();
         _leaderboardControlsScroll = null;
         _leaderboardControlsFitter = null;
         _leaderboardControlsViewport = null;
         _leaderboardControlsContent = null;
         _leaderboardControlsOriginalParent = null;
-        if (ReferenceEquals(_leaderboardControlsOwner, this))
-            _leaderboardControlsOwner = null;
     }
 
     private sealed record LeaderboardControlPart(
         string Action, string PartName, string Label, string VisibleLabel);
+
+    private sealed record AddedLeaderboardControlRow(
+        GameObject Root, LeaderboardControlPart Part, GameObject ActiveContainer,
+        GameObject DefaultContainer, ControlPromptSpriteSwapperV2? ActiveDisplayPrompt,
+        ControlPromptSpriteSwapperV2? DefaultDisplayPrompt);
 }
