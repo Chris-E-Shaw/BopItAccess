@@ -64,6 +64,7 @@ public sealed partial class BopItAccessMod
     private OutputBackend _lastOutputBackend;
     private string? _lastFallbackNoticeMode;
     private long _nextSapiErrorLogAt;
+    private bool? _lastSeparateBrailleDispatchAccepted;
 
     private sealed record SpeechVoiceOption(string Id, string Name);
     private enum OutputBackend { None, Tolk, Sapi, Nvda }
@@ -358,7 +359,7 @@ public sealed partial class BopItAccessMod
         string? detected = Marshal.PtrToStringUni(TolkNative.Tolk_DetectScreenReader());
         if (string.Equals(mode, "Auto", StringComparison.OrdinalIgnoreCase))
         {
-            if (detected != null && TolkNative.Tolk_Output(text, interrupt))
+            if (detected != null && OutputTolkOnWorker(text, interrupt))
             {
                 _lastOutputBackend = OutputBackend.Tolk;
                 return true;
@@ -396,6 +397,7 @@ public sealed partial class BopItAccessMod
                     {
                         _lastOutputBackend = OutputBackend.Nvda;
                         _lastFallbackNoticeMode = null;
+                        SendBrailleForSeparateSpeechOnWorker(text);
                         return true;
                     }
                 }
@@ -408,7 +410,7 @@ public sealed partial class BopItAccessMod
 
         if (string.Equals(mode, detected, StringComparison.OrdinalIgnoreCase))
         {
-            if (TolkNative.Tolk_Output(text, interrupt))
+            if (OutputTolkOnWorker(text, interrupt))
             {
                 _lastOutputBackend = OutputBackend.Tolk;
                 _lastFallbackNoticeMode = null;
@@ -436,10 +438,44 @@ public sealed partial class BopItAccessMod
 
     private bool TryTolkAsLastResort(string text, bool interrupt)
     {
-        if (!TolkNative.Tolk_Output(text, interrupt))
+        if (!OutputTolkOnWorker(text, interrupt))
             return false;
         _lastOutputBackend = OutputBackend.Tolk;
         return true;
+    }
+
+    private bool OutputTolkOnWorker(string text, bool interrupt) =>
+        _brailleOutputEnabled
+            ? TolkNative.Tolk_Output(text, interrupt)
+            : TolkNative.Tolk_Speak(text, interrupt);
+
+    // Tolk_Output already routes text to both speech and braille. Direct SAPI
+    // and NVDA speech bypass that API, so these paths need one braille call.
+    private void SendBrailleForSeparateSpeechOnWorker(string text)
+    {
+        if (!_brailleOutputEnabled || _speechSuppressedForBackground)
+            return;
+        try
+        {
+            if (!TolkNative.Tolk_IsLoaded() || !TolkNative.Tolk_HasBraille())
+            {
+                if (_lastSeparateBrailleDispatchAccepted != false)
+                    WriteStatus("Tolk braille driver is unavailable for separate speech output.");
+                _lastSeparateBrailleDispatchAccepted = false;
+                return;
+            }
+            bool accepted = TolkNative.Tolk_Braille(text);
+            if (_lastSeparateBrailleDispatchAccepted != accepted)
+                WriteStatus("Tolk braille dispatch for separate speech output " +
+                    (accepted ? "accepted" : "rejected") + ".");
+            _lastSeparateBrailleDispatchAccepted = accepted;
+        }
+        catch (Exception ex)
+        {
+            if (_lastSeparateBrailleDispatchAccepted != false)
+                WriteStatus("Tolk braille dispatch failed: " + ex.Message);
+            _lastSeparateBrailleDispatchAccepted = false;
+        }
     }
 
     private bool SpeakSapiOnWorker(string text, bool interrupt,
@@ -472,7 +508,11 @@ public sealed partial class BopItAccessMod
                     TrimmedSpeechResult result = SpeakTrimmedSapiOnWorker(xml,
                         interrupt, generation, renderSerial, protectedCapture);
                     if (result != TrimmedSpeechResult.Failed)
+                    {
+                        if (result == TrimmedSpeechResult.Played)
+                            SendBrailleForSeparateSpeechOnWorker(text);
                         return true;
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -490,6 +530,7 @@ public sealed partial class BopItAccessMod
             voice.Speak(xml, interrupt ? 11 : 9);
             ReleaseCompletedSapiPlaybackStreamsOnWorker();
             _lastOutputBackend = OutputBackend.Sapi;
+            SendBrailleForSeparateSpeechOnWorker(text);
             return true;
         }
         catch (Exception ex)

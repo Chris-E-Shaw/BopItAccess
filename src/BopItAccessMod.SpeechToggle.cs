@@ -42,6 +42,7 @@ public sealed partial class BopItAccessMod
         InitializeSliderRangesPreferenceOnMainThread();
         InitializeHintsTypePreferenceOnMainThread();
         InitializeOneOnOneFeedbackPreferenceOnMainThread();
+        InitializeBrailleOutputPreferenceOnMainThread();
 
         lock (_speechLock)
         {

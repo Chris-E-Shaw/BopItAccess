@@ -1,4 +1,4 @@
-Bop It Access 0.6.7 - One-on-One Feedback
+Bop It Access 0.6.8 - Braille and One-on-One Life Feedback
 
 What this does
 --------------
@@ -24,7 +24,12 @@ announcing the first focused item on a newly opened Settings screen.
 
 Below Controls, Settings now has a SPEECH menu. SPEECH OUTPUT uses the same
 saved master switch as F8 or controller Select, including the spoken recovery
-instructions when speech is turned off. OUTPUT MODE starts at Auto: the mod
+instructions when speech is turned off. BRAILLE OUTPUT starts On and is saved
+between sessions. When Tolk uses a screen reader, the mod sends the same
+utterance to speech and braille; when BRAILLE OUTPUT is Off, it sends speech
+only. Direct NVDA and SAPI speech also send each utterance separately through
+Tolk's braille API when a braille-capable screen reader is available.
+OUTPUT MODE starts at Auto: the mod
 speaks through a detected screen reader, or uses SAPI when none is running.
 SAPI can be selected directly. The menu also lists JAWS, Window-Eyes, NVDA,
 System Access, and ZoomText. Direct NVDA output is available when NVDA is
@@ -47,7 +52,7 @@ a slider or toggle while it remains focused still announces only the new value.
 
 READ CONTROL TYPES is another saved SPEECH toggle, off by default. When enabled,
 the focused item's type follows its name and precedes its value and index:
-"MUSIC slider, 30, 1 of 11", "VIBRATION toggle, On, 5 of 11", or
+"MUSIC slider, 30, 1 of 12", "VIBRATION toggle, On, 6 of 12", or
 "PLAY button, 1 of 6". Menus also identify tabs, text fields, and readable
 list items where relevant. Value changes continue to speak only the new value.
 SLIDER RANGES is a saved toggle, Off by default. When enabled, focused sliders
@@ -57,8 +62,10 @@ are enabled. Moving a slider still speaks only the new value.
 ONE-ON-ONE FEEDBACK is a saved toggle, Off by default. When enabled, it
 announces the active colour at the start of a One on One round and when that
 colour changes. A lost life announces the remaining count, such as "2 lives"
-or "1 life". If both players lose a life on the same shared Bop cue, both
-counts are identified by colour. The feature runs only during One on One play.
+or "1 life". A gained life announces the new count in the same way, up to
+the game's three-life limit. If both players' life counts change together,
+both counts are identified by colour. The feature runs only during One on One
+play.
 
 READ BUTTON HINTS is a saved SPEECH toggle and is On by default. Turning it
 Off suppresses all button-hint speech. BUTTON HINTS DELAY has None, 5 seconds
@@ -244,6 +251,11 @@ At the end of a game, listen for the score or One on One winner before the
 result-screen controls are announced. Press T or left stick press to repeat the
 final result while the game-over screen is visible.
 Press F8 or controller Select to turn mod speech off or on from any screen.
+BRAILLE OUTPUT in Settings > Speech is On by default. NVDA's Braille Viewer
+can display the braille and its text equivalent without a physical display.
+For an ON/OFF comparison, use NVDA's follow-cursors braille mode with Show
+Messages enabled; its display-speech-output mode would mirror speech even
+when the mod's BRAILLE OUTPUT setting is Off.
 In Settings > Speech, use READ BUTTON HINTS to enable or disable instructions.
 HINTS TYPE chooses Automatic, Keyboard, Controller, or Both for those hints.
 BUTTON HINTS DELAY chooses whether they accompany focus speech or follow a

@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.7", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.8", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -853,6 +853,9 @@ public sealed partial class BopItAccessMod : MelonMod
             string? reader = tolkLoaded
                 ? Marshal.PtrToStringUni(TolkNative.Tolk_DetectScreenReader()) : null;
             WriteStatus($"Tolk initialized; active output driver: {reader ?? "none detected"}.");
+            if (tolkLoaded)
+                WriteStatus("Tolk braille-capable driver: " +
+                    (TolkNative.Tolk_HasBraille() ? "available" : "unavailable") + ".");
             MelonLogger.Msg($"Tolk initialized. Active output driver: {reader ?? "none detected"}.");
 
             // PlayerPrefs and Input Actions must be read on Unity's thread.
@@ -1058,6 +1061,18 @@ public sealed partial class BopItAccessMod : MelonMod
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.I1)]
         internal static extern bool Tolk_Output([MarshalAs(UnmanagedType.LPWStr)] string text, [MarshalAs(UnmanagedType.I1)] bool interrupt);
+
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        internal static extern bool Tolk_Speak([MarshalAs(UnmanagedType.LPWStr)] string text, [MarshalAs(UnmanagedType.I1)] bool interrupt);
+
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Unicode)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        internal static extern bool Tolk_Braille([MarshalAs(UnmanagedType.LPWStr)] string text);
+
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        internal static extern bool Tolk_HasBraille();
 
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
         [return: MarshalAs(UnmanagedType.I1)]

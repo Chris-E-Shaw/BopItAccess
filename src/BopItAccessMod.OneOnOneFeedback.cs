@@ -145,21 +145,21 @@ public sealed partial class BopItAccessMod
             }
 
             var announcements = new List<string>(3);
-            bool lifeLost = false;
+            bool lifeChanged = false;
             // A score of zero ends the round. Leave the winner announcement
             // to the existing game-over reader rather than speaking over it.
             bool ending = yellowLives <= 0 || greenLives <= 0;
             if (!ending)
             {
-                bool yellowLostLife = yellowLives < _oneOnOneLastYellowLives;
-                bool greenLostLife = greenLives < _oneOnOneLastGreenLives;
-                bool bothLostLife = yellowLostLife && greenLostLife;
-                lifeLost = yellowLostLife || greenLostLife;
-                if (yellowLostLife)
-                    announcements.Add((bothLostLife ? "Yellow, " : "") +
+                bool yellowLifeChanged = yellowLives != _oneOnOneLastYellowLives;
+                bool greenLifeChanged = greenLives != _oneOnOneLastGreenLives;
+                bool bothLivesChanged = yellowLifeChanged && greenLifeChanged;
+                lifeChanged = yellowLifeChanged || greenLifeChanged;
+                if (yellowLifeChanged)
+                    announcements.Add((bothLivesChanged ? "Yellow, " : "") +
                         FormatOneOnOneLives(yellowLives));
-                if (greenLostLife)
-                    announcements.Add((bothLostLife ? "Green, " : "") +
+                if (greenLifeChanged)
+                    announcements.Add((bothLivesChanged ? "Green, " : "") +
                         FormatOneOnOneLives(greenLives));
             }
 
@@ -178,14 +178,14 @@ public sealed partial class BopItAccessMod
             {
                 string speech = string.Join(". ", announcements);
                 long now = Environment.TickCount64;
-                // A colour switch can be published a frame after a lost life.
+                // A colour switch can be published a frame after a life change.
                 // Queue it after the short life count so both remain audible.
-                if (!lifeLost && _oneOnOneLastLifeSpeechAt != 0 &&
+                if (!lifeChanged && _oneOnOneLastLifeSpeechAt != 0 &&
                     now - _oneOnOneLastLifeSpeechAt < 1200)
                     QueueSequentialSpeech(speech);
                 else
                     QueueSpeech(speech);
-                if (lifeLost)
+                if (lifeChanged)
                     _oneOnOneLastLifeSpeechAt = now;
                 WriteStatus("One-on-one feedback: " + speech + ".");
             }

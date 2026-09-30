@@ -23,6 +23,7 @@ public sealed partial class BopItAccessMod
     private ScrollRect? _speechMenuScroll;
     private readonly List<SpeechUiOption> _speechUiOptions = new();
     private SettingsToggle? _speechOutputToggle;
+    private SettingsToggle? _brailleOutputToggle;
     private SettingsToggle? _muteSpeechInBackgroundToggle;
     private SettingsToggle? _indexingToggle;
     private SettingsToggle? _readControlTypesToggle;
@@ -40,6 +41,7 @@ public sealed partial class BopItAccessMod
     private SettingsSlider? _speechRateSlider;
     private SettingsSlider? _speechPitchSlider;
     private UnityAction? _speechOutputSubmitListener;
+    private UnityAction? _brailleOutputSubmitListener;
     private UnityAction? _muteSpeechInBackgroundSubmitListener;
     private UnityAction? _indexingSubmitListener;
     private UnityAction? _readControlTypesSubmitListener;
@@ -112,6 +114,10 @@ public sealed partial class BopItAccessMod
                 }
                 if (_speechOutputToggle != null && _speechOutputToggle.IsOn != _speechEnabled)
                     SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
+                if (_brailleOutputToggle != null &&
+                    _brailleOutputToggle.IsOn != _brailleOutputEnabled)
+                    SetSpeechToggleDisplay(_brailleOutputToggle,
+                        _brailleOutputEnabled);
                 if (_muteSpeechInBackgroundToggle != null &&
                     _muteSpeechInBackgroundToggle.IsOn != _muteSpeechInBackground)
                     SetSpeechToggleDisplay(_muteSpeechInBackgroundToggle,
@@ -348,6 +354,10 @@ public sealed partial class BopItAccessMod
                 "SPEECH OUTPUT",
                 _speechOutputSubmitListener ??= (UnityAction)OnSpeechOutputSubmitted,
                 _speechEnabled);
+            _brailleOutputToggle = AddSpeechToggle(settings.vibration, content,
+                "BRAILLE OUTPUT",
+                _brailleOutputSubmitListener ??= (UnityAction)OnBrailleOutputSubmitted,
+                _brailleOutputEnabled);
             _muteSpeechInBackgroundToggle = AddSpeechToggle(settings.vibration, content,
                 "MUTE SPEECH IN BACKGROUND",
                 _muteSpeechInBackgroundSubmitListener ??=
@@ -405,6 +415,8 @@ public sealed partial class BopItAccessMod
 
             _speechUiOptions.Add(new("SPEECH OUTPUT", "toggle", _speechOutputToggle,
                 () => _speechEnabled ? "On" : "Off"));
+            _speechUiOptions.Add(new("BRAILLE OUTPUT", "toggle", _brailleOutputToggle,
+                () => _brailleOutputEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("MUTE SPEECH IN BACKGROUND", "toggle",
                 _muteSpeechInBackgroundToggle,
                 () => _muteSpeechInBackground ? "On" : "Off"));
@@ -471,6 +483,7 @@ public sealed partial class BopItAccessMod
             UnityEngine.Object.Destroy(root);
             _speechUiOptions.Clear();
             _speechOutputToggle = null;
+            _brailleOutputToggle = null;
             _muteSpeechInBackgroundToggle = null;
             _indexingToggle = null;
             _readControlTypesToggle = null;
@@ -665,6 +678,8 @@ public sealed partial class BopItAccessMod
     {
         if (_speechOutputToggle != null)
             SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
+        if (_brailleOutputToggle != null)
+            SetSpeechToggleDisplay(_brailleOutputToggle, _brailleOutputEnabled);
         if (_muteSpeechInBackgroundToggle != null)
             SetSpeechToggleDisplay(_muteSpeechInBackgroundToggle,
                 _muteSpeechInBackground);
@@ -722,6 +737,13 @@ public sealed partial class BopItAccessMod
         SetIndexingFromMenu(!_indexingEnabled);
         // Keep the cloned native toggle in sync if its own visual listener
         // runs after this callback.
+    }
+
+    private void OnBrailleOutputSubmitted()
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
+        SetBrailleOutputFromMenu(!_brailleOutputEnabled);
     }
 
     private void OnMuteSpeechInBackgroundSubmitted()
