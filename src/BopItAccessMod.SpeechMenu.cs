@@ -44,6 +44,10 @@ public sealed partial class BopItAccessMod
     private bool _speechMenuInputReady;
     private int _lastSpeechMenuRowId;
     private string? _lastSpeechMenuValue;
+    private static string SapiSpeechSettingsInstruction =>
+        TrimSilenceExperimentAvailable
+            ? "Voice, volume, rate, pitch, and trim silence apply to SAPI output."
+            : "Voice, volume, rate, and pitch apply to SAPI output.";
 
     private void UpdateSpeechMenuUi()
     {
@@ -290,10 +294,12 @@ public sealed partial class BopItAccessMod
                 _speechEnabled);
             _speechModeSlider = AddSpeechSlider(settings.resolution, content,
                 "OUTPUT MODE");
-            _trimSilenceToggle = AddSpeechToggle(settings.vibration, content,
-                "TRIM SILENCE",
-                _trimSilenceSubmitListener ??= (UnityAction)OnTrimSilenceSubmitted,
-                _trimSilence);
+            _trimSilenceToggle = null;
+            if (TrimSilenceExperimentAvailable)
+                _trimSilenceToggle = AddSpeechToggle(settings.vibration, content,
+                    "TRIM SILENCE",
+                    _trimSilenceSubmitListener ??= (UnityAction)OnTrimSilenceSubmitted,
+                    _trimSilence);
             _speechVoiceSlider = AddSpeechSlider(settings.resolution, content,
                 "VOICE");
             _speechVolumeSlider = AddSpeechSlider(settings.resolution, content,
@@ -309,8 +315,9 @@ public sealed partial class BopItAccessMod
                 () => _speechEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("OUTPUT MODE", _speechModeSlider,
                 () => _outputMode));
-            _speechUiOptions.Add(new("TRIM SILENCE", _trimSilenceToggle,
-                () => _trimSilence ? "On" : "Off"));
+            if (TrimSilenceExperimentAvailable && _trimSilenceToggle != null)
+                _speechUiOptions.Add(new("TRIM SILENCE", _trimSilenceToggle,
+                    () => _trimSilence ? "On" : "Off"));
             _speechUiOptions.Add(new("VOICE", _speechVoiceSlider,
                 ReadCurrentSapiVoiceName));
             _speechUiOptions.Add(new("VOLUME", _speechVolumeSlider,
@@ -338,7 +345,7 @@ public sealed partial class BopItAccessMod
 
             _speechMenuRoot = root;
             _speechMenuPanel = speechPanel;
-            WriteStatus("Built Speech settings submenu with eight native-style rows.");
+            WriteStatus($"Built Speech settings submenu with {_speechUiOptions.Count} native-style rows.");
         }
         catch
         {
@@ -556,7 +563,8 @@ public sealed partial class BopItAccessMod
 
     private void OnTrimSilenceSubmitted()
     {
-        if (!_speechMenuOpen || !_speechMenuInputReady)
+        if (!TrimSilenceExperimentAvailable || !_speechMenuOpen ||
+            !_speechMenuInputReady)
             return;
         SetTrimSilenceFromMenu(!_trimSilence);
         // SettingsToggle.Start also registers its native visual listener.
@@ -670,7 +678,8 @@ public sealed partial class BopItAccessMod
                 Environment.TickCount64 - _speechMenuOpenedAt > 800)
             {
                 _speechMenuIntroductionPending = false;
-                QueueSpeech("Speech. Use Back to return to Settings. Voice, volume, rate, pitch, and trim silence apply to SAPI output.");
+                QueueSpeech("Speech. Use Back to return to Settings. " +
+                    SapiSpeechSettingsInstruction);
             }
             return true;
         }
@@ -700,7 +709,7 @@ public sealed partial class BopItAccessMod
             if (_speechMenuIntroductionPending)
             {
                 message = "Speech. Use Back to return to Settings. " +
-                    "Voice, volume, rate, pitch, and trim silence apply to SAPI output. " + message;
+                    SapiSpeechSettingsInstruction + " " + message;
                 _speechMenuIntroductionPending = false;
             }
             QueueSpeech(message);

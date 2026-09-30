@@ -13,6 +13,9 @@ public sealed partial class BopItAccessMod
     private const string SapiRatePreferenceKey = "BopItAccess.SapiRate";
     private const string SapiPitchPreferenceKey = "BopItAccess.SapiPitch";
     private const string SapiTrimSilencePreferenceKey = "BopItAccess.SapiTrimSilence";
+    // Retain the experimental capture/trim path for future work, but keep it
+    // unavailable and inactive in this release.
+    private static readonly bool TrimSilenceExperimentAvailable = false;
     private static readonly string[] OutputModes =
     {
         "Auto", "SAPI", "JAWS", "Window-Eyes", "NVDA", "System Access", "ZoomText"
@@ -57,7 +60,13 @@ public sealed partial class BopItAccessMod
             _sapiVolume = Math.Clamp(PlayerPrefs.GetInt(SapiVolumePreferenceKey, 100), 5, 100);
             _sapiRate = Math.Clamp(PlayerPrefs.GetInt(SapiRatePreferenceKey, 50), 0, 100);
             _sapiPitch = Math.Clamp(PlayerPrefs.GetInt(SapiPitchPreferenceKey, 50), 0, 100);
-            _trimSilence = PlayerPrefs.GetInt(SapiTrimSilencePreferenceKey, 0) != 0;
+            int savedTrimSilence = PlayerPrefs.GetInt(SapiTrimSilencePreferenceKey, 0);
+            _trimSilence = TrimSilenceExperimentAvailable && savedTrimSilence != 0;
+            if (!TrimSilenceExperimentAvailable && savedTrimSilence != 0)
+            {
+                PlayerPrefs.SetInt(SapiTrimSilencePreferenceKey, 0);
+                PlayerPrefs.Save();
+            }
         }
         catch (Exception ex)
         {
@@ -67,8 +76,10 @@ public sealed partial class BopItAccessMod
         RefreshSapiVoices();
         WriteStatus($"Output mode: {_outputMode}; SAPI voice: " +
             (string.IsNullOrEmpty(_sapiVoiceId) ? "system default" : _sapiVoiceId) +
-            $"; volume {_sapiVolume}, rate {_sapiRate}, pitch {_sapiPitch}, " +
-            $"trim silence {(_trimSilence ? "on" : "off")}.");
+            $"; volume {_sapiVolume}, rate {_sapiRate}, pitch {_sapiPitch}." +
+            (TrimSilenceExperimentAvailable
+                ? $" Trim silence {(_trimSilence ? "on" : "off")}."
+                : string.Empty));
     }
 
     private void RefreshSapiVoices()
@@ -175,6 +186,8 @@ public sealed partial class BopItAccessMod
 
     private void SetTrimSilenceFromMenu(bool enabled)
     {
+        if (!TrimSilenceExperimentAvailable)
+            return;
         if (_trimSilence == enabled)
             return;
         lock (_speechLock)
