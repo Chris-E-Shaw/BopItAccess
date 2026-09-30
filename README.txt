@@ -1,4 +1,4 @@
-Bop It Access 0.5.12 - Toggle Speech
+Bop It Access 0.5.13 - Limit FPS
 
 What this does
 --------------
@@ -8,6 +8,13 @@ the focused main-menu button and the focused Settings row. Settings values are
 spoken with the row name on focus. Changing a value while focus stays on that
 row speaks only the new value. AUDIO LATENCY, CONTROLS, and GO ONLINE are action
 buttons, so they are spoken without the game's meaningless placeholder "0".
+The Settings menu also has a LIMIT FPS slider with 30, 60, 120, 240, and
+UNLIMITED choices. It starts at 60 for a new installation and remembers the
+selected value between sessions. Focus speaks the name and value; changing it
+speaks only the new value. The cap changes Unity's target frame rate while
+leaving game time scale, fixed update timing, and audio untouched.
+Like any frame cap, a lower setting also means fewer frame-based input polls.
+If 30 FPS feels less responsive in a fast game, choose 60, 120, or UNLIMITED.
 
 Inside Play, the mod reads Solo, Party, Pass It, and One on One when focused.
 On the following song-selection screen, it announces the current theme

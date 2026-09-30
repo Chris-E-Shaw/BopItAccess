@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.12", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.13", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -444,7 +444,7 @@ public sealed partial class BopItAccessMod : MelonMod
         return null;
     }
 
-    private static SettingOption[] CreateSettingsOptions(SettingsPanel panel)
+    private SettingOption[] CreateSettingsOptions(SettingsPanel panel)
     {
         GoOnlineButton? goOnlineController = panel.GetComponentInChildren<GoOnlineButton>(true);
         SettingsButton? goOnline = goOnlineController == null ? null : goOnlineController.button;
@@ -458,6 +458,7 @@ public sealed partial class BopItAccessMod : MelonMod
             ToggleOption("VIBRATION", panel.vibration),
             ToggleOption("FULLSCREEN", panel.fullscreen),
             SliderOption("RESOLUTION", panel.resolution),
+            SliderOption("LIMIT FPS", _fpsSettingsSlider),
             ActionOption("AUDIO LATENCY", panel.audioLatency),
             ActionOption("CONTROLS", panel.controls),
             ActionOption("GO ONLINE", goOnline)
