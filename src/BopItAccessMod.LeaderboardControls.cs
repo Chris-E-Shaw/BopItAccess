@@ -44,6 +44,7 @@ public sealed partial class BopItAccessMod
         UpdateToggleSpeechControlRebinding();
         UpdateLeaderboardControlRebinding();
         UpdateSpeechToggleFromInput();
+        UpdateRepeatButtonHints();
         if (_leaderboardControlsScroll != null)
             ScrollSelectedControlIntoView();
 

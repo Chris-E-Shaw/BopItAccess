@@ -13,6 +13,8 @@ public sealed partial class BopItAccessMod
     private const string SapiRatePreferenceKey = "BopItAccess.SapiRate";
     private const string SapiPitchPreferenceKey = "BopItAccess.SapiPitch";
     private const string SapiTrimSilencePreferenceKey = "BopItAccess.SapiTrimSilence";
+    private const string RepeatButtonHintsPreferenceKey =
+        "BopItAccess.RepeatButtonHintsSeconds";
     // Retain the experimental capture/trim path for future work, but keep it
     // unavailable and inactive in this release.
     private static readonly bool TrimSilenceExperimentAvailable = false;
@@ -27,6 +29,9 @@ public sealed partial class BopItAccessMod
     private int _sapiRate = 50;
     private int _sapiPitch = 50;
     private bool _trimSilence;
+    // Zero disables idle button hints. The other supported intervals are
+    // 15, 30, and 60 seconds.
+    private int _repeatButtonHintsSeconds;
     private List<SpeechVoiceOption> _sapiVoices = new();
     private int _sapiSettingsVersion;
     // Incremented by the main thread when an interrupting request supersedes
@@ -60,6 +65,9 @@ public sealed partial class BopItAccessMod
             _sapiVolume = Math.Clamp(PlayerPrefs.GetInt(SapiVolumePreferenceKey, 100), 5, 100);
             _sapiRate = Math.Clamp(PlayerPrefs.GetInt(SapiRatePreferenceKey, 50), 0, 100);
             _sapiPitch = Math.Clamp(PlayerPrefs.GetInt(SapiPitchPreferenceKey, 50), 0, 100);
+            int savedRepeatHints = PlayerPrefs.GetInt(RepeatButtonHintsPreferenceKey, 0);
+            _repeatButtonHintsSeconds = savedRepeatHints is 15 or 30 or 60
+                ? savedRepeatHints : 0;
             int savedTrimSilence = PlayerPrefs.GetInt(SapiTrimSilencePreferenceKey, 0);
             _trimSilence = TrimSilenceExperimentAvailable && savedTrimSilence != 0;
             if (!TrimSilenceExperimentAvailable && savedTrimSilence != 0)
@@ -76,7 +84,10 @@ public sealed partial class BopItAccessMod
         RefreshSapiVoices();
         WriteStatus($"Output mode: {_outputMode}; SAPI voice: " +
             (string.IsNullOrEmpty(_sapiVoiceId) ? "system default" : _sapiVoiceId) +
-            $"; volume {_sapiVolume}, rate {_sapiRate}, pitch {_sapiPitch}." +
+            $"; volume {_sapiVolume}, rate {_sapiRate}, pitch {_sapiPitch}; " +
+            "repeat button hints " +
+            (_repeatButtonHintsSeconds == 0 ? "Never" :
+                _repeatButtonHintsSeconds + " seconds") + "." +
             (TrimSilenceExperimentAvailable
                 ? $" Trim silence {(_trimSilence ? "on" : "off")}."
                 : string.Empty));
@@ -202,6 +213,25 @@ public sealed partial class BopItAccessMod
             WriteStatus("Could not save SAPI trim silence setting: " + ex.Message);
         }
         WriteStatus("SAPI trim silence " + (enabled ? "enabled" : "disabled") + ".");
+    }
+
+    private void SetRepeatButtonHintsFromMenu(int seconds)
+    {
+        if (seconds is not (0 or 15 or 30 or 60) ||
+            _repeatButtonHintsSeconds == seconds)
+            return;
+        _repeatButtonHintsSeconds = seconds;
+        try
+        {
+            PlayerPrefs.SetInt(RepeatButtonHintsPreferenceKey, seconds);
+            PlayerPrefs.Save();
+        }
+        catch (Exception ex)
+        {
+            WriteStatus("Could not save repeat button hints setting: " + ex.Message);
+        }
+        WriteStatus("Repeat button hints changed to " +
+            (seconds == 0 ? "Never" : seconds + " seconds") + ".");
     }
 
     private void SetSapiNumberFromMenu(string key, ref int field, int value, string name)

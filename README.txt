@@ -1,4 +1,4 @@
-Bop It Access 0.6.1 - Control Types
+Bop It Access 0.6.2 - Repeat Button Hints
 
 What this does
 --------------
@@ -38,6 +38,14 @@ the focused item's type follows its name and precedes its value and index:
 "MUSIC slider, 30, 1 of 11", "VIBRATION toggle, On, 5 of 11", or
 "PLAY button, 1 of 6". Menus also identify tabs, text fields, and readable
 list items where relevant. Value changes continue to speak only the new value.
+
+REPEAT BUTTON HINTS is a saved SPEECH slider with 15 seconds, 30 seconds,
+60 seconds, and Never. It defaults to Never. After the selected period without
+input, the mod announces the valid inputs on the current screen and what each
+one does once. New input or a screen change rearms the timer. These reminders
+are queued after speech already in progress, so they do not interrupt it.
+They are suppressed during active gameplay and the beat
+timing phases of Audio Calibration, where extra speech could mask a cue.
 
 The SPEECH menu also has VOICE, VOLUME, RATE, and PITCH controls. Voice
 lists the system default and installed 64-bit SAPI voices. Volume starts at
@@ -181,6 +189,8 @@ At the end of a game, listen for the score or One on One winner before the
 result-screen controls are announced. Press T or left stick press to repeat the
 final result while the game-over screen is visible.
 Press F8 or controller Select to turn mod speech off or on from any screen.
+In Settings > Speech, choose a Repeat Button Hints interval if you want the
+current screen's input instructions repeated after a period of inactivity.
 Open Leaderboards from the main menu or a result screen. Change a filter to
 hear its new selection and read individual scores with Page Up and Page Down.
 By default, O/P move between leaderboard groups and K/L move between date

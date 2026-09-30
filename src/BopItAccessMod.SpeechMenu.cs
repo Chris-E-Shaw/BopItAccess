@@ -25,6 +25,7 @@ public sealed partial class BopItAccessMod
     private SettingsToggle? _speechOutputToggle;
     private SettingsToggle? _indexingToggle;
     private SettingsToggle? _readControlTypesToggle;
+    private SettingsSlider? _repeatButtonHintsSlider;
     private SettingsSlider? _speechModeSlider;
     private SettingsToggle? _trimSilenceToggle;
     private SettingsSlider? _speechVoiceSlider;
@@ -37,6 +38,7 @@ public sealed partial class BopItAccessMod
     private UnityAction? _trimSilenceSubmitListener;
     private UnityAction? _speechBackSubmitListener;
     private UnityAction<int>? _speechModeMoveListener;
+    private UnityAction<int>? _repeatButtonHintsMoveListener;
     private UnityAction<int>? _speechVoiceMoveListener;
     private UnityAction<int>? _speechVolumeMoveListener;
     private UnityAction<int>? _speechRateMoveListener;
@@ -48,6 +50,9 @@ public sealed partial class BopItAccessMod
     private bool _speechMenuInputReady;
     private int _lastSpeechMenuRowId;
     private string? _lastSpeechMenuValue;
+    private static readonly int[] RepeatButtonHintsOptions = { 15, 30, 60, 0 };
+    private static string RepeatButtonHintsValue(int seconds) =>
+        seconds == 0 ? "Never" : seconds + " seconds";
     private static string SapiSpeechSettingsInstruction =>
         TrimSilenceExperimentAvailable
             ? "Voice, volume, rate, pitch, and trim silence apply to SAPI output."
@@ -311,6 +316,8 @@ public sealed partial class BopItAccessMod
                 _readControlTypesSubmitListener ??=
                     (UnityAction)OnReadControlTypesSubmitted,
                 _readControlTypesEnabled);
+            _repeatButtonHintsSlider = AddSpeechSlider(settings.resolution, content,
+                "REPEAT BUTTON HINTS");
             _speechModeSlider = AddSpeechSlider(settings.resolution, content,
                 "OUTPUT MODE");
             _trimSilenceToggle = null;
@@ -337,6 +344,9 @@ public sealed partial class BopItAccessMod
             _speechUiOptions.Add(new("READ CONTROL TYPES", "toggle",
                 _readControlTypesToggle,
                 () => _readControlTypesEnabled ? "On" : "Off"));
+            _speechUiOptions.Add(new("REPEAT BUTTON HINTS", "slider",
+                _repeatButtonHintsSlider,
+                () => RepeatButtonHintsValue(_repeatButtonHintsSeconds)));
             _speechUiOptions.Add(new("OUTPUT MODE", "slider", _speechModeSlider,
                 () => _outputMode));
             if (TrimSilenceExperimentAvailable && _trimSilenceToggle != null)
@@ -378,6 +388,7 @@ public sealed partial class BopItAccessMod
             _speechOutputToggle = null;
             _indexingToggle = null;
             _readControlTypesToggle = null;
+            _repeatButtonHintsSlider = null;
             _speechModeSlider = null;
             _trimSilenceToggle = null;
             _speechVoiceSlider = null;
@@ -426,6 +437,8 @@ public sealed partial class BopItAccessMod
         UnityAction<int> listener = label switch
         {
             "OUTPUT MODE" => _speechModeMoveListener ??= (UnityAction<int>)OnSpeechModeMoved,
+            "REPEAT BUTTON HINTS" => _repeatButtonHintsMoveListener ??=
+                (UnityAction<int>)OnRepeatButtonHintsMoved,
             "VOICE" => _speechVoiceMoveListener ??= (UnityAction<int>)OnSpeechVoiceMoved,
             "VOLUME" => _speechVolumeMoveListener ??= (UnityAction<int>)OnSpeechVolumeMoved,
             "RATE" => _speechRateMoveListener ??= (UnityAction<int>)OnSpeechRateMoved,
@@ -559,6 +572,7 @@ public sealed partial class BopItAccessMod
             SetSpeechToggleDisplay(_indexingToggle, _indexingEnabled);
         if (_readControlTypesToggle != null)
             SetSpeechToggleDisplay(_readControlTypesToggle, _readControlTypesEnabled);
+        _repeatButtonHintsSlider?.SetValue(RepeatButtonHintsValue(_repeatButtonHintsSeconds));
         _speechModeSlider?.SetValue(_outputMode);
         if (_trimSilenceToggle != null)
             SetSpeechToggleDisplay(_trimSilenceToggle, _trimSilence);
@@ -632,6 +646,22 @@ public sealed partial class BopItAccessMod
             return;
         SetOutputModeFromMenu(OutputModes[next]);
         _speechModeSlider?.SetValue(_outputMode);
+    }
+
+    private void OnRepeatButtonHintsMoved(int movement)
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
+        int direction = Math.Sign(movement);
+        if (direction == 0)
+            return;
+        int current = Array.IndexOf(RepeatButtonHintsOptions, _repeatButtonHintsSeconds);
+        int next = Math.Clamp(Math.Max(0, current) + direction, 0,
+            RepeatButtonHintsOptions.Length - 1);
+        if (next == current)
+            return;
+        SetRepeatButtonHintsFromMenu(RepeatButtonHintsOptions[next]);
+        _repeatButtonHintsSlider?.SetValue(RepeatButtonHintsValue(_repeatButtonHintsSeconds));
     }
 
     private void OnSpeechVoiceMoved(int movement)
