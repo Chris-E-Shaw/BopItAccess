@@ -225,9 +225,8 @@ public sealed partial class BopItAccessMod
             LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
             if (_leaderboardControlsScroll != null)
                 _leaderboardControlsScroll.verticalNormalizedPosition = 1f;
-            // ReadControlsFocus may have cached its native rows in a prior
-            // frame. Make it discover the new rows on its next pass.
-            _controlsWasVisible = false;
+            // ReadControlsFocus already has the native rows. The added rows
+            // are tracked separately, so keep this visit's introduction state.
             reason = string.Empty;
             return true;
         }

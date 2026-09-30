@@ -18,20 +18,21 @@ public sealed partial class BopItAccessMod
     private int _lastTrackSelectObservedSelectionId;
     private int _lastTrackSelectPanelId;
     private bool _descriptionWasRequestedOnTrackSelect;
+    private long _trackSelectStartTransitionUntil;
 
     private const string ShapesDescription =
-        "Shapes. An abstract digital scene with no recognizable room or ground, styled like a nostalgic 1990s pizza shop turned neon DJ night. " +
+        "An abstract digital scene with no recognizable room or ground, styled like a nostalgic 1990s pizza shop turned neon DJ night. " +
         "Hot pink, purple, and teal fill the space. Squares, angular forms, rounded cubes, spheres, and pyramids mingle with floating squiggles and other geometric patterns. " +
         "The shapes drift and bounce in a playful, screensaver-like motion, making the level feel lively and rhythmic.";
     private const string SpaceDescription =
-        "Space. A bright, playful galaxy surrounds the Bop It device. Deep blue, purple, and black suggest open space, with stars, cosmic clouds, planets, and floating rocky forms adding depth. " +
+        "A bright, playful galaxy surrounds the Bop It device. Deep blue, purple, and black suggest open space, with stars, cosmic clouds, planets, and floating rocky forms adding depth. " +
         "Friendly animated aliens drift nearby and cheer the player on. Their glowing green, silver, and neon-blue accents stand out against the dark backdrop, giving the scene a cheerful sci-fi atmosphere.";
     private const string CityDescription =
-        "City. A layered cartoon city glows at twilight, with dark blue buildings and warm orange and yellow lights. Skyscrapers, lit windows, streetlights, billboards, and playful signs create a busy downtown scene. " +
-        "Some signs use music-themed lettering, including street names such as “Bop It Blvd.” and “Spin It St.” The featured billboard cat bops and rolls as the city moves around it, adding a goofy animated focal point.";
+        "A layered cartoon city glows at twilight, with dark blue buildings and warm orange and yellow lights. Skyscrapers, lit windows, streetlights, billboards, and playful signs create a busy downtown scene. " +
+        "Some signs use music-themed lettering, including street names such as “Bop It Blvd.” and “Spin It Street.” The featured billboard cat bops and rolls as the city moves around it, adding a goofy animated focal point.";
     private const string OfficeDescription =
-        "Office. A whimsical workplace scene centers on a desk and computer. The monitor becomes an aquarium: fish swim inside it, surrounded by colorful aquatic imagery. " +
-        "A keyboard, leafy plants, and small flowers add detail around the workstation. The office theme brings a mundane corporate setting together with the surprising underwater scene, creating a playful contrast.";
+        "A whimsical workplace scene centers on a desk and computer. The monitor becomes an aquarium: fish swim inside it, surrounded by colorful aquatic imagery. " +
+        "A keyboard, leafy plants, and small flowers add detail around the workstation.";
 
     // The song and difficulty screen is the game's start screen in the game
     // scene. Mode selection happens in the main-menu scene immediately before it.
@@ -52,12 +53,34 @@ public sealed partial class BopItAccessMod
                 return false;
         }
 
-        StartScreenPanel? panel = _trackSelectUi.startScreen;
-        if (panel == null || !panel.IsVisible || !panel.gameObject.activeInHierarchy)
+        GameManager? game = _trackSelectUi.gameManager;
+        if (game != null && game.GameState == GameState.Playing)
         {
+            if (_trackSelectWasVisible ||
+                Environment.TickCount64 <= _trackSelectStartTransitionUntil)
+            {
+                StopSpeechForGameStart();
+                _descriptionWasRequestedOnTrackSelect = false;
+                WriteStatus("Gameplay started; cleared and interrupted song-selection speech.");
+            }
+            _trackSelectStartTransitionUntil = 0;
             ResetTrackSelectFocus();
             return false;
         }
+
+        StartScreenPanel? panel = _trackSelectUi.startScreen;
+        if (panel == null || !panel.IsVisible || !panel.gameObject.activeInHierarchy)
+        {
+            // The start panel can close a frame before GameState becomes
+            // Playing. Remember that visit through the transition.
+            if (_trackSelectWasVisible && game != null &&
+                game.GameState == GameState.WaitingToStart)
+                _trackSelectStartTransitionUntil = Environment.TickCount64 + 10000;
+            ResetTrackSelectFocus();
+            return false;
+        }
+
+        _trackSelectStartTransitionUntil = 0;
 
         int panelId = panel.GetInstanceID();
         if (panelId != _lastTrackSelectPanelId)

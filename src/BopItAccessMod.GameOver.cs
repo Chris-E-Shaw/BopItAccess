@@ -19,6 +19,10 @@ public sealed partial class BopItAccessMod
     private int _lastGameOverRank;
     private long _backOnlyPromptDueAt;
     private bool _backOnlyPromptSpoken;
+    private long _gameOverScoreSpeechProtectedUntil;
+    private readonly List<string> _deferredGameOverResultUpdates = new();
+    private string? _deferredGameOverMenuUpdate;
+    private bool _soloBackInstructionPending;
 
     // The final score belongs to the kill-screen panel. Its displayed TMP
     // number animates from zero, so read the stored final score instead.
@@ -97,7 +101,10 @@ public sealed partial class BopItAccessMod
                 (int focusedId, _) = GetFocusedSoloResultButton(solo);
                 _lastGameOverFocusedId = focusedId != 0
                     ? focusedId : solo.replayButton?.GetInstanceID() ?? 0;
-                QueueScoreThenMenu(score, "Replay. Leaderboard. Back to return.");
+                ProtectGameOverScoreSpeech(score);
+                _deferredGameOverMenuUpdate = "Replay. Leaderboard. Back to return.";
+                _soloBackInstructionPending = true;
+                QueueScoreThenMenu(score, null);
                 WriteStatus($"Solo game over visible; {score}");
             }
             else
@@ -122,7 +129,9 @@ public sealed partial class BopItAccessMod
                     initialPrompts = null;
                     _backOnlyPromptDueAt = Environment.TickCount64 + 1200;
                 }
-                QueueScoreThenMenu(score, initialPrompts);
+                ProtectGameOverScoreSpeech(score);
+                _deferredGameOverMenuUpdate = initialPrompts;
+                QueueScoreThenMenu(score, null);
                 WriteStatus($"With-friends game over visible; {score}");
             }
 
@@ -131,11 +140,12 @@ public sealed partial class BopItAccessMod
 
         if (soloVisible)
         {
-            var changes = new List<string>(2);
+            var resultChanges = new List<string>(1);
+            string? menuChange = null;
             if (GetFreshResultRank() == 1 && solo!.isHighScore && !_lastSoloHighScore)
             {
                 _lastSoloHighScore = true;
-                changes.Add("New high score.");
+                resultChanges.Add("New high score.");
             }
 
             (int focusedId, string? label) = GetFocusedSoloResultButton(solo!);
@@ -143,20 +153,16 @@ public sealed partial class BopItAccessMod
             {
                 _lastGameOverFocusedId = focusedId;
                 if (label != null)
-                    changes.Add(label);
+                    menuChange = label;
             }
 
-            if (changes.Count > 0)
-            {
-                string announcement = string.Join(" ", changes);
-                QueueSpeech(announcement, false);
-                WriteStatus($"Solo game over update: {announcement}");
-            }
+            AnnounceGameOverUpdates(resultChanges, menuChange, "Solo");
         }
         else
         {
             WithFriendsKillScreenPanel currentFriends = friends!;
-            var changes = new List<string>(3);
+            var resultChanges = new List<string>(2);
+            string? menuChange = null;
             string? prompts = ReadFriendsPrompts(currentFriends, mode!.Value);
             if (prompts != null && !string.Equals(prompts, _lastGameOverPrompts, StringComparison.Ordinal))
             {
@@ -166,7 +172,7 @@ public sealed partial class BopItAccessMod
                 else
                 {
                     _backOnlyPromptDueAt = 0;
-                    changes.Add(prompts);
+                    menuChange = prompts;
                 }
             }
 
@@ -174,7 +180,7 @@ public sealed partial class BopItAccessMod
                 _backOnlyPromptDueAt != 0 && Environment.TickCount64 >= _backOnlyPromptDueAt)
             {
                 _backOnlyPromptSpoken = true;
-                changes.Add(prompts);
+                menuChange = prompts;
             }
 
             string? winner = mode == GameMode.OneOnOne
@@ -182,25 +188,63 @@ public sealed partial class BopItAccessMod
             if (winner != null && !string.Equals(winner, _lastGameOverWinner, StringComparison.Ordinal))
             {
                 _lastGameOverWinner = winner;
-                changes.Add($"{winner}.");
+                resultChanges.Add($"{winner}.");
             }
 
             int rank = ReadFriendsRank(currentFriends, mode!.Value);
             if (rank > 0 && GetFreshResultRank() == rank && rank != _lastGameOverRank)
             {
                 _lastGameOverRank = rank;
-                changes.Add($"Rank: {rank}.");
+                resultChanges.Add($"Rank: {rank}.");
             }
 
-            if (changes.Count > 0)
-            {
-                string announcement = string.Join(" ", changes);
-                QueueSpeech(announcement, false);
-                WriteStatus($"With-friends game over update: {announcement}");
-            }
+            AnnounceGameOverUpdates(resultChanges, menuChange, "With-friends");
         }
 
         return true;
+    }
+
+    private void ProtectGameOverScoreSpeech(string score)
+    {
+        // NVDA does not expose speech completion through Tolk. Estimate the
+        // time needed for the short score sentence before speaking the menu.
+        int wordCount = score.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+        long protectionMs = Math.Clamp(1000L + wordCount * 550L, 2200L, 4500L);
+        _gameOverScoreSpeechProtectedUntil = Environment.TickCount64 + protectionMs;
+    }
+
+    private void AnnounceGameOverUpdates(List<string> resultChanges,
+        string? menuChange, string context)
+    {
+        // Keep score-related updates that arrive during the protection window,
+        // but replace earlier menu choices with the most recent focused item.
+        _deferredGameOverResultUpdates.AddRange(resultChanges);
+        if (menuChange != null)
+            _deferredGameOverMenuUpdate = menuChange;
+
+        if (Environment.TickCount64 < _gameOverScoreSpeechProtectedUntil)
+            return;
+
+        if (_deferredGameOverResultUpdates.Count == 0 &&
+            _deferredGameOverMenuUpdate == null)
+            return;
+
+        var changes = new List<string>(_deferredGameOverResultUpdates);
+        if (_deferredGameOverMenuUpdate != null)
+            changes.Add(_deferredGameOverMenuUpdate);
+        if (_soloBackInstructionPending &&
+            !(_deferredGameOverMenuUpdate?.Contains("Back to return.",
+                StringComparison.OrdinalIgnoreCase) ?? false))
+            changes.Add("Back to return.");
+        string announcement = string.Join(" ", changes);
+        _deferredGameOverResultUpdates.Clear();
+        _deferredGameOverMenuUpdate = null;
+        _soloBackInstructionPending = false;
+
+        // The score has had its own protected turn. Later navigation now
+        // interrupts stale Replay/Leaderboard announcements as elsewhere.
+        QueueSpeech(announcement);
+        WriteStatus($"{context} game over update: {announcement}");
     }
 
     private GameMode? ReadGameOverMode()
@@ -278,5 +322,9 @@ public sealed partial class BopItAccessMod
         _lastGameOverRank = 0;
         _backOnlyPromptDueAt = 0;
         _backOnlyPromptSpoken = false;
+        _gameOverScoreSpeechProtectedUntil = 0;
+        _deferredGameOverResultUpdates.Clear();
+        _deferredGameOverMenuUpdate = null;
+        _soloBackInstructionPending = false;
     }
 }

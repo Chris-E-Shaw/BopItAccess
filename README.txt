@@ -1,4 +1,4 @@
-Bop It Access 0.5.8 - Read Descriptions input fix
+Bop It Access 0.5.9 - Speech timing and description refinements
 
 What this does
 --------------
@@ -20,8 +20,9 @@ The READ DESCRIPTIONS control speaks a visual description of the selected
 Shapes, Space, City, or Office stage on demand. It is available on this screen
 only, before gameplay starts. Its default inputs are R on keyboard and LT
 (left trigger) on controller. The screen introduction announces the current
-binding. If a description is still being spoken when play starts, the mod
-stops it so it cannot mask the game's verbal cues.
+binding. Starting play stops any speech left from song selection so it cannot
+mask the game's verbal cues. Descriptions begin with the scene details rather
+than repeating the selected stage name.
 R is also listed as Reset Gyro in the game's input asset. The mod does not
 change that or any other native binding, and its own action is disabled during
 gameplay.
@@ -32,6 +33,9 @@ and explains Back. The other modes read their available Continue, Replay, and
 Back prompts. One on One shows a winner rather than a numeric final score, so
 the mod announces the winner shown there. Score speech takes priority over
 the initial menu announcement; result-screen prompts are queued after it.
+Subsequent menu focus changes interrupt one another. Rapid changes immediately
+after game over are combined until the short score announcement has had time
+to finish, keeping the latest focused menu choice.
 Solo high-score and Party rank announcements are spoken when the game reports
 a fresh leaderboard result.
 
@@ -60,7 +64,7 @@ if that also cannot work, the whole credits text is announced once.
 Inside Controls, the mod reads Bop, Bop (Player 2), Flick, Twist, Spin, Pull,
 and Reset to Default. It reads the current binding for the active input device,
 announces changed bindings, and reads the game's visible rebinding feedback.
-It also announces how to return to Settings. When Reset to Default changes a
+It announces how to return to Settings once per visit. When Reset to Default changes a
 binding, it reports that the bindings were reset.
 
 The mod adds five rows to the game's Controls menu: Group Previous,
