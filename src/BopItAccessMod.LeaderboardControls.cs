@@ -1,0 +1,558 @@
+using System.Reflection;
+using HarmonyLib;
+using Il2Cpp;
+using Il2CppInterop.Runtime;
+using Il2CppTMPro;
+using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.InputSystem;
+using UnityEngine.UI;
+
+namespace BopItAccess;
+
+// Prototype: extend the game's own Controls panel with the four parts of its
+// two existing leaderboard axes. This is deliberately guarded. If the game's
+// scene stops using a vertically navigated layout, it leaves the
+// native panel untouched instead of creating overlapping or unreachable rows.
+public sealed partial class BopItAccessMod
+{
+    private const string LeaderboardControlsMap = "Leaderboard";
+    private const string GroupAction = "ChangeGroup";
+    private const string DateAction = "ChangeDateRange";
+    private static readonly string LeaderboardControlsPatchId =
+        "BopItAccess.LeaderboardCompositeRebinding";
+
+    private readonly Dictionary<int, LeaderboardControlPart> _leaderboardControlParts = new();
+    private readonly List<GameObject> _leaderboardAddedRows = new();
+    private GameObject? _leaderboardControlsViewport;
+    private ScrollRect? _leaderboardControlsScroll;
+    private ContentSizeFitter? _leaderboardControlsFitter;
+    private RectTransform? _leaderboardControlsContent;
+    private RectTransform? _leaderboardControlsOriginalParent;
+    private Vector2 _leaderboardContentOriginalAnchorMin;
+    private Vector2 _leaderboardContentOriginalAnchorMax;
+    private Vector2 _leaderboardContentOriginalPivot;
+    private Vector2 _leaderboardContentOriginalPosition;
+    private Vector2 _leaderboardContentOriginalSize;
+    private static BopItAccessMod? _leaderboardControlsOwner;
+    private static bool _leaderboardBindingPatchInstalled;
+    private int _leaderboardControlsPanelId;
+    private int _leaderboardControlsManagerId;
+    private int _leaderboardLastFocusedRowId;
+    private long _nextLeaderboardControlsProbeAt;
+    private bool _leaderboardControlsAttempted;
+
+    public override void OnUpdate()
+    {
+        if (_leaderboardControlsScroll != null)
+            ScrollSelectedControlIntoView();
+
+        long now = Environment.TickCount64;
+        if (now < _nextLeaderboardControlsProbeAt)
+            return;
+
+        _nextLeaderboardControlsProbeAt = now + 250;
+        MainMenuUIManager? main = _mainMenu;
+        if (main == null)
+            main = UnityEngine.Object.FindFirstObjectByType<MainMenuUIManager>();
+
+        Panel? panel = main?.controlsPanel;
+        if (panel == null || !panel.IsVisible || !panel.gameObject.activeInHierarchy)
+        {
+            // A panel can become visible before its localized labels or input
+            // references finish initializing. Retry a failed injection when it
+            // is opened again, while keeping successfully added rows intact.
+            if (_leaderboardAddedRows.Count == 0)
+                _leaderboardControlsAttempted = false;
+            return;
+        }
+
+        int panelId = panel.GetInstanceID();
+        if (panelId != _leaderboardControlsPanelId)
+        {
+            if (_leaderboardControlsPanelId != 0)
+                RemoveAddedLeaderboardControls();
+            _leaderboardControlsPanelId = panelId;
+            _leaderboardControlsAttempted = false;
+        }
+
+        if (_leaderboardControlsAttempted)
+            return;
+
+        _leaderboardControlsAttempted = true;
+        try
+        {
+            if (TryAddLeaderboardControls(panel, out string reason))
+                WriteStatus("Added four native leaderboard binding rows to Controls.");
+            else
+                WriteStatus("Leaderboard binding rows were not added: " + reason);
+        }
+        catch (Exception ex)
+        {
+            RemoveAddedLeaderboardControls();
+            WriteStatus("Leaderboard binding rows were not added: " + ex);
+        }
+    }
+
+    private bool TryAddLeaderboardControls(Panel panel, out string reason)
+    {
+        InputRebindingManager? manager = panel.GetComponentInChildren<InputRebindingManager>(true);
+        if (manager == null)
+        {
+            reason = "the rebinding manager is unavailable";
+            return false;
+        }
+
+        ControlRow? template = null;
+        foreach (ControlRow row in panel.GetComponentsInChildren<ControlRow>(true))
+        {
+            if (row.ActionName == "Bop")
+            {
+                template = row;
+                break;
+            }
+        }
+
+        ResetToDefaultRow? reset = panel.GetComponentInChildren<ResetToDefaultRow>(true);
+        if (template == null || reset == null ||
+            template.transform.parent != reset.transform.parent)
+        {
+            reason = "the native binding rows and Reset do not share a container";
+            return false;
+        }
+
+        Transform parent = template.transform.parent;
+        if (parent.GetComponent<LayoutGroup>() == null)
+        {
+            reason = "the binding container has no layout group";
+            return false;
+        }
+
+        Selectable? templateSelectable = template.GetComponentInChildren<Selectable>(true);
+        Selectable? resetSelectable = reset.GetComponentInChildren<Selectable>(true);
+        if (templateSelectable == null || resetSelectable == null ||
+            templateSelectable.navigation.mode != Navigation.Mode.Vertical ||
+            resetSelectable.navigation.mode != Navigation.Mode.Vertical)
+        {
+            reason = "the native rows do not use vertical UI navigation";
+            return false;
+        }
+
+        if (FindControlLabel(template.transform, "Default/Label") == null ||
+            FindControlLabel(template.transform, "Active/Label") == null)
+        {
+            reason = "the Bop row's two visible labels could not be found";
+            return false;
+        }
+
+        RectTransform? contentRect = parent.GetComponent<RectTransform>();
+        RectTransform? tableRect = parent.parent?.GetComponent<RectTransform>();
+        if (contentRect == null || tableRect == null ||
+            tableRect.GetComponent<ScrollRect>() != null)
+        {
+            reason = "the expected Controls table geometry is unavailable";
+            return false;
+        }
+
+        InputActionAsset? asset = manager.inputActions ?? manager.playerInput?.actions;
+        InputAction? group = asset?.FindActionMap(LeaderboardControlsMap, false)?
+            .FindAction(GroupAction, false);
+        InputAction? date = asset?.FindActionMap(LeaderboardControlsMap, false)?
+            .FindAction(DateAction, false);
+        if (!HasBothDeviceComposites(group) || !HasBothDeviceComposites(date))
+        {
+            reason = "the expected keyboard and gamepad 1D axes are missing";
+            return false;
+        }
+
+        if (!InstallLeaderboardBindingPatch())
+        {
+            reason = "the native rebinding hook could not be installed";
+            return false;
+        }
+
+        LeaderboardControlPart[] parts =
+        {
+            new(GroupAction, "negative", "Leaderboard group previous", "GROUP PREVIOUS"),
+            new(GroupAction, "positive", "Leaderboard group next", "GROUP NEXT"),
+            new(DateAction, "negative", "Leaderboard date previous", "DATE PREVIOUS"),
+            new(DateAction, "positive", "Leaderboard date next", "DATE NEXT")
+        };
+
+        try
+        {
+            int insertAt = reset.transform.GetSiblingIndex();
+            foreach (LeaderboardControlPart part in parts)
+            {
+                InputAction action = part.Action == GroupAction ? group! : date!;
+                GameObject clone = UnityEngine.Object.Instantiate(template.gameObject, parent, false);
+                clone.SetActive(false);
+                _leaderboardAddedRows.Add(clone);
+                clone.name = part.Label.Replace(' ', '_');
+                clone.transform.SetSiblingIndex(insertAt++);
+
+                ControlRow? row = clone.GetComponent<ControlRow>();
+                TMP_Text? defaultLabel = FindControlLabel(clone.transform, "Default/Label");
+                TMP_Text? activeLabel = FindControlLabel(clone.transform, "Active/Label");
+                Selectable? selectable = clone.GetComponentInChildren<Selectable>(true);
+                if (row == null || defaultLabel == null || activeLabel == null || selectable == null)
+                    throw new InvalidOperationException("A cloned row lost its native controls.");
+
+                row.ActionMapName = LeaderboardControlsMap;
+                row.ActionName = part.Action;
+                SetClonedLabel(defaultLabel, part.VisibleLabel);
+                SetClonedLabel(activeLabel, part.VisibleLabel);
+
+                InputActionReference actionReference = InputActionReference.Create(action);
+                ControlPromptSpriteSwapper.CompositePart composite =
+                    part.PartName == "negative"
+                        ? ControlPromptSpriteSwapper.CompositePart.Negative
+                        : ControlPromptSpriteSwapper.CompositePart.Positive;
+                SetDisplayPrompt(row.ActiveDisplayPrompt, actionReference, composite);
+                SetDisplayPrompt(row.DefaultDisplayPrompt, actionReference, composite);
+
+                // Keep the native row's input listeners and submit/cancel actions.
+                // Only its target action and display prompts change.
+                Navigation navigation = selectable.navigation;
+                navigation.mode = Navigation.Mode.Vertical;
+                selectable.navigation = navigation;
+                _leaderboardControlParts[row.GetInstanceID()] = part;
+            }
+
+            AddLeaderboardControlsViewport(tableRect, contentRect);
+            _leaderboardControlsManagerId = manager.GetInstanceID();
+            _leaderboardControlsOwner = this;
+            foreach (GameObject row in _leaderboardAddedRows)
+                row.SetActive(true);
+
+            LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
+            if (_leaderboardControlsScroll != null)
+                _leaderboardControlsScroll.verticalNormalizedPosition = 1f;
+            // ReadControlsFocus may have cached its six native rows in a prior
+            // frame. Make it discover the four new rows on its next pass.
+            _controlsWasVisible = false;
+            reason = string.Empty;
+            return true;
+        }
+        catch
+        {
+            RemoveAddedLeaderboardControls();
+            throw;
+        }
+    }
+
+    private static TMP_Text? FindControlLabel(Transform row, string path) =>
+        row.Find(path)?.GetComponent<TMP_Text>();
+
+    private static void SetClonedLabel(TMP_Text label, string text)
+    {
+        // These two scene labels each have a LocalizeStringEvent that would
+        // otherwise restore the original Bop text when the clone is enabled.
+        Component? localization = label.GetComponent("LocalizeStringEvent");
+        Behaviour? localizationBehaviour = localization?.TryCast<Behaviour>();
+        if (localizationBehaviour != null)
+            localizationBehaviour.enabled = false;
+
+        label.text = text;
+    }
+
+    private static void SetDisplayPrompt(ControlPromptSpriteSwapperV2? prompt,
+        InputActionReference reference,
+        ControlPromptSpriteSwapper.CompositePart part)
+    {
+        if (prompt == null)
+            return;
+
+        prompt.ActionReference = reference;
+        prompt.Composite = part;
+    }
+
+    private void AddLeaderboardControlsViewport(RectTransform table,
+        RectTransform content)
+    {
+        _leaderboardControlsOriginalParent = table;
+        _leaderboardControlsContent = content;
+        _leaderboardContentOriginalAnchorMin = content.anchorMin;
+        _leaderboardContentOriginalAnchorMax = content.anchorMax;
+        _leaderboardContentOriginalPivot = content.pivot;
+        _leaderboardContentOriginalPosition = content.anchoredPosition;
+        _leaderboardContentOriginalSize = content.sizeDelta;
+
+        int originalSibling = content.GetSiblingIndex();
+        GameObject viewport = new("BopItAccess Controls Viewport",
+            new Il2CppSystem.Type[] { Il2CppType.Of<RectTransform>() });
+        _leaderboardControlsViewport = viewport;
+        RectTransform viewportRect = viewport.GetComponent<RectTransform>();
+        viewportRect.SetParent(table, false);
+        viewportRect.SetSiblingIndex(originalSibling);
+        viewportRect.anchorMin = _leaderboardContentOriginalAnchorMin;
+        viewportRect.anchorMax = _leaderboardContentOriginalAnchorMax;
+        viewportRect.pivot = _leaderboardContentOriginalPivot;
+        viewportRect.anchoredPosition = _leaderboardContentOriginalPosition;
+        viewportRect.sizeDelta = _leaderboardContentOriginalSize;
+        viewport.AddComponent<RectMask2D>();
+
+        content.SetParent(viewportRect, false);
+        content.anchorMin = new Vector2(0f, 1f);
+        content.anchorMax = new Vector2(1f, 1f);
+        content.pivot = new Vector2(0.5f, 1f);
+        content.anchoredPosition = Vector2.zero;
+        content.sizeDelta = Vector2.zero;
+        _leaderboardControlsFitter = content.gameObject.AddComponent<ContentSizeFitter>();
+        _leaderboardControlsFitter.horizontalFit = ContentSizeFitter.FitMode.Unconstrained;
+        _leaderboardControlsFitter.verticalFit = ContentSizeFitter.FitMode.PreferredSize;
+
+        ScrollRect scroll = table.gameObject.AddComponent<ScrollRect>();
+        _leaderboardControlsScroll = scroll;
+        scroll.viewport = viewportRect;
+        scroll.content = content;
+        scroll.horizontal = false;
+        scroll.vertical = true;
+        scroll.inertia = false;
+        scroll.movementType = ScrollRect.MovementType.Clamped;
+    }
+
+    private void ScrollSelectedControlIntoView()
+    {
+        ScrollRect? scroll = _leaderboardControlsScroll;
+        if (scroll == null || scroll.viewport == null || scroll.content == null)
+            return;
+
+        GameObject? selected = EventSystem.current?.currentSelectedGameObject;
+        if (selected == null || !selected.transform.IsChildOf(scroll.content))
+            return;
+
+        ControlRow? control = selected.GetComponentInParent<ControlRow>();
+        ResetToDefaultRow? reset = selected.GetComponentInParent<ResetToDefaultRow>();
+        Transform item = control != null ? control.transform :
+            reset != null ? reset.transform : selected.transform;
+        Bounds bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(
+            scroll.viewport, item);
+        Rect viewport = scroll.viewport.rect;
+        float overflow = bounds.min.y < viewport.yMin
+            ? bounds.min.y - viewport.yMin
+            : bounds.max.y > viewport.yMax
+                ? bounds.max.y - viewport.yMax
+                : 0f;
+        if (Mathf.Abs(overflow) < 0.5f)
+            return;
+
+        float scrollableHeight = scroll.content.rect.height - viewport.height;
+        if (scrollableHeight > 0f)
+            scroll.verticalNormalizedPosition = Mathf.Clamp01(
+                scroll.verticalNormalizedPosition + overflow / scrollableHeight);
+    }
+
+    private static bool HasBothDeviceComposites(InputAction? action)
+    {
+        if (action == null)
+            return false;
+
+        bool keyboardNegative = false;
+        bool keyboardPositive = false;
+        bool gamepadNegative = false;
+        bool gamepadPositive = false;
+        for (int i = 0; i < action.bindings.Count; i++)
+        {
+            InputBinding binding = action.bindings[i];
+            if (!binding.isPartOfComposite)
+                continue;
+
+            string path = binding.path ?? string.Empty;
+            bool negative = string.Equals(binding.name, "negative", StringComparison.OrdinalIgnoreCase);
+            bool positive = string.Equals(binding.name, "positive", StringComparison.OrdinalIgnoreCase);
+            if (path.Contains("<Keyboard>", StringComparison.OrdinalIgnoreCase))
+            {
+                keyboardNegative |= negative;
+                keyboardPositive |= positive;
+            }
+            else if (path.Contains("<Gamepad>", StringComparison.OrdinalIgnoreCase))
+            {
+                gamepadNegative |= negative;
+                gamepadPositive |= positive;
+            }
+        }
+
+        return keyboardNegative && keyboardPositive && gamepadNegative && gamepadPositive;
+    }
+
+    private static bool InstallLeaderboardBindingPatch()
+    {
+        if (_leaderboardBindingPatchInstalled)
+            return true;
+
+        MethodInfo? target = typeof(InputRebindingManager).GetMethod(
+            "FindAppropriateBindingIndex",
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        MethodInfo? postfix = typeof(BopItAccessMod).GetMethod(
+            nameof(SelectLeaderboardCompositePart), BindingFlags.Static | BindingFlags.NonPublic);
+        if (target == null || postfix == null)
+            return false;
+
+        new HarmonyLib.Harmony(LeaderboardControlsPatchId).Patch(target,
+            postfix: new HarmonyMethod(postfix));
+        _leaderboardBindingPatchInstalled = true;
+        return true;
+    }
+
+    // The game's rebinding manager normally chooses just one binding from an
+    // action. For the four added rows only, select the negative/positive part of
+    // the same device's 1DAxis composite. All native validation, conflict
+    // handling, completion, and override saving remain in the game's manager.
+    private static void SelectLeaderboardCompositePart(InputRebindingManager __instance,
+        InputAction action, string deviceType, ref int __result)
+    {
+        BopItAccessMod? owner = _leaderboardControlsOwner;
+        if (owner == null || __instance == null ||
+            __instance.GetInstanceID() != owner._leaderboardControlsManagerId)
+            return;
+
+        GameObject? selected = EventSystem.current?.currentSelectedGameObject;
+        ControlRow? row = selected?.GetComponentInParent<ControlRow>();
+        if (row == null || !owner._leaderboardControlParts.ContainsKey(row.GetInstanceID()))
+        {
+            foreach (GameObject added in owner._leaderboardAddedRows)
+            {
+                ControlRow? candidate = added == null ? null : added.GetComponent<ControlRow>();
+                if (candidate != null && candidate.IsFocused)
+                {
+                    row = candidate;
+                    break;
+                }
+            }
+        }
+        if ((row == null || !owner._leaderboardControlParts.ContainsKey(row.GetInstanceID())) &&
+            owner._leaderboardLastFocusedRowId != 0)
+        {
+            foreach (GameObject added in owner._leaderboardAddedRows)
+            {
+                ControlRow? candidate = added == null ? null : added.GetComponent<ControlRow>();
+                if (candidate != null &&
+                    candidate.GetInstanceID() == owner._leaderboardLastFocusedRowId)
+                {
+                    row = candidate;
+                    break;
+                }
+            }
+        }
+        if (row == null ||
+            !owner._leaderboardControlParts.TryGetValue(row.GetInstanceID(), out LeaderboardControlPart? part) ||
+            part == null ||
+            action == null ||
+            !string.Equals(action.name, part.Action, StringComparison.Ordinal) ||
+            !string.Equals(action.actionMap?.name, LeaderboardControlsMap, StringComparison.Ordinal))
+            return;
+
+        int selectedIndex = FindCompositePartIndex(action, deviceType, __result, part.PartName);
+        if (selectedIndex >= 0)
+            __result = selectedIndex;
+    }
+
+    private static int FindCompositePartIndex(InputAction action, string deviceType,
+        int originalIndex, string partName)
+    {
+        deviceType ??= string.Empty;
+        bool gamepad = deviceType.Contains("Gamepad", StringComparison.OrdinalIgnoreCase) ||
+            deviceType.Contains("Controller", StringComparison.OrdinalIgnoreCase) ||
+            deviceType.Contains("Xbox", StringComparison.OrdinalIgnoreCase) ||
+            deviceType.Contains("XInput", StringComparison.OrdinalIgnoreCase) ||
+            deviceType.Contains("PlayStation", StringComparison.OrdinalIgnoreCase) ||
+            deviceType.Contains("Dual", StringComparison.OrdinalIgnoreCase) ||
+            deviceType.Contains("Switch", StringComparison.OrdinalIgnoreCase) ||
+            deviceType.Contains("NPad", StringComparison.OrdinalIgnoreCase);
+        bool keyboard = deviceType.Contains("Keyboard", StringComparison.OrdinalIgnoreCase) ||
+            deviceType.Contains("Standalone", StringComparison.OrdinalIgnoreCase);
+        string? layout = gamepad ? "<Gamepad>" : keyboard ? "<Keyboard>" : null;
+        // Prefer the composite identified by the game's original device
+        // selection. This preserves its controller-family matching logic.
+        if (originalIndex >= 0 && originalIndex < action.bindings.Count)
+        {
+            int root = originalIndex;
+            while (root >= 0 && action.bindings[root].isPartOfComposite)
+                root--;
+
+            if (root >= 0 && action.bindings[root].isComposite)
+            {
+                int part = FindPartInComposite(action, root, partName);
+                if (part >= 0 && (layout == null ||
+                    (action.bindings[part].path ?? string.Empty)
+                        .Contains(layout, StringComparison.OrdinalIgnoreCase)))
+                    return part;
+            }
+        }
+
+        // Some versions of the native selector return -1 for composite roots.
+        layout ??= "<Keyboard>";
+        for (int root = 0; root < action.bindings.Count; root++)
+        {
+            if (!action.bindings[root].isComposite)
+                continue;
+
+            int part = FindPartInComposite(action, root, partName);
+            if (part >= 0 &&
+                (action.bindings[part].path ?? string.Empty)
+                    .Contains(layout, StringComparison.OrdinalIgnoreCase))
+                return part;
+        }
+
+        return -1;
+    }
+
+    private static int FindPartInComposite(InputAction action, int root, string partName)
+    {
+        for (int i = root + 1; i < action.bindings.Count; i++)
+        {
+            InputBinding binding = action.bindings[i];
+            if (!binding.isPartOfComposite)
+                break;
+
+            if (string.Equals(binding.name, partName, StringComparison.OrdinalIgnoreCase))
+                return i;
+        }
+
+        return -1;
+    }
+
+    private void RemoveAddedLeaderboardControls()
+    {
+        if (_leaderboardControlsContent != null &&
+            _leaderboardControlsOriginalParent != null)
+        {
+            RectTransform content = _leaderboardControlsContent;
+            content.SetParent(_leaderboardControlsOriginalParent, false);
+            content.anchorMin = _leaderboardContentOriginalAnchorMin;
+            content.anchorMax = _leaderboardContentOriginalAnchorMax;
+            content.pivot = _leaderboardContentOriginalPivot;
+            content.anchoredPosition = _leaderboardContentOriginalPosition;
+            content.sizeDelta = _leaderboardContentOriginalSize;
+        }
+
+        if (_leaderboardControlsScroll != null)
+            UnityEngine.Object.Destroy(_leaderboardControlsScroll);
+        if (_leaderboardControlsFitter != null)
+            UnityEngine.Object.Destroy(_leaderboardControlsFitter);
+        if (_leaderboardControlsViewport != null)
+            UnityEngine.Object.Destroy(_leaderboardControlsViewport);
+
+        foreach (GameObject row in _leaderboardAddedRows)
+        {
+            if (row != null)
+                UnityEngine.Object.Destroy(row);
+        }
+
+        _leaderboardAddedRows.Clear();
+        _leaderboardControlParts.Clear();
+        _leaderboardControlsManagerId = 0;
+        _leaderboardLastFocusedRowId = 0;
+        _leaderboardControlsScroll = null;
+        _leaderboardControlsFitter = null;
+        _leaderboardControlsViewport = null;
+        _leaderboardControlsContent = null;
+        _leaderboardControlsOriginalParent = null;
+        if (ReferenceEquals(_leaderboardControlsOwner, this))
+            _leaderboardControlsOwner = null;
+    }
+
+    private sealed record LeaderboardControlPart(
+        string Action, string PartName, string Label, string VisibleLabel);
+}

@@ -146,6 +146,7 @@ public sealed partial class BopItAccessMod
     private void ReadControlRow(ControlRow row)
     {
         int id = row.GetInstanceID();
+        _leaderboardLastFocusedRowId = _leaderboardControlParts.ContainsKey(id) ? id : 0;
         InputRebindingManager? manager = row.InputRebindingManager ?? _controlsRebindingManager;
         string? binding = ReadControlBinding(row, manager);
         bool rebinding = manager != null && manager.IsRebinding;
@@ -206,6 +207,7 @@ public sealed partial class BopItAccessMod
 
     private void ReadResetRow(ResetToDefaultRow row)
     {
+        _leaderboardLastFocusedRowId = 0;
         int id = row.GetInstanceID();
         InputRebindingManager? manager = row.InputRebindingManager ?? _controlsRebindingManager;
         string device = manager?.ActiveDevice ?? manager?.deviceTracker?.ActiveDevice ?? string.Empty;
@@ -271,7 +273,7 @@ public sealed partial class BopItAccessMod
         return string.Join("\u001f", values);
     }
 
-    private static string? ReadControlBinding(ControlRow row, InputRebindingManager? manager)
+    private string? ReadControlBinding(ControlRow row, InputRebindingManager? manager)
     {
         if (manager == null)
             return null;
@@ -292,6 +294,9 @@ public sealed partial class BopItAccessMod
         if (action != null)
         {
             int index = manager.FindAppropriateBindingIndex(action, device);
+            if (_leaderboardControlParts.TryGetValue(row.GetInstanceID(), out LeaderboardControlPart? part) &&
+                part != null)
+                index = FindCompositePartIndex(action, device, index, part.PartName);
             if (index >= 0)
             {
                 string? displayed = CleanSpeechValue(
@@ -313,16 +318,23 @@ public sealed partial class BopItAccessMod
             : CleanSpeechValue(feedback.text);
     }
 
-    private static string GetControlRowLabel(ControlRow row) => row.ActionName switch
+    private string GetControlRowLabel(ControlRow row)
     {
-        "Bop" => "Bop",
-        "Twist" => "Twist",
-        "Pull" => "Pull",
-        "Spin" => "Spin",
-        "Flick" => "Flick",
-        "AltBop" => "Bop, Player 2",
-        _ => string.IsNullOrWhiteSpace(row.ActionName) ? "Control" : row.ActionName
-    };
+        if (_leaderboardControlParts.TryGetValue(row.GetInstanceID(), out LeaderboardControlPart? part) &&
+            part != null)
+            return part.Label;
+
+        return row.ActionName switch
+        {
+            "Bop" => "Bop",
+            "Twist" => "Twist",
+            "Pull" => "Pull",
+            "Spin" => "Spin",
+            "Flick" => "Flick",
+            "AltBop" => "Bop, Player 2",
+            _ => string.IsNullOrWhiteSpace(row.ActionName) ? "Control" : row.ActionName
+        };
+    }
 
     private string WithControlsIntroduction(string message)
     {
@@ -335,6 +347,7 @@ public sealed partial class BopItAccessMod
 
     private void ResetControlsFocus()
     {
+        _leaderboardLastFocusedRowId = 0;
         _controlsRebindingManager = null;
         _controlsRows = null;
         _controlsResetRow = null;
