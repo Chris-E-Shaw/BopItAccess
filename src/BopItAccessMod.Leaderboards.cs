@@ -138,15 +138,23 @@ public sealed partial class BopItAccessMod
         {
             bool opening = _leaderboardContext == null;
             string? changedValue = null;
+            string? changedValueType = null;
             int changedIndex = -1;
             int changedCount = 0;
             if (!string.Equals(track, _leaderboardTrack, StringComparison.Ordinal))
+            {
                 changedValue = track;
+                changedValueType = null;
+            }
             if (!string.Equals(device, _leaderboardDevice, StringComparison.Ordinal))
+            {
                 changedValue = device;
+                changedValueType = null;
+            }
             if (!string.Equals(group, _leaderboardGroup, StringComparison.Ordinal))
             {
                 changedValue = group;
+                changedValueType = "tab";
                 GroupFilterTab? selectedGroup = group switch
                 {
                     "Local" => panel.local,
@@ -161,6 +169,7 @@ public sealed partial class BopItAccessMod
             if (!string.Equals(date, _leaderboardDate, StringComparison.Ordinal))
             {
                 changedValue = date;
+                changedValueType = "tab";
                 DateFilterTab? selectedDate = date switch
                 {
                     "Today" => panel.today,
@@ -185,13 +194,20 @@ public sealed partial class BopItAccessMod
             _leaderboardMoveDirection = 0;
             _leaderboardSuppressUiMoveUntilAt = now + 500;
             immediateSpeech = opening
-                ? $"{context}. {ReadCombinedLeaderboardControls(panel)}"
+                ? $"{context}. {ReadCombinedLeaderboardControls(panel)}" +
+                    (focusedText == null ? string.Empty : " " + WithMenuIndex(
+                        WithLeaderboardFocusedType(focusedText, panel.transform),
+                        focusedIndex, focusedCount) + ".")
                 : focusChanged && IsLeaderboardFilterLabel(focusedText)
-                    ? WithMenuIndex(focusedText!, focusedIndex, focusedCount)
+                    ? WithMenuIndex(WithLeaderboardFocusedType(focusedText!, panel.transform),
+                        focusedIndex, focusedCount)
                     : (changedValue != null
-                        ? WithMenuIndex(changedValue, changedIndex, changedCount) : null)
+                        ? WithMenuIndex(changedValueType == null ? changedValue :
+                            WithControlType(changedValue, changedValueType),
+                            changedIndex, changedCount) : null)
                         ?? (focusChanged && focusedText != null
-                        ? WithMenuIndex(focusedText, focusedIndex, focusedCount) : null) ?? context;
+                        ? WithMenuIndex(WithLeaderboardFocusedType(focusedText, panel.transform),
+                            focusedIndex, focusedCount) : null) ?? context;
             WriteStatus($"Leaderboard context: {context}.");
         }
         else if (rowsChanged)
@@ -212,7 +228,9 @@ public sealed partial class BopItAccessMod
             if (focusedText != null)
             {
                 if (!contextChanged)
-                    immediateSpeech = WithMenuIndex(focusedText, focusedIndex, focusedCount);
+                    immediateSpeech = WithMenuIndex(
+                        WithLeaderboardFocusedType(focusedText, panel.transform),
+                        focusedIndex, focusedCount);
                 WriteStatus($"Leaderboard focus: {focusedText}.");
             }
         }
@@ -255,6 +273,8 @@ public sealed partial class BopItAccessMod
         bool contextChanged = !string.Equals(context, _leaderboardContext, StringComparison.Ordinal);
         bool rowsChanged = !string.Equals(rowSignature, _leaderboardRowsSignature, StringComparison.Ordinal);
         var announcements = new List<string>(5);
+        (int focusedId, string? focusedText, int focusedIndex, int focusedCount) =
+            ReadLeaderboardFocusedItem(panel.transform);
         if (contextChanged)
         {
             _leaderboardContext = context;
@@ -263,14 +283,17 @@ public sealed partial class BopItAccessMod
             _leaderboardRowsSpoken = false;
             _leaderboardEmptySpoken = false;
             _leaderboardRowsDueAt = now + 800;
-            _leaderboardSelectedId = ReadLeaderboardFocusedItem(panel.transform).Id;
+            _leaderboardSelectedId = focusedId;
             _leaderboardMoveDirection = 0;
             _leaderboardSuppressUiMoveUntilAt = now + 500;
             _leaderboardPartyState = panel.State;
             _leaderboardPartyName = ReadPartySelectedName(panel);
             _leaderboardContinueVisible = IsLeaderboardPanelVisible(panel.ContinuePrompt);
             string initialName = _leaderboardPartyName == null ? string.Empty : $" Selected name: {_leaderboardPartyName}.";
-            announcements.Add($"{context}. Choose a name for your score, then continue. Back to return.{initialName} Use Page Up and Page Down to read score rows.");
+            announcements.Add($"{context}. Choose a name for your score, then continue. Back to return.{initialName} Use Page Up and Page Down to read score rows." +
+                (focusedText == null ? string.Empty : " " + WithMenuIndex(
+                    WithLeaderboardFocusedType(focusedText, panel.transform),
+                    focusedIndex, focusedCount) + "."));
             WriteStatus($"Party leaderboard context: {context}.");
         }
         else if (rowsChanged)
@@ -314,13 +337,13 @@ public sealed partial class BopItAccessMod
             announcements.Add("Continue.");
         _leaderboardContinueVisible = continueVisible;
 
-        (int focusedId, string? focusedText, int focusedIndex, int focusedCount) =
-            ReadLeaderboardFocusedItem(panel.transform);
         if (focusedId != _leaderboardSelectedId)
         {
             _leaderboardSelectedId = focusedId;
             if (focusedText != null && !contextChanged)
-                announcements.Add(WithMenuIndex(focusedText, focusedIndex, focusedCount));
+                announcements.Add(WithMenuIndex(
+                    WithLeaderboardFocusedType(focusedText, panel.transform),
+                    focusedIndex, focusedCount));
         }
 
         if (!contextChanged && announcements.Count == 0 && rowAnnouncement == null &&
@@ -497,7 +520,7 @@ public sealed partial class BopItAccessMod
             _leaderboardEmptySpoken = false;
             _leaderboardRowIndex = 0;
             string announcement = $"{rows.Count} scores. " +
-                WithMenuIndex(rows[0], 0, rows.Count) + ".";
+                WithMenuIndex(WithLeaderboardRowType(rows[0]), 0, rows.Count) + ".";
             WriteStatus($"Leaderboard rows loaded: {rows.Count}; first row: {rows[0]}.");
             return announcement;
         }
@@ -604,6 +627,38 @@ public sealed partial class BopItAccessMod
             controlPosition.Index, controlPosition.Count);
     }
 
+    private string WithLeaderboardFocusedType(string label, Transform panel)
+    {
+        GameObject? selected = EventSystem.current?.currentSelectedGameObject;
+        if (selected == null || !selected.transform.IsChildOf(panel))
+            return label;
+        if (selected.GetComponentInParent<LeaderboardLineItem>() != null ||
+            selected.GetComponentInParent<PartyLeaderboardLineItem>() != null)
+            return WithLeaderboardRowType(label);
+        if (selected.GetComponentInParent<PartyLeaderboardNameSelect>() != null)
+        {
+            const string prefix = "Name: ";
+            return label.StartsWith(prefix, StringComparison.Ordinal)
+                ? WithControlType("Name", "text field") + ", " + label[prefix.Length..]
+                : WithControlType(label, "text field");
+        }
+        if (selected.GetComponentInParent<GroupFilterTab>() != null ||
+            selected.GetComponentInParent<DateFilterTab>() != null)
+            return WithControlType(label, "tab");
+        if (selected.GetComponentInParent<Slider>() != null)
+            return WithControlType(label, "slider");
+        if (selected.GetComponentInParent<Toggle>() != null)
+            return WithControlType(label, "toggle");
+        return WithControlType(label, "button");
+    }
+
+    private string WithLeaderboardRowType(string row)
+    {
+        int scoreAt = row.LastIndexOf(", score ", StringComparison.OrdinalIgnoreCase);
+        return scoreAt < 0 ? WithControlType(row, "list item") :
+            WithControlType(row[..scoreAt], "list item") + row[scoreAt..];
+    }
+
     private static (int Index, int Count) GetLeaderboardComponentIndex<T>(
         Transform panel, T focused, Func<T, bool>? include = null) where T : Component
     {
@@ -670,7 +725,7 @@ public sealed partial class BopItAccessMod
         _leaderboardMoveDirection = direction;
         _nextLeaderboardMoveAt = now + 350;
         _leaderboardRowIndex = Math.Clamp(_leaderboardRowIndex + direction, 0, rows.Count - 1);
-        string speech = WithMenuIndex(rows[_leaderboardRowIndex],
+        string speech = WithMenuIndex(WithLeaderboardRowType(rows[_leaderboardRowIndex]),
             _leaderboardRowIndex, rows.Count) + ".";
         WriteStatus($"Leaderboard row {_leaderboardRowIndex + 1} of {rows.Count}: {speech}");
         return speech;

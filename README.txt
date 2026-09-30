@@ -1,4 +1,4 @@
-Bop It Access 0.6.0 - Menu Indexing
+Bop It Access 0.6.1 - Control Types
 
 What this does
 --------------
@@ -32,6 +32,12 @@ This applies across the main and Settings menus, Controls, play modes, speech
 settings, game-over choices, leaderboards, achievements, credits, and other
 supported screens. The count follows the currently available choices. Changing
 a slider or toggle while it remains focused still announces only the new value.
+
+READ CONTROL TYPES is another saved SPEECH toggle, off by default. When enabled,
+the focused item's type follows its name and precedes its value and index:
+"MUSIC slider, 30, 1 of 11", "VIBRATION toggle, On, 5 of 11", or
+"PLAY button, 1 of 6". Menus also identify tabs, text fields, and readable
+list items where relevant. Value changes continue to speak only the new value.
 
 The SPEECH menu also has VOICE, VOLUME, RATE, and PITCH controls. Voice
 lists the system default and installed 64-bit SAPI voices. Volume starts at

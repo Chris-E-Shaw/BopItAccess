@@ -227,9 +227,8 @@ public sealed partial class BopItAccessMod
             _controlsBindingChangedDuringRebind = false;
             _lastControlsResetSnapshot = null;
 
-            string message = binding == null
-                ? GetControlRowLabel(row)
-                : $"{GetControlRowLabel(row)}, {binding}";
+            string label = WithControlType(GetControlRowLabel(row), "button");
+            string message = binding == null ? label : $"{label}, {binding}";
             if (rebinding)
                 message += $". {feedback ?? "Listening for input"}";
             QueueSpeech(WithControlsIntroduction(message));
@@ -288,8 +287,8 @@ public sealed partial class BopItAccessMod
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = false;
             _lastControlsResetSnapshot = null;
-            string message = binding == null
-                ? row.Part.Label : $"{row.Part.Label}, {binding}";
+            string label = WithControlType(row.Part.Label, "button");
+            string message = binding == null ? label : $"{label}, {binding}";
             if (rebinding)
                 message += ". Listening for input";
             QueueSpeech(WithControlsIntroduction(message));
@@ -355,7 +354,8 @@ public sealed partial class BopItAccessMod
             _controlsBindingChangedDuringRebind = false;
             _lastControlsResetSnapshot = snapshot;
             _lastControlsResetDevice = device;
-            QueueSpeech(WithControlsIntroduction("Reset to Default"));
+            QueueSpeech(WithControlsIntroduction(
+                WithControlType("Reset to Default", "button")));
             return;
         }
 

@@ -24,6 +24,7 @@ public sealed partial class BopItAccessMod
     private readonly List<SpeechUiOption> _speechUiOptions = new();
     private SettingsToggle? _speechOutputToggle;
     private SettingsToggle? _indexingToggle;
+    private SettingsToggle? _readControlTypesToggle;
     private SettingsSlider? _speechModeSlider;
     private SettingsToggle? _trimSilenceToggle;
     private SettingsSlider? _speechVoiceSlider;
@@ -32,6 +33,7 @@ public sealed partial class BopItAccessMod
     private SettingsSlider? _speechPitchSlider;
     private UnityAction? _speechOutputSubmitListener;
     private UnityAction? _indexingSubmitListener;
+    private UnityAction? _readControlTypesSubmitListener;
     private UnityAction? _trimSilenceSubmitListener;
     private UnityAction? _speechBackSubmitListener;
     private UnityAction<int>? _speechModeMoveListener;
@@ -81,6 +83,10 @@ public sealed partial class BopItAccessMod
                     SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
                 if (_indexingToggle != null && _indexingToggle.IsOn != _indexingEnabled)
                     SetSpeechToggleDisplay(_indexingToggle, _indexingEnabled);
+                if (_readControlTypesToggle != null &&
+                    _readControlTypesToggle.IsOn != _readControlTypesEnabled)
+                    SetSpeechToggleDisplay(_readControlTypesToggle,
+                        _readControlTypesEnabled);
                 if (_trimSilenceToggle != null && _trimSilenceToggle.IsOn != _trimSilence)
                     SetSpeechToggleDisplay(_trimSilenceToggle, _trimSilence);
                 ScrollSelectedRowIntoView(_speechMenuScroll);
@@ -300,6 +306,11 @@ public sealed partial class BopItAccessMod
                 "INDEXING",
                 _indexingSubmitListener ??= (UnityAction)OnIndexingSubmitted,
                 _indexingEnabled);
+            _readControlTypesToggle = AddSpeechToggle(settings.vibration, content,
+                "READ CONTROL TYPES",
+                _readControlTypesSubmitListener ??=
+                    (UnityAction)OnReadControlTypesSubmitted,
+                _readControlTypesEnabled);
             _speechModeSlider = AddSpeechSlider(settings.resolution, content,
                 "OUTPUT MODE");
             _trimSilenceToggle = null;
@@ -319,24 +330,27 @@ public sealed partial class BopItAccessMod
             SettingsButton back = AddSpeechButton(settings.controls, content,
                 "BACK");
 
-            _speechUiOptions.Add(new("SPEECH OUTPUT", _speechOutputToggle,
+            _speechUiOptions.Add(new("SPEECH OUTPUT", "toggle", _speechOutputToggle,
                 () => _speechEnabled ? "On" : "Off"));
-            _speechUiOptions.Add(new("INDEXING", _indexingToggle,
+            _speechUiOptions.Add(new("INDEXING", "toggle", _indexingToggle,
                 () => _indexingEnabled ? "On" : "Off"));
-            _speechUiOptions.Add(new("OUTPUT MODE", _speechModeSlider,
+            _speechUiOptions.Add(new("READ CONTROL TYPES", "toggle",
+                _readControlTypesToggle,
+                () => _readControlTypesEnabled ? "On" : "Off"));
+            _speechUiOptions.Add(new("OUTPUT MODE", "slider", _speechModeSlider,
                 () => _outputMode));
             if (TrimSilenceExperimentAvailable && _trimSilenceToggle != null)
-                _speechUiOptions.Add(new("TRIM SILENCE", _trimSilenceToggle,
+                _speechUiOptions.Add(new("TRIM SILENCE", "toggle", _trimSilenceToggle,
                     () => _trimSilence ? "On" : "Off"));
-            _speechUiOptions.Add(new("VOICE", _speechVoiceSlider,
+            _speechUiOptions.Add(new("VOICE", "slider", _speechVoiceSlider,
                 ReadCurrentSapiVoiceName));
-            _speechUiOptions.Add(new("VOLUME", _speechVolumeSlider,
+            _speechUiOptions.Add(new("VOLUME", "slider", _speechVolumeSlider,
                 () => _sapiVolume + "%"));
-            _speechUiOptions.Add(new("RATE", _speechRateSlider,
+            _speechUiOptions.Add(new("RATE", "slider", _speechRateSlider,
                 () => _sapiRate.ToString()));
-            _speechUiOptions.Add(new("PITCH", _speechPitchSlider,
+            _speechUiOptions.Add(new("PITCH", "slider", _speechPitchSlider,
                 () => _sapiPitch.ToString()));
-            _speechUiOptions.Add(new("BACK", back, () => null));
+            _speechUiOptions.Add(new("BACK", "button", back, () => null));
 
             speechPanel.firstSelectedButton = _speechOutputToggle.gameObject;
             speechPanel.lastSelectedButton = null;
@@ -363,6 +377,7 @@ public sealed partial class BopItAccessMod
             _speechUiOptions.Clear();
             _speechOutputToggle = null;
             _indexingToggle = null;
+            _readControlTypesToggle = null;
             _speechModeSlider = null;
             _trimSilenceToggle = null;
             _speechVoiceSlider = null;
@@ -542,6 +557,8 @@ public sealed partial class BopItAccessMod
             SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
         if (_indexingToggle != null)
             SetSpeechToggleDisplay(_indexingToggle, _indexingEnabled);
+        if (_readControlTypesToggle != null)
+            SetSpeechToggleDisplay(_readControlTypesToggle, _readControlTypesEnabled);
         _speechModeSlider?.SetValue(_outputMode);
         if (_trimSilenceToggle != null)
             SetSpeechToggleDisplay(_trimSilenceToggle, _trimSilence);
@@ -581,6 +598,13 @@ public sealed partial class BopItAccessMod
         SetIndexingFromMenu(!_indexingEnabled);
         // Keep the cloned native toggle in sync if its own visual listener
         // runs after this callback.
+    }
+
+    private void OnReadControlTypesSubmitted()
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
+        SetReadControlTypesFromMenu(!_readControlTypesEnabled);
     }
 
     private void OnTrimSilenceSubmitted()
@@ -727,7 +751,8 @@ public sealed partial class BopItAccessMod
         {
             _lastSpeechMenuRowId = id;
             _lastSpeechMenuValue = value;
-            string message = value == null ? focused.Label : focused.Label + ", " + value;
+            string label = WithControlType(focused.Label, focused.ControlType);
+            string message = value == null ? label : label + ", " + value;
             message = WithMenuIndex(message, _speechUiOptions.IndexOf(focused),
                 _speechUiOptions.Count);
             if (_speechMenuIntroductionPending)
@@ -754,6 +779,7 @@ public sealed partial class BopItAccessMod
         _lastSpeechMenuValue = null;
     }
 
-    private sealed record SpeechUiOption(string Label, SettingsRow Row,
+    private sealed record SpeechUiOption(string Label, string ControlType,
+        SettingsRow Row,
         Func<string?> ReadValue);
 }

@@ -381,7 +381,8 @@ public sealed partial class BopItAccessMod
         {
             if (choices[index].Button.GetInstanceID() == button.GetInstanceID())
                 return (button.GetInstanceID(),
-                    WithMenuIndex(choices[index].Label, index, choices.Count));
+                    WithMenuIndex(WithControlType(choices[index].Label, "button"),
+                        index, choices.Count));
         }
         return (0, null);
     }
@@ -390,8 +391,9 @@ public sealed partial class BopItAccessMod
     {
         // Result buttons can be non-interactable during the score animation.
         // They are still the two choices that appear when the menu opens.
-        return WithMenuIndex("Replay", 0, 2) + ". " +
-            WithMenuIndex("Leaderboard", 1, 2) + ". Back to return.";
+        return WithMenuIndex(WithControlType("Replay", "button"), 0, 2) + ". " +
+            WithMenuIndex(WithControlType("Leaderboard", "button"), 1, 2) +
+            ". Back to return.";
     }
 
     private static List<(Button Button, string Label)> GetAvailableSoloResultButtons(

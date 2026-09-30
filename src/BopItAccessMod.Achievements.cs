@@ -166,7 +166,8 @@ public sealed partial class BopItAccessMod
                             previousLineCounts[line] = count - 1;
                             continue;
                         }
-                        QueueSequentialSpeech(WithMenuIndex(line, index, _achievementLines.Count));
+                        QueueSequentialSpeech(WithAchievementLineType(line, index,
+                            _achievementLines.Count));
                     }
                 }
                 WriteStatus($"Achievements page {spread} updated to {_achievementLines.Count} readable lines.");
@@ -184,23 +185,23 @@ public sealed partial class BopItAccessMod
                     instructions += " Reading the entries on this page.";
                 instructions += " Use left and right arrows or controller shoulder buttons to turn pages. Back to return.";
                 QueueSpeech(instructions);
-                QueueSequentialSpeech(WithMenuIndex(_achievementLines[0], 0,
+                QueueSequentialSpeech(WithAchievementLineType(_achievementLines[0], 0,
                     _achievementLines.Count));
                 if (GetAchievementMoveAction(controller) == null)
                 {
                     for (int index = 1; index < _achievementLines.Count; index++)
-                        QueueSequentialSpeech(WithMenuIndex(_achievementLines[index], index,
+                        QueueSequentialSpeech(WithAchievementLineType(_achievementLines[index], index,
                             _achievementLines.Count));
                 }
             }
             else
             {
                 string announcement = "Achievements page. " +
-                    WithMenuIndex(_achievementLines[0], 0, _achievementLines.Count);
+                    WithAchievementLineType(_achievementLines[0], 0, _achievementLines.Count);
                 if (_achievementLines.Count > 1 && GetAchievementMoveAction(controller) == null)
                     announcement += " " + string.Join(". ",
                         _achievementLines.Skip(1).Select((line, index) =>
-                            WithMenuIndex(line, index + 1, _achievementLines.Count)));
+                            WithAchievementLineType(line, index + 1, _achievementLines.Count)));
                 QueueSpeech(announcement, !firstPage);
             }
             _achievementOpeningSpoken = true;
@@ -244,8 +245,19 @@ public sealed partial class BopItAccessMod
             return;
 
         _achievementLineIndex = nextIndex;
-        QueueSpeech(WithMenuIndex(_achievementLines[nextIndex], nextIndex,
+        QueueSpeech(WithAchievementLineType(_achievementLines[nextIndex], nextIndex,
             _achievementLines.Count));
+    }
+
+    private string WithAchievementLineType(string line, int index, int count)
+    {
+        // Unlock status is the entry's value, so speak the control type first.
+        int statusAt = line.LastIndexOf(", unlocked", StringComparison.OrdinalIgnoreCase);
+        if (statusAt < 0)
+            statusAt = line.LastIndexOf(", locked", StringComparison.OrdinalIgnoreCase);
+        string typedLine = statusAt < 0 ? WithControlType(line, "list item") :
+            WithControlType(line[..statusAt], "list item") + line[statusAt..];
+        return WithMenuIndex(typedLine, index, count);
     }
 
     private static InputAction? GetAchievementMoveAction(BookController controller)

@@ -177,7 +177,8 @@ public sealed partial class BopItAccessMod
         {
             (Transform action, string label) = choices[index];
             if (IsCalibrationAction(selectedTransform, action))
-                return (action.GetInstanceID(), WithMenuIndex(label, index, choices.Count));
+                return (action.GetInstanceID(),
+                    WithMenuIndex(WithControlType(label, "button"), index, choices.Count));
         }
         return (0, null);
     }

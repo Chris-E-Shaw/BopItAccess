@@ -188,8 +188,8 @@ public sealed partial class BopItAccessMod
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = false;
             _lastControlsResetSnapshot = null;
-            string message = binding == null
-                ? "Read Score" : $"Read Score, {binding}";
+            string label = WithControlType("Read Score", "button");
+            string message = binding == null ? label : $"{label}, {binding}";
             if (rebinding)
                 message += ". Listening for input";
             QueueSpeech(WithControlsIntroduction(message));

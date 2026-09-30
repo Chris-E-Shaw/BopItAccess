@@ -94,7 +94,8 @@ public sealed partial class BopItAccessMod
 
         string? theme = ReadTrackSelectTheme(_trackSelectApp);
         bool? extreme = ReadTrackSelectExtreme(_trackSelectUi);
-        (int focusedId, string? focusedLabel, int focusedIndex, int focusedCount) =
+        (int focusedId, string? focusedLabel, string? focusedType,
+            int focusedIndex, int focusedCount) =
             ReadTrackSelectSelectedControl(panel);
         bool waitingToStart = _trackSelectUi.gameManager != null &&
             _trackSelectUi.gameManager.GameState == GameState.WaitingToStart;
@@ -120,9 +121,14 @@ public sealed partial class BopItAccessMod
                 introduction += $". {FormatExtreme(extreme)}";
             introduction += ". Twist to change song. Pull to change difficulty. " +
                 ReadDescriptionsBindingInstruction() + " Bop to start. Back to return.";
-            if (focusedLabel != null && (_indexingEnabled ||
+            if (focusedLabel != null && (_indexingEnabled || _readControlTypesEnabled ||
                 !string.Equals(focusedLabel, "Start", StringComparison.OrdinalIgnoreCase)))
-                introduction += $" {WithMenuIndex(focusedLabel, focusedIndex, focusedCount)}.";
+            {
+                string focusedControl = WithControlType(focusedLabel,
+                    focusedType ?? "button");
+                introduction += " " + WithMenuIndex(focusedControl,
+                    focusedIndex, focusedCount) + ".";
+            }
             QueueSpeech(introduction);
             return true;
         }
@@ -146,7 +152,8 @@ public sealed partial class BopItAccessMod
             _lastTrackSelectFocusedId = focusedId;
             if (focusedLabel != null)
             {
-                string indexedLabel = WithMenuIndex(focusedLabel, focusedIndex, focusedCount);
+                string indexedLabel = WithMenuIndex(WithControlType(focusedLabel,
+                    focusedType ?? "button"), focusedIndex, focusedCount);
                 changed = changed == null ? indexedLabel : $"{changed}. {indexedLabel}";
             }
         }
@@ -207,7 +214,8 @@ public sealed partial class BopItAccessMod
     private static string? FormatExtreme(bool? extreme) =>
         extreme.HasValue ? (extreme.Value ? "Extreme mode on" : "Extreme mode off") : null;
 
-    private (int Id, string? Label, int Index, int Count) ReadTrackSelectSelectedControl(
+    private (int Id, string? Label, string? Type, int Index, int Count)
+        ReadTrackSelectSelectedControl(
         StartScreenPanel panel)
     {
         GameObject? selected = EventSystem.current == null
@@ -220,15 +228,15 @@ public sealed partial class BopItAccessMod
         }
 
         if (selected == null || !selected.transform.IsChildOf(panel.transform))
-            return (0, null, -1, 0);
+            return (0, null, null, -1, 0);
 
         Selectable? control = selected.GetComponentInParent<Selectable>();
         if (control == null || !control.transform.IsChildOf(panel.transform))
-            return (0, null, -1, 0);
+            return (0, null, null, -1, 0);
 
         string? label = ReadTrackSelectControlLabel(control);
         if (label == null)
-            return (control.GetInstanceID(), null, -1, 0);
+            return (control.GetInstanceID(), null, null, -1, 0);
 
         int index = -1;
         int count = 0;
@@ -244,7 +252,16 @@ public sealed partial class BopItAccessMod
             count++;
         }
 
-        return (focusedId, label, index, count);
+        return (focusedId, label, ReadTrackSelectControlType(control), index, count);
+    }
+
+    private static string ReadTrackSelectControlType(Selectable control)
+    {
+        if (control is Toggle) return "toggle";
+        if (control is Slider || control is Scrollbar) return "slider";
+        if (control is Dropdown || control is TMP_Dropdown) return "dropdown";
+        if (control is InputField || control is TMP_InputField) return "text field";
+        return "button";
     }
 
     private static string? ReadTrackSelectControlLabel(Selectable control)

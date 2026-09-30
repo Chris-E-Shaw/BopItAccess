@@ -83,7 +83,7 @@ public sealed partial class BopItAccessMod
             if (_creditsAutoReading)
                 QueueSpeech("Credits. Reading each line as it appears. Back to return.");
             else
-                QueueSpeech($"Credits. {WithMenuIndex(_creditsLines[0], 0, _creditsLines.Count)}. " +
+                QueueSpeech($"Credits. {WithCreditLineType(_creditsLines[0], 0, _creditsLines.Count)}. " +
                     "Use up and down to read the credits. Back to return.");
             WriteStatus($"Credits panel is visible; captured {_creditsLines.Count} spoken lines.");
             return true;
@@ -112,7 +112,7 @@ public sealed partial class BopItAccessMod
             if (nextIndex != _creditsLineIndex)
             {
                 _creditsLineIndex = nextIndex;
-                QueueSpeech(WithMenuIndex(_creditsLines[_creditsLineIndex],
+                QueueSpeech(WithCreditLineType(_creditsLines[_creditsLineIndex],
                     _creditsLineIndex, _creditsLines.Count));
             }
         }
@@ -222,7 +222,7 @@ public sealed partial class BopItAccessMod
                     continue;
 
                 _creditsAutoAnnounced.Add(index);
-                QueueSequentialSpeech(WithMenuIndex(_creditsLines[index], index,
+                QueueSequentialSpeech(WithCreditLineType(_creditsLines[index], index,
                     _creditsLines.Count));
             }
         }
@@ -278,7 +278,7 @@ public sealed partial class BopItAccessMod
         {
             if (!_creditsAutoAnnounced.Add(index))
                 continue;
-            QueueSequentialSpeech(WithMenuIndex(_creditsLines[index], index,
+            QueueSequentialSpeech(WithCreditLineType(_creditsLines[index], index,
                 _creditsLines.Count));
             missing++;
         }
@@ -289,9 +289,12 @@ public sealed partial class BopItAccessMod
     {
         _creditsSingleFallbackSpoken = true;
         QueueSpeech(string.Join(". ", _creditsLines.Select((line, index) =>
-            WithMenuIndex(line, index, _creditsLines.Count))), false);
+            WithCreditLineType(line, index, _creditsLines.Count))), false);
         WriteStatus($"{reason}; sent complete credits as one announcement.");
     }
+
+    private string WithCreditLineType(string line, int index, int count) =>
+        WithMenuIndex(WithControlType(line, "list item"), index, count);
 
     private static int ReadCreditsMoveDirection(out bool available)
     {

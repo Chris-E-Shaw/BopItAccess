@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.0", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.1", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -418,8 +418,8 @@ public sealed partial class BopItAccessMod : MelonMod
         {
             _lastFocusedSettingRowId = focused.Id;
             _lastSettingsValue = value;
-            string announcement = value == null ? focused.Label :
-                $"{focused.Label}, {value}";
+            string label = WithControlType(focused.Label, focused.ControlType);
+            string announcement = value == null ? label : $"{label}, {value}";
             int index = -1;
             int count = 0;
             foreach (SettingOption option in _settingsOptions!)
@@ -496,13 +496,14 @@ public sealed partial class BopItAccessMod : MelonMod
     }
 
     private static SettingOption SliderOption(string label, SettingsSlider? row) =>
-        new(label, row, () => row == null ? null : ReadDisplayedValue(row, row.Value));
+        new(label, "slider", row,
+            () => row == null ? null : ReadDisplayedValue(row, row.Value));
 
     private static SettingOption ToggleOption(string label, SettingsToggle? row) =>
-        new(label, row, () => row == null ? null : row.IsOn ? "On" : "Off");
+        new(label, "toggle", row, () => row == null ? null : row.IsOn ? "On" : "Off");
 
     private static SettingOption ActionOption(string label, SettingsButton? row) =>
-        new(label, row, () => null);
+        new(label, "button", row, () => null);
 
     private static string? ReadDisplayedValue(SettingsRow row, string? gameValue)
     {
@@ -540,15 +541,18 @@ public sealed partial class BopItAccessMod : MelonMod
     {
         private readonly Func<string?> _readValue;
 
-        internal SettingOption(string label, SettingsRow? row, Func<string?> readValue)
+        internal SettingOption(string label, string controlType, SettingsRow? row,
+            Func<string?> readValue)
         {
             Label = label;
+            ControlType = controlType;
             Row = row;
             _readValue = readValue;
             Id = row == null ? 0 : row.GetInstanceID();
         }
 
         internal string Label { get; }
+        internal string ControlType { get; }
         internal SettingsRow? Row { get; }
         internal int Id { get; }
         internal string? ReadValue() => _readValue();
@@ -628,7 +632,7 @@ public sealed partial class BopItAccessMod : MelonMod
                 index = count;
             count++;
         }
-        QueueSpeech(WithMenuIndex(label, index, count));
+        QueueSpeech(WithMenuIndex(WithControlType(label, "button"), index, count));
     }
 
     private string? GetMainMenuLabel(int focusedButtonId)

@@ -34,6 +34,7 @@ public sealed partial class BopItAccessMod
 
         InitializeSpeechBackendPreferencesOnMainThread();
         InitializeIndexingPreferenceOnMainThread();
+        InitializeReadControlTypesPreferenceOnMainThread();
 
         lock (_speechLock)
         {
