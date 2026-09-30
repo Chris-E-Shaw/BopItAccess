@@ -38,6 +38,7 @@ public sealed partial class BopItAccessMod
 
         InitializeSpeechBackendPreferencesOnMainThread();
         InitializeIndexingPreferenceOnMainThread();
+        InitializeFilterCapitalisationPreferenceOnMainThread();
         InitializeReadControlTypesPreferenceOnMainThread();
         InitializeSliderRangesPreferenceOnMainThread();
         InitializeHintsTypePreferenceOnMainThread();

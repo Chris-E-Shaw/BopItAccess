@@ -1,4 +1,4 @@
-Bop It Access 0.6.11 - Hint Timing and SAPI Response
+Bop It Access 0.6.12 - Speech Capitalisation
 
 What this does
 --------------
@@ -49,6 +49,14 @@ This applies across the main and Settings menus, Controls, play modes, speech
 settings, game-over choices, leaderboards, achievements, credits, and other
 supported screens. The count follows the currently available choices. Changing
 a slider or toggle while it remains focused still announces only the new value.
+
+FILTER CAPITALISATION is a saved Speech toggle, On by default. It changes only
+the text sent to speech and braille, leaving the game's visible GUI untouched.
+All-capital menu words are spoken in sentence case: "PASS IT" becomes "Pass it"
+and "ONE ON ONE" becomes "One-on-one". The first word after a full stop is
+capitalised again. Existing mixed-case words and common abbreviations such as
+SAPI, NVDA, SFX, and FPS are preserved. Turning the toggle Off sends the
+original speech text.
 
 READ CONTROL TYPES is another saved SPEECH toggle, off by default. When enabled,
 the focused item's type follows its name and precedes its value and index:
@@ -125,6 +133,9 @@ steps of five. They apply to SAPI mode and Auto's SAPI fallback.
 Direct SAPI output avoids repeated voice enumeration for numeric changes,
 uses plain text when pitch is neutral, and skips unnecessary screen-reader
 detection. The earlier trim-silence experiment remains hidden and inactive.
+Separate braille output with SAPI now caches Tolk capability checks for one
+second. If SAPI dispatch itself is slow, the log records voice setup, Speak,
+and braille dispatch times; these timings do not measure audible onset.
 Speech settings are remembered between sessions. Back returns to Settings.
 This update restores the game's native Settings row layout so up/down
 navigation remains on Settings rows after SPEECH is added.

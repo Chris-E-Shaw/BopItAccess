@@ -26,6 +26,7 @@ public sealed partial class BopItAccessMod
     private SettingsToggle? _brailleOutputToggle;
     private SettingsToggle? _muteSpeechInBackgroundToggle;
     private SettingsToggle? _indexingToggle;
+    private SettingsToggle? _filterCapitalisationToggle;
     private SettingsToggle? _readControlTypesToggle;
     private SettingsToggle? _sliderRangesToggle;
     private SettingsToggle? _oneOnOneFeedbackToggle;
@@ -44,6 +45,7 @@ public sealed partial class BopItAccessMod
     private UnityAction? _brailleOutputSubmitListener;
     private UnityAction? _muteSpeechInBackgroundSubmitListener;
     private UnityAction? _indexingSubmitListener;
+    private UnityAction? _filterCapitalisationSubmitListener;
     private UnityAction? _readControlTypesSubmitListener;
     private UnityAction? _sliderRangesSubmitListener;
     private UnityAction? _oneOnOneFeedbackSubmitListener;
@@ -119,6 +121,10 @@ public sealed partial class BopItAccessMod
                         _muteSpeechInBackground);
                 if (_indexingToggle != null && _indexingToggle.IsOn != _indexingEnabled)
                     SetSpeechToggleDisplay(_indexingToggle, _indexingEnabled);
+                if (_filterCapitalisationToggle != null &&
+                    _filterCapitalisationToggle.IsOn != _filterCapitalisationEnabled)
+                    SetSpeechToggleDisplay(_filterCapitalisationToggle,
+                        _filterCapitalisationEnabled);
                 if (_readControlTypesToggle != null &&
                     _readControlTypesToggle.IsOn != _readControlTypesEnabled)
                     SetSpeechToggleDisplay(_readControlTypesToggle,
@@ -362,6 +368,11 @@ public sealed partial class BopItAccessMod
                 "INDEXING",
                 _indexingSubmitListener ??= (UnityAction)OnIndexingSubmitted,
                 _indexingEnabled);
+            _filterCapitalisationToggle = AddSpeechToggle(settings.vibration, content,
+                "FILTER CAPITALISATION",
+                _filterCapitalisationSubmitListener ??=
+                    (UnityAction)OnFilterCapitalisationSubmitted,
+                _filterCapitalisationEnabled);
             _readControlTypesToggle = AddSpeechToggle(settings.vibration, content,
                 "READ CONTROL TYPES",
                 _readControlTypesSubmitListener ??=
@@ -417,6 +428,9 @@ public sealed partial class BopItAccessMod
                 () => _muteSpeechInBackground ? "On" : "Off"));
             _speechUiOptions.Add(new("INDEXING", "toggle", _indexingToggle,
                 () => _indexingEnabled ? "On" : "Off"));
+            _speechUiOptions.Add(new("FILTER CAPITALISATION", "toggle",
+                _filterCapitalisationToggle,
+                () => _filterCapitalisationEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("READ CONTROL TYPES", "toggle",
                 _readControlTypesToggle,
                 () => _readControlTypesEnabled ? "On" : "Off"));
@@ -481,6 +495,7 @@ public sealed partial class BopItAccessMod
             _brailleOutputToggle = null;
             _muteSpeechInBackgroundToggle = null;
             _indexingToggle = null;
+            _filterCapitalisationToggle = null;
             _readControlTypesToggle = null;
             _sliderRangesToggle = null;
             _oneOnOneFeedbackToggle = null;
@@ -682,6 +697,9 @@ public sealed partial class BopItAccessMod
                 _muteSpeechInBackground);
         if (_indexingToggle != null)
             SetSpeechToggleDisplay(_indexingToggle, _indexingEnabled);
+        if (_filterCapitalisationToggle != null)
+            SetSpeechToggleDisplay(_filterCapitalisationToggle,
+                _filterCapitalisationEnabled);
         if (_readControlTypesToggle != null)
             SetSpeechToggleDisplay(_readControlTypesToggle, _readControlTypesEnabled);
         if (_sliderRangesToggle != null)
@@ -734,6 +752,13 @@ public sealed partial class BopItAccessMod
         SetIndexingFromMenu(!_indexingEnabled);
         // Keep the cloned native toggle in sync if its own visual listener
         // runs after this callback.
+    }
+
+    private void OnFilterCapitalisationSubmitted()
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady)
+            return;
+        SetFilterCapitalisationFromMenu(!_filterCapitalisationEnabled);
     }
 
     private void OnBrailleOutputSubmitted()

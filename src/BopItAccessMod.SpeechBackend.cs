@@ -69,7 +69,10 @@ public sealed partial class BopItAccessMod
     private string? _detectedScreenReaderOnWorker;
     private long _nextScreenReaderDetectionAt;
     private long _nextSapiErrorLogAt;
+    private long _nextSlowSapiTimingLogAt;
     private bool? _lastSeparateBrailleDispatchAccepted;
+    private bool _separateBrailleAvailable;
+    private long _nextSeparateBrailleCapabilityCheckAt;
 
     private sealed record SpeechVoiceOption(string Id, string Name);
     private enum OutputBackend { None, Tolk, Sapi, Nvda }
@@ -362,6 +365,9 @@ public sealed partial class BopItAccessMod
             mode = _outputMode;
         }
 
+        if (_filterCapitalisationEnabled)
+            text = FilterSpeechCapitalisation(text);
+
         // Explicit SAPI output has no reason to query Tolk before every
         // utterance. Query it only if SAPI fails and a fallback is needed.
         string? detected = string.Equals(mode, "SAPI", StringComparison.OrdinalIgnoreCase)
@@ -478,7 +484,16 @@ public sealed partial class BopItAccessMod
             return;
         try
         {
-            if (!TolkNative.Tolk_IsLoaded() || !TolkNative.Tolk_HasBraille())
+            long now = Environment.TickCount64;
+            if (now >= _nextSeparateBrailleCapabilityCheckAt)
+            {
+                _separateBrailleAvailable = TolkNative.Tolk_IsLoaded() &&
+                    TolkNative.Tolk_HasBraille();
+                // A display connected or disconnected later is still picked
+                // up promptly, without two capability calls per utterance.
+                _nextSeparateBrailleCapabilityCheckAt = now + 1000;
+            }
+            if (!_separateBrailleAvailable)
             {
                 if (_lastSeparateBrailleDispatchAccepted != false)
                     WriteStatus("Tolk braille driver is unavailable for separate speech output.");
@@ -486,6 +501,8 @@ public sealed partial class BopItAccessMod
                 return;
             }
             bool accepted = TolkNative.Tolk_Braille(text);
+            if (!accepted)
+                _nextSeparateBrailleCapabilityCheckAt = 0;
             if (_lastSeparateBrailleDispatchAccepted != accepted)
                 WriteStatus("Tolk braille dispatch for separate speech output " +
                     (accepted ? "accepted" : "rejected") + ".");
@@ -493,6 +510,8 @@ public sealed partial class BopItAccessMod
         }
         catch (Exception ex)
         {
+            _separateBrailleAvailable = false;
+            _nextSeparateBrailleCapabilityCheckAt = 0;
             if (_lastSeparateBrailleDispatchAccepted != false)
                 WriteStatus("Tolk braille dispatch failed: " + ex.Message);
             _lastSeparateBrailleDispatchAccepted = false;
@@ -504,8 +523,10 @@ public sealed partial class BopItAccessMod
     {
         try
         {
+            long startedAt = Environment.TickCount64;
             if (!EnsureSapiOnWorker())
                 return false;
+            long voiceReadyAt = Environment.TickCount64;
             dynamic voice = _sapiComVoice!;
             int pitch;
             bool trimSilence;
@@ -554,10 +575,23 @@ public sealed partial class BopItAccessMod
             // SVSFlagsAsync, explicit XML/plain-text format, and optional
             // SVSFPurgeBeforeSpeak for an interrupting announcement.
             int flags = useXml ? (interrupt ? 11 : 9) : (interrupt ? 19 : 17);
+            long speakStartedAt = Environment.TickCount64;
             voice.Speak(sapiText, flags);
+            long speakReturnedAt = Environment.TickCount64;
             ReleaseCompletedSapiPlaybackStreamsOnWorker();
             _lastOutputBackend = OutputBackend.Sapi;
             SendBrailleForSeparateSpeechOnWorker(text);
+            long brailleReturnedAt = Environment.TickCount64;
+            if (brailleReturnedAt >= _nextSlowSapiTimingLogAt &&
+                (voiceReadyAt - startedAt >= 80 ||
+                 speakReturnedAt - speakStartedAt >= 80 ||
+                 brailleReturnedAt - speakReturnedAt >= 80))
+            {
+                WriteStatus($"Slow SAPI dispatch: voice setup {voiceReadyAt - startedAt} ms, " +
+                    $"Speak {speakReturnedAt - speakStartedAt} ms, " +
+                    $"braille and cleanup {brailleReturnedAt - speakReturnedAt} ms.");
+                _nextSlowSapiTimingLogAt = brailleReturnedAt + 3000;
+            }
             return true;
         }
         catch (Exception ex)
