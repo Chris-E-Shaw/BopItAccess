@@ -79,13 +79,13 @@ public sealed partial class BopItAccessMod
                 return "Automatic to Both";
             case "OUTPUT MODE":
                 return OutputModes[0] + " to " + OutputModes[^1];
-            case "VOICE":
+            case "SAPI VOICE":
                 return _sapiVoices.Count == 0 ? null :
                     _sapiVoices[0].Name + " to " + _sapiVoices[^1].Name;
-            case "VOLUME":
+            case "SAPI VOLUME":
                 return "5% to 100%";
-            case "RATE":
-            case "PITCH":
+            case "SAPI RATE":
+            case "SAPI PITCH":
                 return "0 to 100";
             default:
                 return null;

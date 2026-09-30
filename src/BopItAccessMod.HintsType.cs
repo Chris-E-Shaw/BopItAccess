@@ -11,7 +11,7 @@ public sealed partial class BopItAccessMod
         { "Automatic", "Keyboard", "Controller", "Both" };
     private string _hintsType = "Automatic";
     private HintDevice _lastHintInputDevice = HintDevice.Keyboard;
-    private readonly Dictionary<int, bool> _hintStickWasActive = new();
+    private readonly Dictionary<string, bool> _hintAnalogWasActive = new();
 
     private enum HintDevice { Keyboard, Controller, Both }
 
@@ -58,49 +58,22 @@ public sealed partial class BopItAccessMod
         if (!Application.isFocused)
             return;
 
-        bool keyboardInput = Keyboard.current?.anyKey.wasPressedThisFrame == true;
-        Mouse? mouse = Mouse.current;
-        keyboardInput |= mouse != null &&
-            (NewPress(mouse.leftButton) || NewPress(mouse.rightButton) ||
-             NewPress(mouse.middleButton) || NewPress(mouse.forwardButton) ||
-             NewPress(mouse.backButton) ||
-             mouse.delta.ReadValue().sqrMagnitude > 1f ||
-             mouse.scroll.ReadValue().sqrMagnitude > 0.01f);
-
+        // Device choice and inactivity timing use the same assigned inputs.
+        // An unused key such as Control affects neither one.
+        RefreshAssignedButtonHintControls();
+        bool keyboardInput = false;
         bool controllerInput = false;
-        foreach (Gamepad gamepad in Gamepad.all)
+        foreach (InputControl control in _assignedButtonHintControls)
         {
-            bool button = NewPress(gamepad.buttonSouth) ||
-                NewPress(gamepad.buttonNorth) || NewPress(gamepad.buttonEast) ||
-                NewPress(gamepad.buttonWest) || NewPress(gamepad.startButton) ||
-                NewPress(gamepad.selectButton) || NewPress(gamepad.leftShoulder) ||
-                NewPress(gamepad.rightShoulder) || NewPress(gamepad.leftTrigger) ||
-                NewPress(gamepad.rightTrigger) || NewPress(gamepad.leftStickButton) ||
-                NewPress(gamepad.rightStickButton) || NewPress(gamepad.dpad.up) ||
-                NewPress(gamepad.dpad.down) || NewPress(gamepad.dpad.left) ||
-                NewPress(gamepad.dpad.right);
-            bool stickActive = gamepad.leftStick.ReadValue().sqrMagnitude > 0.16f ||
-                gamepad.rightStick.ReadValue().sqrMagnitude > 0.16f;
-            bool wasActive = _hintStickWasActive.TryGetValue(gamepad.deviceId,
-                out bool previous) && previous;
-            _hintStickWasActive[gamepad.deviceId] = stickActive;
-            controllerInput |= button || (stickActive && !wasActive);
-        }
-
-        Joystick? joystick = Joystick.current;
-        if (joystick != null)
-        {
-            bool stickActive = joystick.stick.ReadValue().sqrMagnitude > 0.16f;
-            bool wasActive = _hintStickWasActive.TryGetValue(joystick.deviceId,
-                out bool previous) && previous;
-            _hintStickWasActive[joystick.deviceId] = stickActive;
-            controllerInput |= stickActive && !wasActive;
-            foreach (InputControl control in joystick.allControls)
-                if (control is ButtonControl button && NewPress(button))
-                {
-                    controllerInput = true;
-                    break;
-                }
+            bool controlTouched = control is ButtonControl button
+                ? NewPress(button)
+                : WasAssignedAnalogControlNewlyUsed(control);
+            if (!controlTouched)
+                continue;
+            if (control.device is Keyboard or Mouse)
+                keyboardInput = true;
+            else if (control.device is Gamepad or Joystick)
+                controllerInput = true;
         }
 
         HintDevice? touched = controllerInput == keyboardInput ? null :
@@ -120,6 +93,26 @@ public sealed partial class BopItAccessMod
 
     private static bool NewPress(ButtonControl? button) =>
         button?.wasPressedThisFrame == true;
+
+    private bool WasAssignedAnalogControlNewlyUsed(InputControl control)
+    {
+        if (control.device is Mouse mouse &&
+            string.Equals(control.name, "position",
+                StringComparison.OrdinalIgnoreCase))
+            return mouse.delta.ReadValue().sqrMagnitude > 1f;
+
+        bool active = control switch
+        {
+            Vector2Control vector => vector.ReadValue().sqrMagnitude > 0.16f,
+            AxisControl axis => Math.Abs(axis.ReadValue()) > 0.4f,
+            _ => false
+        };
+        string path = control.path;
+        bool previous = _hintAnalogWasActive.TryGetValue(path, out bool wasActive) &&
+            wasActive;
+        _hintAnalogWasActive[path] = active;
+        return active && !previous;
+    }
 
     private string FormatHintPress(string keyboard, string controller,
         string purpose, string controllerVerb = "press")

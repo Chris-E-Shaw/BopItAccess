@@ -81,11 +81,6 @@ public sealed partial class BopItAccessMod
         -1 => "Infinitely",
         _ => count + "x"
     };
-    private static string SapiSpeechSettingsInstruction =>
-        TrimSilenceExperimentAvailable
-            ? "Voice, volume, rate, pitch, and trim silence apply to SAPI output."
-            : "Voice, volume, rate, and pitch apply to SAPI output.";
-
     private void UpdateSpeechMenuUi()
     {
         if (_speechMenuOpen)
@@ -403,13 +398,13 @@ public sealed partial class BopItAccessMod
                     _trimSilenceSubmitListener ??= (UnityAction)OnTrimSilenceSubmitted,
                     _trimSilence);
             _speechVoiceSlider = AddSpeechSlider(settings.resolution, content,
-                "VOICE");
+                "SAPI VOICE");
             _speechVolumeSlider = AddSpeechSlider(settings.resolution, content,
-                "VOLUME");
+                "SAPI VOLUME");
             _speechRateSlider = AddSpeechSlider(settings.resolution, content,
-                "RATE");
+                "SAPI RATE");
             _speechPitchSlider = AddSpeechSlider(settings.resolution, content,
-                "PITCH");
+                "SAPI PITCH");
             SettingsButton back = AddSpeechButton(settings.controls, content,
                 "BACK");
 
@@ -449,13 +444,13 @@ public sealed partial class BopItAccessMod
             if (TrimSilenceExperimentAvailable && _trimSilenceToggle != null)
                 _speechUiOptions.Add(new("TRIM SILENCE", "toggle", _trimSilenceToggle,
                     () => _trimSilence ? "On" : "Off"));
-            _speechUiOptions.Add(new("VOICE", "slider", _speechVoiceSlider,
+            _speechUiOptions.Add(new("SAPI VOICE", "slider", _speechVoiceSlider,
                 ReadCurrentSapiVoiceName));
-            _speechUiOptions.Add(new("VOLUME", "slider", _speechVolumeSlider,
+            _speechUiOptions.Add(new("SAPI VOLUME", "slider", _speechVolumeSlider,
                 () => _sapiVolume + "%"));
-            _speechUiOptions.Add(new("RATE", "slider", _speechRateSlider,
+            _speechUiOptions.Add(new("SAPI RATE", "slider", _speechRateSlider,
                 () => _sapiRate.ToString()));
-            _speechUiOptions.Add(new("PITCH", "slider", _speechPitchSlider,
+            _speechUiOptions.Add(new("SAPI PITCH", "slider", _speechPitchSlider,
                 () => _sapiPitch.ToString()));
             _speechUiOptions.Add(new("BACK", "button", back, () => null));
 
@@ -549,10 +544,12 @@ public sealed partial class BopItAccessMod
                 (UnityAction<int>)OnRepeatButtonHintsMoved,
             "REPEAT INTERVAL" => _repeatButtonHintsIntervalMoveListener ??=
                 (UnityAction<int>)OnRepeatButtonHintsIntervalMoved,
-            "VOICE" => _speechVoiceMoveListener ??= (UnityAction<int>)OnSpeechVoiceMoved,
-            "VOLUME" => _speechVolumeMoveListener ??= (UnityAction<int>)OnSpeechVolumeMoved,
-            "RATE" => _speechRateMoveListener ??= (UnityAction<int>)OnSpeechRateMoved,
-            _ => _speechPitchMoveListener ??= (UnityAction<int>)OnSpeechPitchMoved
+            "SAPI VOICE" => _speechVoiceMoveListener ??= (UnityAction<int>)OnSpeechVoiceMoved,
+            "SAPI VOLUME" => _speechVolumeMoveListener ??= (UnityAction<int>)OnSpeechVolumeMoved,
+            "SAPI RATE" => _speechRateMoveListener ??= (UnityAction<int>)OnSpeechRateMoved,
+            "SAPI PITCH" => _speechPitchMoveListener ??= (UnityAction<int>)OnSpeechPitchMoved,
+            _ => throw new ArgumentOutOfRangeException(nameof(label), label,
+                "No movement handler was registered for this Speech slider.")
         };
         row.SliderMoved.AddListener(listener);
         clone.SetActive(true);
@@ -965,7 +962,7 @@ public sealed partial class BopItAccessMod
                 Environment.TickCount64 - _speechMenuOpenedAt > 800)
             {
                 _speechMenuIntroductionPending = false;
-                QueueSpeech("Speech. " + SapiSpeechSettingsInstruction);
+                QueueSpeech("Speech menu.");
             }
             return true;
         }
@@ -998,7 +995,7 @@ public sealed partial class BopItAccessMod
                 _speechUiOptions.Count);
             if (_speechMenuIntroductionPending)
             {
-                message = "Speech. " + SapiSpeechSettingsInstruction + " " + message;
+                message = "Speech. " + message;
                 _speechMenuIntroductionPending = false;
             }
             QueueFocusSpeech(message);

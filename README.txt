@@ -1,4 +1,4 @@
-Bop It Access 0.6.10 - Speak Hints on Demand
+Bop It Access 0.6.11 - Hint Timing and SAPI Response
 
 What this does
 --------------
@@ -96,7 +96,10 @@ connected and the game has different face-button names on different controller
 types, the hint uses "confirm button" or "back button" rather than assuming an
 Xbox layout. Leaderboard score rows use Page Up and Page Down on keyboard.
 Controller up/down reads rows only when no leaderboard control has focus;
-hints report only the controls available for the selected HINTS TYPE.
+hints report only the controls available for the selected HINTS TYPE. Ordinary
+screen hints also include the current SPEAK HINTS and TOGGLE SPEECH bindings.
+Both are looked up centrally, so future global controls can join the same
+hint list without changing every screen separately.
 
 REPEAT BUTTON HINTS is a separate saved slider: Off, 2x, 3x, 4x, 5x, or
 Infinitely. It defaults to Off. The number is the total readings in one
@@ -113,11 +116,15 @@ active gameplay and the beat-timing phases of Audio Calibration, where extra
 speech could mask a cue. An existing saved 15-, 30-, or 60-second reminder
 delay from version 0.6.2 becomes the new BUTTON HINTS DELAY value.
 
-The SPEECH menu also has VOICE, VOLUME, RATE, and PITCH controls. Voice
-lists the system default and installed 64-bit SAPI voices. Volume starts at
-100; Rate and Pitch start at 50. Volume ranges from 5 to 100 so SAPI recovery
-notices remain audible. Rate and Pitch range from 0 to 100. All three move in
+The SPEECH menu also has SAPI VOICE, SAPI VOLUME, SAPI RATE, and SAPI PITCH
+controls. SAPI Voice lists the system default and installed 64-bit SAPI voices.
+Volume starts at 100; Rate and Pitch start at 50. Volume ranges from 5 to 100
+so SAPI recovery notices remain audible. Rate and Pitch range from 0 to 100.
+All three move in
 steps of five. They apply to SAPI mode and Auto's SAPI fallback.
+Direct SAPI output avoids repeated voice enumeration for numeric changes,
+uses plain text when pitch is neutral, and skips unnecessary screen-reader
+detection. The earlier trim-silence experiment remains hidden and inactive.
 Speech settings are remembered between sessions. Back returns to Settings.
 This update restores the game's native Settings row layout so up/down
 navigation remains on Settings rows after SPEECH is added.
@@ -228,6 +235,10 @@ SPEAK HINTS can also be rebound. Its defaults are H and right stick press.
 It speaks the current screen's hint immediately without scheduling a second
 automatic first hint. The configured repeats can still follow. It is silent
 during gameplay and the timed Audio Calibration cues.
+Returning from song selection to the main menu restores main-menu hints even
+when a cached game manager still reports an old gameplay state. Button hint
+timers and Automatic hint device selection follow assigned game and mod
+controls; unused keys such as an unassigned Control key do not reset them.
 This update stops the stale Controls row from announcing "Rebinding failed"
 repeatedly after its scene closes. Read Descriptions no longer temporarily
 overrides any of the game's own input bindings.

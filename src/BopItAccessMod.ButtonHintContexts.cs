@@ -9,6 +9,33 @@ namespace BopItAccess;
 
 public sealed partial class BopItAccessMod
 {
+    // New mod controls can provide their current, remappable binding here.
+    // Every ordinary screen hint uses this registry, so adding a global
+    // control does not require editing each screen's hint separately.
+    private readonly List<(string Id, Func<string> Instruction)>
+        _globalButtonHintControls = new();
+    private bool _globalButtonHintControlsRegistered;
+
+    private void RegisterGlobalButtonHintControl(string id,
+        Func<string> instruction)
+    {
+        int existing = _globalButtonHintControls.FindIndex(entry =>
+            string.Equals(entry.Id, id, StringComparison.Ordinal));
+        if (existing >= 0)
+            _globalButtonHintControls[existing] = (id, instruction);
+        else
+            _globalButtonHintControls.Add((id, instruction));
+    }
+
+    private void EnsureGlobalButtonHintControlsRegistered()
+    {
+        if (_globalButtonHintControlsRegistered)
+            return;
+        _globalButtonHintControlsRegistered = true;
+        RegisterGlobalButtonHintControl("ToggleSpeech", ToggleSpeechHintInstruction);
+        RegisterGlobalButtonHintControl("SpeakHints", SpeakHintsBindingInstruction);
+    }
+
     // Resolve the screen that currently owns input. This follows the same
     // precedence as OnLateUpdate, particularly for leaderboard wrappers that
     // remain alive behind song selection and the result screen.
@@ -21,7 +48,21 @@ public sealed partial class BopItAccessMod
             gameUi = _leaderboardGameUi;
         MainMenuUIManager? main = _mainMenu == null ? null : _mainMenu;
         GameState? gameState = gameUi?.gameManager?.GameState;
-        if (gameState == GameState.Playing)
+        // Backing out of song selection can leave a cached GameUIManager
+        // reporting Playing after the main-menu panels have returned. A
+        // visible menu is stronger evidence of where input goes than that
+        // stale game state. Keep gameplay silent when no menu owns the screen.
+        bool mainMenuScreenVisible = IsHintPanelVisible(main?.mainMenuPanel) ||
+            IsHintPanelVisible(main?.gameModePanel) ||
+            IsHintPanelVisible(main?.controlsPanel) ||
+            IsHintPanelVisible(main?.leaderboardPanel) ||
+            IsHintPanelVisible(main?.creditsPanel) ||
+            IsHintPanelVisible(_settingsPanel) ||
+            IsHintPanelVisible(_speechMenuPanel) ||
+            IsHintPanelVisible(_calibrationPanel) ||
+            (_achievementBookWasOpen && _achievementsPanel != null &&
+             _achievementsPanel.achievementViewState == AchievementViewState.Visible);
+        if (gameState == GameState.Playing && !mainMenuScreenVisible)
             return null;
 
         if (_speechMenuOpen && _speechMenuRoot != null &&
@@ -30,7 +71,7 @@ public sealed partial class BopItAccessMod
             string action = _speechUiOptions.FirstOrDefault(option =>
                 option.Row.GetInstanceID() == _lastSpeechMenuRowId)?.ControlType ?? "button";
             return ("Speech:" + action,
-                WithGlobalToggleHint(MenuHintForControl(action, "Settings")));
+                WithGlobalControlHints(MenuHintForControl(action, "Settings")));
         }
 
         if (IsHintPanelVisible(_calibrationPanel))
@@ -41,7 +82,7 @@ public sealed partial class BopItAccessMod
                 state == CalibrateState.Finished)
                 return null;
             return ("Calibration:" + state,
-                WithGlobalToggleHint(UiSubmitHint("activate option") +
+                WithGlobalControlHints(UiSubmitHint("activate option") +
                     " " + HintNavigation(true, "choose Calibrate or Back") + " " +
                     UiBackHint("return to Settings")));
         }
@@ -85,7 +126,7 @@ public sealed partial class BopItAccessMod
                 ? UiSubmitHint("restore default bindings")
                 : UiSubmitHint("reassign control");
             return ("Controls:" + focused,
-                WithGlobalToggleHint(use +
+                WithGlobalControlHints(use +
                     " " + HintNavigation(true, "choose control") + " " +
                     UiBackHint("return to Settings")));
         }
@@ -122,7 +163,7 @@ public sealed partial class BopItAccessMod
                     if (hint.Length > 0 && hint != focusedHint)
                         hints.Add(hint);
                 return ("Leaderboard:Party:" + party.State,
-                    WithGlobalToggleHint(string.Join(" ", hints)));
+                    WithGlobalControlHints(string.Join(" ", hints)));
             }
 
             CombinedLeaderboardPanel? gameBoard = gameUi?.combinedLeaderboardPanel;
@@ -140,7 +181,7 @@ public sealed partial class BopItAccessMod
                  IsHintPanelVisible(mainBoard.leaderboardWrapper)))
                 return CombinedLeaderboardHint(mainBoard, false);
             return ("Leaderboard:Loading",
-                WithGlobalToggleHint(UiBackHint("return to main menu")));
+                WithGlobalControlHints(UiBackHint("return to main menu")));
         }
 
         if (_achievementBookWasOpen && _achievementsPanel != null &&
@@ -153,7 +194,7 @@ public sealed partial class BopItAccessMod
                     GetAchievementMoveAction(_achievementBookController!)) + " "
                 : string.Empty;
             return ("Achievements:" + (_lastAchievementSpread ?? "Opening"),
-                WithGlobalToggleHint(read +
+                WithGlobalControlHints(read +
                     HintAchievementPages() + " " +
                     UiBackHint("close book")));
         }
@@ -165,7 +206,7 @@ public sealed partial class BopItAccessMod
                     HintUiMoveAction()) + " "
                 : "Credits read automatically. ";
             return ("Credits:" + (_creditsAutoReading ? "Auto" : "Manual"),
-                WithGlobalToggleHint(read + UiBackHint("return to main menu")));
+                WithGlobalControlHints(read + UiBackHint("return to main menu")));
         }
 
         FinalScorePanel? final = gameUi?.finalScorePanel;
@@ -180,7 +221,7 @@ public sealed partial class BopItAccessMod
                         "choose Replay or Leaderboard")
                 : UiSubmitHint("activate Continue or Replay");
             return ("GameOver:" + (solo ? "Solo" : "WithFriends"),
-                WithGlobalToggleHint(menu + " " + UiBackHint("return") + " " +
+                WithGlobalControlHints(menu + " " + UiBackHint("return") + " " +
                     ReadScoreBindingInstruction()));
         }
 
@@ -215,12 +256,12 @@ public sealed partial class BopItAccessMod
                 if (hint != primary)
                     hints.Add(hint);
             return ("SongSelect",
-                WithGlobalToggleHint(string.Join(" ", hints)));
+                WithGlobalControlHints(string.Join(" ", hints)));
         }
 
         if (IsHintPanelVisible(main?.gameModePanel))
             return ("PlayModes",
-                WithGlobalToggleHint(UiSubmitHint("select mode") +
+                WithGlobalControlHints(UiSubmitHint("select mode") +
                     " " + HintNavigation(true, "choose mode") + " " +
                     UiBackHint("return to main menu")));
 
@@ -229,12 +270,12 @@ public sealed partial class BopItAccessMod
             string action = GetFocusedSettingsOption(EventSystem.current?.currentSelectedGameObject)?
                 .ControlType ?? "button";
             return ("Settings:" + action,
-                WithGlobalToggleHint(MenuHintForControl(action, "main menu")));
+                WithGlobalControlHints(MenuHintForControl(action, "main menu")));
         }
 
         if (IsHintPanelVisible(main?.mainMenuPanel))
             return ("MainMenu",
-                WithGlobalToggleHint(UiSubmitHint("activate item") +
+                WithGlobalControlHints(UiSubmitHint("activate item") +
                     " " + HintNavigation(true, "choose menu item")));
 
         return null;
@@ -293,7 +334,7 @@ public sealed partial class BopItAccessMod
                 hints.Add(hint);
         return ("Leaderboard:Combined:" + (result ? "Result" : "Main") +
                 ":" + panel.Mode,
-            WithGlobalToggleHint(string.Join(" ", hints)));
+            WithGlobalControlHints(string.Join(" ", hints)));
     }
 
     private string LeaderboardAxisHint(string actionName, string noun)
@@ -331,19 +372,35 @@ public sealed partial class BopItAccessMod
             UiBackHint("return to " + returnTo);
     }
 
-    private string WithGlobalToggleHint(string hint)
+    private string WithGlobalControlHints(string hint)
     {
         if (_controlsRebindingManager?.IsRebinding == true ||
             _leaderboardRebindOperation != null || _descriptionRebindOperation != null ||
             _scoreRebindOperation != null || _speakHintsRebindOperation != null ||
             _toggleSpeechRebindOperation != null)
             return hint;
+
+        EnsureGlobalButtonHintControlsRegistered();
+        var hints = new List<string>(_globalButtonHintControls.Count + 1)
+        {
+            hint.TrimEnd()
+        };
+        foreach (var entry in _globalButtonHintControls)
+        {
+            string controlHint = entry.Instruction();
+            if (!string.IsNullOrWhiteSpace(controlHint))
+                hints.Add(controlHint);
+        }
+        return string.Join(" ", hints);
+    }
+
+    private string ToggleSpeechHintInstruction()
+    {
         string keyboard = ReadToggleSpeechBindingLabel(0, ToggleSpeechKeyboardKey,
             "<Keyboard>/f8", "F8");
         string controller = ReadToggleSpeechBindingLabel(1, ToggleSpeechGamepadKey,
             "<Gamepad>/select", "Select");
-        return hint.TrimEnd() + " " + FormatHintPress(keyboard, controller,
-            "toggle speech");
+        return FormatHintPress(keyboard, controller, "toggle speech");
     }
 
     private static bool IsHintPanelVisible(Panel? panel) =>

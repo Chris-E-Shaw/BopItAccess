@@ -63,6 +63,11 @@ public sealed partial class BopItAccessMod
     private string _sapiCaptureAppliedVoiceId = string.Empty;
     private OutputBackend _lastOutputBackend;
     private string? _lastFallbackNoticeMode;
+    // Tolk's active-reader lookup is only needed periodically in Auto mode.
+    // Keep the worker responsive during rapid menu navigation while still
+    // noticing screen readers started or stopped after game launch.
+    private string? _detectedScreenReaderOnWorker;
+    private long _nextScreenReaderDetectionAt;
     private long _nextSapiErrorLogAt;
     private bool? _lastSeparateBrailleDispatchAccepted;
 
@@ -357,7 +362,10 @@ public sealed partial class BopItAccessMod
             mode = _outputMode;
         }
 
-        string? detected = Marshal.PtrToStringUni(TolkNative.Tolk_DetectScreenReader());
+        // Explicit SAPI output has no reason to query Tolk before every
+        // utterance. Query it only if SAPI fails and a fallback is needed.
+        string? detected = string.Equals(mode, "SAPI", StringComparison.OrdinalIgnoreCase)
+            ? null : DetectScreenReaderOnWorker();
         if (string.Equals(mode, "Auto", StringComparison.OrdinalIgnoreCase))
         {
             if (detected != null && OutputTolkOnWorker(text, interrupt))
@@ -376,6 +384,7 @@ public sealed partial class BopItAccessMod
                 _lastFallbackNoticeMode = null;
                 return true;
             }
+            detected = DetectScreenReaderOnWorker(force: true);
             if (detected == null)
                 return false;
             string notice = _lastFallbackNoticeMode == "SAPI" ? text :
@@ -435,6 +444,17 @@ public sealed partial class BopItAccessMod
             return false;
         _lastFallbackNoticeMode = mode;
         return true;
+    }
+
+    private string? DetectScreenReaderOnWorker(bool force = false)
+    {
+        long now = Environment.TickCount64;
+        if (!force && now < _nextScreenReaderDetectionAt)
+            return _detectedScreenReaderOnWorker;
+        _detectedScreenReaderOnWorker =
+            Marshal.PtrToStringUni(TolkNative.Tolk_DetectScreenReader());
+        _nextScreenReaderDetectionAt = now + 1000;
+        return _detectedScreenReaderOnWorker;
     }
 
     private bool TryTolkAsLastResort(string text, bool interrupt)
@@ -498,15 +518,20 @@ public sealed partial class BopItAccessMod
                 generation = _speechGeneration;
                 renderSerial = _sapiRenderSerial;
             }
+            // Most players use the neutral pitch. Plain text avoids XML
+            // escaping and parsing on every short focus announcement.
+            bool useXml = trimSilence || pitch != 50;
             int mappedPitch = (int)Math.Round((pitch - 50) / 5.0);
-            string xml = $"<pitch absmiddle=\"{mappedPitch:+0;-0;0}\">" +
-                SecurityElement.Escape(text) + "</pitch>";
+            string sapiText = useXml
+                ? $"<pitch absmiddle=\"{mappedPitch:+0;-0;0}\">" +
+                    SecurityElement.Escape(text) + "</pitch>"
+                : text;
 
             if (trimSilence)
             {
                 try
                 {
-                    TrimmedSpeechResult result = SpeakTrimmedSapiOnWorker(xml,
+                    TrimmedSpeechResult result = SpeakTrimmedSapiOnWorker(sapiText,
                         interrupt, generation, renderSerial, protectedCapture);
                     if (result != TrimmedSpeechResult.Failed)
                     {
@@ -526,9 +551,10 @@ public sealed partial class BopItAccessMod
                     return true;
             }
 
-            // SVSFlagsAsync | SVSFIsXML, plus SVSFPurgeBeforeSpeak when
-            // this message should interrupt an earlier SAPI utterance.
-            voice.Speak(xml, interrupt ? 11 : 9);
+            // SVSFlagsAsync, explicit XML/plain-text format, and optional
+            // SVSFPurgeBeforeSpeak for an interrupting announcement.
+            int flags = useXml ? (interrupt ? 11 : 9) : (interrupt ? 19 : 17);
+            voice.Speak(sapiText, flags);
             ReleaseCompletedSapiPlaybackStreamsOnWorker();
             _lastOutputBackend = OutputBackend.Sapi;
             SendBrailleForSeparateSpeechOnWorker(text);
@@ -754,7 +780,9 @@ public sealed partial class BopItAccessMod
             return true;
 
         dynamic voice = _sapiCaptureVoice;
-        if (!string.IsNullOrEmpty(voiceId))
+        if (!string.IsNullOrEmpty(voiceId) &&
+            !string.Equals(voiceId, _sapiCaptureAppliedVoiceId,
+                StringComparison.OrdinalIgnoreCase))
         {
             try
             {
@@ -901,7 +929,11 @@ public sealed partial class BopItAccessMod
             return true;
 
         dynamic voice = _sapiComVoice;
-        if (!string.IsNullOrEmpty(voiceId))
+        // Numeric settings can change on every slider step. Re-enumerating
+        // all SAPI tokens on each one delays the next spoken value.
+        if (!string.IsNullOrEmpty(voiceId) &&
+            !string.Equals(voiceId, _sapiAppliedVoiceId,
+                StringComparison.OrdinalIgnoreCase))
         {
             try
             {

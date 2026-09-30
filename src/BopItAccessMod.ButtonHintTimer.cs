@@ -1,5 +1,9 @@
+using Il2Cpp;
+using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.Controls;
+using UnityEngine.InputSystem.UI;
 
 namespace BopItAccess;
 
@@ -17,6 +21,9 @@ public sealed partial class BopItAccessMod
     private long _nextButtonHintErrorAt;
     private bool _manualButtonHintCycleActive;
     private bool _manualButtonHintInputLatched;
+    private readonly List<InputControl> _assignedButtonHintControls = new();
+    private long _nextAssignedButtonHintControlsRefreshAt;
+    private long _nextAssignedButtonHintControlsErrorAt;
 
     // The slider describes total readings, including the first inline or
     // delayed hint. For example, 2X permits one additional timed reading.
@@ -331,46 +338,125 @@ public sealed partial class BopItAccessMod
             : long.MaxValue;
     }
 
-    private static bool IsUserInputActive()
+    private bool IsUserInputActive()
     {
-        Keyboard? keyboard = Keyboard.current;
-        if (keyboard != null && Pressed(keyboard.anyKey))
-            return true;
-
-        Mouse? mouse = Mouse.current;
-        if (mouse != null &&
-            (Pressed(mouse.leftButton) || Pressed(mouse.rightButton) ||
-             Pressed(mouse.middleButton) || Pressed(mouse.forwardButton) ||
-             Pressed(mouse.backButton) ||
-             mouse.delta.ReadValue().sqrMagnitude > 0.01f ||
-             mouse.scroll.ReadValue().sqrMagnitude > 0.01f))
-            return true;
-
-        // Check every connected controller so a second player's activity
-        // also postpones a reminder in Party and One-on-One.
-        foreach (Gamepad gamepad in Gamepad.all)
+        RefreshAssignedButtonHintControls();
+        foreach (InputControl control in _assignedButtonHintControls)
         {
-            if (Pressed(gamepad.buttonSouth) || Pressed(gamepad.buttonNorth) ||
-                Pressed(gamepad.buttonEast) || Pressed(gamepad.buttonWest) ||
-                Pressed(gamepad.startButton) || Pressed(gamepad.selectButton) ||
-                Pressed(gamepad.leftShoulder) || Pressed(gamepad.rightShoulder) ||
-                Pressed(gamepad.leftTrigger) || Pressed(gamepad.rightTrigger) ||
-                Pressed(gamepad.leftStickButton) || Pressed(gamepad.rightStickButton) ||
-                Pressed(gamepad.dpad.up) || Pressed(gamepad.dpad.down) ||
-                Pressed(gamepad.dpad.left) || Pressed(gamepad.dpad.right) ||
-                gamepad.leftStick.ReadValue().sqrMagnitude > 0.04f ||
-                gamepad.rightStick.ReadValue().sqrMagnitude > 0.04f)
+            if (control is ButtonControl button && Pressed(button))
+                return true;
+            if (control is Vector2Control vector)
+            {
+                // An absolute cursor position is nonzero while the mouse is
+                // stationary. Only actual movement counts as activity.
+                if (control.device is Mouse mouse &&
+                    string.Equals(control.name, "position",
+                        StringComparison.OrdinalIgnoreCase))
+                {
+                    if (mouse.delta.ReadValue().sqrMagnitude > 0.01f)
+                        return true;
+                }
+                else if (vector.ReadValue().sqrMagnitude > 0.04f)
+                    return true;
+            }
+            else if (control is AxisControl axis &&
+                Math.Abs(axis.ReadValue()) > 0.2f)
                 return true;
         }
-
-        Joystick? joystick = Joystick.current;
-        if (joystick != null &&
-            (Pressed(joystick.trigger) ||
-             joystick.stick.ReadValue().sqrMagnitude > 0.04f))
-            return true;
-
         return false;
     }
+
+    private void RefreshAssignedButtonHintControls()
+    {
+        long now = Environment.TickCount64;
+        if (now < _nextAssignedButtonHintControlsRefreshAt)
+            return;
+        _nextAssignedButtonHintControlsRefreshAt = now + 250;
+        try
+        {
+            _assignedButtonHintControls.Clear();
+            var seen = new HashSet<InputControl>();
+            InputRebindingManager? manager = _controlsRebindingManager;
+            if (manager == null)
+            {
+                MainMenuUIManager? main = _mainMenu;
+                manager = main?.controlsPanel?
+                    .GetComponentInChildren<InputRebindingManager>(true);
+            }
+
+            AddAssignedControls(manager?.playerInput?.actions, seen);
+            AddAssignedControls(manager?.inputActions, seen);
+
+            InputSystemUIInputModule? module =
+                EventSystem.current?.GetComponent<InputSystemUIInputModule>();
+            AddAssignedControls(module?.move?.action, seen);
+            AddAssignedControls(module?.submit?.action, seen);
+            AddAssignedControls(module?.cancel?.action, seen);
+            AddAssignedControls(module?.point?.action, seen);
+            AddAssignedControls(module?.leftClick?.action, seen);
+            AddAssignedControls(module?.rightClick?.action, seen);
+            AddAssignedControls(module?.middleClick?.action, seen);
+            AddAssignedControls(module?.scrollWheel?.action, seen);
+
+            AddAssignedControls(_descriptionAction, seen);
+            AddAssignedControls(_scoreAction, seen);
+            AddAssignedControls(_toggleSpeechAction, seen);
+            AddAssignedControls(_speakHintsAction, seen);
+        }
+        catch (Exception ex)
+        {
+            _assignedButtonHintControls.Clear();
+            if (now >= _nextAssignedButtonHintControlsErrorAt)
+            {
+                WriteStatus("Assigned button hint input refresh failed: " + ex.Message);
+                _nextAssignedButtonHintControlsErrorAt = now + 5000;
+            }
+        }
+    }
+
+    private void AddAssignedControls(InputActionAsset? asset,
+        HashSet<InputControl> seen)
+    {
+        if (asset == null)
+            return;
+        foreach (InputActionMap map in asset.actionMaps)
+            foreach (InputAction action in map.actions)
+                AddAssignedControls(action, seen);
+    }
+
+    private void AddAssignedControls(InputAction? action,
+        HashSet<InputControl> seen)
+    {
+        if (action == null)
+            return;
+        foreach (InputControl control in action.controls)
+        {
+            if (!seen.Add(control))
+                continue;
+            bool explicitlyAssigned = false;
+            foreach (InputBinding binding in action.bindings)
+            {
+                if (binding.isComposite ||
+                    !IsSpecificHintActivityPath(binding.effectivePath))
+                    continue;
+                if (InputControlPath.Matches(binding.effectivePath, control))
+                {
+                    explicitlyAssigned = true;
+                    break;
+                }
+            }
+            if (explicitlyAssigned)
+                _assignedButtonHintControls.Add(control);
+            else
+                seen.Remove(control);
+        }
+    }
+
+    private static bool IsSpecificHintActivityPath(string? path) =>
+        !string.IsNullOrWhiteSpace(path) &&
+        !path.Contains('*') &&
+        !path.Contains("/anyKey", StringComparison.OrdinalIgnoreCase) &&
+        !path.Contains("/anyButton", StringComparison.OrdinalIgnoreCase);
 
     private static bool Pressed(ButtonControl? button) =>
         button != null && (button.isPressed || button.wasPressedThisFrame ||
