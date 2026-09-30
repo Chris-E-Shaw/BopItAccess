@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.4.0", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.0", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -34,6 +34,8 @@ public sealed partial class BopItAccessMod : MelonMod
     private long _nextSettingsErrorLogAt;
     private long _nextCalibrationErrorLogAt;
     private long _nextControlsErrorLogAt;
+    private long _nextTrackSelectErrorLogAt;
+    private long _nextPlayModesErrorLogAt;
     private bool _mainMenuWasVisible;
     private bool _settingsWasVisible;
     private static readonly object StatusLogLock = new();
@@ -116,7 +118,59 @@ public sealed partial class BopItAccessMod : MelonMod
             ResetControlsFocus();
         }
 
-        if (calibrationVisible || controlsVisible)
+        bool trackSelectVisible = false;
+        if (!calibrationVisible && !controlsVisible)
+        {
+            try
+            {
+                trackSelectVisible = ReadTrackSelectFocus();
+            }
+            catch (Exception ex)
+            {
+                long now = Environment.TickCount64;
+                if (now >= _nextTrackSelectErrorLogAt)
+                {
+                    WriteStatus($"Song selection speech check failed: {ex}");
+                    MelonLogger.Warning($"Song selection speech check failed: {ex.Message}");
+                    _nextTrackSelectErrorLogAt = now + 5000;
+                }
+
+                _trackSelectUi = null;
+                _trackSelectApp = null;
+                ResetTrackSelectFocus();
+            }
+        }
+        else
+        {
+            ResetTrackSelectFocus();
+        }
+
+        bool playModesVisible = false;
+        if (!calibrationVisible && !controlsVisible && !trackSelectVisible)
+        {
+            try
+            {
+                playModesVisible = ReadPlayModesFocus();
+            }
+            catch (Exception ex)
+            {
+                long now = Environment.TickCount64;
+                if (now >= _nextPlayModesErrorLogAt)
+                {
+                    WriteStatus($"Play mode speech check failed: {ex}");
+                    MelonLogger.Warning($"Play mode speech check failed: {ex.Message}");
+                    _nextPlayModesErrorLogAt = now + 5000;
+                }
+
+                ResetPlayModesFocus();
+            }
+        }
+        else
+        {
+            ResetPlayModesFocus();
+        }
+
+        if (calibrationVisible || controlsVisible || trackSelectVisible || playModesVisible)
         {
             ResetSettingsFocus();
             ResetMenuFocus();
