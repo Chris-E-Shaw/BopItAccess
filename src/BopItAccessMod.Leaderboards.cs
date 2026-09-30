@@ -23,7 +23,6 @@ public sealed partial class BopItAccessMod
     private long _leaderboardRowsDueAt;
     private bool _leaderboardRowsSpoken;
     private bool _leaderboardEmptySpoken;
-    private bool _leaderboardWasLoading;
     private int _leaderboardMoveDirection;
     private long _nextLeaderboardMoveAt;
     private long _leaderboardSuppressUiMoveUntilAt;
@@ -31,6 +30,10 @@ public sealed partial class BopItAccessMod
     private PartyLeaderboardState? _leaderboardPartyState;
     private bool _leaderboardContinueVisible;
     private long _leaderboardOuterVisibleAt;
+    private string? _leaderboardTrack;
+    private string? _leaderboardDevice;
+    private string? _leaderboardGroup;
+    private string? _leaderboardDate;
 
     // CombinedLeaderboardPanel serves both the main menu and the Solo result.
     // PartyLeaderboardPanel is the separate result screen with name selection.
@@ -38,6 +41,10 @@ public sealed partial class BopItAccessMod
     private bool ReadLeaderboardsFocus()
     {
         long now = Environment.TickCount64;
+        if (_leaderboardMainMenu == null)
+            _leaderboardMainMenu = null;
+        if (_leaderboardGameUi == null)
+            _leaderboardGameUi = null;
         if (now >= _nextLeaderboardSearchAt &&
             (_leaderboardMainMenu == null || _leaderboardGameUi == null))
         {
@@ -48,19 +55,33 @@ public sealed partial class BopItAccessMod
                 _leaderboardGameUi = UnityEngine.Object.FindFirstObjectByType<GameUIManager>();
         }
 
-        PartyLeaderboardPanel? party = _leaderboardGameUi?.partyLeaderboardPanel;
-        if (IsLeaderboardPanelVisible(party?.leaderboardWrapper))
-            return ReadPartyLeaderboard(party!);
+        // The game keeps its result leaderboard wrappers alive while the song
+        // selection screen is showing. Their Panel flags alone are not proof
+        // that a leaderboard is the current screen.
+        GameUIManager? gameUi = _leaderboardGameUi;
+        if (gameUi != null && gameUi.gameManager != null &&
+            gameUi.gameManager.GameState == GameState.GameOver &&
+            !IsLeaderboardPanelVisible(gameUi.startScreen))
+        {
+            PartyLeaderboardPanel? party = gameUi.partyLeaderboardPanel;
+            if (IsLeaderboardPanelVisible(party) &&
+                IsLeaderboardPanelVisible(party?.leaderboardWrapper))
+                return ReadPartyLeaderboard(party!);
 
-        CombinedLeaderboardPanel? gameCombined = _leaderboardGameUi?.combinedLeaderboardPanel;
-        if (IsLeaderboardPanelVisible(gameCombined?.leaderboardWrapper))
-            return ReadCombinedLeaderboard(gameCombined!);
+            CombinedLeaderboardPanel? gameCombined = gameUi.combinedLeaderboardPanel;
+            if (IsLeaderboardPanelVisible(gameCombined) &&
+                IsLeaderboardPanelVisible(gameCombined?.leaderboardWrapper))
+                return ReadCombinedLeaderboard(gameCombined!);
+        }
 
-        Panel? mainOuter = _leaderboardMainMenu?.leaderboardPanel;
-        CombinedLeaderboardPanel? mainCombined =
-            mainOuter?.GetComponentInChildren<CombinedLeaderboardPanel>(true);
+        MainMenuUIManager? mainMenu = _leaderboardMainMenu;
+        Panel? mainOuter = mainMenu != null ? mainMenu.leaderboardPanel : null;
         if (IsLeaderboardPanelVisible(mainOuter))
         {
+            // Do not call GetComponentInChildren on a panel from a destroyed
+            // main-menu scene. It can throw an IL2CPP NullReferenceException.
+            CombinedLeaderboardPanel? mainCombined =
+                mainOuter!.GetComponentInChildren<CombinedLeaderboardPanel>(true);
             if (mainCombined != null &&
                 (mainCombined.leaderboardWrapper == null ||
                  IsLeaderboardPanelVisible(mainCombined.leaderboardWrapper)))
@@ -82,7 +103,7 @@ public sealed partial class BopItAccessMod
 
     private static bool IsLeaderboardPanelVisible(Panel? panel) =>
         panel != null && panel.gameObject.activeInHierarchy &&
-        (panel.IsVisible || panel.IsTransitioningShow || panel.IsTransitioningHide);
+        (panel.IsVisible || panel.IsTransitioningShow) && !panel.IsTransitioningHide;
 
     private bool ReadCombinedLeaderboard(CombinedLeaderboardPanel panel)
     {
@@ -95,6 +116,12 @@ public sealed partial class BopItAccessMod
 
         long now = Environment.TickCount64;
         string context = ReadCombinedLeaderboardContext(panel);
+        string? track = ReadLeaderboardTrack(panel.TitleImage, panel.LeaderboardManager, panel.app);
+        string? device = ReadLeaderboardDevice(panel.deviceContainer, panel.LeaderboardManager);
+        string group = ReadLeaderboardGroup(panel);
+        string date = ReadLeaderboardDate(panel);
+        (int focusedId, string? focusedText) = ReadLeaderboardFocusedItem(panel.transform);
+        bool focusChanged = focusedId != _leaderboardSelectedId;
         if (now >= _nextLeaderboardRowsPollAt || _leaderboardContext == null)
         {
             _leaderboardCachedRows = ReadCombinedLeaderboardRows(panel);
@@ -105,20 +132,36 @@ public sealed partial class BopItAccessMod
         bool loading = IsLeaderboardLoading(panel.loader);
         bool contextChanged = !string.Equals(context, _leaderboardContext, StringComparison.Ordinal);
         bool rowsChanged = !string.Equals(rowSignature, _leaderboardRowsSignature, StringComparison.Ordinal);
-        var announcements = new List<string>(3);
+        string? immediateSpeech = null;
         if (contextChanged)
         {
+            bool opening = _leaderboardContext == null;
+            string? changedValue = null;
+            if (!string.Equals(track, _leaderboardTrack, StringComparison.Ordinal))
+                changedValue = track;
+            if (!string.Equals(device, _leaderboardDevice, StringComparison.Ordinal))
+                changedValue = device;
+            if (!string.Equals(group, _leaderboardGroup, StringComparison.Ordinal))
+                changedValue = group;
+            if (!string.Equals(date, _leaderboardDate, StringComparison.Ordinal))
+                changedValue = date;
+            _leaderboardTrack = track;
+            _leaderboardDevice = device;
+            _leaderboardGroup = group;
+            _leaderboardDate = date;
             _leaderboardContext = context;
             _leaderboardRowsSignature = rowSignature;
             _leaderboardRowIndex = 0;
             _leaderboardRowsSpoken = false;
             _leaderboardEmptySpoken = false;
-            _leaderboardRowsDueAt = now + 400;
-            _leaderboardSelectedId = ReadLeaderboardFocusedItem(panel.transform).Id;
+            _leaderboardRowsDueAt = now + 800;
             _leaderboardMoveDirection = 0;
             _leaderboardSuppressUiMoveUntilAt = now + 500;
-            announcements.Add($"{context}. {ReadCombinedLeaderboardControls(panel)}" +
-                (loading ? " Loading scores." : string.Empty));
+            immediateSpeech = opening
+                ? $"{context}. {ReadCombinedLeaderboardControls(panel)}"
+                : focusChanged && IsLeaderboardFilterLabel(focusedText)
+                    ? focusedText
+                    : changedValue ?? (focusChanged ? focusedText : null) ?? context;
             WriteStatus($"Leaderboard context: {context}.");
         }
         else if (rowsChanged)
@@ -127,40 +170,38 @@ public sealed partial class BopItAccessMod
             _leaderboardRowIndex = 0;
             _leaderboardRowsSpoken = false;
             _leaderboardEmptySpoken = false;
-            _leaderboardRowsDueAt = now + 150;
+            _leaderboardRowsDueAt = now + 500;
             _leaderboardSuppressUiMoveUntilAt = now + 200;
         }
 
-        if (loading && !_leaderboardWasLoading && !contextChanged)
-            announcements.Add("Loading scores.");
-        _leaderboardWasLoading = loading;
         string? rowAnnouncement = ReadLeaderboardRowsAfterLoad(rows,
             loading, panel.leaderboardEntryContainerPanel, now);
-        if (rowAnnouncement != null)
-            announcements.Add(rowAnnouncement);
-
-        (int focusedId, string? focusedText) = ReadLeaderboardFocusedItem(panel.transform);
-        if (focusedId != _leaderboardSelectedId)
+        if (focusChanged)
         {
             _leaderboardSelectedId = focusedId;
             if (focusedText != null)
             {
                 if (!contextChanged)
-                    announcements.Add(focusedText);
+                    immediateSpeech = focusedText;
                 WriteStatus($"Leaderboard focus: {focusedText}.");
             }
         }
 
-        if (!contextChanged && announcements.Count == 0)
+        if (!contextChanged && immediateSpeech == null && rowAnnouncement == null)
         {
             string? movedRow = ReadLeaderboardVirtualMove(rows, focusedText == null);
             if (movedRow != null)
-                announcements.Add(movedRow);
+                immediateSpeech = movedRow;
         }
-        if (announcements.Count > 0)
-            QueueSpeech(string.Join(" ", announcements), contextChanged || rowAnnouncement == null);
+        if (immediateSpeech != null)
+            QueueSpeech(immediateSpeech);
+        if (rowAnnouncement != null)
+            QueueSequentialSpeech(rowAnnouncement);
         return true;
     }
+
+    private static bool IsLeaderboardFilterLabel(string? label) =>
+        label is "Local" or "Friends" or "Global" or "Today" or "This month" or "All time";
 
     private bool ReadPartyLeaderboard(PartyLeaderboardPanel panel)
     {
@@ -191,7 +232,7 @@ public sealed partial class BopItAccessMod
             _leaderboardRowIndex = 0;
             _leaderboardRowsSpoken = false;
             _leaderboardEmptySpoken = false;
-            _leaderboardRowsDueAt = now + 400;
+            _leaderboardRowsDueAt = now + 800;
             _leaderboardSelectedId = ReadLeaderboardFocusedItem(panel.transform).Id;
             _leaderboardMoveDirection = 0;
             _leaderboardSuppressUiMoveUntilAt = now + 500;
@@ -199,8 +240,7 @@ public sealed partial class BopItAccessMod
             _leaderboardPartyName = ReadPartySelectedName(panel);
             _leaderboardContinueVisible = IsLeaderboardPanelVisible(panel.ContinuePrompt);
             string initialName = _leaderboardPartyName == null ? string.Empty : $" Selected name: {_leaderboardPartyName}.";
-            announcements.Add($"{context}. Choose a name for your score, then continue. Back to return.{initialName} Use Page Up and Page Down to read score rows." +
-                (loading ? " Loading scores." : string.Empty));
+            announcements.Add($"{context}. Choose a name for your score, then continue. Back to return.{initialName} Use Page Up and Page Down to read score rows.");
             WriteStatus($"Party leaderboard context: {context}.");
         }
         else if (rowsChanged)
@@ -209,17 +249,12 @@ public sealed partial class BopItAccessMod
             _leaderboardRowIndex = 0;
             _leaderboardRowsSpoken = false;
             _leaderboardEmptySpoken = false;
-            _leaderboardRowsDueAt = now + 150;
+            _leaderboardRowsDueAt = now + 500;
             _leaderboardSuppressUiMoveUntilAt = now + 200;
         }
 
-        if (loading && !_leaderboardWasLoading && !contextChanged)
-            announcements.Add("Loading scores.");
-        _leaderboardWasLoading = loading;
         string? rowAnnouncement = ReadLeaderboardRowsAfterLoad(rows,
             loading, panel.leaderboardEntryContainerPanel, now);
-        if (rowAnnouncement != null)
-            announcements.Add(rowAnnouncement);
 
         string? name = ReadPartySelectedName(panel);
         PartyLeaderboardState state = panel.State;
@@ -245,7 +280,7 @@ public sealed partial class BopItAccessMod
                 announcements.Add($"Name: {name}.");
         }
 
-        if (continueVisible && !_leaderboardContinueVisible)
+        if (continueVisible && !_leaderboardContinueVisible && !contextChanged)
             announcements.Add("Continue.");
         _leaderboardContinueVisible = continueVisible;
 
@@ -257,14 +292,17 @@ public sealed partial class BopItAccessMod
                 announcements.Add(focusedText);
         }
 
-        if (!contextChanged && announcements.Count == 0 && state != PartyLeaderboardState.Input)
+        if (!contextChanged && announcements.Count == 0 && rowAnnouncement == null &&
+            state != PartyLeaderboardState.Input)
         {
             string? movedRow = ReadLeaderboardVirtualMove(rows, focusedText == null);
             if (movedRow != null)
                 announcements.Add(movedRow);
         }
         if (announcements.Count > 0)
-            QueueSpeech(string.Join(" ", announcements), contextChanged || rowAnnouncement == null);
+            QueueSpeech(string.Join(" ", announcements));
+        if (rowAnnouncement != null)
+            QueueSequentialSpeech(rowAnnouncement);
         return true;
     }
 
@@ -493,14 +531,17 @@ public sealed partial class BopItAccessMod
         GroupFilterTab? group = selected.GetComponentInParent<GroupFilterTab>();
         if (group != null)
         {
-            string? label = CleanSpeechValue(group.Text?.text) ??
+            string? label = NormalizeLeaderboardFilterLabel(CleanSpeechValue(group.Text?.text)) ??
                 DescribeLeaderboardControlName(group.name);
             return (group.GetInstanceID(), label);
         }
 
         DateFilterTab? date = selected.GetComponentInParent<DateFilterTab>();
         if (date != null)
-            return (date.GetInstanceID(), DescribeLeaderboardControlName(date.name));
+            return (date.GetInstanceID(),
+                DescribeLeaderboardControlName(date.name) ??
+                NormalizeLeaderboardFilterLabel(
+                    CleanSpeechValue(date.GetComponentInChildren<TMP_Text>(true)?.text)));
 
         Selectable? control = selected.GetComponentInParent<Selectable>();
         if (control == null || !control.transform.IsChildOf(panel))
@@ -515,17 +556,24 @@ public sealed partial class BopItAccessMod
 
     private static string? DescribeLeaderboardControlName(string name)
     {
-        if (name.Contains("Back", StringComparison.OrdinalIgnoreCase)) return "Back";
-        if (name.Contains("Continue", StringComparison.OrdinalIgnoreCase)) return "Continue";
-        if (name.Contains("Local", StringComparison.OrdinalIgnoreCase)) return "Local";
-        if (name.Contains("Friend", StringComparison.OrdinalIgnoreCase)) return "Friends";
-        if (name.Contains("Global", StringComparison.OrdinalIgnoreCase)) return "Global";
-        if (name.Contains("Today", StringComparison.OrdinalIgnoreCase)) return "Today";
-        if (name.Contains("Month", StringComparison.OrdinalIgnoreCase)) return "This month";
-        if (name.Contains("AllTime", StringComparison.OrdinalIgnoreCase)) return "All time";
-        if (name.Contains("Classic", StringComparison.OrdinalIgnoreCase)) return "Classic";
-        if (name.Contains("Extreme", StringComparison.OrdinalIgnoreCase)) return "Extreme";
+        string normalized = name.Replace(" ", string.Empty).Replace("_", string.Empty);
+        if (normalized.Contains("Back", StringComparison.OrdinalIgnoreCase)) return "Back";
+        if (normalized.Contains("Continue", StringComparison.OrdinalIgnoreCase)) return "Continue";
+        if (normalized.Contains("Local", StringComparison.OrdinalIgnoreCase)) return "Local";
+        if (normalized.Contains("Friend", StringComparison.OrdinalIgnoreCase)) return "Friends";
+        if (normalized.Contains("Global", StringComparison.OrdinalIgnoreCase)) return "Global";
+        if (normalized.Contains("Today", StringComparison.OrdinalIgnoreCase)) return "Today";
+        if (normalized.Contains("Month", StringComparison.OrdinalIgnoreCase)) return "This month";
+        if (normalized.Contains("AllTime", StringComparison.OrdinalIgnoreCase)) return "All time";
+        if (normalized.Contains("Classic", StringComparison.OrdinalIgnoreCase)) return "Classic";
+        if (normalized.Contains("Extreme", StringComparison.OrdinalIgnoreCase)) return "Extreme";
         return null;
+    }
+
+    private static string? NormalizeLeaderboardFilterLabel(string? text)
+    {
+        if (text == null) return null;
+        return DescribeLeaderboardControlName(text) ?? text;
     }
 
     private string? ReadLeaderboardVirtualMove(List<string> rows, bool allowUiMove)
@@ -585,7 +633,10 @@ public sealed partial class BopItAccessMod
         _leaderboardRowsDueAt = 0;
         _leaderboardRowsSpoken = false;
         _leaderboardEmptySpoken = false;
-        _leaderboardWasLoading = false;
+        _leaderboardTrack = null;
+        _leaderboardDevice = null;
+        _leaderboardGroup = null;
+        _leaderboardDate = null;
         _leaderboardMoveDirection = 0;
         _nextLeaderboardMoveAt = 0;
         _leaderboardSuppressUiMoveUntilAt = 0;

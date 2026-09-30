@@ -4,6 +4,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.InputSystem.UI;
+using UnityEngine.UI;
 
 namespace BopItAccess;
 
@@ -15,8 +16,11 @@ public sealed partial class BopItAccessMod
     private long _nextAchievementBookSearchAt;
     private long _nextAchievementContentReadAt;
     private long _achievementOpenedAt;
-    private bool _achievementsWasVisible;
+    private bool _achievementBookWasOpen;
+    private bool _achievementCloseFocusHold;
+    private long _achievementCloseHoldUntil;
     private bool _achievementOpeningSpoken;
+    private string? _lastAchievementSpread;
     private string? _lastAchievementPage;
     private readonly List<string> _achievementLines = new();
     private int _achievementLineIndex;
@@ -30,30 +34,34 @@ public sealed partial class BopItAccessMod
     {
         if (_achievementsPanel == null)
         {
+            AnnounceAchievementBookClosed();
             ResetAchievementsFocus();
             long now = Environment.TickCount64;
             if (now < _nextAchievementSearchAt)
-                return false;
+                return HoldAchievementCloseUntilFocusMoves();
 
             _nextAchievementSearchAt = now + 500;
             _achievementsPanel = UnityEngine.Object.FindFirstObjectByType<AchievementsPanel>();
             if (_achievementsPanel == null)
-                return false;
+                return HoldAchievementCloseUntilFocusMoves();
         }
 
         if (!_achievementsPanel.gameObject.activeInHierarchy ||
             _achievementsPanel.achievementViewState == AchievementViewState.Hidden)
         {
+            AnnounceAchievementBookClosed();
             ResetAchievementsFocus();
-            return false;
+            return HoldAchievementCloseUntilFocusMoves();
         }
 
-        if (!_achievementsWasVisible)
+        if (_achievementsPanel.achievementViewState == AchievementViewState.VisibleToHidden)
         {
-            _achievementsWasVisible = true;
-            _achievementOpenedAt = Environment.TickCount64;
-            WriteStatus("Achievements book opened; waiting for its current pages.");
+            AnnounceAchievementBookClosed();
+            return HoldAchievementCloseUntilFocusMoves();
         }
+
+        if (_achievementsPanel.achievementViewState != AchievementViewState.Visible)
+            return HoldAchievementCloseUntilFocusMoves();
 
         if (_achievementBookController == null)
         {
@@ -67,7 +75,33 @@ public sealed partial class BopItAccessMod
 
         BookController? controller = _achievementBookController;
         EndlessBook? book = controller?.Book;
-        if (book == null || controller!.IsFlipping || book.IsTurningPages)
+        if (book == null)
+            return HoldAchievementCloseUntilFocusMoves();
+
+        // Focusing Achievements in the main menu slides in a closed book
+        // cover. Its panel is already Visible, but the player has not opened
+        // the achievement pages. Let the main-menu reader speak its button.
+        if (book.CurrentState == EndlessBook.StateEnum.ClosedFront ||
+            book.CurrentState == EndlessBook.StateEnum.ClosedBack)
+        {
+            AnnounceAchievementBookClosed();
+            return HoldAchievementCloseUntilFocusMoves();
+        }
+
+        if (book.CurrentState != EndlessBook.StateEnum.OpenFront &&
+            book.CurrentState != EndlessBook.StateEnum.OpenMiddle &&
+            book.CurrentState != EndlessBook.StateEnum.OpenBack)
+            return HoldAchievementCloseUntilFocusMoves();
+
+        _achievementCloseFocusHold = false;
+        if (!_achievementBookWasOpen)
+        {
+            _achievementBookWasOpen = true;
+            _achievementOpenedAt = Environment.TickCount64;
+            WriteStatus("Achievements book opened; waiting for its current pages.");
+        }
+
+        if (controller!.IsFlipping || book.IsTurningPages)
         {
             SpeakAchievementOpeningIfDelayed();
             return true;
@@ -81,35 +115,88 @@ public sealed partial class BopItAccessMod
         }
         _nextAchievementContentReadAt = readAt + 100;
 
-        List<string> pageLines = ReadAchievementPage(controller, book);
+        List<string> pageLines = ReadAchievementPage(controller);
         if (pageLines.Count == 0)
         {
             SpeakAchievementOpeningIfDelayed();
             return true;
         }
 
-        string pageKey = $"{book.CurrentLeftPageNumber}:{book.CurrentRightPageNumber}:{string.Join("\u001f", pageLines)}";
+        string spread = $"{book.CurrentLeftPageNumber}:{book.CurrentRightPageNumber}";
+        string pageKey = spread + ":" + string.Join("\u001f", pageLines);
         if (!string.Equals(pageKey, _lastAchievementPage, StringComparison.Ordinal))
         {
-            bool firstPage = _lastAchievementPage == null;
+            bool firstPage = _lastAchievementSpread == null;
+            bool sameSpread = string.Equals(spread, _lastAchievementSpread, StringComparison.Ordinal);
+            string? previouslySelectedLine = _achievementLines.Count > 0 &&
+                _achievementLineIndex < _achievementLines.Count
+                ? _achievementLines[_achievementLineIndex] : null;
+            var previousLineCounts = new Dictionary<string, int>(StringComparer.Ordinal);
+            if (sameSpread)
+            {
+                foreach (string line in _achievementLines)
+                {
+                    previousLineCounts.TryGetValue(line, out int count);
+                    previousLineCounts[line] = count + 1;
+                }
+            }
+            _lastAchievementSpread = spread;
             _lastAchievementPage = pageKey;
             _achievementLines.Clear();
             _achievementLines.AddRange(pageLines);
+            if (sameSpread)
+            {
+                // Text-list entries can appear after their heading. Refresh
+                // the navigation data without interrupting the opening speech.
+                int existingIndex = previouslySelectedLine == null
+                    ? -1 : _achievementLines.FindIndex(line =>
+                        string.Equals(line, previouslySelectedLine, StringComparison.Ordinal));
+                _achievementLineIndex = existingIndex >= 0
+                    ? existingIndex : Math.Clamp(_achievementLineIndex, 0, _achievementLines.Count - 1);
+                if (GetAchievementMoveAction(controller) == null)
+                {
+                    // When the book has no navigation action, text that
+                    // finishes populating after the heading must still be
+                    // spoken without interrupting the opening instructions.
+                    foreach (string line in _achievementLines)
+                    {
+                        if (previousLineCounts.TryGetValue(line, out int count) && count > 0)
+                        {
+                            previousLineCounts[line] = count - 1;
+                            continue;
+                        }
+                        QueueSequentialSpeech(line);
+                    }
+                }
+                WriteStatus($"Achievements page {spread} updated to {_achievementLines.Count} readable lines.");
+                return true;
+            }
+
             _achievementLineIndex = 0;
             _achievementMoveDirection = 0;
-            string introduction = firstPage && !_achievementOpeningSpoken
-                ? "Achievements book. " : "Achievements page. ";
-            string announcement = introduction + _achievementLines[0];
-            if (_achievementLines.Count > 1)
+            if (firstPage && !_achievementOpeningSpoken)
             {
+                string instructions = "Achievements book.";
                 if (GetAchievementMoveAction(controller) != null)
-                    announcement += " Use up and down to read this page.";
+                    instructions += " Use up and down to read this page.";
                 else
-                    announcement += " " + string.Join(". ", _achievementLines.Skip(1));
+                    instructions += " Reading the entries on this page.";
+                instructions += " Use left and right arrows or controller shoulder buttons to turn pages. Back to return.";
+                QueueSpeech(instructions);
+                QueueSequentialSpeech(_achievementLines[0]);
+                if (GetAchievementMoveAction(controller) == null)
+                {
+                    foreach (string line in _achievementLines.Skip(1))
+                        QueueSequentialSpeech(line);
+                }
             }
-            if (firstPage)
-                announcement += " Use left and right arrows or controller shoulder buttons to turn pages. Back to return.";
-            QueueSpeech(announcement, firstPage ? !_achievementOpeningSpoken : true);
+            else
+            {
+                string announcement = "Achievements page. " + _achievementLines[0];
+                if (_achievementLines.Count > 1 && GetAchievementMoveAction(controller) == null)
+                    announcement += " " + string.Join(". ", _achievementLines.Skip(1));
+                QueueSpeech(announcement, !firstPage);
+            }
             _achievementOpeningSpoken = true;
             WriteStatus($"Achievements page {book.CurrentLeftPageNumber}/{book.CurrentRightPageNumber}: {_achievementLines.Count} spoken lines.");
             return true;
@@ -186,7 +273,7 @@ public sealed partial class BopItAccessMod
         QueueSpeech("Achievements book. Use left and right arrows or controller shoulder buttons to turn pages. Back to return.");
     }
 
-    private static List<string> ReadAchievementPage(BookController controller, EndlessBook book)
+    private static List<string> ReadAchievementPage(BookController controller)
     {
         var lines = new List<string>();
         foreach (PageView view in controller.PageViews)
@@ -207,14 +294,52 @@ public sealed partial class BopItAccessMod
                 AddAchievementStickerPageLines(stickerPage, lines);
         }
 
-        if (lines.Count > 0)
-            return lines;
-
-        // The book can be on its cover before it is opened. Preserve the
-        // game's Bop and Back controls while explaining how to reach pages.
-        if (book.CurrentState == EndlessBook.StateEnum.ClosedFront)
-            lines.Add("Achievements book closed. Bop to open. Back to return.");
         return lines;
+    }
+
+    private void AnnounceAchievementBookClosed()
+    {
+        if (!_achievementBookWasOpen)
+            return;
+
+        _achievementBookWasOpen = false;
+        _achievementCloseFocusHold = true;
+        _achievementCloseHoldUntil = Environment.TickCount64 + 1000;
+        _achievementOpeningSpoken = false;
+        _lastAchievementSpread = null;
+        _lastAchievementPage = null;
+        _achievementLines.Clear();
+        _achievementLineIndex = 0;
+        _achievementMoveDirection = 0;
+        QueueSpeech("Achievements book closed.");
+        WriteStatus("Achievements book closed after its pages were opened.");
+    }
+
+    private bool HoldAchievementCloseUntilFocusMoves()
+    {
+        if (!_achievementCloseFocusHold)
+            return false;
+
+        if (_mainMenu == null)
+            _mainMenu = UnityEngine.Object.FindFirstObjectByType<MainMenuUIManager>();
+
+        Panel? menuPanel = _mainMenu?.mainMenuPanel;
+        Button? achievementButton = _mainMenu?.achievementsButton;
+        GameObject? selected = EventSystem.current?.currentSelectedGameObject;
+        Button? focusedButton = selected?.GetComponentInParent<Button>();
+        if (menuPanel != null && menuPanel.IsVisible && menuPanel.gameObject.activeInHierarchy &&
+            achievementButton != null && focusedButton != null &&
+            achievementButton.GetInstanceID() == focusedButton.GetInstanceID())
+            return true;
+
+        // The EventSystem briefly has no selection while the book retracts.
+        // Keep the close announcement intact, but release immediately when
+        // another menu button gets focus.
+        if (focusedButton == null && Environment.TickCount64 < _achievementCloseHoldUntil)
+            return true;
+
+        _achievementCloseFocusHold = false;
+        return false;
     }
 
     private static void AddAchievementListPageLines(AchievementListPageView page, List<string> lines)
@@ -284,8 +409,9 @@ public sealed partial class BopItAccessMod
     private void ResetAchievementsFocus()
     {
         _achievementBookController = null;
-        _achievementsWasVisible = false;
+        _achievementBookWasOpen = false;
         _achievementOpeningSpoken = false;
+        _lastAchievementSpread = null;
         _lastAchievementPage = null;
         _achievementOpenedAt = 0;
         _nextAchievementContentReadAt = 0;

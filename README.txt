@@ -1,4 +1,4 @@
-Bop It Access 0.5.2 - source code
+Bop It Access 0.5.3 - source code
 
 Source\BopItAccessMod.cs initializes Tolk and reads the main menu and Settings.
 The AUDIO LATENCY and CONTROLS Settings buttons now speak without their
@@ -26,5 +26,5 @@ To build on this PC, open PowerShell in this source ZIP's extracted folder and r
   dotnet build .\Source\BopItAccess.csproj -c Release --configfile .\NuGet.Config
 
 The output DLL is in Source\bin\Release\net6.0. A ready-to-install ZIP is supplied
-separately as BopItAccess-v0.5.2-install.zip. The install ZIP also contains the
+separately as BopItAccess-v0.5.3-install.zip. The install ZIP also contains the
 Tolk runtime binaries and license texts.
