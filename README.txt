@@ -1,4 +1,4 @@
-Bop It Access 0.5.9 - Speech timing and description refinements
+Bop It Access 0.5.10 - On-demand final result speech
 
 What this does
 --------------
@@ -38,6 +38,12 @@ after game over are combined until the short score announcement has had time
 to finish, keeping the latest focused menu choice.
 Solo high-score and Party rank announcements are spoken when the game reports
 a fresh leaderboard result.
+READ SCORE repeats the final result on demand only while the game-over result
+screen is visible. The default inputs are T on keyboard and left stick press on
+controller. Solo, Party, and Pass It repeat their final score; One on One
+repeats the winner shown by the game. The action is disabled during gameplay,
+song selection, and all other screens. RT (right trigger) was not used as the
+default because the game already binds it to Reset Gyro and Auto Play.
 
 The leaderboards reached from the main menu, Solo results, and Party results
 announce the selected song, device, group, and date where available. They read
@@ -67,15 +73,16 @@ announces changed bindings, and reads the game's visible rebinding feedback.
 It announces how to return to Settings once per visit. When Reset to Default changes a
 binding, it reports that the bindings were reset.
 
-The mod adds five rows to the game's Controls menu: Group Previous,
-Group Next, Date Previous, Date Next, and READ DESCRIPTIONS. The first four
+The mod adds six rows to the game's Controls menu: Group Previous,
+Group Next, Date Previous, Date Next, READ DESCRIPTIONS, and READ SCORE. The first four
 address the leaderboard filters
 reached with O/P and K/L on the default keyboard layout, or the bumpers and
 D-pad left/right on a controller. Focus a row to hear its current binding,
 then use the game's normal Bop/confirm action to rebind it. The rows scroll
 inside the existing Controls panel. READ DESCRIPTIONS can also be rebound for
 keyboard and controller. Its binding is saved by the mod, and Reset to Default
-restores R and LT. The game's original binding rows and the four leaderboard
+restores R and LT. READ SCORE can also be rebound for keyboard and controller;
+Reset to Default restores T and left stick press. The game's original binding rows and the four leaderboard
 rows retain their current rebinding behavior.
 This update stops the stale Controls row from announcing "Rebinding failed"
 repeatedly after its scene closes. Read Descriptions no longer temporarily
@@ -108,7 +115,8 @@ Twist to cycle through themes and Pull to switch Extreme mode on or off. The
 mod announces each change. Press R or LT to hear the currently selected stage
 description. Bop starts the chosen mode; Back returns.
 At the end of a game, listen for the score or One on One winner before the
-result-screen controls are announced.
+result-screen controls are announced. Press T or left stick press to repeat the
+final result while the game-over screen is visible.
 Open Leaderboards from the main menu or a result screen. Change a filter to
 hear its new selection and read individual scores with Page Up and Page Down.
 By default, O/P move between leaderboard groups and K/L move between date

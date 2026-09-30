@@ -23,6 +23,7 @@ public sealed partial class BopItAccessMod
     private readonly List<string> _deferredGameOverResultUpdates = new();
     private string? _deferredGameOverMenuUpdate;
     private bool _soloBackInstructionPending;
+    private bool _gameOverReadScoreInstructionPending;
 
     // The final score belongs to the kill-screen panel. Its displayed TMP
     // number animates from zero, so read the stored final score instead.
@@ -74,7 +75,10 @@ public sealed partial class BopItAccessMod
         {
             mode = ReadGameOverMode();
             if (!mode.HasValue)
+            {
+                WasReadScorePressed(false);
                 return true;
+            }
 
             // One-on-one never assigns the numeric score field on this
             // screen. Wait for the winner selected by FinalScorePanel.Init.
@@ -82,13 +86,26 @@ public sealed partial class BopItAccessMod
             {
                 initialWinner = ReadOneOnOneWinner(friends!);
                 if (initialWinner == null)
+                {
+                    WasReadScorePressed(false);
                     return true;
+                }
             }
         }
+
+        // READ SCORE is enabled only while the actual result UI is visible
+        // and the game has finished. A cached score must never be available
+        // during play or on the song-selection screen.
+        bool readScoreAvailable = _gameOverUi.gameManager != null &&
+            _gameOverUi.gameManager.GameState == GameState.GameOver;
 
         if (!_gameOverWasVisible)
         {
             _gameOverWasVisible = true;
+            _gameOverReadScoreInstructionPending = true;
+            // Enable the action for this screen, but let the automatic first
+            // result announcement have its own turn.
+            WasReadScorePressed(readScoreAvailable);
             if (soloVisible)
             {
                 string score = $"Score: {solo!.playerScore}.";
@@ -137,6 +154,10 @@ public sealed partial class BopItAccessMod
 
             return true;
         }
+
+        if (WasReadScorePressed(readScoreAvailable))
+            AnnounceFinalResultOnDemand(soloVisible ? solo : null,
+                friendsVisible ? friends : null, mode);
 
         if (soloVisible)
         {
@@ -204,6 +225,42 @@ public sealed partial class BopItAccessMod
         return true;
     }
 
+    private void AnnounceFinalResultOnDemand(SoloKillScreenPanel? solo,
+        WithFriendsKillScreenPanel? friends, GameMode? mode)
+    {
+        string? result;
+        if (solo != null)
+        {
+            result = $"Score: {solo.playerScore}.";
+            if (GetFreshResultRank() == 1 && solo.isHighScore)
+                result += " New high score.";
+        }
+        else if (friends != null && mode.HasValue)
+        {
+            if (mode == GameMode.OneOnOne)
+            {
+                string? winner = ReadOneOnOneWinner(friends);
+                if (winner == null)
+                    return;
+                result = $"{winner}.";
+            }
+            else
+                result = $"Score: {friends.playerScore}.";
+
+            int rank = ReadFriendsRank(friends, mode.Value);
+            if (rank > 0 && GetFreshResultRank() == rank)
+                result += $" Rank: {rank}.";
+        }
+        else
+            return;
+
+        // Give an on-demand result the same protected turn as the automatic
+        // result. Focus changes during it will be spoken afterward.
+        ProtectGameOverScoreSpeech(result);
+        QueueScoreThenMenu(result, null);
+        WriteStatus($"Read Score on final result screen: {result}");
+    }
+
     private void ProtectGameOverScoreSpeech(string score)
     {
         // NVDA does not expose speech completion through Tolk. Estimate the
@@ -226,7 +283,8 @@ public sealed partial class BopItAccessMod
             return;
 
         if (_deferredGameOverResultUpdates.Count == 0 &&
-            _deferredGameOverMenuUpdate == null)
+            _deferredGameOverMenuUpdate == null &&
+            !_gameOverReadScoreInstructionPending)
             return;
 
         var changes = new List<string>(_deferredGameOverResultUpdates);
@@ -236,10 +294,13 @@ public sealed partial class BopItAccessMod
             !(_deferredGameOverMenuUpdate?.Contains("Back to return.",
                 StringComparison.OrdinalIgnoreCase) ?? false))
             changes.Add("Back to return.");
+        if (_gameOverReadScoreInstructionPending)
+            changes.Add(ReadScoreBindingInstruction());
         string announcement = string.Join(" ", changes);
         _deferredGameOverResultUpdates.Clear();
         _deferredGameOverMenuUpdate = null;
         _soloBackInstructionPending = false;
+        _gameOverReadScoreInstructionPending = false;
 
         // The score has had its own protected turn. Later navigation now
         // interrupts stale Replay/Leaderboard announcements as elsewhere.
@@ -313,6 +374,7 @@ public sealed partial class BopItAccessMod
 
     private void ResetGameOverFocus()
     {
+        WasReadScorePressed(false);
         _gameOverWasVisible = false;
         _lastSoloHighScore = false;
         _lastGameOverPanelId = 0;
@@ -326,5 +388,6 @@ public sealed partial class BopItAccessMod
         _deferredGameOverResultUpdates.Clear();
         _deferredGameOverMenuUpdate = null;
         _soloBackInstructionPending = false;
+        _gameOverReadScoreInstructionPending = false;
     }
 }

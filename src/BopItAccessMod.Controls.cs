@@ -83,6 +83,13 @@ public sealed partial class BopItAccessMod
             return true;
         }
 
+        AddedScoreControlRow? scoreRow = FindAddedScoreControlRow(selected);
+        if (scoreRow != null && scoreRow.Root.activeInHierarchy)
+        {
+            ReadScoreControlRow(scoreRow);
+            return true;
+        }
+
         ControlRow? focusedRow = FindFocusedControlRow(panel, selected);
         if (focusedRow != null)
         {
@@ -343,7 +350,8 @@ public sealed partial class BopItAccessMod
             return null;
 
         string[] values = new string[_controlsRows.Length + _leaderboardControlRows.Count +
-            (_descriptionControlRow == null ? 0 : 1)];
+            (_descriptionControlRow == null ? 0 : 1) +
+            (_scoreControlRow == null ? 0 : 1)];
         for (int i = 0; i < _controlsRows.Length; i++)
         {
             ControlRow row = _controlsRows[i];
@@ -369,6 +377,14 @@ public sealed partial class BopItAccessMod
         if (_descriptionControlRow != null)
         {
             string? value = ReadDescriptionControlSnapshot();
+            if (value == null)
+                return null;
+            values[next++] = value;
+        }
+
+        if (_scoreControlRow != null)
+        {
+            string? value = ReadScoreControlSnapshot();
             if (value == null)
                 return null;
             values[next] = value;
