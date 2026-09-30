@@ -25,8 +25,6 @@ public sealed partial class BopItAccessMod
     private long _gameOverScoreDispatchPendingUntil;
     private readonly List<string> _deferredGameOverResultUpdates = new();
     private string? _deferredGameOverMenuUpdate;
-    private bool _soloBackInstructionPending;
-    private bool _gameOverReadScoreInstructionPending;
 
     // The final score belongs to the kill-screen panel. Its displayed TMP
     // number animates from zero, so read the stored final score instead.
@@ -105,7 +103,6 @@ public sealed partial class BopItAccessMod
         if (!_gameOverWasVisible)
         {
             _gameOverWasVisible = true;
-            _gameOverReadScoreInstructionPending = true;
             // Enable the action for this screen, but let the automatic first
             // result announcement have its own turn.
             WasReadScorePressed(readScoreAvailable);
@@ -123,7 +120,6 @@ public sealed partial class BopItAccessMod
                     ? focusedId : solo.replayButton?.GetInstanceID() ?? 0;
                 ProtectGameOverScoreSpeech(score);
                 _deferredGameOverMenuUpdate = ReadSoloResultPrompts(solo);
-                _soloBackInstructionPending = true;
                 QueueScoreThenMenu(score, null);
                 WriteStatus($"Solo game over visible; {score}");
             }
@@ -329,28 +325,29 @@ public sealed partial class BopItAccessMod
             return;
 
         if (_deferredGameOverResultUpdates.Count == 0 &&
-            _deferredGameOverMenuUpdate == null &&
-            !_gameOverReadScoreInstructionPending)
+            _deferredGameOverMenuUpdate == null)
             return;
 
         var changes = new List<string>(_deferredGameOverResultUpdates);
-        if (_deferredGameOverMenuUpdate != null)
-            changes.Add(_deferredGameOverMenuUpdate);
-        if (_soloBackInstructionPending &&
-            !(_deferredGameOverMenuUpdate?.Contains("Back to return.",
-                StringComparison.OrdinalIgnoreCase) ?? false))
-            changes.Add("Back to return.");
-        if (_gameOverReadScoreInstructionPending)
-            changes.Add(ReadScoreBindingInstruction());
+        // The Back prompt is a menu choice; its "to return" instruction and
+        // READ SCORE binding belong to the shared button hint for this screen.
+        string? menu = _deferredGameOverMenuUpdate?.Replace("Back to return.",
+            "Back.", StringComparison.OrdinalIgnoreCase)?.Trim();
+        bool hasMenuAnnouncement = !string.IsNullOrEmpty(menu);
+        if (hasMenuAnnouncement)
+            changes.Add(menu!);
         string announcement = string.Join(" ", changes);
         _deferredGameOverResultUpdates.Clear();
         _deferredGameOverMenuUpdate = null;
-        _soloBackInstructionPending = false;
-        _gameOverReadScoreInstructionPending = false;
+        if (announcement.Length == 0)
+            return;
 
         // The score has had its own protected turn. Later navigation now
         // interrupts stale Replay/Leaderboard announcements as elsewhere.
-        QueueSpeech(announcement);
+        if (hasMenuAnnouncement)
+            QueueFocusSpeech(announcement);
+        else
+            QueueSpeech(announcement);
         WriteStatus($"{context} game over update: {announcement}");
     }
 
@@ -393,7 +390,7 @@ public sealed partial class BopItAccessMod
         // They are still the two choices that appear when the menu opens.
         return WithMenuIndex(WithControlType("Replay", "button"), 0, 2) + ". " +
             WithMenuIndex(WithControlType("Leaderboard", "button"), 1, 2) +
-            ". Back to return.";
+            ". Back.";
     }
 
     private static List<(Button Button, string Label)> GetAvailableSoloResultButtons(
@@ -462,7 +459,5 @@ public sealed partial class BopItAccessMod
         Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
         _deferredGameOverResultUpdates.Clear();
         _deferredGameOverMenuUpdate = null;
-        _soloBackInstructionPending = false;
-        _gameOverReadScoreInstructionPending = false;
     }
 }

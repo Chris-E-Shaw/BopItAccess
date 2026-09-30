@@ -98,8 +98,6 @@ public sealed partial class BopItAccessMod
             Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
             _deferredGameOverResultUpdates.Clear();
             _deferredGameOverMenuUpdate = null;
-            _soloBackInstructionPending = false;
-            _gameOverReadScoreInstructionPending = false;
         }
 
         try

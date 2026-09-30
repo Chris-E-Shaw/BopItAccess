@@ -82,7 +82,7 @@ public sealed partial class BopItAccessMod
         {
             announcement = state switch
             {
-                CalibrateState.Start => "Audio calibration. Bop to the beat.",
+                CalibrateState.Start => "Audio calibration.",
                 CalibrateState.Warmup => "Get ready. Bop to the beat.",
                 CalibrateState.Calibrate => "Bop to the beat.",
                 CalibrateState.Finished => "Calibration finished. Calculating latency.",
@@ -131,7 +131,14 @@ public sealed partial class BopItAccessMod
         }
 
         if (announcement != null)
-            QueueSpeech(announcement);
+        {
+            if (focusChanged && actionLabel != null &&
+                state != CalibrateState.Warmup && state != CalibrateState.Calibrate &&
+                state != CalibrateState.Finished)
+                QueueFocusSpeech(announcement);
+            else
+                QueueSpeech(announcement);
+        }
 
         return true;
     }

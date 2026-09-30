@@ -13,8 +13,15 @@ public sealed partial class BopItAccessMod
     private const string SapiRatePreferenceKey = "BopItAccess.SapiRate";
     private const string SapiPitchPreferenceKey = "BopItAccess.SapiPitch";
     private const string SapiTrimSilencePreferenceKey = "BopItAccess.SapiTrimSilence";
-    private const string RepeatButtonHintsPreferenceKey =
+    private const string LegacyRepeatButtonHintsPreferenceKey =
         "BopItAccess.RepeatButtonHintsSeconds";
+    private const string ReadButtonHintsPreferenceKey = "BopItAccess.ReadButtonHints";
+    private const string ButtonHintsDelayPreferenceKey =
+        "BopItAccess.ButtonHintsDelaySeconds";
+    private const string RepeatButtonHintsCountPreferenceKey =
+        "BopItAccess.RepeatButtonHintsCount";
+    private const string RepeatButtonHintsIntervalPreferenceKey =
+        "BopItAccess.RepeatButtonHintsIntervalSeconds";
     // Retain the experimental capture/trim path for future work, but keep it
     // unavailable and inactive in this release.
     private static readonly bool TrimSilenceExperimentAvailable = false;
@@ -29,9 +36,13 @@ public sealed partial class BopItAccessMod
     private int _sapiRate = 50;
     private int _sapiPitch = 50;
     private bool _trimSilence;
-    // Zero disables idle button hints. The other supported intervals are
-    // 15, 30, and 60 seconds.
-    private int _repeatButtonHintsSeconds;
+    private bool _readButtonHintsEnabled = true;
+    // Zero includes hints in ordinary menu announcements. Timed hints use
+    // one of the positive delay options instead.
+    private int _buttonHintsDelaySeconds;
+    // Zero means no repeats; -1 repeats indefinitely.
+    private int _repeatButtonHintsCount;
+    private int _repeatButtonHintsIntervalSeconds = 15;
     private List<SpeechVoiceOption> _sapiVoices = new();
     private int _sapiSettingsVersion;
     // Incremented by the main thread when an interrupting request supersedes
@@ -65,9 +76,20 @@ public sealed partial class BopItAccessMod
             _sapiVolume = Math.Clamp(PlayerPrefs.GetInt(SapiVolumePreferenceKey, 100), 5, 100);
             _sapiRate = Math.Clamp(PlayerPrefs.GetInt(SapiRatePreferenceKey, 50), 0, 100);
             _sapiPitch = Math.Clamp(PlayerPrefs.GetInt(SapiPitchPreferenceKey, 50), 0, 100);
-            int savedRepeatHints = PlayerPrefs.GetInt(RepeatButtonHintsPreferenceKey, 0);
-            _repeatButtonHintsSeconds = savedRepeatHints is 15 or 30 or 60
-                ? savedRepeatHints : 0;
+            _readButtonHintsEnabled = PlayerPrefs.GetInt(ReadButtonHintsPreferenceKey, 1) != 0;
+            // Preserve the delay existing users selected in version 0.6.2.
+            // A new delay preference takes priority after they change it.
+            int savedHintsDelay = PlayerPrefs.HasKey(ButtonHintsDelayPreferenceKey)
+                ? PlayerPrefs.GetInt(ButtonHintsDelayPreferenceKey, 0)
+                : PlayerPrefs.GetInt(LegacyRepeatButtonHintsPreferenceKey, 0);
+            _buttonHintsDelaySeconds = savedHintsDelay is 0 or 5 or 10 or 15 or 30 or 60
+                ? savedHintsDelay : 0;
+            int savedRepeatCount = PlayerPrefs.GetInt(RepeatButtonHintsCountPreferenceKey, 0);
+            _repeatButtonHintsCount = savedRepeatCount is 0 or 2 or 3 or 4 or 5 or -1
+                ? savedRepeatCount : 0;
+            int savedRepeatInterval = PlayerPrefs.GetInt(RepeatButtonHintsIntervalPreferenceKey, 15);
+            _repeatButtonHintsIntervalSeconds = savedRepeatInterval is 15 or 30 or 45 or 60
+                ? savedRepeatInterval : 15;
             int savedTrimSilence = PlayerPrefs.GetInt(SapiTrimSilencePreferenceKey, 0);
             _trimSilence = TrimSilenceExperimentAvailable && savedTrimSilence != 0;
             if (!TrimSilenceExperimentAvailable && savedTrimSilence != 0)
@@ -85,9 +107,10 @@ public sealed partial class BopItAccessMod
         WriteStatus($"Output mode: {_outputMode}; SAPI voice: " +
             (string.IsNullOrEmpty(_sapiVoiceId) ? "system default" : _sapiVoiceId) +
             $"; volume {_sapiVolume}, rate {_sapiRate}, pitch {_sapiPitch}; " +
-            "repeat button hints " +
-            (_repeatButtonHintsSeconds == 0 ? "Never" :
-                _repeatButtonHintsSeconds + " seconds") + "." +
+            "read button hints " + (_readButtonHintsEnabled ? "on" : "off") +
+            "; button hints delay " + ButtonHintsDelayValue(_buttonHintsDelaySeconds) +
+            "; repeat button hints " + RepeatButtonHintsValue(_repeatButtonHintsCount) +
+            "; repeat interval " + _repeatButtonHintsIntervalSeconds + " seconds." +
             (TrimSilenceExperimentAvailable
                 ? $" Trim silence {(_trimSilence ? "on" : "off")}."
                 : string.Empty));
@@ -215,23 +238,56 @@ public sealed partial class BopItAccessMod
         WriteStatus("SAPI trim silence " + (enabled ? "enabled" : "disabled") + ".");
     }
 
-    private void SetRepeatButtonHintsFromMenu(int seconds)
+    private void SetReadButtonHintsFromMenu(bool enabled)
     {
-        if (seconds is not (0 or 15 or 30 or 60) ||
-            _repeatButtonHintsSeconds == seconds)
+        if (_readButtonHintsEnabled == enabled)
             return;
-        _repeatButtonHintsSeconds = seconds;
+        _readButtonHintsEnabled = enabled;
+        SaveButtonHintsPreference(ReadButtonHintsPreferenceKey, enabled ? 1 : 0);
+        WriteStatus("Read button hints " + (enabled ? "enabled" : "disabled") + ".");
+    }
+
+    private void SetButtonHintsDelayFromMenu(int seconds)
+    {
+        if (seconds is not (0 or 5 or 10 or 15 or 30 or 60) ||
+            _buttonHintsDelaySeconds == seconds)
+            return;
+        _buttonHintsDelaySeconds = seconds;
+        SaveButtonHintsPreference(ButtonHintsDelayPreferenceKey, seconds);
+        WriteStatus("Button hints delay changed to " + ButtonHintsDelayValue(seconds) + ".");
+    }
+
+    private void SetRepeatButtonHintsFromMenu(int count)
+    {
+        if (count is not (0 or 2 or 3 or 4 or 5 or -1) ||
+            _repeatButtonHintsCount == count)
+            return;
+        _repeatButtonHintsCount = count;
+        SaveButtonHintsPreference(RepeatButtonHintsCountPreferenceKey, count);
+        WriteStatus("Repeat button hints changed to " + RepeatButtonHintsValue(count) + ".");
+    }
+
+    private void SetRepeatButtonHintsIntervalFromMenu(int seconds)
+    {
+        if (seconds is not (15 or 30 or 45 or 60) ||
+            _repeatButtonHintsIntervalSeconds == seconds)
+            return;
+        _repeatButtonHintsIntervalSeconds = seconds;
+        SaveButtonHintsPreference(RepeatButtonHintsIntervalPreferenceKey, seconds);
+        WriteStatus("Repeat button hints interval changed to " + seconds + " seconds.");
+    }
+
+    private static void SaveButtonHintsPreference(string key, int value)
+    {
         try
         {
-            PlayerPrefs.SetInt(RepeatButtonHintsPreferenceKey, seconds);
+            PlayerPrefs.SetInt(key, value);
             PlayerPrefs.Save();
         }
         catch (Exception ex)
         {
-            WriteStatus("Could not save repeat button hints setting: " + ex.Message);
+            WriteStatus("Could not save " + key + ": " + ex.Message);
         }
-        WriteStatus("Repeat button hints changed to " +
-            (seconds == 0 ? "Never" : seconds + " seconds") + ".");
     }
 
     private void SetSapiNumberFromMenu(string key, ref int field, int value, string name)

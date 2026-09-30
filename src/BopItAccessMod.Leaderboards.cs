@@ -134,6 +134,7 @@ public sealed partial class BopItAccessMod
         bool contextChanged = !string.Equals(context, _leaderboardContext, StringComparison.Ordinal);
         bool rowsChanged = !string.Equals(rowSignature, _leaderboardRowsSignature, StringComparison.Ordinal);
         string? immediateSpeech = null;
+        bool immediateIsFocus = false;
         if (contextChanged)
         {
             bool opening = _leaderboardContext == null;
@@ -194,7 +195,7 @@ public sealed partial class BopItAccessMod
             _leaderboardMoveDirection = 0;
             _leaderboardSuppressUiMoveUntilAt = now + 500;
             immediateSpeech = opening
-                ? $"{context}. {ReadCombinedLeaderboardControls(panel)}" +
+                ? $"{context}." +
                     (focusedText == null ? string.Empty : " " + WithMenuIndex(
                         WithLeaderboardFocusedType(focusedText, panel.transform),
                         focusedIndex, focusedCount) + ".")
@@ -208,6 +209,9 @@ public sealed partial class BopItAccessMod
                         ?? (focusChanged && focusedText != null
                         ? WithMenuIndex(WithLeaderboardFocusedType(focusedText, panel.transform),
                             focusedIndex, focusedCount) : null) ?? context;
+            immediateIsFocus = opening ||
+                (focusChanged && focusedText != null &&
+                 (IsLeaderboardFilterLabel(focusedText) || changedValue == null));
             WriteStatus($"Leaderboard context: {context}.");
         }
         else if (rowsChanged)
@@ -228,9 +232,12 @@ public sealed partial class BopItAccessMod
             if (focusedText != null)
             {
                 if (!contextChanged)
+                {
                     immediateSpeech = WithMenuIndex(
                         WithLeaderboardFocusedType(focusedText, panel.transform),
                         focusedIndex, focusedCount);
+                    immediateIsFocus = true;
+                }
                 WriteStatus($"Leaderboard focus: {focusedText}.");
             }
         }
@@ -242,7 +249,12 @@ public sealed partial class BopItAccessMod
                 immediateSpeech = movedRow;
         }
         if (immediateSpeech != null)
-            QueueSpeech(immediateSpeech);
+        {
+            if (immediateIsFocus)
+                QueueFocusSpeech(immediateSpeech);
+            else
+                QueueSpeech(immediateSpeech);
+        }
         if (rowAnnouncement != null)
             QueueSequentialSpeech(rowAnnouncement);
         return true;
@@ -273,6 +285,7 @@ public sealed partial class BopItAccessMod
         bool contextChanged = !string.Equals(context, _leaderboardContext, StringComparison.Ordinal);
         bool rowsChanged = !string.Equals(rowSignature, _leaderboardRowsSignature, StringComparison.Ordinal);
         var announcements = new List<string>(5);
+        bool focusAnnouncement = false;
         (int focusedId, string? focusedText, int focusedIndex, int focusedCount) =
             ReadLeaderboardFocusedItem(panel.transform);
         if (contextChanged)
@@ -290,10 +303,11 @@ public sealed partial class BopItAccessMod
             _leaderboardPartyName = ReadPartySelectedName(panel);
             _leaderboardContinueVisible = IsLeaderboardPanelVisible(panel.ContinuePrompt);
             string initialName = _leaderboardPartyName == null ? string.Empty : $" Selected name: {_leaderboardPartyName}.";
-            announcements.Add($"{context}. Choose a name for your score, then continue. Back to return.{initialName} Use Page Up and Page Down to read score rows." +
+            announcements.Add($"{context}.{initialName}" +
                 (focusedText == null ? string.Empty : " " + WithMenuIndex(
                     WithLeaderboardFocusedType(focusedText, panel.transform),
                     focusedIndex, focusedCount) + "."));
+            focusAnnouncement = true;
             WriteStatus($"Party leaderboard context: {context}.");
         }
         else if (rowsChanged)
@@ -341,9 +355,12 @@ public sealed partial class BopItAccessMod
         {
             _leaderboardSelectedId = focusedId;
             if (focusedText != null && !contextChanged)
+            {
                 announcements.Add(WithMenuIndex(
                     WithLeaderboardFocusedType(focusedText, panel.transform),
                     focusedIndex, focusedCount));
+                focusAnnouncement = true;
+            }
         }
 
         if (!contextChanged && announcements.Count == 0 && rowAnnouncement == null &&
@@ -354,7 +371,13 @@ public sealed partial class BopItAccessMod
                 announcements.Add(movedRow);
         }
         if (announcements.Count > 0)
-            QueueSpeech(string.Join(" ", announcements));
+        {
+            string announcement = string.Join(" ", announcements);
+            if (focusAnnouncement)
+                QueueFocusSpeech(announcement);
+            else
+                QueueSpeech(announcement);
+        }
         if (rowAnnouncement != null)
             QueueSequentialSpeech(rowAnnouncement);
         return true;
@@ -442,11 +465,6 @@ public sealed partial class BopItAccessMod
             _ => "All time"
         };
     }
-
-    private static string ReadCombinedLeaderboardControls(CombinedLeaderboardPanel panel) =>
-        panel.Mode == CombinedLeaderboardMode.Game
-            ? "Change song, device, group, or date with the game's controls. Continue or back to return. Use Page Up and Page Down to read score rows."
-            : "Change song, device, group, or date with the game's controls. Back to return. Use Page Up and Page Down to read score rows.";
 
     private static List<string> ReadCombinedLeaderboardRows(CombinedLeaderboardPanel panel)
     {

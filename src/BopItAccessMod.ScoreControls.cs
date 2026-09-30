@@ -192,7 +192,7 @@ public sealed partial class BopItAccessMod
             string message = binding == null ? label : $"{label}, {binding}";
             if (rebinding)
                 message += ". Listening for input";
-            QueueSpeech(WithControlsIntroduction(message));
+            QueueFocusSpeech(WithControlsIntroduction(message));
             return;
         }
 

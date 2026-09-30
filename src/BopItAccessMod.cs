@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.2", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.3", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -430,7 +430,7 @@ public sealed partial class BopItAccessMod : MelonMod
                     index = count;
                 count++;
             }
-            QueueSpeech(WithMenuIndex(announcement, index, count));
+            QueueFocusSpeech(WithMenuIndex(announcement, index, count));
             return true;
         }
 
@@ -632,7 +632,7 @@ public sealed partial class BopItAccessMod : MelonMod
                 index = count;
             count++;
         }
-        QueueSpeech(WithMenuIndex(WithControlType(label, "button"), index, count));
+        QueueFocusSpeech(WithMenuIndex(WithControlType(label, "button"), index, count));
     }
 
     private string? GetMainMenuLabel(int focusedButtonId)

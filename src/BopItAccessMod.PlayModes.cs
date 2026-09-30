@@ -69,7 +69,7 @@ public sealed partial class BopItAccessMod
         if (buttonId != _lastFocusedPlayModeButtonId)
         {
             _lastFocusedPlayModeButtonId = buttonId;
-            QueueSpeech(IndexPlayModeLabel(panel, button,
+            QueueFocusSpeech(IndexPlayModeLabel(panel, button,
                 WithControlType(label, "button")));
         }
 

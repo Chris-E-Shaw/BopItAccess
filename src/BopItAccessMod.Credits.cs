@@ -81,10 +81,9 @@ public sealed partial class BopItAccessMod
             _creditsAutoReading = !navigationAvailable;
             _creditsAutoStartAt = Environment.TickCount64;
             if (_creditsAutoReading)
-                QueueSpeech("Credits. Reading each line as it appears. Back to return.");
+                QueueFocusSpeech("Credits.");
             else
-                QueueSpeech($"Credits. {WithCreditLineType(_creditsLines[0], 0, _creditsLines.Count)}. " +
-                    "Use up and down to read the credits. Back to return.");
+                QueueFocusSpeech($"Credits. {WithCreditLineType(_creditsLines[0], 0, _creditsLines.Count)}.");
             WriteStatus($"Credits panel is visible; captured {_creditsLines.Count} spoken lines.");
             return true;
         }
@@ -112,7 +111,7 @@ public sealed partial class BopItAccessMod
             if (nextIndex != _creditsLineIndex)
             {
                 _creditsLineIndex = nextIndex;
-                QueueSpeech(WithCreditLineType(_creditsLines[_creditsLineIndex],
+                QueueFocusSpeech(WithCreditLineType(_creditsLines[_creditsLineIndex],
                     _creditsLineIndex, _creditsLines.Count));
             }
         }

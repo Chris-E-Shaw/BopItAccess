@@ -178,15 +178,8 @@ public sealed partial class BopItAccessMod
             _achievementMoveDirection = 0;
             if (firstPage && !_achievementOpeningSpoken)
             {
-                string instructions = "Achievements book.";
-                if (GetAchievementMoveAction(controller) != null)
-                    instructions += " Use up and down to read this page.";
-                else
-                    instructions += " Reading the entries on this page.";
-                instructions += " Use left and right arrows or controller shoulder buttons to turn pages. Back to return.";
-                QueueSpeech(instructions);
-                QueueSequentialSpeech(WithAchievementLineType(_achievementLines[0], 0,
-                    _achievementLines.Count));
+                QueueFocusSpeech("Achievements book. " +
+                    WithAchievementLineType(_achievementLines[0], 0, _achievementLines.Count));
                 if (GetAchievementMoveAction(controller) == null)
                 {
                     for (int index = 1; index < _achievementLines.Count; index++)
@@ -202,7 +195,7 @@ public sealed partial class BopItAccessMod
                     announcement += " " + string.Join(". ",
                         _achievementLines.Skip(1).Select((line, index) =>
                             WithAchievementLineType(line, index + 1, _achievementLines.Count)));
-                QueueSpeech(announcement, !firstPage);
+                QueueFocusSpeech(announcement, !firstPage);
             }
             _achievementOpeningSpoken = true;
             WriteStatus($"Achievements page {book.CurrentLeftPageNumber}/{book.CurrentRightPageNumber}: {_achievementLines.Count} spoken lines.");
@@ -245,7 +238,7 @@ public sealed partial class BopItAccessMod
             return;
 
         _achievementLineIndex = nextIndex;
-        QueueSpeech(WithAchievementLineType(_achievementLines[nextIndex], nextIndex,
+        QueueFocusSpeech(WithAchievementLineType(_achievementLines[nextIndex], nextIndex,
             _achievementLines.Count));
     }
 
@@ -289,7 +282,7 @@ public sealed partial class BopItAccessMod
             return;
 
         _achievementOpeningSpoken = true;
-        QueueSpeech("Achievements book. Use left and right arrows or controller shoulder buttons to turn pages. Back to return.");
+        QueueFocusSpeech("Achievements book.");
     }
 
     private static List<string> ReadAchievementPage(BookController controller)

@@ -151,12 +151,12 @@ public sealed partial class BopItAccessMod
         _controlsBindingChangedDuringRebind = false;
         _lastControlsResetSnapshot = null;
 
-        // The panel has no selectable Back row. Its Back control is an on-screen
-        // prompt, so include that instruction once even if selection is delayed.
+        // The panel has no selectable Back row. Announce the title if row
+        // selection is delayed; QueueFocusSpeech supplies optional hints.
         if (_controlsIntroductionPending && Environment.TickCount64 - _controlsOpenedAt >= 500)
         {
             _controlsIntroductionPending = false;
-            QueueSpeech("Controls. Use Back to return to Settings.");
+            QueueFocusSpeech("Controls.");
         }
 
         return true;
@@ -231,7 +231,7 @@ public sealed partial class BopItAccessMod
             string message = binding == null ? label : $"{label}, {binding}";
             if (rebinding)
                 message += $". {feedback ?? "Listening for input"}";
-            QueueSpeech(WithControlsIntroduction(message));
+            QueueFocusSpeech(WithControlsIntroduction(message));
             return;
         }
 
@@ -291,7 +291,7 @@ public sealed partial class BopItAccessMod
             string message = binding == null ? label : $"{label}, {binding}";
             if (rebinding)
                 message += ". Listening for input";
-            QueueSpeech(WithControlsIntroduction(message));
+            QueueFocusSpeech(WithControlsIntroduction(message));
             return;
         }
 
@@ -354,7 +354,7 @@ public sealed partial class BopItAccessMod
             _controlsBindingChangedDuringRebind = false;
             _lastControlsResetSnapshot = snapshot;
             _lastControlsResetDevice = device;
-            QueueSpeech(WithControlsIntroduction(
+            QueueFocusSpeech(WithControlsIntroduction(
                 WithControlType("Reset to Default", "button")));
             return;
         }
@@ -505,7 +505,7 @@ public sealed partial class BopItAccessMod
             return message;
 
         _controlsIntroductionPending = false;
-        return $"Controls. Use Back to return to Settings. {message}";
+        return $"Controls. {message}";
     }
 
     private string WithControlsRowIndex(string message)

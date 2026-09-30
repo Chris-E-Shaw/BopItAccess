@@ -7,11 +7,41 @@ public sealed partial class BopItAccessMod
 {
     private long _lastButtonHintActivityAt;
     private string? _buttonHintContextKey;
-    private bool _buttonHintSpokenSinceActivity;
-    private int _lastButtonHintIntervalSeconds = -1;
+    private bool _buttonHintInitialSent;
+    private bool _buttonHintNoneRepeatArmed;
+    private int _buttonHintRepeatsSent;
+    private long _nextButtonHintDueAt;
+    private int _lastButtonHintSettingsSignature = int.MinValue;
     private (string Key, string Hint)? _cachedButtonHintContext;
     private long _nextButtonHintContextProbeAt;
     private long _nextButtonHintErrorAt;
+
+    // Focus announcements use this instead of QueueSpeech so a None delay
+    // places the complete hint in the same speech string as the focused item.
+    private void QueueFocusSpeech(string text, bool interrupt = true)
+    {
+        if (_readButtonHintsEnabled && _buttonHintsDelaySeconds == 0 &&
+            _speechEnabled)
+        {
+            try
+            {
+                (string Key, string Hint)? context = ResolveButtonHintContext();
+                if (context != null)
+                    text = text.TrimEnd() + " " + context.Value.Hint;
+            }
+            catch (Exception ex)
+            {
+                long now = Environment.TickCount64;
+                if (now >= _nextButtonHintErrorAt)
+                {
+                    WriteStatus("Inline button hint check failed: " + ex.Message);
+                    _nextButtonHintErrorAt = now + 5000;
+                }
+            }
+        }
+
+        QueueSpeech(text, interrupt);
+    }
 
     private void UpdateRepeatButtonHints()
     {
@@ -28,32 +58,40 @@ public sealed partial class BopItAccessMod
                 WriteStatus("Repeat button hints input check failed: " + ex.Message);
                 _nextButtonHintErrorAt = now + 5000;
             }
-            _lastButtonHintActivityAt = now;
+            ResetButtonHintTimers(now);
+            return;
+        }
+
+        int signature = HashCode.Combine(_readButtonHintsEnabled,
+            _buttonHintsDelaySeconds, _repeatButtonHintsCount,
+            _repeatButtonHintsIntervalSeconds);
+        if (signature != _lastButtonHintSettingsSignature)
+        {
+            _lastButtonHintSettingsSignature = signature;
+            ResetButtonHintTimers(now);
+            _nextButtonHintContextProbeAt = 0;
+        }
+
+        if (!_readButtonHintsEnabled || !_speechEnabled ||
+            _shutdownRequested.IsSet)
+        {
+            _buttonHintContextKey = null;
+            _cachedButtonHintContext = null;
+            ResetButtonHintTimers(now);
             return;
         }
 
         if (inputDetected)
         {
             _lastButtonHintActivityAt = now;
-            _buttonHintSpokenSinceActivity = false;
-        }
-
-        int interval = _repeatButtonHintsSeconds;
-        if (interval != _lastButtonHintIntervalSeconds)
-        {
-            _lastButtonHintIntervalSeconds = interval;
-            _lastButtonHintActivityAt = now;
-            _buttonHintSpokenSinceActivity = false;
-            _nextButtonHintContextProbeAt = 0;
-        }
-
-        if (interval == 0 || !_speechEnabled || _shutdownRequested.IsSet)
-        {
-            _buttonHintContextKey = null;
-            _cachedButtonHintContext = null;
-            _lastButtonHintActivityAt = now;
-            _buttonHintSpokenSinceActivity = false;
-            return;
+            _buttonHintInitialSent = false;
+            _buttonHintRepeatsSent = 0;
+            _buttonHintNoneRepeatArmed = _buttonHintsDelaySeconds == 0 &&
+                _repeatButtonHintsCount != 0;
+            _nextButtonHintDueAt = now +
+                (_buttonHintsDelaySeconds == 0
+                    ? _repeatButtonHintsIntervalSeconds
+                    : _buttonHintsDelaySeconds) * 1000L;
         }
 
         if (now >= _nextButtonHintContextProbeAt)
@@ -78,8 +116,7 @@ public sealed partial class BopItAccessMod
         if (context == null)
         {
             _buttonHintContextKey = null;
-            _lastButtonHintActivityAt = now;
-            _buttonHintSpokenSinceActivity = false;
+            ResetButtonHintTimers(now);
             return;
         }
 
@@ -87,21 +124,87 @@ public sealed partial class BopItAccessMod
             StringComparison.Ordinal))
         {
             _buttonHintContextKey = context.Value.Key;
-            _lastButtonHintActivityAt = now;
-            _buttonHintSpokenSinceActivity = false;
+            _buttonHintInitialSent = false;
+            _buttonHintRepeatsSent = 0;
+            if (_buttonHintsDelaySeconds > 0)
+            {
+                _buttonHintNoneRepeatArmed = false;
+                _nextButtonHintDueAt = now + _buttonHintsDelaySeconds * 1000L;
+            }
+            else
+            {
+                _buttonHintNoneRepeatArmed = _repeatButtonHintsCount != 0 &&
+                    _lastButtonHintActivityAt != 0 &&
+                    now - _lastButtonHintActivityAt <
+                        _repeatButtonHintsIntervalSeconds * 1000L;
+                _nextButtonHintDueAt = _buttonHintNoneRepeatArmed
+                    ? _lastButtonHintActivityAt +
+                        _repeatButtonHintsIntervalSeconds * 1000L
+                    : long.MaxValue;
+            }
             return;
         }
 
-        if (_buttonHintSpokenSinceActivity ||
-            now - _lastButtonHintActivityAt < interval * 1000L)
+        if (now < _nextButtonHintDueAt)
             return;
 
-        // Give one reminder per idle stretch. A long score, description, or
-        // credits announcement can then finish without a reminder backlog.
-        // New input or a different screen arms the timer again.
-        QueueSequentialSpeech(context.Value.Hint);
-        _buttonHintSpokenSinceActivity = true;
-        WriteStatus($"Repeated button hints for {context.Value.Key}.");
+        if (_buttonHintsDelaySeconds == 0 && !_buttonHintNoneRepeatArmed)
+            return;
+
+        bool firstTimedHint = _buttonHintsDelaySeconds > 0 &&
+            !_buttonHintInitialSent;
+        if (firstTimedHint)
+        {
+            _buttonHintInitialSent = true;
+            _buttonHintRepeatsSent = 0;
+        }
+        else if (_repeatButtonHintsCount == 0 ||
+            (_repeatButtonHintsCount > 0 &&
+             _buttonHintRepeatsSent >= _repeatButtonHintsCount))
+        {
+            _nextButtonHintDueAt = long.MaxValue;
+            return;
+        }
+        else
+        {
+            _buttonHintRepeatsSent++;
+        }
+
+        // The deliberately short five-second delay may interrupt ordinary
+        // menu speech. Never let it cut off a protected score or description.
+        // All longer delays and subsequent repeats join the speech queue.
+        bool protectedOutput;
+        lock (_speechLock)
+            protectedOutput = _pendingPrioritySpeech != null ||
+                _pendingPriorityFollowUpSpeech != null ||
+                _pendingSpeechIsDescription || _descriptionSpeechMayBeActive;
+        bool mayInterrupt = firstTimedHint && _buttonHintsDelaySeconds == 5 &&
+            !protectedOutput &&
+            now >= Volatile.Read(ref _gameOverScoreDispatchPendingUntil) &&
+            now >= Volatile.Read(ref _gameOverScoreSpeechProtectedUntil);
+        if (mayInterrupt)
+            QueueSpeech(context.Value.Hint);
+        else
+            QueueSequentialSpeech(context.Value.Hint);
+        _nextButtonHintDueAt = _repeatButtonHintsCount == 0 ||
+            (_repeatButtonHintsCount > 0 &&
+             _buttonHintRepeatsSent >= _repeatButtonHintsCount)
+            ? long.MaxValue
+            : now + _repeatButtonHintsIntervalSeconds * 1000L;
+        WriteStatus($"Button hints for {context.Value.Key}: " +
+            (_buttonHintInitialSent && _buttonHintRepeatsSent == 0
+                ? "initial" : $"repeat {_buttonHintRepeatsSent}") + ".");
+    }
+
+    private void ResetButtonHintTimers(long now)
+    {
+        _lastButtonHintActivityAt = 0;
+        _buttonHintInitialSent = false;
+        _buttonHintNoneRepeatArmed = false;
+        _buttonHintRepeatsSent = 0;
+        _nextButtonHintDueAt = _buttonHintsDelaySeconds > 0
+            ? now + _buttonHintsDelaySeconds * 1000L
+            : long.MaxValue;
     }
 
     private static bool IsUserInputActive()

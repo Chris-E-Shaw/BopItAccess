@@ -119,8 +119,7 @@ public sealed partial class BopItAccessMod
                 introduction += $". {theme}";
             if (extreme.HasValue)
                 introduction += $". {FormatExtreme(extreme)}";
-            introduction += ". Twist to change song. Pull to change difficulty. " +
-                ReadDescriptionsBindingInstruction() + " Bop to start. Back to return.";
+            introduction += ".";
             if (focusedLabel != null && (_indexingEnabled || _readControlTypesEnabled ||
                 !string.Equals(focusedLabel, "Start", StringComparison.OrdinalIgnoreCase)))
             {
@@ -129,7 +128,7 @@ public sealed partial class BopItAccessMod
                 introduction += " " + WithMenuIndex(focusedControl,
                     focusedIndex, focusedCount) + ".";
             }
-            QueueSpeech(introduction);
+            QueueFocusSpeech(introduction);
             return true;
         }
 
@@ -147,7 +146,8 @@ public sealed partial class BopItAccessMod
             _lastTrackSelectExtreme = extreme;
         }
 
-        if (focusedId != _lastTrackSelectFocusedId)
+        bool focusChanged = focusedId != _lastTrackSelectFocusedId;
+        if (focusChanged)
         {
             _lastTrackSelectFocusedId = focusedId;
             if (focusedLabel != null)
@@ -178,7 +178,12 @@ public sealed partial class BopItAccessMod
         }
 
         if (changed != null)
-            QueueSpeech(changed);
+        {
+            if (focusChanged && focusedLabel != null)
+                QueueFocusSpeech(changed);
+            else
+                QueueSpeech(changed);
+        }
 
         return true;
     }

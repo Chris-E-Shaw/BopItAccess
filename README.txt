@@ -1,4 +1,4 @@
-Bop It Access 0.6.2 - Repeat Button Hints
+Bop It Access 0.6.3 - Button Hint Controls
 
 What this does
 --------------
@@ -39,13 +39,27 @@ the focused item's type follows its name and precedes its value and index:
 "PLAY button, 1 of 6". Menus also identify tabs, text fields, and readable
 list items where relevant. Value changes continue to speak only the new value.
 
-REPEAT BUTTON HINTS is a saved SPEECH slider with 15 seconds, 30 seconds,
-60 seconds, and Never. It defaults to Never. After the selected period without
-input, the mod announces the valid inputs on the current screen and what each
-one does once. New input or a screen change rearms the timer. These reminders
-are queued after speech already in progress, so they do not interrupt it.
-They are suppressed during active gameplay and the beat
-timing phases of Audio Calibration, where extra speech could mask a cue.
+READ BUTTON HINTS is a saved SPEECH toggle and is On by default. Turning it
+Off suppresses all button-hint speech. BUTTON HINTS DELAY has None, 5 seconds
+(May interrupt speech), 10 seconds, 15 seconds, 30 seconds, and 60 seconds.
+It defaults to None. With None, the valid inputs for the current screen and
+their actions are included in the focused item's ordinary speech string,
+without a separate first hint announcement. With a timed delay, the first
+hint announcement follows that much inactivity. The 5-second option can
+interrupt speech already in progress; longer delays queue behind it. After
+the first hint announcement, another delay starts only when the player gives
+input, unless repeats are enabled.
+
+REPEAT BUTTON HINTS is a separate saved slider: Off, 2x, 3x, 4x, 5x, or
+Infinitely. It defaults to Off. When enabled, it sends that many extra hint
+announcements after the first one; for example, 2x means two additional
+reminders. REPEAT INTERVAL sets the delay between them to 15, 30, 45, or
+60 seconds and defaults to 15 seconds. With BUTTON HINTS DELAY set to None,
+the repeat timer begins immediately after input. Input or a screen change
+restarts the hint cycle for the current screen. Hints are suppressed during
+active gameplay and the beat-timing phases of Audio Calibration, where extra
+speech could mask a cue. An existing saved 15-, 30-, or 60-second reminder
+delay from version 0.6.2 becomes the new BUTTON HINTS DELAY value.
 
 The SPEECH menu also has VOICE, VOLUME, RATE, and PITCH controls. Voice
 lists the system default and installed 64-bit SAPI voices. Volume starts at
@@ -189,8 +203,10 @@ At the end of a game, listen for the score or One on One winner before the
 result-screen controls are announced. Press T or left stick press to repeat the
 final result while the game-over screen is visible.
 Press F8 or controller Select to turn mod speech off or on from any screen.
-In Settings > Speech, choose a Repeat Button Hints interval if you want the
-current screen's input instructions repeated after a period of inactivity.
+In Settings > Speech, use READ BUTTON HINTS to enable or disable instructions.
+BUTTON HINTS DELAY chooses whether they accompany focus speech or follow a
+period of inactivity. REPEAT BUTTON HINTS and REPEAT INTERVAL control any
+additional reminders.
 Open Leaderboards from the main menu or a result screen. Change a filter to
 hear its new selection and read individual scores with Page Up and Page Down.
 By default, O/P move between leaderboard groups and K/L move between date
