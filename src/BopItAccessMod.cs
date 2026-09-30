@@ -1,5 +1,6 @@
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Il2Cpp;
 using MelonLoader;
@@ -7,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.2.0", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.3.0", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -20,12 +21,22 @@ public sealed class BopItAccessMod : MelonMod
     private Thread? _tolkThread;
     private string? _pendingSpeech;
     private MainMenuUIManager? _mainMenu;
+    private SettingsPanel? _settingsPanel;
+    private SettingOption[]? _settingsOptions;
     private int _lastFocusedButtonId;
     private int _lastObservedSelectionId;
+    private int _lastFocusedSettingRowId;
+    private int _lastObservedSettingsSelectionId;
+    private string? _lastSettingsValue;
     private long _nextMenuSearchAt;
+    private long _nextSettingsSearchAt;
     private long _nextFocusErrorLogAt;
+    private long _nextSettingsErrorLogAt;
     private bool _mainMenuWasVisible;
+    private bool _settingsWasVisible;
     private static readonly object StatusLogLock = new();
+    private static readonly Regex TmpTagPattern = new("<[^>]*>", RegexOptions.Compiled);
+    private static readonly Regex WhitespacePattern = new("\\s+", RegexOptions.Compiled);
 
     private static string StatusLogPath
     {
@@ -60,9 +71,33 @@ public sealed class BopItAccessMod : MelonMod
 
     public override void OnLateUpdate()
     {
+        bool settingsVisible = false;
         try
         {
-            ReadMainMenuFocus();
+            settingsVisible = ReadSettingsFocus();
+        }
+        catch (Exception ex)
+        {
+            long now = Environment.TickCount64;
+            if (now >= _nextSettingsErrorLogAt)
+            {
+                WriteStatus($"Settings focus check failed: {ex}");
+                MelonLogger.Warning($"Settings focus check failed: {ex.Message}");
+                _nextSettingsErrorLogAt = now + 5000;
+            }
+
+            _settingsPanel = null;
+            _settingsOptions = null;
+            ResetSettingsFocus();
+            _nextSettingsSearchAt = now + 1000;
+        }
+
+        try
+        {
+            if (settingsVisible)
+                ResetMenuFocus();
+            else
+                ReadMainMenuFocus();
         }
         catch (Exception ex)
         {
@@ -78,6 +113,186 @@ public sealed class BopItAccessMod : MelonMod
             ResetMenuFocus();
             _nextMenuSearchAt = now + 1000;
         }
+    }
+
+    private bool ReadSettingsFocus()
+    {
+        if (_settingsPanel == null)
+        {
+            long now = Environment.TickCount64;
+            if (now < _nextSettingsSearchAt)
+                return false;
+
+            _nextSettingsSearchAt = now + 500;
+            _settingsPanel = UnityEngine.Object.FindFirstObjectByType<SettingsPanel>();
+            if (_settingsPanel == null)
+                return false;
+
+            WriteStatus("Found the settings panel; waiting for settings focus.");
+            ResetSettingsFocus();
+        }
+
+        if (!_settingsPanel.IsVisible || !_settingsPanel.gameObject.activeInHierarchy)
+        {
+            ResetSettingsFocus();
+            return false;
+        }
+
+        if (!_settingsWasVisible)
+        {
+            // Serialized row references are guaranteed to be ready by the time
+            // the panel becomes visible, even if we found it earlier in a scene.
+            _settingsOptions = CreateSettingsOptions(_settingsPanel);
+            WriteStatus("Settings panel is visible; monitoring its settings rows.");
+            _settingsWasVisible = true;
+        }
+
+        EventSystem? eventSystem = EventSystem.current;
+        GameObject? selected = eventSystem == null ? null : eventSystem.currentSelectedGameObject;
+        int selectedId = selected == null ? 0 : selected.GetInstanceID();
+        if (selectedId != _lastObservedSettingsSelectionId)
+        {
+            WriteStatus($"Settings selected object: {(selected == null ? "none" : selected.name)}.");
+            _lastObservedSettingsSelectionId = selectedId;
+        }
+
+        SettingOption? focused = GetFocusedSettingsOption(selected);
+        if (focused == null)
+        {
+            _lastFocusedSettingRowId = 0;
+            _lastSettingsValue = null;
+            return true;
+        }
+
+        string? value = focused.ReadValue();
+        if (string.Equals(value, focused.Label, StringComparison.OrdinalIgnoreCase))
+            value = null;
+
+        if (focused.Id != _lastFocusedSettingRowId)
+        {
+            _lastFocusedSettingRowId = focused.Id;
+            _lastSettingsValue = value;
+            QueueSpeech(value == null ? focused.Label : $"{focused.Label}, {value}");
+            return true;
+        }
+
+        if (value != null && !string.Equals(value, _lastSettingsValue, StringComparison.Ordinal))
+        {
+            _lastSettingsValue = value;
+            QueueSpeech(value);
+        }
+
+        return true;
+    }
+
+    private SettingOption? GetFocusedSettingsOption(GameObject? selected)
+    {
+        if (_settingsOptions == null)
+            return null;
+
+        SettingsRow? selectedRow = selected == null ? null : selected.GetComponentInParent<SettingsRow>();
+        int selectedRowId = selectedRow == null ? 0 : selectedRow.GetInstanceID();
+        if (selectedRowId != 0)
+        {
+            foreach (SettingOption option in _settingsOptions)
+            {
+                if (option.Id == selectedRowId && option.Row != null && option.Row.gameObject.activeInHierarchy)
+                    return option;
+            }
+        }
+
+        // Some custom settings controls move focus inside a row without selecting
+        // the row GameObject itself. The game's own focus flag covers that case.
+        if (selected != null && !selected.transform.IsChildOf(_settingsPanel!.transform))
+            return null;
+
+        foreach (SettingOption option in _settingsOptions)
+        {
+            if (option.Row != null && option.Row.gameObject.activeInHierarchy && option.Row.IsFocused)
+                return option;
+        }
+
+        return null;
+    }
+
+    private static SettingOption[] CreateSettingsOptions(SettingsPanel panel)
+    {
+        GoOnlineButton? goOnlineController = panel.GetComponentInChildren<GoOnlineButton>(true);
+        SettingsButton? goOnline = goOnlineController == null ? null : goOnlineController.button;
+
+        return new[]
+        {
+            SliderOption("MUSIC", panel.music),
+            SliderOption("SFX", panel.sfx),
+            SliderOption("VOICE OVER", panel.voiceOver),
+            SliderOption("LANGUAGE", panel.language),
+            ToggleOption("VIBRATION", panel.vibration),
+            ToggleOption("FULLSCREEN", panel.fullscreen),
+            SliderOption("RESOLUTION", panel.resolution),
+            ButtonOption("AUDIO LATENCY", panel.audioLatency),
+            ButtonOption("CONTROLS", panel.controls),
+            ButtonOption("GO ONLINE", goOnline)
+        };
+    }
+
+    private static SettingOption SliderOption(string label, SettingsSlider? row) =>
+        new(label, row, () => row == null ? null : ReadDisplayedValue(row, row.Value));
+
+    private static SettingOption ToggleOption(string label, SettingsToggle? row) =>
+        new(label, row, () => row == null ? null : row.IsOn ? "On" : "Off");
+
+    private static SettingOption ButtonOption(string label, SettingsButton? row) =>
+        new(label, row, () => row == null ? null :
+            CleanSpeechValue(row.Value) ?? ReadDisplayedValue(row, null));
+
+    private static string? ReadDisplayedValue(SettingsRow row, string? gameValue)
+    {
+        // Prefer the text actually drawn in the focused row. The scene's Value
+        // objects start blank and are filled by the game at runtime.
+        var activeText = row.ActiveValueText;
+        string? value = activeText == null ? null : CleanSpeechValue(activeText.text);
+        if (value != null)
+            return value;
+
+        var regularText = row.ValueText;
+        value = regularText == null ? null : CleanSpeechValue(regularText.text);
+        return value ?? CleanSpeechValue(gameValue);
+    }
+
+    private static string? CleanSpeechValue(string? raw)
+    {
+        if (string.IsNullOrWhiteSpace(raw))
+            return null;
+
+        string withoutTags = TmpTagPattern.Replace(raw, string.Empty);
+        string value = WhitespacePattern.Replace(withoutTags, " ").Trim();
+        return value.Length == 0 || value == "--" ? null : value;
+    }
+
+    private void ResetSettingsFocus()
+    {
+        _lastFocusedSettingRowId = 0;
+        _lastObservedSettingsSelectionId = 0;
+        _lastSettingsValue = null;
+        _settingsWasVisible = false;
+    }
+
+    private sealed class SettingOption
+    {
+        private readonly Func<string?> _readValue;
+
+        internal SettingOption(string label, SettingsRow? row, Func<string?> readValue)
+        {
+            Label = label;
+            Row = row;
+            _readValue = readValue;
+            Id = row == null ? 0 : row.GetInstanceID();
+        }
+
+        internal string Label { get; }
+        internal SettingsRow? Row { get; }
+        internal int Id { get; }
+        internal string? ReadValue() => _readValue();
     }
 
     private void ReadMainMenuFocus()
@@ -224,7 +439,7 @@ public sealed class BopItAccessMod : MelonMod
                     continue;
 
                 bool accepted = TolkNative.Tolk_Output(announcement, true);
-                WriteStatus($"Main menu announcement '{announcement}' {(accepted ? "accepted" : "rejected")} by Tolk.");
+                WriteStatus($"Speech announcement '{announcement}' {(accepted ? "accepted" : "rejected")} by Tolk.");
             }
         }
         catch (Exception ex)
