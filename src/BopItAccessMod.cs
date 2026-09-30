@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.6", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.5.7", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -24,6 +24,9 @@ public sealed partial class BopItAccessMod : MelonMod
     private string? _pendingPriorityFollowUpSpeech;
     private readonly Queue<string> _sequentialSpeech = new();
     private bool _pendingSpeechInterrupt = true;
+    private bool _pendingSpeechIsDescription;
+    private bool _descriptionSpeechMayBeActive;
+    private bool _silenceRequested;
     private MainMenuUIManager? _mainMenu;
     private SettingsPanel? _settingsPanel;
     private SettingOption[]? _settingsOptions;
@@ -611,8 +614,49 @@ public sealed partial class BopItAccessMod : MelonMod
             // Keep the newest focus announcement when navigation is faster than speech.
             _pendingSpeech = text;
             _pendingSpeechInterrupt = interrupt;
+            _pendingSpeechIsDescription = false;
             if (interrupt)
                 _sequentialSpeech.Clear();
+        }
+
+        _speechRequested.Set();
+    }
+
+    private void QueueDescriptionSpeech(string text)
+    {
+        if (_shutdownRequested.IsSet)
+            return;
+
+        lock (_speechLock)
+        {
+            _pendingSpeech = text;
+            _pendingSpeechInterrupt = true;
+            _pendingSpeechIsDescription = true;
+            _sequentialSpeech.Clear();
+        }
+
+        _speechRequested.Set();
+    }
+
+    private void CancelDescriptionSpeech()
+    {
+        if (_shutdownRequested.IsSet)
+            return;
+
+        lock (_speechLock)
+        {
+            if (_pendingSpeechIsDescription)
+            {
+                _pendingSpeech = null;
+                _pendingSpeechIsDescription = false;
+            }
+
+            // Tolk is used only by its worker thread. Silence a description
+            // that has already reached the screen reader, while preserving a
+            // later score or menu announcement if one has been dispatched.
+            if (_descriptionSpeechMayBeActive)
+                _silenceRequested = true;
+            _descriptionSpeechMayBeActive = false;
         }
 
         _speechRequested.Set();
@@ -642,6 +686,7 @@ public sealed partial class BopItAccessMod : MelonMod
             _pendingPriorityFollowUpSpeech = menu;
             _pendingSpeech = null;
             _pendingSpeechInterrupt = false;
+            _pendingSpeechIsDescription = false;
             _sequentialSpeech.Clear();
         }
 
@@ -690,18 +735,35 @@ public sealed partial class BopItAccessMod : MelonMod
                 string? announcement;
                 List<string>? sequential;
                 bool interrupt;
+                bool silence;
+                bool description;
                 lock (_speechLock)
                 {
+                    silence = _silenceRequested;
+                    _silenceRequested = false;
                     priority = _pendingPrioritySpeech;
                     _pendingPrioritySpeech = null;
                     priorityFollowUp = _pendingPriorityFollowUpSpeech;
                     _pendingPriorityFollowUpSpeech = null;
                     announcement = _pendingSpeech;
                     _pendingSpeech = null;
+                    description = _pendingSpeechIsDescription;
+                    _pendingSpeechIsDescription = false;
                     interrupt = _pendingSpeechInterrupt;
                     sequential = _sequentialSpeech.Count == 0
                         ? null : new List<string>(_sequentialSpeech);
                     _sequentialSpeech.Clear();
+                    if (priority != null || priorityFollowUp != null ||
+                        (announcement != null && !description) || sequential != null)
+                        _descriptionSpeechMayBeActive = false;
+                    else if (description)
+                        _descriptionSpeechMayBeActive = true;
+                }
+
+                if (silence)
+                {
+                    bool silenced = TolkNative.Tolk_Silence();
+                    WriteStatus($"Stopped selection description before leaving song selection: {silenced}.");
                 }
 
                 if (priority != null)
@@ -803,5 +865,9 @@ public sealed partial class BopItAccessMod : MelonMod
         [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Unicode)]
         [return: MarshalAs(UnmanagedType.I1)]
         internal static extern bool Tolk_Output([MarshalAs(UnmanagedType.LPWStr)] string text, [MarshalAs(UnmanagedType.I1)] bool interrupt);
+
+        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        internal static extern bool Tolk_Silence();
     }
 }

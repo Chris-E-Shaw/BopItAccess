@@ -76,6 +76,13 @@ public sealed partial class BopItAccessMod
             return true;
         }
 
+        AddedDescriptionControlRow? descriptionRow = FindAddedDescriptionControlRow(selected);
+        if (descriptionRow != null && descriptionRow.Root.activeInHierarchy)
+        {
+            ReadDescriptionControlRow(descriptionRow);
+            return true;
+        }
+
         ControlRow? focusedRow = FindFocusedControlRow(panel, selected);
         if (focusedRow != null)
         {
@@ -335,7 +342,8 @@ public sealed partial class BopItAccessMod
         if (_controlsRows == null || _controlsRows.Length == 0)
             return null;
 
-        string[] values = new string[_controlsRows.Length + _leaderboardControlRows.Count];
+        string[] values = new string[_controlsRows.Length + _leaderboardControlRows.Count +
+            (_descriptionControlRow == null ? 0 : 1)];
         for (int i = 0; i < _controlsRows.Length; i++)
         {
             ControlRow row = _controlsRows[i];
@@ -356,6 +364,14 @@ public sealed partial class BopItAccessMod
             if (value == null)
                 return null;
             values[next++] = value;
+        }
+
+        if (_descriptionControlRow != null)
+        {
+            string? value = ReadDescriptionControlSnapshot();
+            if (value == null)
+                return null;
+            values[next] = value;
         }
 
         return string.Join("\u001f", values);

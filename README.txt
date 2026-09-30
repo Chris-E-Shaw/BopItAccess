@@ -1,4 +1,4 @@
-Bop It Access 0.5.6 - Leaderboard rebinding completion fix
+Bop It Access 0.5.7 - On-demand stage descriptions
 
 What this does
 --------------
@@ -16,6 +16,12 @@ only the new Extreme state. The screen introduction also explains the Twist,
 Pull, Bop, and Back actions.
 This full introduction is repeated whenever a mode is selected and the song
 screen opens again, with the current theme and Extreme state.
+The READ DESCRIPTIONS control speaks a visual description of the selected
+Shapes, Space, City, or Office stage on demand. It is available on this screen
+only, before gameplay starts. Its default inputs are D on keyboard and LT
+(left trigger) on controller. The screen introduction announces the current
+binding. If a description is still being spoken when play starts, the mod
+stops it so it cannot mask the game's verbal cues.
 
 On the final result screen, Solo, Party, and Pass It announce the final score
 before the menu speech. Solo reads the focused Replay and Leaderboard buttons
@@ -54,19 +60,16 @@ announces changed bindings, and reads the game's visible rebinding feedback.
 It also announces how to return to Settings. When Reset to Default changes a
 binding, it reports that the bindings were reset.
 
-The mod adds four rows to the game's Controls menu: Group Previous,
-Group Next, Date Previous, and Date Next. These address the leaderboard filters
+The mod adds five rows to the game's Controls menu: Group Previous,
+Group Next, Date Previous, Date Next, and READ DESCRIPTIONS. The first four
+address the leaderboard filters
 reached with O/P and K/L on the default keyboard layout, or the bumpers and
 D-pad left/right on a controller. Focus a row to hear its current binding,
 then use the game's normal Bop/confirm action to rebind it. The rows scroll
-inside the existing Controls panel. This build removes the global native
-rebinding hook and the cloned native row listeners that could affect the
-game's original controls. The four added rows now rebind their specific
-leaderboard direction through the game's input system. Their operation and
-Reset to Default still need an in-game check.
-This update uses the binding that Unity applied when listening finishes, so
-the new rows can accept and save a selected key instead of rejecting it as
-"Binding unavailable."
+inside the existing Controls panel. READ DESCRIPTIONS can also be rebound for
+keyboard and controller. Its binding is saved by the mod, and Reset to Default
+restores D and LT. The game's original binding rows and the four leaderboard
+rows retain their current rebinding behavior.
 
 Inside Audio Calibration, the mod reads the Calibrate, Back, and Bop controls,
 announces the instructions and calibration stages, reads the warmup countdown,
@@ -92,7 +95,8 @@ Try the supported screens
 -------------------------
 Open Play and move among the four modes. Choose one to reach song selection.
 Twist to cycle through themes and Pull to switch Extreme mode on or off. The
-mod announces each change. Bop starts the chosen mode; Back returns.
+mod announces each change. Press D or LT to hear the currently selected stage
+description. Bop starts the chosen mode; Back returns.
 At the end of a game, listen for the score or One on One winner before the
 result-screen controls are announced.
 Open Leaderboards from the main menu or a result screen. Change a filter to
