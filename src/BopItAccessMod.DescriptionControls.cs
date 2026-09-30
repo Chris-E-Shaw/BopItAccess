@@ -98,7 +98,9 @@ public sealed partial class BopItAccessMod
         catch (Exception ex)
         {
             WriteStatus("Could not read the Read Descriptions bindings: " + ex.Message);
-            return "Use Read Descriptions to hear the selected stage description.";
+            string keyboard = HintSavedBinding(DescriptionKeyboardKey, "R");
+            string gamepad = HintSavedBinding(DescriptionGamepadKey, "left trigger");
+            return $"Press {keyboard} on keyboard or {gamepad} on controller to read the selected stage description.";
         }
     }
 

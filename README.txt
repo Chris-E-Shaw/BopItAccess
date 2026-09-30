@@ -1,4 +1,4 @@
-Bop It Access 0.6.4 - Button Hint Speech
+Bop It Access 0.6.5 - Keyboard and Controller Hints
 
 What this does
 --------------
@@ -50,6 +50,16 @@ delay, the first hint announcement follows that much inactivity. The 5-second op
 interrupt speech already in progress; longer delays queue behind it. After
 the first hint announcement, another delay starts only when the player gives
 input, unless repeats are enabled.
+
+Button hints now name keyboard and controller inputs for menu selection,
+navigation, Back, sliders, song selection, achievement pages, and other
+supported controls. The mod reads the game's current bindings so native
+rebinding changes are reflected in these hints. When no controller is
+connected and the game has different face-button names on different controller
+types, the hint uses "confirm button" or "back button" rather than assuming an
+Xbox layout. Leaderboard score rows use Page Up and Page Down on keyboard at
+all times. Controller up/down reads rows only when no leaderboard control has
+focus; the hint says so in that state.
 
 REPEAT BUTTON HINTS is a separate saved slider: Off, 2x, 3x, 4x, 5x, or
 Infinitely. It defaults to Off. When enabled, it sends that many extra hint

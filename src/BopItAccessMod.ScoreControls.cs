@@ -98,7 +98,10 @@ public sealed partial class BopItAccessMod
         catch (Exception ex)
         {
             WriteStatus("Could not read the Read Score bindings: " + ex.Message);
-            return "Use Read Score to hear the final result again.";
+            string keyboard = HintSavedBinding(ScoreKeyboardKey, "T");
+            string gamepad = HintSavedBinding(ScoreGamepadKey,
+                "left stick press");
+            return $"Press {keyboard} on keyboard or {gamepad} on controller to read the final result again.";
         }
     }
 
