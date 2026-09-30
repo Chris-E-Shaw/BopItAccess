@@ -94,7 +94,7 @@ public sealed partial class BopItAccessMod
             string gamepad = CleanSpeechValue(
                 InputActionRebindingExtensions.GetBindingDisplayString(action, 1)) ?? "left trigger";
             return FormatHintPress(keyboard, gamepad,
-                "read the selected stage description");
+                "read stage description");
         }
         catch (Exception ex)
         {
@@ -102,7 +102,7 @@ public sealed partial class BopItAccessMod
             string keyboard = HintSavedBinding(DescriptionKeyboardKey, "R");
             string gamepad = HintSavedBinding(DescriptionGamepadKey, "left trigger");
             return FormatHintPress(keyboard, gamepad,
-                "read the selected stage description");
+                "read stage description");
         }
     }
 

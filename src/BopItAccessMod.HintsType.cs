@@ -124,29 +124,25 @@ public sealed partial class BopItAccessMod
     private string FormatHintPress(string keyboard, string controller,
         string purpose, string controllerVerb = "press")
     {
-        string controllerAction = controllerVerb == "press"
-            ? "Press " + controller :
-            char.ToUpperInvariant(controllerVerb[0]) + controllerVerb[1..] +
-                " " + controller;
+        // The binding comes first so a listener hears the control before its
+        // effect. The hint's purpose then explains what that input does.
+        string action = purpose.Trim().TrimEnd('.');
         return EffectiveHintDevice switch
         {
-            HintDevice.Keyboard =>
-                $"Press {keyboard} on keyboard to {purpose}.",
-            HintDevice.Controller =>
-                $"{controllerAction} on controller to {purpose}.",
-            _ => $"Press {keyboard} on keyboard or " +
-                char.ToLowerInvariant(controllerAction[0]) +
-                controllerAction[1..] + $" on controller to {purpose}."
+            HintDevice.Keyboard => $"{keyboard}, {action}.",
+            HintDevice.Controller => $"{controller}, {action}.",
+            _ => $"{keyboard} on keyboard; {controller} on controller, {action}."
         };
     }
 
-    private string FormatHintUse(string keyboard, string controller, string purpose) =>
-        EffectiveHintDevice switch
+    private string FormatHintUse(string keyboard, string controller, string purpose)
+    {
+        string action = purpose.Trim().TrimEnd('.');
+        return EffectiveHintDevice switch
         {
-            HintDevice.Keyboard =>
-                $"Use {keyboard} on keyboard to {purpose}.",
-            HintDevice.Controller =>
-                $"Use {controller} on controller to {purpose}.",
-            _ => $"Use {keyboard} on keyboard or {controller} on controller to {purpose}."
+            HintDevice.Keyboard => $"{keyboard}, {action}.",
+            HintDevice.Controller => $"{controller}, {action}.",
+            _ => $"{keyboard} on keyboard; {controller} on controller, {action}."
         };
+    }
 }

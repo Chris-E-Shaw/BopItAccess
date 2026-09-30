@@ -150,15 +150,34 @@ public sealed partial class BopItAccessMod
     {
         try
         {
-            return CleanSpeechValue(
-                InputActionRebindingExtensions.GetBindingDisplayString(action, index));
+            return ExpandHintStickLabel(CleanSpeechValue(
+                InputActionRebindingExtensions.GetBindingDisplayString(action, index)));
         }
         catch
         {
             string? path = action.bindings[index].effectivePath;
-            return path == null ? null : CleanSpeechValue(
-                InputControlPath.ToHumanReadableString(path));
+            return path == null ? null : ExpandHintStickLabel(CleanSpeechValue(
+                InputControlPath.ToHumanReadableString(path)));
         }
+    }
+
+    private static string? ExpandHintStickLabel(string? label)
+    {
+        if (label == null)
+            return null;
+        if (label.Equals("LS", StringComparison.OrdinalIgnoreCase))
+            return "Left stick";
+        if (label.StartsWith("LS ", StringComparison.OrdinalIgnoreCase))
+            return "Left stick " + label[3..];
+        if (label.Equals("RS", StringComparison.OrdinalIgnoreCase))
+            return "Right stick";
+        if (label.StartsWith("RS ", StringComparison.OrdinalIgnoreCase))
+            return "Right stick " + label[3..];
+        if (label.StartsWith("Left Stick", StringComparison.OrdinalIgnoreCase))
+            return "Left stick" + label["Left Stick".Length..];
+        if (label.StartsWith("Right Stick", StringComparison.OrdinalIgnoreCase))
+            return "Right stick" + label["Right Stick".Length..];
+        return label;
     }
 
     private static string HintSavedBinding(string preference, string fallback)
@@ -223,15 +242,16 @@ public sealed partial class BopItAccessMod
             vertical) ?? (vertical ? "Up and Down arrows or W and S" :
             "Left and Right arrows or A and D");
         string controller = ReadHintDirections(action, first, second, true,
-            vertical) ?? (vertical ? "D-Pad or either stick up and down" :
-            "D-Pad or either stick left and right");
+            vertical) ?? (vertical
+                ? "Left stick Up and Down, Right stick Up and Down, or D-Pad up and down"
+                : "Left stick Left and Right, Right stick Left and Right, or D-Pad left and right");
         return FormatHintUse(keyboard, controller, purpose);
     }
 
     private string HintAchievementPages() =>
         HintDirectionalAction(FindHintAction("UI", "FlipAchievementPages"),
             "negative", "positive", "Left and Right arrows",
-            "left and right shoulder buttons", "turn pages");
+            "Left and Right shoulder buttons", "turn pages");
 
     private string HintDirectionalAction(InputAction? action,
         string firstPart, string secondPart, string keyboardFallback,
@@ -288,7 +308,17 @@ public sealed partial class BopItAccessMod
         foreach (string label in direct)
             if (!pairs.Contains(label))
                 pairs.Add(label);
-        return pairs.Count == 0 ? null : string.Join(" or ", pairs);
+        return pairs.Count == 0 ? null : JoinHintChoices(pairs);
+    }
+
+    private static string JoinHintChoices(IReadOnlyList<string> choices)
+    {
+        if (choices.Count == 1)
+            return choices[0];
+        if (choices.Count == 2)
+            return choices[0] + " or " + choices[1];
+        return string.Join(", ", choices.Take(choices.Count - 1)) +
+            ", or " + choices[^1];
     }
 
     private static string CompactHintDirectionPair(string first, string second)
@@ -303,32 +333,51 @@ public sealed partial class BopItAccessMod
             (second.Equals("Right", StringComparison.OrdinalIgnoreCase) ||
              second.Equals("Right Arrow", StringComparison.OrdinalIgnoreCase)))
             return "Left and Right arrows";
-        foreach (string stick in new[] { "Left Stick", "Right Stick" })
+        if (first.Equals("D-Pad Up", StringComparison.OrdinalIgnoreCase) &&
+            second.Equals("D-Pad Down", StringComparison.OrdinalIgnoreCase))
+            return "D-Pad up and down";
+        if (first.Equals("D-Pad Left", StringComparison.OrdinalIgnoreCase) &&
+            second.Equals("D-Pad Right", StringComparison.OrdinalIgnoreCase))
+            return "D-Pad left and right";
+        foreach ((string binding, string spoken) in new[]
         {
-            if (first.Equals(stick + " Up", StringComparison.OrdinalIgnoreCase) &&
-                second.Equals(stick + " Down", StringComparison.OrdinalIgnoreCase))
-                return stick + " up and down";
-            if (first.Equals(stick + " Left", StringComparison.OrdinalIgnoreCase) &&
-                second.Equals(stick + " Right", StringComparison.OrdinalIgnoreCase))
-                return stick + " left and right";
+            ("Left Stick", "Left stick"), ("LS", "Left stick"),
+            ("Right Stick", "Right stick"), ("RS", "Right stick")
+        })
+        {
+            if (first.Equals(binding + " Up", StringComparison.OrdinalIgnoreCase) &&
+                second.Equals(binding + " Down", StringComparison.OrdinalIgnoreCase))
+                return spoken + " Up and Down";
+            if (first.Equals(binding + " Left", StringComparison.OrdinalIgnoreCase) &&
+                second.Equals(binding + " Right", StringComparison.OrdinalIgnoreCase))
+                return spoken + " Left and Right";
         }
         return first + " and " + second;
     }
 
     private string HintLeaderboardRows(bool controllerMoveAvailable)
     {
-        const string keyboard = "Use Page Up and Page Down on keyboard to read score rows.";
+        const string keyboard = "Page Up and Page Down, read score rows.";
+        const string bothKeyboard = "Page Up and Page Down on keyboard, read score rows.";
         if (!controllerMoveAvailable)
-            return EffectiveHintDevice == HintDevice.Controller ? string.Empty : keyboard;
+            return EffectiveHintDevice switch
+            {
+                HintDevice.Controller => string.Empty,
+                HintDevice.Both => bothKeyboard,
+                _ => keyboard
+            };
         InputAction? move = HintUiMoveAction();
         string? controller = ReadHintDirections(move, "up", "down", true, true);
         string controllerHint = controller == null ? string.Empty :
-            $"Use {controller} on controller when no menu control has focus to read score rows.";
+            $"{controller}, read score rows.";
+        string bothController = controller == null ? string.Empty :
+            $"{controller} on controller, read score rows.";
         return EffectiveHintDevice switch
         {
             HintDevice.Keyboard => keyboard,
             HintDevice.Controller => controllerHint,
-            _ => controllerHint.Length == 0 ? keyboard : keyboard + " " + controllerHint
+            _ => bothController.Length == 0 ? bothKeyboard :
+                bothKeyboard + " " + bothController
         };
     }
 }

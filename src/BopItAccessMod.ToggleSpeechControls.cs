@@ -98,7 +98,7 @@ public sealed partial class BopItAccessMod
             "<Keyboard>/f8", "F8");
         string gamepad = ReadToggleSpeechBindingLabel(1, ToggleSpeechGamepadKey,
             "<Gamepad>/select", "Select");
-        return $"Press {keyboard} on keyboard or {gamepad} on controller to turn speech back on.";
+        return $"{keyboard} on keyboard or {gamepad} on controller, turn speech back on.";
     }
 
     private string ReadToggleSpeechFallbackRecoveryInstruction()
@@ -110,7 +110,7 @@ public sealed partial class BopItAccessMod
             ToggleSpeechKeyboardKey, "F8");
         string gamepad = ReadToggleSpeechSavedBindingLabel(
             ToggleSpeechGamepadKey, "Select");
-        return $"Press {keyboard} on keyboard or {gamepad} on controller to turn speech back on.";
+        return $"{keyboard} on keyboard or {gamepad} on controller, turn speech back on.";
     }
 
     private string ReadToggleSpeechBindingLabel(int index, string preference,

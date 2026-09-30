@@ -1,4 +1,4 @@
-Bop It Access 0.6.8 - Braille and One-on-One Life Feedback
+Bop It Access 0.6.9 - Concise Button Hints
 
 What this does
 --------------
@@ -81,13 +81,14 @@ input, unless repeats are enabled.
 HINTS TYPE is a saved slider with Automatic, Keyboard, Controller, and Both.
 Automatic is the default and follows the most recently used keyboard or
 controller input. Mouse use counts as keyboard. Keyboard and Controller speak
-only that device's hints; Both gives the full dual-device instructions from
-previous versions. Speech-off recovery always includes both devices so the
+only that device's hints; Both gives both sets of inputs with explicit device
+names. Speech-off recovery always includes both devices so the
 player can find the control that turns speech back on.
 
-Button hints now name keyboard and controller inputs for menu selection,
-navigation, Back, sliders, song selection, achievement pages, and other
-supported controls. The mod reads the game's current bindings so native
+Button hints put the input before its action: "Enter or Space, activate item."
+Single-device hints omit the device name. Controller stick names are spoken
+in full, such as "Left stick Up and Down". Both mode identifies keyboard
+and controller inputs. The mod reads the game's current bindings so native
 rebinding changes are reflected in these hints. When no controller is
 connected and the game has different face-button names on different controller
 types, the hint uses "confirm button" or "back button" rather than assuming an
