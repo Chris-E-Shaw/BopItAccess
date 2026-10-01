@@ -230,16 +230,13 @@ public sealed partial class BopItAccessMod
             return;
         }
 
-        InputAction speakHints = EnsureSpeakHintsAction();
-        for (int i = 0; i < speakHints.bindings.Count; i++)
+        if (IsBindingAssignedElsewhere(manager, action, index, selectedPath,
+                out string owner))
         {
-            if (!SpeakHintsPathsMatch(selectedPath,
-                    speakHints.bindings[i].effectivePath))
-                continue;
             RestoreLeaderboardOriginalOverride();
             ReleaseLeaderboardControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech("That input is used by Speak Hints");
+            QueueSpeech("That input is already assigned to " + owner);
             return;
         }
 
@@ -259,7 +256,6 @@ public sealed partial class BopItAccessMod
             return;
         }
 
-        manager.ClearConflictingBindings(normalized, selectedPath, action);
         ReleaseLeaderboardControlRebinding();
 
         string device = manager.ActiveDevice ?? manager.deviceTracker?.ActiveDevice ?? string.Empty;

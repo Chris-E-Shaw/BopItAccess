@@ -33,7 +33,7 @@ public sealed partial class BopItAccessMod
         _descriptionActionAsset = ScriptableObject.CreateInstance<InputActionAsset>();
         InputActionMap map = _descriptionActionAsset.AddActionMap("BopItAccess");
         InputAction action = map.AddAction("ReadDescriptions", InputActionType.Button);
-        action.AddBinding("<Keyboard>/r");
+        action.AddBinding("<Keyboard>/g");
         action.AddBinding("<Gamepad>/leftTrigger");
         string keyboard = PlayerPrefs.GetString(DescriptionKeyboardKey, string.Empty);
         string gamepad = PlayerPrefs.GetString(DescriptionGamepadKey, string.Empty);
@@ -90,7 +90,7 @@ public sealed partial class BopItAccessMod
         {
             InputAction action = EnsureDescriptionAction();
             string keyboard = CleanSpeechValue(
-                InputActionRebindingExtensions.GetBindingDisplayString(action, 0)) ?? "R";
+                InputActionRebindingExtensions.GetBindingDisplayString(action, 0)) ?? "G";
             string gamepad = CleanSpeechValue(
                 InputActionRebindingExtensions.GetBindingDisplayString(action, 1)) ?? "left trigger";
             return FormatHintPress(keyboard, gamepad,
@@ -99,7 +99,7 @@ public sealed partial class BopItAccessMod
         catch (Exception ex)
         {
             WriteStatus("Could not read the Read Descriptions bindings: " + ex.Message);
-            string keyboard = HintSavedBinding(DescriptionKeyboardKey, "R");
+            string keyboard = HintSavedBinding(DescriptionKeyboardKey, "G");
             string gamepad = HintSavedBinding(DescriptionGamepadKey, "left trigger");
             return FormatHintPress(keyboard, gamepad,
                 "read stage description");
@@ -375,14 +375,16 @@ public sealed partial class BopItAccessMod
         string? path = action == null || index < 0 || index >= action.bindings.Count
             ? null : action.bindings[index].overridePath;
         string? resolved = string.IsNullOrEmpty(path) ? null : InputSystem.FindControl(path)?.path;
-        if (action == null || manager == null || string.IsNullOrEmpty(resolved) ||
-            IsEssentialNativeDescriptionBinding(manager, resolved))
+        bool unavailable = action == null || manager == null || string.IsNullOrEmpty(resolved);
+        string owner = string.Empty;
+        if (unavailable || IsBindingAssignedElsewhere(manager!, action!, index,
+                resolved, out owner))
         {
             RestoreDescriptionOriginalOverride();
             ReleaseDescriptionControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech(string.IsNullOrEmpty(resolved) ? "Binding unavailable" :
-                "That input is used to start or leave the screen");
+            QueueSpeech(unavailable ? "Binding unavailable" :
+                "That input is already assigned to " + owner);
             return;
         }
 
@@ -401,33 +403,6 @@ public sealed partial class BopItAccessMod
         QueueSpeech(_lastControlsBinding ?? "Binding changed");
     }
 
-    private bool IsEssentialNativeDescriptionBinding(InputRebindingManager manager,
-        string path)
-    {
-        InputAction speakHints = EnsureSpeakHintsAction();
-        for (int i = 0; i < speakHints.bindings.Count; i++)
-            if (DescriptionPathsMatch(speakHints.bindings[i].effectivePath, path))
-                return true;
-
-        InputActionAsset? asset = manager.inputActions ?? manager.playerInput?.actions;
-        if (asset == null)
-            return false;
-        string[] essential = { "Bop", "Twist", "Pull", "Spin", "Flick",
-            "Submit", "Back", "Cancel" };
-        foreach (string name in essential)
-        {
-            InputAction? action = asset.FindAction(name, false);
-            if (action == null)
-                continue;
-            for (int i = 0; i < action.bindings.Count; i++)
-            {
-                if (DescriptionPathsMatch(action.bindings[i].effectivePath, path))
-                    return true;
-            }
-        }
-        return false;
-    }
-
     private void ResetDescriptionControlBindings()
     {
         InputAction action = EnsureDescriptionAction();
@@ -437,7 +412,7 @@ public sealed partial class BopItAccessMod
         PlayerPrefs.DeleteKey(DescriptionGamepadKey);
         PlayerPrefs.Save();
         RefreshDescriptionControlPrompts();
-        WriteStatus("Reset Read Descriptions bindings to R and left trigger.");
+        WriteStatus("Reset Read Descriptions bindings to G and left trigger.");
     }
 
     private void CancelDescriptionControlRebinding(bool announce = true)

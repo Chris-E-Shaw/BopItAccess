@@ -42,11 +42,15 @@ public sealed partial class BopItAccessMod
         UpdateSpeechMenuUi();
         UpdateControlsSubmitGate();
         UpdateDescriptionControlRebinding();
+        UpdateResetGyroControlRebinding();
         UpdateScoreControlRebinding();
         UpdateSpeakHintsControlRebinding();
         UpdateToggleSpeechControlRebinding();
+        UpdateChangeSpeechOutputControlRebinding();
         UpdateLeaderboardControlRebinding();
+        UpdateNativeBindingConflictGuard();
         UpdateSpeechToggleFromInput();
+        UpdateChangeSpeechOutputFromInput();
         UpdateHintInputDevice();
         UpdateOneOnOneFeedback();
         UpdateSpeakHintsOnDemand();
@@ -90,7 +94,7 @@ public sealed partial class BopItAccessMod
         try
         {
             if (TryAddLeaderboardControls(panel, out string reason))
-                WriteStatus("Added four leaderboard binding rows, Read Descriptions, Read Score, Toggle Speech, and Speak Hints to Controls.");
+                WriteStatus("Added Reset Gyro and the mod binding rows to Controls.");
             else
                 WriteStatus("Leaderboard binding rows were not added: " + reason);
         }
@@ -183,6 +187,7 @@ public sealed partial class BopItAccessMod
         try
         {
             int insertAt = reset.transform.GetSiblingIndex();
+            AddResetGyroControlRow(template, parent, insertAt++, manager);
             foreach (LeaderboardControlPart part in parts)
             {
                 InputAction action = part.Action == GroupAction ? group! : date!;
@@ -233,7 +238,8 @@ public sealed partial class BopItAccessMod
             AddDescriptionControlRow(template, parent, insertAt++);
             AddScoreControlRow(template, parent, insertAt++);
             AddToggleSpeechControlRow(template, parent, insertAt++);
-            AddSpeakHintsControlRow(template, parent, insertAt);
+            AddSpeakHintsControlRow(template, parent, insertAt++);
+            AddChangeSpeechOutputControlRow(template, parent, insertAt);
 
             AddLeaderboardControlsViewport(tableRect, contentRect);
             foreach (GameObject row in _leaderboardAddedRows)
@@ -336,19 +342,24 @@ public sealed partial class BopItAccessMod
             return;
 
         AddedLeaderboardControlRow? added = FindAddedLeaderboardControlRow(selected);
+        AddedResetGyroControlRow? resetGyro = FindAddedResetGyroControlRow(selected);
         AddedDescriptionControlRow? description = FindAddedDescriptionControlRow(selected);
         AddedScoreControlRow? score = FindAddedScoreControlRow(selected);
         AddedToggleSpeechControlRow? toggleSpeech =
             FindAddedToggleSpeechControlRow(selected);
         AddedSpeakHintsControlRow? speakHints =
             FindAddedSpeakHintsControlRow(selected);
+        AddedChangeSpeechOutputControlRow? changeOutput =
+            FindAddedChangeSpeechOutputControlRow(selected);
         ControlRow? control = selected.GetComponentInParent<ControlRow>();
         ResetToDefaultRow? reset = selected.GetComponentInParent<ResetToDefaultRow>();
         Transform item = added != null ? added.Root.transform :
+            resetGyro != null ? resetGyro.Root.transform :
             description != null ? description.Root.transform :
             score != null ? score.Root.transform :
             toggleSpeech != null ? toggleSpeech.Root.transform :
             speakHints != null ? speakHints.Root.transform :
+            changeOutput != null ? changeOutput.Root.transform :
             control != null ? control.transform :
             reset != null ? reset.transform : selected.transform;
         Bounds bounds = RectTransformUtility.CalculateRelativeRectTransformBounds(
@@ -468,10 +479,16 @@ public sealed partial class BopItAccessMod
 
     private void RemoveAddedLeaderboardControls()
     {
+        if (_resetGyroRebindOperation != null)
+            RestoreResetGyroOriginalOverride();
+        if (_changeSpeechOutputRebindOperation != null)
+            RestoreChangeSpeechOutputOriginalOverride();
         CancelDescriptionControlRebinding(false);
+        CancelResetGyroControlRebinding(false);
         CancelScoreControlRebinding(false);
         CancelToggleSpeechControlRebinding(false);
         CancelSpeakHintsControlRebinding(false);
+        CancelChangeSpeechOutputControlRebinding(false);
         CancelLeaderboardControlRebinding(false);
         if (_leaderboardControlsContent != null &&
             _leaderboardControlsOriginalParent != null)
@@ -507,9 +524,11 @@ public sealed partial class BopItAccessMod
         _leaderboardPromptReferences.Clear();
         _leaderboardControlRows.Clear();
         _descriptionControlRow = null;
+        _resetGyroControlRow = null;
         _scoreControlRow = null;
         _toggleSpeechControlRow = null;
         _speakHintsControlRow = null;
+        _changeSpeechOutputControlRow = null;
         _leaderboardControlsScroll = null;
         _leaderboardControlsFitter = null;
         _leaderboardControlsViewport = null;

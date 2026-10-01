@@ -1,4 +1,4 @@
-Bop It Access 0.6.12 - Speech Capitalisation
+Bop It Access 0.6.13 - Controls and SAPI Responsiveness
 
 What this does
 --------------
@@ -133,9 +133,18 @@ steps of five. They apply to SAPI mode and Auto's SAPI fallback.
 Direct SAPI output avoids repeated voice enumeration for numeric changes,
 uses plain text when pitch is neutral, and skips unnecessary screen-reader
 detection. The earlier trim-silence experiment remains hidden and inactive.
+The new SAPI log measurements located most of the measured dispatch delay in
+the Windows SAPI COM Speak call: individual calls took about 188 to 578 ms,
+while initial voice setup took about 375 to 609 ms. Separate braille dispatch
+was typically 0 to 16 ms. The mod now prepares Auto mode's SAPI fallback on
+the speech worker while the game loads and records queue timing to distinguish
+waiting for the worker from dispatch time. A first announcement after directly
+selecting SAPI may still include voice setup. These timings do not measure
+when sound becomes audible, which also depends on the installed voice and
+audio system.
 Separate braille output with SAPI now caches Tolk capability checks for one
 second. If SAPI dispatch itself is slow, the log records voice setup, Speak,
-and braille dispatch times; these timings do not measure audible onset.
+and braille dispatch times.
 Speech settings are remembered between sessions. Back returns to Settings.
 This update restores the game's native Settings row layout so up/down
 navigation remains on Settings rows after SPEECH is added.
@@ -157,14 +166,12 @@ This full introduction is repeated whenever a mode is selected and the song
 screen opens again, with the current theme and Extreme state.
 The READ DESCRIPTIONS control speaks a visual description of the selected
 Shapes, Space, City, or Office stage on demand. It is available on this screen
-only, before gameplay starts. Its default inputs are R on keyboard and LT
-(left trigger) on controller. The screen introduction announces the current
-binding. Starting play stops any speech left from song selection so it cannot
-mask the game's verbal cues. Descriptions begin with the scene details rather
-than repeating the selected stage name.
-R is also listed as Reset Gyro in the game's input asset. The mod does not
-change that or any other native binding, and its own action is disabled during
-gameplay.
+only, before gameplay starts. Its default inputs are G on keyboard and LT
+(left trigger) on controller. R was replaced because it is the game's Reset
+Gyro shortcut. The screen introduction announces the current binding.
+Starting play stops any speech left from song selection so it cannot mask the
+game's verbal cues. Descriptions begin with the scene details rather than
+repeating the selected stage name.
 
 On the final result screen, Solo, Party, and Pass It announce the final score
 before the menu speech. Solo reads the focused Replay and Leaderboard buttons
@@ -227,18 +234,28 @@ announces changed bindings, and reads the game's visible rebinding feedback.
 It announces how to return to Settings once per visit. When Reset to Default changes a
 binding, it reports that the bindings were reset.
 
-The mod adds eight rows to the game's Controls menu: Group Previous,
+The mod exposes a native RESET GYRO row and adds a CHANGE SPEECH OUTPUT
+shortcut. Reset Gyro sits with the game's controls; the mod-specific rows
+remain together at the bottom of the menu, before Reset to Default. CHANGE
+SPEECH OUTPUT cycles through the same modes as Settings > Speech > OUTPUT
+MODE: Auto, SAPI, JAWS, Window-Eyes, NVDA, System Access, and ZoomText. Its
+default inputs are F9 on keyboard and the West face button (X on an Xbox
+controller). The controller Start button is reserved by the game's native
+Menu action. The current choice is announced when the shortcut is used and
+is saved by the same Output Mode setting.
+
+The mod adds nine rows to the game's Controls menu: Group Previous,
 Group Next, Date Previous, Date Next, READ DESCRIPTIONS, READ SCORE,
-TOGGLE SPEECH, and SPEAK HINTS. The first four
+TOGGLE SPEECH, SPEAK HINTS, and CHANGE SPEECH OUTPUT. The first four
 address the leaderboard filters
 reached with O/P and K/L on the default keyboard layout, or the bumpers and
 D-pad left/right on a controller. Focus a row to hear its current binding,
 then use the game's normal Bop/confirm action to rebind it. The rows scroll
 inside the existing Controls panel. READ DESCRIPTIONS can also be rebound for
 keyboard and controller. Its binding is saved by the mod, and Reset to Default
-restores R and LT. READ SCORE can also be rebound for keyboard and controller;
-Reset to Default restores T and left stick press. The game's original binding rows and the four leaderboard
-rows retain their current rebinding behavior.
+restores G and LT. READ SCORE can also be rebound for keyboard and controller;
+Reset to Default restores T and left stick press. The game's original binding
+rows and the four leaderboard rows use the same Controls rebinding flow.
 TOGGLE SPEECH can be rebound for keyboard and controller. Its bindings are
 saved by the mod, and Reset to Default restores F8 and Select. If the binding
 is changed while speech is off, the mod announces the new recovery controls.
@@ -246,6 +263,11 @@ SPEAK HINTS can also be rebound. Its defaults are H and right stick press.
 It speaks the current screen's hint immediately without scheduling a second
 automatic first hint. The configured repeats can still follow. It is silent
 during gameplay and the timed Audio Calibration cues.
+CHANGE SPEECH OUTPUT can be rebound for keyboard and controller; Reset to
+Default restores F9 and the West face button. If a new binding is already
+assigned to another game or mod action, the Controls menu rejects the
+duplicate and keeps the previous assignment. RESET GYRO can be rebound by
+the same native Controls procedure as the other game actions.
 Returning from song selection to the main menu restores main-menu hints even
 when a cached game manager still reports an old gameplay state. Button hint
 timers and Automatic hint device selection follow assigned game and mod
@@ -278,12 +300,14 @@ Try the supported screens
 -------------------------
 Open Play and move among the four modes. Choose one to reach song selection.
 Twist to cycle through themes and Pull to switch Extreme mode on or off. The
-mod announces each change. Press R or LT to hear the currently selected stage
+mod announces each change. Press G or LT to hear the currently selected stage
 description. Bop starts the chosen mode; Back returns.
 At the end of a game, listen for the score or One on One winner before the
 result-screen controls are announced. Press T or left stick press to repeat the
 final result while the game-over screen is visible.
 Press F8 or controller Select to turn mod speech off or on from any screen.
+Press F9 or controller West (X on an Xbox controller) to cycle the speech
+output mode. The same choice is available in Settings > Speech > OUTPUT MODE.
 BRAILLE OUTPUT in Settings > Speech is On by default. NVDA's Braille Viewer
 can display the braille and its text equivalent without a physical display.
 For an ON/OFF comparison, use NVDA's follow-cursors braille mode with Show

@@ -402,6 +402,7 @@ public sealed partial class BopItAccessMod
             AddAssignedControls(_scoreAction, seen);
             AddAssignedControls(_toggleSpeechAction, seen);
             AddAssignedControls(_speakHintsAction, seen);
+            AddAssignedControls(_changeSpeechOutputAction, seen);
         }
         catch (Exception ex)
         {

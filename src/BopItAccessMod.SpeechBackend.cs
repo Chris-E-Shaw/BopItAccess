@@ -70,6 +70,7 @@ public sealed partial class BopItAccessMod
     private long _nextScreenReaderDetectionAt;
     private long _nextSapiErrorLogAt;
     private long _nextSlowSapiTimingLogAt;
+    private long _nextSlowSapiQueueLogAt;
     private bool? _lastSeparateBrailleDispatchAccepted;
     private bool _separateBrailleAvailable;
     private long _nextSeparateBrailleCapabilityCheckAt;
@@ -516,6 +517,49 @@ public sealed partial class BopItAccessMod
                 WriteStatus("Tolk braille dispatch failed: " + ex.Message);
             _lastSeparateBrailleDispatchAccepted = false;
         }
+    }
+
+    private void PrewarmSapiFallbackOnWorker()
+    {
+        // Startup preferences are available now, but the main menu has not
+        // appeared yet. This worker already owns the STA used for SAPI.
+        string mode;
+        bool speechEnabled;
+        lock (_speechLock)
+        {
+            mode = _outputMode;
+            speechEnabled = _speechEnabled;
+        }
+        if (_shutdownRequested.IsSet || !speechEnabled ||
+            !string.Equals(mode, "Auto", StringComparison.OrdinalIgnoreCase) ||
+            _lastOutputBackend == OutputBackend.Sapi)
+            return;
+
+        try
+        {
+            long startedAt = Environment.TickCount64;
+            if (EnsureSapiOnWorker())
+                WriteStatus("Prepared SAPI fallback during game loading in " +
+                    (Environment.TickCount64 - startedAt) + " ms.");
+        }
+        catch (Exception ex)
+        {
+            // Auto can continue using its detected screen reader. A later
+            // explicit SAPI request may try initialization again.
+            WriteStatus("Could not prepare SAPI fallback: " + ex.Message);
+            ReleaseSapiOnWorker();
+        }
+    }
+
+    private void LogSapiQueueDelayOnWorker(long queuedAt, long dispatchStartedAt)
+    {
+        if (_lastOutputBackend != OutputBackend.Sapi || queuedAt <= 0)
+            return;
+        long queuedFor = dispatchStartedAt - queuedAt;
+        if (queuedFor < 150 || dispatchStartedAt < _nextSlowSapiQueueLogAt)
+            return;
+        WriteStatus($"Slow SAPI queue: announcement waited {queuedFor} ms before dispatch.");
+        _nextSlowSapiQueueLogAt = Environment.TickCount64 + 3000;
     }
 
     private bool SpeakSapiOnWorker(string text, bool interrupt,

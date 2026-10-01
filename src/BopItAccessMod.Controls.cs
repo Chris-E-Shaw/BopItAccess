@@ -108,6 +108,13 @@ public sealed partial class BopItAccessMod
             return true;
         }
 
+        AddedResetGyroControlRow? resetGyroRow = FindAddedResetGyroControlRow(selected);
+        if (resetGyroRow != null && resetGyroRow.Root.activeInHierarchy)
+        {
+            ReadResetGyroControlRow(resetGyroRow);
+            return true;
+        }
+
         AddedDescriptionControlRow? descriptionRow = FindAddedDescriptionControlRow(selected);
         if (descriptionRow != null && descriptionRow.Root.activeInHierarchy)
         {
@@ -135,6 +142,14 @@ public sealed partial class BopItAccessMod
         if (speakHintsRow != null && speakHintsRow.Root.activeInHierarchy)
         {
             SpeakHintsControlRow(speakHintsRow);
+            return true;
+        }
+
+        AddedChangeSpeechOutputControlRow? changeOutputRow =
+            FindAddedChangeSpeechOutputControlRow(selected);
+        if (changeOutputRow != null && changeOutputRow.Root.activeInHierarchy)
+        {
+            ChangeSpeechOutputControlRow(changeOutputRow);
             return true;
         }
 
@@ -398,10 +413,12 @@ public sealed partial class BopItAccessMod
             return null;
 
         string[] values = new string[_controlsRows.Length + _leaderboardControlRows.Count +
+            (_resetGyroControlRow == null ? 0 : 1) +
             (_descriptionControlRow == null ? 0 : 1) +
             (_scoreControlRow == null ? 0 : 1) +
             (_toggleSpeechControlRow == null ? 0 : 1) +
-            (_speakHintsControlRow == null ? 0 : 1)];
+            (_speakHintsControlRow == null ? 0 : 1) +
+            (_changeSpeechOutputControlRow == null ? 0 : 1)];
         for (int i = 0; i < _controlsRows.Length; i++)
         {
             ControlRow row = _controlsRows[i];
@@ -419,6 +436,14 @@ public sealed partial class BopItAccessMod
         foreach (AddedLeaderboardControlRow row in _leaderboardControlRows.Values)
         {
             string? value = ReadAddedLeaderboardBinding(row, _controlsRebindingManager);
+            if (value == null)
+                return null;
+            values[next++] = value;
+        }
+
+        if (_resetGyroControlRow != null)
+        {
+            string? value = ReadResetGyroControlSnapshot();
             if (value == null)
                 return null;
             values[next++] = value;
@@ -451,6 +476,14 @@ public sealed partial class BopItAccessMod
         if (_speakHintsControlRow != null)
         {
             string? value = SpeakHintsControlSnapshot();
+            if (value == null)
+                return null;
+            values[next++] = value;
+        }
+
+        if (_changeSpeechOutputControlRow != null)
+        {
+            string? value = ChangeSpeechOutputControlSnapshot();
             if (value == null)
                 return null;
             values[next] = value;
@@ -554,6 +587,9 @@ public sealed partial class BopItAccessMod
             AddRow(_controlsResetRow.gameObject, _controlsResetRow.GetInstanceID());
         foreach (AddedLeaderboardControlRow row in _leaderboardControlRows.Values)
             AddRow(row.Root, row.Root.GetInstanceID());
+        if (_resetGyroControlRow != null)
+            AddRow(_resetGyroControlRow.Root,
+                _resetGyroControlRow.Root.GetInstanceID());
         if (_descriptionControlRow != null)
             AddRow(_descriptionControlRow.Root,
                 _descriptionControlRow.Root.GetInstanceID());
@@ -565,6 +601,9 @@ public sealed partial class BopItAccessMod
         if (_speakHintsControlRow != null)
             AddRow(_speakHintsControlRow.Root,
                 _speakHintsControlRow.Root.GetInstanceID());
+        if (_changeSpeechOutputControlRow != null)
+            AddRow(_changeSpeechOutputControlRow.Root,
+                _changeSpeechOutputControlRow.Root.GetInstanceID());
 
         int index = -1;
         int count = 0;

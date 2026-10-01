@@ -376,14 +376,22 @@ public sealed partial class BopItAccessMod
         string? path = action == null || index < 0 || index >= action.bindings.Count
             ? null : action.bindings[index].overridePath;
         string? resolved = string.IsNullOrEmpty(path) ? null : InputSystem.FindControl(path)?.path;
-        if (action == null || manager == null || string.IsNullOrEmpty(resolved) ||
-            IsEssentialNativeScoreBinding(manager, resolved))
+        if (action == null || manager == null || string.IsNullOrEmpty(resolved))
         {
             RestoreScoreOriginalOverride();
             ReleaseScoreControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech(string.IsNullOrEmpty(resolved) ? "Binding unavailable" :
-                "That input is used to start or leave the screen");
+            QueueSpeech("Binding unavailable");
+            return;
+        }
+
+        if (IsBindingAssignedElsewhere(manager, action, index, resolved,
+                out string owner))
+        {
+            RestoreScoreOriginalOverride();
+            ReleaseScoreControlRebinding();
+            _lastControlsRebinding = false;
+            QueueSpeech("That input is already assigned to " + owner);
             return;
         }
 

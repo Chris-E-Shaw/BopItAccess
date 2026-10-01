@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.12", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.13", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -20,6 +20,7 @@ public sealed partial class BopItAccessMod : MelonMod
     private readonly object _speechLock = new();
     private Thread? _tolkThread;
     private string? _pendingSpeech;
+    private long _pendingSpeechQueuedAt;
     private string? _pendingPrioritySpeech;
     private string? _pendingPriorityFollowUpSpeech;
     private readonly Queue<string> _sequentialSpeech = new();
@@ -699,6 +700,7 @@ public sealed partial class BopItAccessMod : MelonMod
                 return;
             // Keep the newest focus announcement when navigation is faster than speech.
             _pendingSpeech = text;
+            _pendingSpeechQueuedAt = Environment.TickCount64;
             _pendingSpeechInterrupt = interrupt;
             _pendingSpeechIsDescription = false;
             if (interrupt)
@@ -722,6 +724,7 @@ public sealed partial class BopItAccessMod : MelonMod
             if (!_speechEnabled || _speechSuppressedForBackground)
                 return;
             _pendingSpeech = text;
+            _pendingSpeechQueuedAt = Environment.TickCount64;
             _pendingSpeechInterrupt = true;
             _pendingSpeechIsDescription = true;
             _sapiRenderSerial++;
@@ -746,6 +749,7 @@ public sealed partial class BopItAccessMod : MelonMod
             if (_pendingSpeechIsDescription)
             {
                 _pendingSpeech = null;
+                _pendingSpeechQueuedAt = 0;
                 _pendingSpeechIsDescription = false;
             }
 
@@ -775,6 +779,7 @@ public sealed partial class BopItAccessMod : MelonMod
             // Bop has started play. Drop any unsent song-selection message
             // and silence one that has already reached the screen reader.
             _pendingSpeech = null;
+            _pendingSpeechQueuedAt = 0;
             _pendingPrioritySpeech = null;
             _pendingPriorityFollowUpSpeech = null;
             _pendingSpeechIsDescription = false;
@@ -822,6 +827,7 @@ public sealed partial class BopItAccessMod : MelonMod
             _pendingPrioritySpeech = score;
             _pendingPriorityFollowUpSpeech = menu;
             _pendingSpeech = null;
+            _pendingSpeechQueuedAt = 0;
             _pendingSpeechInterrupt = false;
             _pendingSpeechIsDescription = false;
             _sapiRenderSerial++;
@@ -896,12 +902,19 @@ public sealed partial class BopItAccessMod : MelonMod
                 }
             }
 
+            // Auto mode normally speaks through an active screen reader. Prepare
+            // its SAPI fallback while the game is still loading, on this same
+            // STA worker, so a later switch to SAPI does not pay voice setup
+            // cost on the first focused item.
+            PrewarmSapiFallbackOnWorker();
+
             WaitHandle[] signals = { _shutdownRequested.WaitHandle, _speechRequested };
             while (WaitHandle.WaitAny(signals) != 0)
             {
                 string? priority;
                 string? priorityFollowUp;
                 string? announcement;
+                long announcementQueuedAt;
                 List<string>? sequential;
                 bool interrupt;
                 bool silence;
@@ -920,7 +933,9 @@ public sealed partial class BopItAccessMod : MelonMod
                     priorityFollowUp = _pendingPriorityFollowUpSpeech;
                     _pendingPriorityFollowUpSpeech = null;
                     announcement = _pendingSpeech;
+                    announcementQueuedAt = _pendingSpeechQueuedAt;
                     _pendingSpeech = null;
+                    _pendingSpeechQueuedAt = 0;
                     description = _pendingSpeechIsDescription;
                     _pendingSpeechIsDescription = false;
                     interrupt = _pendingSpeechInterrupt;
@@ -970,12 +985,30 @@ public sealed partial class BopItAccessMod : MelonMod
                     !_speechSuppressedForBackground &&
                     generation == Interlocked.Read(ref _speechGeneration))
                 {
-                    // A score sent in this batch always goes first. The
-                    // following menu speech is queued without interruption.
-                    bool followUpInterrupt = toggleNotice == null &&
-                        priority == null && priorityFollowUp == null && interrupt;
-                    bool accepted = OutputSpeechOnWorker(announcement, followUpInterrupt);
-                    WriteStatus($"Speech announcement '{announcement}' (interrupt {followUpInterrupt}) {(accepted ? "accepted" : "rejected")} by output backend.");
+                    // A newer focus request may have arrived while a priority
+                    // score or its follow-up occupied the worker. The normal
+                    // pending slot is latest-wins, including this brief gap
+                    // between dequeue and dispatch.
+                    bool superseded;
+                    lock (_speechLock)
+                        superseded = _pendingSpeech != null;
+                    if (!superseded)
+                    {
+                        // A score sent in this batch always goes first. The
+                        // following menu speech is queued without interruption.
+                        bool followUpInterrupt = toggleNotice == null &&
+                            priority == null && priorityFollowUp == null && interrupt;
+                        long dispatchStartedAt = Environment.TickCount64;
+                        bool accepted = OutputSpeechOnWorker(announcement, followUpInterrupt);
+                        if (accepted)
+                            LogSapiQueueDelayOnWorker(announcementQueuedAt, dispatchStartedAt);
+                        WriteStatus($"Speech announcement '{announcement}' (interrupt {followUpInterrupt}) {(accepted ? "accepted" : "rejected")} by output backend.");
+                    }
+                    else if (description)
+                    {
+                        lock (_speechLock)
+                            _descriptionSpeechMayBeActive = false;
+                    }
                 }
 
                 if (sequential != null)

@@ -59,6 +59,8 @@ public sealed partial class BopItAccessMod
                 _scoreRebindOperation != null ||
                 _speakHintsRebindOperation != null ||
                 _leaderboardRebindOperation != null ||
+                _resetGyroRebindOperation != null ||
+                _changeSpeechOutputRebindOperation != null ||
                 _controlsRebindingManager?.IsRebinding == true;
             if (rebinding)
             {
@@ -443,14 +445,22 @@ public sealed partial class BopItAccessMod
         string? path = action == null || index < 0 || index >= action.bindings.Count
             ? null : action.bindings[index].overridePath;
         string? resolved = string.IsNullOrEmpty(path) ? null : InputSystem.FindControl(path)?.path;
-        if (action == null || manager == null || string.IsNullOrEmpty(resolved) ||
-            IsToggleSpeechBindingInUse(manager, resolved))
+        if (action == null || manager == null || string.IsNullOrEmpty(resolved))
         {
             RestoreToggleSpeechOriginalOverride();
             ReleaseToggleSpeechControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech(string.IsNullOrEmpty(resolved) ? "Binding unavailable" :
-                "That input is already used by a game or accessibility control");
+            QueueSpeech("Binding unavailable");
+            return;
+        }
+
+        if (IsBindingAssignedElsewhere(manager, action, index, resolved,
+                out string owner))
+        {
+            RestoreToggleSpeechOriginalOverride();
+            ReleaseToggleSpeechControlRebinding();
+            _lastControlsRebinding = false;
+            QueueSpeech("That input is already assigned to " + owner);
             return;
         }
 

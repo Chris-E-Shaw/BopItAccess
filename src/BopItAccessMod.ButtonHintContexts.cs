@@ -34,6 +34,7 @@ public sealed partial class BopItAccessMod
         _globalButtonHintControlsRegistered = true;
         RegisterGlobalButtonHintControl("ToggleSpeech", ToggleSpeechHintInstruction);
         RegisterGlobalButtonHintControl("SpeakHints", SpeakHintsBindingInstruction);
+        RegisterGlobalButtonHintControl("ChangeSpeechOutput", ChangeSpeechOutputBindingInstruction);
     }
 
     // Resolve the screen that currently owns input. This follows the same
@@ -94,14 +95,18 @@ public sealed partial class BopItAccessMod
                 _descriptionRebindOperation != null ||
                 _scoreRebindOperation != null ||
                 _speakHintsRebindOperation != null ||
-                _toggleSpeechRebindOperation != null;
+                _toggleSpeechRebindOperation != null ||
+                _resetGyroRebindOperation != null ||
+                _changeSpeechOutputRebindOperation != null;
             if (rebinding)
             {
                 bool custom = _leaderboardRebindOperation != null ||
                     _descriptionRebindOperation != null ||
                     _scoreRebindOperation != null ||
                     _speakHintsRebindOperation != null ||
-                    _toggleSpeechRebindOperation != null;
+                    _toggleSpeechRebindOperation != null ||
+                    _resetGyroRebindOperation != null ||
+                    _changeSpeechOutputRebindOperation != null;
                 string device = _controlsRebindingManager?.ActiveDevice ??
                     _controlsRebindingManager?.deviceTracker?.ActiveDevice ??
                     string.Empty;
@@ -377,7 +382,9 @@ public sealed partial class BopItAccessMod
         if (_controlsRebindingManager?.IsRebinding == true ||
             _leaderboardRebindOperation != null || _descriptionRebindOperation != null ||
             _scoreRebindOperation != null || _speakHintsRebindOperation != null ||
-            _toggleSpeechRebindOperation != null)
+            _toggleSpeechRebindOperation != null ||
+            _resetGyroRebindOperation != null ||
+            _changeSpeechOutputRebindOperation != null)
             return hint;
 
         EnsureGlobalButtonHintControlsRegistered();
