@@ -44,6 +44,7 @@ The Bop It Access build command compiles only this mod; it does not build or dow
 
 ## Documentation
 
+- [Game and mod user's guide](BopItAccess-user-guide.html) — a beginner-friendly walkthrough of controls, settings, menus, and play modes.
 - [Detailed feature and control guide](README.txt). Its installation section describes the locally prepared install ZIPs; this GitHub repository provides source only.
 - [Technical build history](BopItAccess-build-history.html).
 - [Git workflow for this project](GIT-WORKFLOW.md).

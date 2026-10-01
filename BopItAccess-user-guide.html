@@ -1,0 +1,582 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Bop It Access | Game and Mod User's Guide</title>
+  <style>
+    :root { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.65; color: #202434; background: #f7f8fc; }
+    body { margin: 0; }
+    .skip { position: absolute; left: .75rem; top: -4rem; padding: .5rem .8rem; background: white; z-index: 5; }
+    .skip:focus { top: .75rem; }
+    header { background: #17274b; color: white; padding: 2.5rem max(1rem, calc((100vw - 68rem) / 2)); }
+    header p { max-width: 55rem; margin-bottom: 0; }
+    main, footer { max-width: 68rem; margin: auto; padding: 0 1.25rem 2rem; }
+    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 .5rem; }
+    h2 { margin-top: 3rem; padding-top: .35rem; border-top: 3px solid #6679b5; }
+    h3 { margin-top: 2rem; }
+    h4 { margin-top: 1.5rem; }
+    a { color: #164c97; text-underline-offset: .15em; }
+    a:focus-visible { outline: 3px solid #ed8d15; outline-offset: 2px; }
+    header a { color: #fff; }
+    nav, .panel, .note { background: #fff; border: 1px solid #cdd5e9; border-radius: .65rem; padding: 1rem 1.3rem; margin: 1.3rem 0; }
+    nav ul { columns: 2; padding-left: 1.5rem; }
+    nav li { break-inside: avoid; margin: .2rem 0; }
+    .note { border-left: 5px solid #b16613; }
+    .planned { background: #fdf4df; border-left: 5px solid #ae6b05; padding: .6rem .9rem; }
+    .current { background: #e9f6ed; border-left: 5px solid #24714a; padding: .6rem .9rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.6rem; background: #fff; }
+    caption { text-align: left; font-weight: 700; padding: .3rem 0; }
+    th, td { border: 1px solid #bdc8df; padding: .55rem .65rem; text-align: left; vertical-align: top; }
+    th { background: #e7ecf7; }
+    tr:nth-child(even) td { background: #f5f7fc; }
+    code, kbd { font-family: ui-monospace, Consolas, monospace; }
+    kbd { border: 1px solid #8790a7; border-bottom-width: 2px; border-radius: .25rem; padding: 0 .25rem; white-space: nowrap; }
+    pre { overflow-x: auto; padding: 1rem; border-radius: .5rem; background: #e7ecf7; }
+    .table-scroll { overflow-x: auto; }
+    .small { font-size: .93rem; }
+    footer { border-top: 3px solid #6679b5; }
+    @media (max-width: 45rem) { nav ul { columns: 1; } th, td { padding: .4rem; } }
+    @media (prefers-color-scheme: dark) {
+      :root { color: #e8ebf7; background: #121623; }
+      nav, .panel, .note, table, .skip { background: #1d2537; border-color: #4c5b79; }
+      a { color: #a9c8ff; }
+      th, pre { background: #303c59; }
+      th, td { border-color: #586782; }
+      tr:nth-child(even) td { background: #242d43; }
+      .planned { background: #453515; }
+      .current { background: #193b2b; }
+    }
+  </style>
+</head>
+<body>
+<a class="skip" href="#content">Skip to the guide</a>
+<header>
+  <h1>Bop It Access</h1>
+  <p>A friendly guide to Bop It! The Video Game and its accessibility mod. This guide describes the current Windows mod, and clearly labels ideas that are still planned.</p>
+</header>
+<main id="content">
+  <nav aria-label="Table of contents">
+    <h2 id="contents">Contents</h2>
+    <ul>
+      <li><a href="#welcome">Welcome</a></li>
+      <li><a href="#game">What is Bop It!?</a></li>
+      <li><a href="#mod">What is Bop It Access?</a></li>
+      <li><a href="#transparency">Honest transparency note</a></li>
+      <li><a href="#features">Accessibility features</a></li>
+      <li><a href="#quality">Quality of life features</a></li>
+      <li><a href="#limitations">Notes and limitations</a></li>
+      <li><a href="#buy">Buy the game and check your computer</a></li>
+      <li><a href="#install">Get and install the mod</a></li>
+      <li><a href="#controls">Complete control reference</a></li>
+      <li><a href="#first-launch">Your first launch</a></li>
+      <li><a href="#speech-options">Speech menu settings</a></li>
+      <li><a href="#menu-guide">Menu guide</a></li>
+      <li><a href="#main-menu">Main menu</a></li>
+      <li><a href="#play-menu">Play menu</a></li>
+      <li><a href="#song-menu">Song and difficulty selection</a></li>
+      <li><a href="#settings-menu">Settings menu</a></li>
+      <li><a href="#controls-menu">Controls menu</a></li>
+      <li><a href="#audio-latency-menu">Audio latency calibration</a></li>
+      <li><a href="#leaderboards-menu">Leaderboards</a></li>
+      <li><a href="#achievements-menu">Achievements book</a></li>
+      <li><a href="#credits-menu">Game credits</a></li>
+      <li><a href="#results-menu">Results and game over</a></li>
+      <li><a href="#pause-menu">Pause menu</a></li>
+      <li><a href="#mode-guide">Detailed mode guide</a></li>
+      <li><a href="#roadmap">What may come next</a></li>
+      <li><a href="#project-credits">Credits and third-party notices</a></li>
+      <li><a href="#legal">Legal notes</a></li>
+      <li><a href="#thanks">A thank-you</a></li>
+    </ul>
+  </nav>
+
+  <section id="welcome">
+    <h2>Welcome</h2>
+    <p>Welcome to Bop It Access! Whether this is your first Bop It game, your first video game, or a game you already love, you are welcome here. This guide starts with the basics and explains the mod's features as you encounter them. You can use the contents above to jump straight to a topic.</p>
+    <p>A <strong>keyboard</strong> is the set of keys on your computer. A <strong>controller</strong> is a handheld gamepad. Where this guide mentions Xbox button names, they are examples: another controller may use different labels for the same button position. A <strong>menu item</strong> is a choice such as Play or Settings. The item with <strong>focus</strong> is the one your next confirm press will activate.</p>
+  </section>
+
+  <section id="game">
+    <h2>What is Bop It!?</h2>
+    <p><em>Bop It! The Video Game</em> brings the Bop It rhythm and reaction game to a computer. A voice calls commands, and you make the matching input before time runs out. In Classic difficulty the main commands are <strong>Bop</strong>, <strong>Twist</strong>, and <strong>Pull</strong>. Extreme difficulty also adds <strong>Spin</strong> and <strong>Flick</strong>. The commands get faster, so listening and timing matter more as a round goes on. The game offers Solo, Party, Pass It, and One-on-One play, with four visual and musical stages: Shapes, Space, City, and Office. The <a href="https://store.steampowered.com/app/3214360/">official Steam page</a> introduces the game, and the <a href="https://bopitthevideogame.com/bop-it-the-video-game-press-release">official game description</a> explains its modes.</p>
+    <p>When you hear a command, use its assigned control. For example, on the default keyboard, Bop is Space. You can find every default in the <a href="#controls">control reference</a>. You do not have to memorize everything before starting: the mod can speak button hints on menus, and you can request a hint on demand.</p>
+  </section>
+
+  <section id="mod">
+    <h2>What is Bop It Access?</h2>
+    <p>Bop It Access is an unofficial, independent mod for the <strong>Windows x64 Steam version</strong> of the game. A mod is an optional addition that changes how a game behaves. This one adds speech and braille support for menus and results, on-demand descriptions of the four stages, extra controls, and useful settings such as a frame-rate limit. It aims to make the game easier to navigate while leaving its spoken gameplay cues and timing intact.</p>
+    <p>The mod uses MelonLoader to load into the game. It uses Tolk to communicate with supported screen readers and can use Windows SAPI speech as a fallback. It does not replace the game, and you still need your own copy of Bop It!.</p>
+  </section>
+
+  <section id="transparency" class="panel">
+    <h2>Honest transparency note</h2>
+    <p>This mod was made in heavy collaboration with artificial intelligence. All research for the mod was conducted by AI, and its code was generated by AI rather than originally written by hand. The design decisions and testing were entirely human. Every addition and change was carefully reviewed by a person, and real people played and tested the mod on different systems. Without agentic coding, this project would not exist. Thank you for giving this human-led, AI-assisted project a chance.</p>
+  </section>
+
+  <section id="features">
+    <h2>Accessibility features</h2>
+    <ul>
+      <li>Speech for the main menu, Play and song selection, Settings and Controls, speech settings, audio calibration, leaderboards, the in-game achievements book, credits, and result screens.</li>
+      <li>Focused buttons, sliders, toggles, names, values, and changed values are announced. Optional indexing, control-type labels, slider ranges, and capitalization filtering let you tune the detail.</li>
+      <li>Score or winner speech at game over, followed by queued menu speech, plus a Read Score shortcut on the results screen only.</li>
+      <li>Four stage descriptions, spoken on request from the song-selection screen before play begins.</li>
+      <li>Optional One-on-One colour and life-count announcements.</li>
+      <li>Button hints for keyboard, controller, or both, with adjustable timing, repetitions, and an on-demand Speak Hints shortcut.</li>
+      <li>Screen-reader output through Tolk, optional braille output, and configurable SAPI fallback.</li>
+      <li>Keyboard and controller remapping for several native and mod controls, including leaderboard filters and speech shortcuts.</li>
+      <li>A saved master speech switch with spoken instructions for turning speech back on.</li>
+    </ul>
+  </section>
+
+  <section id="quality">
+    <h2>Quality of life features</h2>
+    <ul>
+      <li>A saved Limit FPS setting with 30, 60, 120, 240, and Unlimited options. The default is 60.</li>
+      <li>Separate options to mute game audio or mod speech when the game window is in the background.</li>
+      <li>A Change Speech Output shortcut that cycles through the same modes as the Speech menu.</li>
+      <li>Saved preferences across game sessions, including speech output, braille, hints, and the frame-rate cap.</li>
+      <li>More controls available for remapping in the game's own Controls menu, with duplicate assignments rejected.</li>
+    </ul>
+  </section>
+
+  <section id="limitations">
+    <h2>Notes and limitations</h2>
+    <ul>
+      <li><strong>Descriptions are requested before the round.</strong> The mod intentionally does not narrate scenery during active gameplay. A player must hear and react to the game's verbal commands; extra narration could cover a command and end the round.</li>
+      <li><strong>SAPI is a backup speech engine.</strong> It is available when you prefer it or when no supported screen reader is running, but its responsiveness is still below the goal for this project. Your installed voice and system can affect the delay.</li>
+      <li><strong>Some native controls are still fixed.</strong> The mod greatly expands the game's Controls menu, but it does not make every game input remappable.</li>
+      <li><strong>Frame rate affects input polling.</strong> The FPS limiter can sharply reduce system load. It does not deliberately slow animations or change game timing, but the game checks frame-based input less often at lower FPS. A higher setting can give more accurate input timing, especially in fast rounds.</li>
+      <li><strong>Speech support is strongest in menus and results.</strong> Some gameplay and pause screens are not yet fully narrated. A mouse hover may not speak until that item actually receives game focus.</li>
+      <li><strong>Windows x64 is the current mod platform.</strong> The game may be sold for other systems, but this mod's current loading and speech dependencies are for Windows x64.</li>
+    </ul>
+  </section>
+
+  <section id="buy">
+    <h2>Buy the game and check your computer</h2>
+    <p>Buy <a href="https://store.steampowered.com/app/3214360/">Bop It! The Video Game on Steam</a>. If Steam is new to you, <a href="https://store.steampowered.com/about/">install Steam</a>, create or sign in to an account, purchase the game from its Store page, and install it from your Steam Library. The <a href="https://help.steampowered.com/en/faqs/view/6F74-68BA-1B77-8727">Steam getting-started guide</a> covers those steps. A purchase of the game is separate from this mod.</p>
+    <p>Before buying or installing, please check the <strong>current minimum system requirements on the Steam page</strong>. At the time this guide was written, its Windows minimum included Windows 10 64-bit, an Intel i5-4460 or AMD FX-6300, 8 GB of memory, a graphics processor with 2 GB of video memory, and 2 GB of storage. The page also says an internet connection is needed for leaderboards. Requirements can change, so Steam's listing is the final reference.</p>
+    <p>You are still welcome to try and report problems on a computer below the game's minimum requirements. If an issue is caused by an under-spec system, however, a fix cannot be guaranteed.</p>
+  </section>
+
+  <section id="install">
+    <h2>Get and install the mod</h2>
+    <p class="planned"><strong>Installer status:</strong> A public mod installer has not been designed or released yet, so there is no real installer download link or installer screen to follow. Please watch the <a href="https://github.com/Chris-E-Shaw/BopItAccess">Bop It Access project page</a> for future availability. This is the installer link's intended home, not a claim that an installer is there now.</p>
+    <h3>Current installation route: build from source</h3>
+    <p>The public GitHub repository currently contains source and documentation, with no compiled download or GitHub release. Building means turning the source files into the mod's DLL. The <a href="README.md#build-from-source">repository's build instructions</a> are the maintained reference. Here is the complete current route in everyday language:</p>
+    <ol>
+      <li>Install the game through Steam on Windows x64. Find its folder from Steam's Library if you did not use the default location.</li>
+      <li>With the game closed, <a href="https://github.com/LavaGang/MelonLoader#how-to-use-the-installer">install MelonLoader</a> into that game folder. Development has used x64 MelonLoader 0.7.3 Open-Beta with this game; other combinations are not yet verified. Start the game once and close it again. This lets MelonLoader prepare the files the mod needs.</li>
+      <li>Install a .NET SDK that includes the .NET 6 targeting pack. <a href="https://github.com/Chris-E-Shaw/BopItAccess">Download or clone the Bop It Access source</a>, open PowerShell in the folder containing its <code>README.md</code>, and run the command below. Change the example game path if your Steam library is elsewhere.</li>
+    </ol>
+    <pre><code>$gameDir = 'C:\Program Files (x86)\Steam\steamapps\common\Bop It!'
+dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</code></pre>
+    <ol start="4">
+      <li>With the game closed, copy the built file <code>src\bin\Release\net6.0\BopItAccess.dll</code> into the game's <code>Mods</code> folder. Create that folder if needed.</li>
+      <li>Obtain compatible 64-bit <code>Tolk.dll</code> and <code>nvdaControllerClient64.dll</code> from their upstream sources as described in the <a href="README.md#install-your-build">repository's installation instructions</a>. Place both beside the game's executable, in the main game folder, <strong>not</strong> inside <code>Mods</code>.</li>
+      <li>Start your screen reader if you use one, then launch the game through Steam. If there is no compatible running screen reader, the mod can use SAPI speech.</li>
+    </ol>
+    <p>One common Steam location is <code>C:\Program Files (x86)\Steam\steamapps\common\Bop It!</code>. Your location may differ if you chose a different Steam library. If you have a locally supplied install ZIP from the project, close the game and extract its contents into the game folder, allowing the <code>Mods</code> folder to merge. Those local packages are separate from the source-only GitHub repository.</p>
+    <h3>Future installer walkthrough (planned)</h3>
+    <div class="planned">
+      <p><strong>Provisional outline only:</strong> When an official installer exists, the expected steps are to obtain it from the project page, close the game, run the installer, point it to the Bop It! folder if it cannot find the game automatically, let it install the mod and required speech files, and then launch through Steam. The real installer may have different choices. Its exact screens, update method, removal method, and download link will be documented here once they exist.</p>
+      <p>For now, use the project page and source instructions above. No third-party page can currently supply an official Bop It Access installer.</p>
+    </div>
+  </section>
+
+  <section id="controls">
+    <h2>Complete control reference</h2>
+    <p>These are the defaults found in the current game input map and mod source. <strong>Rebinding can change them</strong>, so your Controls menu is the final word for your own setup. The controller column describes the game's usual action or an Xbox-style example; physical motion and labels can vary with controller type. A dash means no default assignment was found for that device, not that the action is impossible to perform another way.</p>
+    <p><strong>Quick orientation:</strong> D-pad means the four-way directional pad. A bumper sits above a trigger. Left stick press and right stick press mean pushing the corresponding stick inward until it clicks. Select may be called Back or View on some controllers; Start may be called Menu.</p>
+    <div class="table-scroll"><table>
+      <caption>Game and mod controls, including controls outside the remapping menu</caption>
+      <thead><tr><th scope="col">Action</th><th scope="col">What it does</th><th scope="col">Default keyboard</th><th scope="col">Default controller</th><th scope="col">Can you rebind it in Controls?</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Bop</th><td>Respond to “Bop!” in a round; also used as a main game action.</td><td>Space</td><td>South face button (A on Xbox)</td><td>Yes</td></tr>
+        <tr><th scope="row">Bop (Player 2)</th><td>The second Bop input used where the game asks for it, including two-player play.</td><td>D</td><td>D-pad Right</td><td>Yes</td></tr>
+        <tr><th scope="row">Twist</th><td>Respond to “Twist!”; change the selected song on the song screen.</td><td>Left Arrow</td><td>North face button (Y on Xbox)</td><td>Yes</td></tr>
+        <tr><th scope="row">Pull</th><td>Respond to “Pull!”; switch Classic/Extreme on the song screen.</td><td>Right Arrow</td><td>Right stick motion</td><td>Yes</td></tr>
+        <tr><th scope="row">Spin</th><td>Respond to “Spin!” in Extreme difficulty.</td><td>S</td><td>D-pad Down in the inspected Xbox-style map; other controllers can differ</td><td>Yes</td></tr>
+        <tr><th scope="row">Flick</th><td>Respond to “Flick!” in Extreme difficulty.</td><td>W</td><td>Left stick motion in the inspected Xbox-style map; other controllers can differ</td><td>Yes</td></tr>
+        <tr><th scope="row">Reset Gyro</th><td>Recenter a controller motion sensor when the game uses one.</td><td>R</td><td>Right trigger</td><td>Yes, exposed by the mod</td></tr>
+        <tr><th scope="row">Move menu focus</th><td>Choose the next or previous menu item.</td><td>Up/Down Arrows or W/S; Left/Right Arrows or A/D where the screen allows</td><td>Either stick or D-pad, depending on the screen</td><td>No separate row</td></tr>
+        <tr><th scope="row">Confirm / activate</th><td>Open or use the focused menu item.</td><td>Enter or Space</td><td>South face button (A on Xbox)</td><td>No separate row</td></tr>
+        <tr><th scope="row">Back</th><td>Return to the previous menu or leave a panel.</td><td>Backspace</td><td>East face button (B on Xbox)</td><td>No separate row</td></tr>
+        <tr><th scope="row">Menu / pause</th><td>Open the game's menu or pause a round where available.</td><td>Escape</td><td>Start / Menu</td><td>No separate row</td></tr>
+        <tr><th scope="row">Toggle fullscreen</th><td>Switch the game window between fullscreen and windowed display.</td><td>F11</td><td>No default found</td><td>No separate row</td></tr>
+        <tr><th scope="row">Leaderboard group previous / next</th><td>Move among Local, Friends, and Global where available.</td><td>O / P</td><td>Left bumper / right bumper</td><td>Yes, two mod-added rows</td></tr>
+        <tr><th scope="row">Leaderboard date previous / next</th><td>Move among Today, This Month, and All Time where available.</td><td>K / L</td><td>D-pad Left / D-pad Right</td><td>Yes, two mod-added rows</td></tr>
+        <tr><th scope="row">Leaderboard device filter</th><td>Change the selected device category where that filter appears.</td><td>Right Arrow</td><td>Right stick right/down, depending on the connected controller</td><td>No separate row</td></tr>
+        <tr><th scope="row">Read leaderboard row</th><td>Speak one score row at a time.</td><td>Page Up / Page Down</td><td>Up / Down when no leaderboard filter has focus</td><td>No separate row</td></tr>
+        <tr><th scope="row">Turn achievement page</th><td>Show the previous or next book page.</td><td>Left / Right Arrows</td><td>Left / right bumper</td><td>No separate row</td></tr>
+        <tr><th scope="row">Read achievement or credit line</th><td>Step through the spoken entries on a page or in the credits.</td><td>Up / Down Arrows or W/S</td><td>Menu Up / Down</td><td>No separate row</td></tr>
+        <tr><th scope="row">Read Descriptions</th><td>Speak the current stage's visual description on the song screen only.</td><td>G</td><td>Left trigger (LT)</td><td>Yes</td></tr>
+        <tr><th scope="row">Read Score</th><td>Repeat the final score, or winner in One-on-One, on the results screen only.</td><td>T</td><td>Left stick press</td><td>Yes</td></tr>
+        <tr><th scope="row">Toggle Speech</th><td>Turn all ordinary mod speech off or back on; the setting is saved.</td><td>F8</td><td>Select / Back / View</td><td>Yes</td></tr>
+        <tr><th scope="row">Speak Hints</th><td>Read the current screen's button hints when they are available.</td><td>H</td><td>Right stick press</td><td>Yes</td></tr>
+        <tr><th scope="row">Change Speech Output</th><td>Cycle the same output choices as Speech &gt; Output Mode.</td><td>F9</td><td>West face button (X on Xbox)</td><td>Yes</td></tr>
+        <tr><th scope="row">Invincible (native extra)</th><td>An assist or development action named in the game's input map; its player-facing effect has not been verified.</td><td>Shift+I</td><td>Right bumper + West face button</td><td>No separate row</td></tr>
+        <tr><th scope="row">AutoPlay (native extra)</th><td>An assist or development action named in the game's input map; its player-facing effect has not been verified.</td><td>Shift+A</td><td>Right bumper + right trigger</td><td>No separate row</td></tr>
+        <tr><th scope="row">Debug Menu (native extra)</th><td>A diagnostic action named in the game's input map; its player-facing effect has not been verified.</td><td>Shift+X</td><td>Right bumper + right stick press</td><td>No separate row</td></tr>
+        <tr><th scope="row">Mouse point / click / scroll</th><td>Use the visible pointer and mouse to interact with the game's UI where it accepts them. Hover alone may not move focus for speech.</td><td>Mouse movement, click, and wheel</td><td>—</td><td>No separate row</td></tr>
+        <tr><th scope="row">Mouse right / middle click</th><td>Extra native UI pointer actions; this guide has not confirmed a distinct game action for either click.</td><td>Right / middle mouse button</td><td>—</td><td>No separate row</td></tr>
+        <tr><th scope="row">Touch press / position</th><td>Native touch input actions for a device with a touch screen; they are not needed for normal keyboard or controller play.</td><td>Touch screen, if present</td><td>—</td><td>No separate row</td></tr>
+        <tr><th scope="row">Cancel (native UI)</th><td>Generic cancel action present in the input map. Its distinct default has not been confirmed; use the Back control for ordinary menus.</td><td>Not confirmed separately</td><td>Not confirmed separately</td><td>No separate row</td></tr>
+      </tbody>
+    </table></div>
+    <p class="note"><strong>About the native extras:</strong> Invincible, AutoPlay, and Debug Menu are listed for completeness, not recommended for ordinary play. Their effects have not been verified. Touch and extra pointer actions are also listed so you can tell them apart from the keyboard and controller controls used in this guide.</p>
+    <p>Use Settings &gt; Controls to change the rows marked “Yes.” The mod rejects duplicate assignments, so one input does not silently take two active actions. Reset to Default restores the defaults. The dedicated UI actions, page turning, score-row reading, mouse actions, and the extra native bindings do not currently have rows in that menu.</p>
+  </section>
+
+  <section id="first-launch">
+    <h2>Your first launch</h2>
+    <ol>
+      <li>Start your screen reader if you use one. Launch Bop It! through Steam after installing MelonLoader, the mod DLL, and the required Tolk runtime files.</li>
+      <li>Wait for the announcement: <q>Bop It Access speech is ready. The game is still loading. Wait for the main menu announcement before using the controls.</q> The mod becomes ready before the game finishes loading.</li>
+      <li>Wait several more seconds for the main menu to appear and be announced. Inputs may do nothing during this interval. Once a menu item such as Play is read, you can move with Up/Down and confirm with Enter, Space, or your controller's confirm button.</li>
+      <li>If you previously turned speech off, the saved setting stays off. The mod gives a spoken recovery message at startup with the current keyboard and controller binding for Toggle Speech. By default, press F8 or controller Select to turn it on again.</li>
+      <li>For a comfortable first visit, open Settings &gt; Speech and choose your speech, braille, and hint preferences. You can press H or right stick press for available button hints on a supported menu.</li>
+    </ol>
+    <div class="planned">
+      <h3>First-time welcome dialogue (planned, not yet in the game)</h3>
+      <p>A future build is intended to welcome first-time players and ask whether they want to configure mod settings first, which would be recommended, or skip straight to the game. <strong>This dialogue is not implemented today.</strong> You will currently reach the normal main menu after the loading announcement, and can open Settings yourself.</p>
+    </div>
+  </section>
+
+  <section id="speech-options">
+    <h2>Speech menu settings</h2>
+    <p>Open <strong>Settings &gt; Speech</strong>. Move through the rows with your menu Up/Down control. Confirm a toggle or button; use Left/Right to change a slider. The defaults below are for a new setup. Changes are remembered between sessions. If speech is off, Toggle Speech still works, and the Speech Output row uses that same master switch.</p>
+    <div class="table-scroll"><table>
+      <caption>Every current Speech menu row, in menu order</caption>
+      <thead><tr><th scope="col">Setting</th><th scope="col">Choices / default</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Speech Output</th><td>On / Off; <strong>On</strong></td><td>Master switch for mod speech. Turning it off gives a final spoken recovery instruction with both current device bindings. Turning it back on announces that speech is on.</td></tr>
+        <tr><th scope="row">Braille Output</th><td>On / Off; <strong>On</strong></td><td>Sends the same announcements to a compatible screen reader's braille output. A connected braille display or NVDA's Braille Viewer can show them.</td></tr>
+        <tr><th scope="row">Mute Speech in Background</th><td>On / Off; <strong>Off</strong></td><td>When on, stops and discards mod speech while another window has focus.</td></tr>
+        <tr><th scope="row">Indexing</th><td>On / Off; <strong>Off</strong></td><td>Adds an item's position, such as “Play, 1 of 6,” across supported menus.</td></tr>
+        <tr><th scope="row">Filter Capitalisation</th><td>On / Off; <strong>On</strong></td><td>Changes all-capitals text to natural sentence case for speech and braille only. The game's visible lettering stays as designed.</td></tr>
+        <tr><th scope="row">Read Control Types</th><td>On / Off; <strong>Off</strong></td><td>Adds labels such as “button,” “toggle,” or “slider” to focused controls.</td></tr>
+        <tr><th scope="row">Slider Ranges</th><td>On / Off; <strong>Off</strong></td><td>Reads a focused slider's available endpoints, such as “range 0 to 100.” Changing it still reads just the new value.</td></tr>
+        <tr><th scope="row">One-on-One Feedback</th><td>On / Off; <strong>Off</strong></td><td>Speaks the active Green or Yellow colour and the remaining life count when a life is lost or gained in One-on-One.</td></tr>
+        <tr><th scope="row">Hints Type</th><td>Automatic, Keyboard, Controller, Both; <strong>Automatic</strong></td><td>Chooses which device's controls the hints describe. Automatic follows the last used keyboard or controller input. Both names each device explicitly.</td></tr>
+        <tr><th scope="row">Auto-Speak Button Hints</th><td>On / Off; <strong>On</strong></td><td>Controls automatic hints. The Speak Hints shortcut still works on demand when this is off.</td></tr>
+        <tr><th scope="row">Button Hints Delay</th><td>None, 5, 10, 15, 30, 60 seconds; <strong>None</strong></td><td>None puts the hint after the focused item's announcement, in one speech string. A timed choice waits for inactivity before the first separate hint. The 5-second choice may interrupt speech already in progress.</td></tr>
+        <tr><th scope="row">Repeat Button Hints</th><td>Off, 2x, 3x, 4x, 5x, Infinitely; <strong>Off</strong></td><td>Sets the total number of times to hear a hint in one cycle. “2x” means the first reading plus one repeat.</td></tr>
+        <tr><th scope="row">Repeat Interval</th><td>15, 30, 45, 60 seconds; <strong>15 seconds</strong></td><td>Time between the repeat readings above. Speaking a hint on demand replaces the pending first automatic hint but still allows configured repeats.</td></tr>
+        <tr><th scope="row">Output Mode</th><td>Auto, SAPI, JAWS, Window-Eyes, NVDA, System Access, ZoomText; <strong>Auto</strong></td><td>Auto uses a detected screen reader and falls back to SAPI. A named reader must be available; an unavailable choice falls back to SAPI. This is also controlled by Change Speech Output.</td></tr>
+        <tr><th scope="row">SAPI Voice</th><td>System default or installed 64-bit SAPI voices; <strong>System default</strong></td><td>Chooses the Windows voice used for direct SAPI or Auto's SAPI fallback.</td></tr>
+        <tr><th scope="row">SAPI Volume</th><td>5–100 in steps of 5; <strong>100</strong></td><td>Adjusts SAPI speech loudness. The minimum stays above zero so recovery messages remain audible.</td></tr>
+        <tr><th scope="row">SAPI Rate</th><td>0–100 in steps of 5; <strong>50</strong></td><td>Adjusts SAPI speaking speed.</td></tr>
+        <tr><th scope="row">SAPI Pitch</th><td>0–100 in steps of 5; <strong>50</strong></td><td>Adjusts SAPI voice pitch.</td></tr>
+        <tr><th scope="row">Back</th><td>Button</td><td>Return to Settings.</td></tr>
+      </tbody>
+    </table></div>
+    <p>Hints are kept quiet during active gameplay and the beat-timing part of audio calibration, when speech could cover an important sound. Even if you switch speech off, the mod can still announce how to turn it back on at startup or when you make that change.</p>
+  </section>
+
+  <section id="menu-guide">
+    <h2>Menu guide</h2>
+    <p>The following tables follow the path you are likely to take through the game. On ordinary menus, move focus with Up/Down, activate the focused item with Enter or Space (or controller confirm), and use Backspace (or controller back) to return. Some screens use other controls; those are explained where needed. If a choice is unavailable in your current state, the game may hide it.</p>
+  </section>
+
+  <section id="main-menu">
+    <h3>Main menu</h3>
+    <p>This is where you arrive once the game finishes loading. The mod speaks each focused option.</p>
+    <div class="table-scroll"><table>
+      <caption>Main menu choices</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Play</th><td>Open the four game modes.</td></tr>
+        <tr><th scope="row">Leaderboards</th><td>Browse ranked scores and available filters.</td></tr>
+        <tr><th scope="row">Achievements</th><td>Open the game's own achievements book, where you can read pages and entries.</td></tr>
+        <tr><th scope="row">Settings</th><td>Change audio, display, controls, and speech preferences.</td></tr>
+        <tr><th scope="row">Credits</th><td>Show the game's original credits. The mod lets you read lines at your own pace.</td></tr>
+        <tr><th scope="row">Quit</th><td>Close the game.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="play-menu">
+    <h3>Play menu</h3>
+    <p>Each mode is introduced briefly here. For an in-depth walkthrough of every rule, how a round ends, and how results work, visit the <a href="#mode-guide">detailed mode guide</a>.</p>
+    <div class="table-scroll"><table>
+      <caption>Play choices</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Solo</th><td>Play one continuous score-building run by yourself.</td></tr>
+        <tr><th scope="row">Party</th><td>Take separate turns with other players and compare scores in a session leaderboard.</td></tr>
+        <tr><th scope="row">Pass It</th><td>Share one continuous run, handing the controller to the next player when the game calls for it.</td></tr>
+        <tr><th scope="row">One-on-One</th><td>Two players, Green and Yellow, compete with lives rather than a numeric final score.</td></tr>
+        <tr><th scope="row">Back, if shown</th><td>Return to the main menu. The usual Back control can also return.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="song-menu">
+    <h3>Song and difficulty selection</h3>
+    <p>After choosing any mode, you choose one of four songs/stages and decide whether to use Extreme difficulty. The mod announces the current song and Extreme state every time this screen opens. Changing either one speaks its new value. Use <strong>Twist</strong> to change the song, <strong>Pull</strong> to change Classic/Extreme, <strong>Bop</strong> to begin, and <strong>Back</strong> to return. You may press <strong>G</strong> or <strong>left trigger</strong> to hear the selected stage's description before starting. Starting play stops menu speech so a spoken game command remains clear.</p>
+    <div class="table-scroll"><table>
+      <caption>Song-selection choices and actions</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Shapes</th><td>Choose the playful geometric stage and its music.</td></tr>
+        <tr><th scope="row">Space</th><td>Choose the colourful galaxy stage and its music.</td></tr>
+        <tr><th scope="row">City</th><td>Choose the animated city stage and its music.</td></tr>
+        <tr><th scope="row">Office</th><td>Choose the whimsical workplace stage and its music.</td></tr>
+        <tr><th scope="row">Extreme On / Off</th><td>Turn Extreme on to add Spin and Flick to the Classic Bop/Twist/Pull commands, or off for Classic.</td></tr>
+        <tr><th scope="row">Start / Bop</th><td>Begin the selected mode, song, and difficulty.</td></tr>
+        <tr><th scope="row">Back</th><td>Return without starting the round.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="settings-menu">
+    <h3>Settings menu</h3>
+    <p>Focus speaks a setting's name and current value. When you change a slider or toggle while it stays focused, the mod speaks <em>just the new value</em> rather than repeating the whole label.</p>
+    <div class="table-scroll"><table>
+      <caption>Settings rows in their current menu order</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Music</th><td>Adjust the game's music volume.</td></tr>
+        <tr><th scope="row">SFX</th><td>Adjust sound-effect volume.</td></tr>
+        <tr><th scope="row">Voice Over</th><td>Adjust the game's spoken command voice volume. Be careful not to make this too quiet for play.</td></tr>
+        <tr><th scope="row">Mute Audio in Background</th><td>When on, silence game audio while another window has focus; restore it when you return. Off by default.</td></tr>
+        <tr><th scope="row">Language</th><td>Choose an available game language.</td></tr>
+        <tr><th scope="row">Vibration</th><td>Turn compatible controller vibration on or off.</td></tr>
+        <tr><th scope="row">Fullscreen</th><td>Switch between fullscreen and windowed display.</td></tr>
+        <tr><th scope="row">Resolution</th><td>Change the game's display resolution using the choices available on your system.</td></tr>
+        <tr><th scope="row">Limit FPS</th><td>Cap frame rate at 30, 60, 120, or 240, or choose Unlimited. Default: 60. See the <a href="#limitations">timing note</a>.</td></tr>
+        <tr><th scope="row">Audio Latency</th><td>Open the calibration screen to align the game's timing with what you hear.</td></tr>
+        <tr><th scope="row">Controls</th><td>Review and reassign the game's exposed controls and added mod controls.</td></tr>
+        <tr><th scope="row">Speech</th><td>Open the mod's speech, braille, and hint preferences, listed in full <a href="#speech-options">above</a>.</td></tr>
+        <tr><th scope="row">Go Online, when available</th><td>Connect to the game's online features when this option is shown.</td></tr>
+        <tr><th scope="row">Back</th><td>Return to the main menu.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="controls-menu">
+    <h3>Controls menu</h3>
+    <p>Focus a row to hear the current binding for the active input device. Confirm it and follow the game's rebinding prompt to assign a replacement. A duplicate binding is rejected rather than shared. The list scrolls, so the mod-specific rows near the bottom may take several Down presses to reach.</p>
+    <div class="table-scroll"><table>
+      <caption>Current Controls menu rows</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Bop</th><td>Rebind the first Bop action.</td></tr>
+        <tr><th scope="row">Bop (Player 2)</th><td>Rebind the second Bop action.</td></tr>
+        <tr><th scope="row">Flick</th><td>Rebind the Extreme Flick action.</td></tr>
+        <tr><th scope="row">Twist</th><td>Rebind Twist.</td></tr>
+        <tr><th scope="row">Spin</th><td>Rebind the Extreme Spin action.</td></tr>
+        <tr><th scope="row">Pull</th><td>Rebind Pull.</td></tr>
+        <tr><th scope="row">Reset Gyro</th><td>Rebind the game's motion-sensor recenter action.</td></tr>
+        <tr><th scope="row">Group Previous</th><td>Rebind the move to the previous leaderboard group.</td></tr>
+        <tr><th scope="row">Group Next</th><td>Rebind the move to the next leaderboard group.</td></tr>
+        <tr><th scope="row">Date Previous</th><td>Rebind the move to the previous leaderboard time period.</td></tr>
+        <tr><th scope="row">Date Next</th><td>Rebind the move to the next leaderboard time period.</td></tr>
+        <tr><th scope="row">Read Descriptions</th><td>Rebind on-demand song-stage descriptions.</td></tr>
+        <tr><th scope="row">Read Score</th><td>Rebind on-demand results speech.</td></tr>
+        <tr><th scope="row">Toggle Speech</th><td>Rebind the master speech switch. If you change it while speech is off, the mod announces the new recovery controls.</td></tr>
+        <tr><th scope="row">Speak Hints</th><td>Rebind on-demand button hints.</td></tr>
+        <tr><th scope="row">Change Speech Output</th><td>Rebind the shortcut that cycles output modes.</td></tr>
+        <tr><th scope="row">Reset to Default</th><td>Restore the original default bindings for the exposed game and mod rows.</td></tr>
+      </tbody>
+    </table></div>
+    <p>Press the usual Back command to return to Settings; Back is not a separate selectable binding row here. For the exact starting keyboard and controller assignments, see the <a href="#controls">complete control reference</a>.</p>
+  </section>
+
+  <section id="audio-latency-menu">
+    <h3>Audio latency calibration</h3>
+    <p>Audio latency is the delay between the game producing a sound and you hearing it. This screen helps the game account for that delay. Listen to its instructions, follow the warmup, and use Bop with the calibration beat. The mod announces the instructions, countdown, and measured result, but does not narrate each beat because that could hide the timing sound.</p>
+    <div class="table-scroll"><table>
+      <caption>Audio latency screen</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Calibrate</th><td>Begin the timing exercise.</td></tr>
+        <tr><th scope="row">Bop during calibration</th><td>Register your input against the beat as instructed by the game.</td></tr>
+        <tr><th scope="row">Measured latency</th><td>Displays and speaks the calibration result when the exercise finishes.</td></tr>
+        <tr><th scope="row">Back</th><td>Return to Settings.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="leaderboards-menu">
+    <h3>Leaderboards</h3>
+    <p>Open Leaderboards from the main menu or a result screen. Focused filters are announced first, then the scores follow in order, so a row does not cut off its filter name. Online groups need an internet connection. The exact available filters and rows depend on the board and your connection.</p>
+    <div class="table-scroll"><table>
+      <caption>Leaderboard controls and information</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Song / stage</th><td>Choose or identify which stage's scores are shown, where the board offers this filter.</td></tr>
+        <tr><th scope="row">Classic / Extreme</th><td>Choose which difficulty's scores are shown.</td></tr>
+        <tr><th scope="row">Device category, when shown</th><td>Choose the displayed input-device category.</td></tr>
+        <tr><th scope="row">Local</th><td>Show the locally available scores.</td></tr>
+        <tr><th scope="row">Friends</th><td>Show eligible friends' scores when connected.</td></tr>
+        <tr><th scope="row">Global</th><td>Show eligible worldwide scores when connected.</td></tr>
+        <tr><th scope="row">Today</th><td>Filter to today's scores.</td></tr>
+        <tr><th scope="row">This Month</th><td>Filter to the current month's scores.</td></tr>
+        <tr><th scope="row">All Time</th><td>Show scores across all recorded time.</td></tr>
+        <tr><th scope="row">Score row</th><td>Read a player's rank, name, and score. Page Up and Page Down read rows individually even when a filter has focus.</td></tr>
+        <tr><th scope="row">Loading / no scores</th><td>Status messages tell you when results are loading or none are available.</td></tr>
+        <tr><th scope="row">Continue, when shown</th><td>Move on from a result or Party board.</td></tr>
+        <tr><th scope="row">Back</th><td>Return to the previous screen.</td></tr>
+      </tbody>
+    </table></div>
+    <p>By default, <strong>O/P</strong> or the controller bumpers move between Local, Friends, and Global. <strong>K/L</strong> or D-pad Left/Right move between time periods. On the Party board, the game may first ask you to choose or enter a name for the score; the mod speaks that name-selection state and confirmation.</p>
+    <div class="table-scroll"><table>
+      <caption>Additional Party leaderboard steps</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Player name</th><td>Choose or enter the name attached to the finished Party run.</td></tr>
+        <tr><th scope="row">Confirm name</th><td>Save that name with the score for this Party session.</td></tr>
+        <tr><th scope="row">Session score rows</th><td>Compare the players' ranks, names, and scores from this Party session.</td></tr>
+        <tr><th scope="row">Continue / Back</th><td>Proceed with the session or return, depending on the current Party screen.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="achievements-menu">
+    <h3>Achievements book</h3>
+    <p>The game has its own achievements book rather than sending you only to a Steam page. Earned achievements can add stickers to this book. Turn pages with Left/Right Arrows or the controller bumpers. Use Up/Down menu controls to hear each entry's name, description, and locked or unlocked state. The mod announces book instructions only after the book opens.</p>
+    <div class="table-scroll"><table>
+      <caption>Achievements book elements</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Page heading</th><td>Identifies the current book page.</td></tr>
+        <tr><th scope="row">Achievement entry</th><td>Gives its title, description, and whether it is locked or unlocked.</td></tr>
+        <tr><th scope="row">Sticker</th><td>Represents an earned achievement in the book.</td></tr>
+        <tr><th scope="row">Previous / next page</th><td>Turn to another page with the game's Left/Right control.</td></tr>
+        <tr><th scope="row">Back</th><td>Close the book and return to the main menu.</td></tr>
+      </tbody>
+    </table></div>
+    <p>The entries change as you earn achievements, so this guide describes the book's controls rather than freezing a list of locked and unlocked items that may differ from your own game.</p>
+  </section>
+
+  <section id="credits-menu">
+    <h3>Game credits</h3>
+    <p>The game's original credits keep scrolling visually. Press Up/Down with the normal menu controls to hear one credit line at a time without needing to follow that scroll. Back returns to the main menu. These are the <em>game's</em> credits; this guide's <a href="#project-credits">mod credits</a> appear later.</p>
+    <div class="table-scroll"><table>
+      <caption>Game credits controls</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Current credit line</th><td>Speak the next or previous line with Up/Down.</td></tr>
+        <tr><th scope="row">Automatic visual scroll</th><td>Continues showing the credits on screen.</td></tr>
+        <tr><th scope="row">Back</th><td>Return to the main menu.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="results-menu">
+    <h3>Results and game over</h3>
+    <p>When a round ends, the mod first announces the final numeric score for Solo, Party, or Pass It. In One-on-One, it announces the winning colour instead. It then speaks the focused result choice, so the menu does not cut off the important result. Later menu movement can interrupt earlier menu speech. Press T or left stick press to repeat the result whenever this screen is visible. That shortcut is deliberately unavailable during a round.</p>
+    <div class="table-scroll"><table>
+      <caption>Result-screen information and choices</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Score, Solo / Party / Pass It</th><td>Shows how many correct actions the finished run recorded; the mod speaks it automatically and on request.</td></tr>
+        <tr><th scope="row">Winner, One-on-One</th><td>Shows Green or Yellow as the winner; the mod speaks it instead of inventing a numeric score.</td></tr>
+        <tr><th scope="row">Replay</th><td>Start another run of the selected mode.</td></tr>
+        <tr><th scope="row">Leaderboard, Solo</th><td>Open the relevant ranked scores after a Solo run.</td></tr>
+        <tr><th scope="row">Continue, when shown</th><td>Move forward to the next Party or shared-mode step.</td></tr>
+        <tr><th scope="row">Back</th><td>Return from the results screen.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="pause-menu">
+    <h3>Pause menu</h3>
+    <p>Escape or controller Start invokes the game's menu action during a round. The game's pause panel includes a resume action and an action that leaves the current game. The exact on-screen wording may differ. <strong>The mod does not yet have a dedicated pause-menu speech reader</strong>, so this is an important current limitation.</p>
+    <div class="table-scroll"><table>
+      <caption>Pause panel actions</caption>
+      <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Resume</th><td>Continue the paused round. The usual Back input also resumes.</td></tr>
+        <tr><th scope="row">Leave / return</th><td>Leave the current round. The visible label has not been confirmed.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section id="mode-guide">
+    <h2>Detailed mode guide</h2>
+    <p>All four modes begin by choosing a song/stage and choosing Classic or Extreme. The stage changes what you see and hear, while the commands tell you what input to make. Classic asks for Bop, Twist, and Pull. Extreme can also ask for Spin and Flick. When the game speaks a command, press its assigned input before the time window ends. You can review or change the assignments in Settings &gt; Controls before playing. The tempo rises during a successful run, so there is no fixed last song section to reach. These rules come from the <a href="https://bopitthevideogame.com/bop-it-the-video-game-press-release">official game description</a> and the game's current scoring and result screens.</p>
+
+    <section id="solo-mode">
+      <h3>Solo</h3>
+      <p>Solo is the simplest place to learn the rhythm. One person responds to each spoken command. If the game says Bop, use your Bop input; if it says Twist or Pull, use that input instead. In Extreme, be ready for Spin and Flick too. Keep going as the commands become faster.</p>
+      <p><strong>Scoring:</strong> Each correct response adds one point to the ongoing run. The score is your count of successful responses. A wrong or missed response, including one made too late, ends that run. The final result screen shows your numeric score. The mod announces it before reading Replay, Leaderboard, or Back. You can press Read Score to hear it again. Solo scores may also appear in Local, Friends, and Global leaderboard views when those views are available.</p>
+      <p><strong>How to start over:</strong> Select Replay on the result screen, or return and choose another mode or song. A replay is a new run; your previous result can still be compared on the leaderboard where the game records it.</p>
+    </section>
+
+    <section id="party-mode">
+      <h3>Party</h3>
+      <p>Party is for a group taking turns. Each person plays <em>their own</em> run, responding to the same kinds of called commands as Solo. When a person's run ends, the game can ask for a name to attach to that score. Continue to the session's Party leaderboard, then let the next person take a turn. This is a friendly way to compare runs without having everybody act at once.</p>
+      <p><strong>Scoring:</strong> Successful responses build that player's numeric run score. A wrong, missed, or late command ends their run, and the final score belongs to that player. The session leaderboard lists names, ranks, and scores so the group can compare results. The game does not impose a single formal winner; your group can decide what counts as winning. The mod reads the score at game over, then the next menu choice, and speaks the Party name and leaderboard steps.</p>
+      <p><strong>How to keep playing:</strong> Use Continue when it is offered, choose or confirm the name if prompted, and follow the game to the next player or score view. If you replay, that begins another scored run rather than extending the one that just ended.</p>
+    </section>
+
+    <section id="pass-it-mode">
+      <h3>Pass It</h3>
+      <p>Pass It is a shared challenge. One player responds to commands until the game calls <q>Pass It!</q> At that call, hand the controller to the next person promptly. The next player continues the <em>same</em> streak. Keep passing when told and keep answering the game's Bop It commands. This mode works best when everyone knows who receives the controller next and has enough space to pass it safely.</p>
+      <p><strong>Scoring:</strong> Correct responses continue one shared numeric score rather than starting a new score for each person. The person who breaks the streak by missing a command ends the round. The result screen shows the final shared score, which the mod speaks automatically and can repeat with Read Score. The score tells you how far the group got; it is not an individual player ranking in this mode.</p>
+      <p><strong>How to try again:</strong> Choose Replay to start a fresh shared streak, or Back to leave the results.</p>
+    </section>
+
+    <section id="one-on-one-mode">
+      <h3>One-on-One</h3>
+      <p>One-on-One puts two players, <strong>Yellow</strong> and <strong>Green</strong>, into the same round. Each begins with <strong>three lives</strong>. Yellow responds to Twist and Pull; Green responds to Spin and Flick. Bop is a shared race: both players should be ready, and the first to hit Bop gains a life, up to the game's three-life limit. The game provides subtle sounds for some changes. If you turn on Settings &gt; Speech &gt; One-on-One Feedback, the mod announces the starting or changing active colour and the number of lives after a loss or gain.</p>
+      <p><strong>How a round ends:</strong> Missing a required command costs the responsible player a life. The first player whose lives reach zero loses, and the other colour wins. Unlike Solo, Party, and Pass It, the result is a <strong>winner, not a numeric final score</strong>. The mod announces the winning colour at game over; Read Score repeats that result while the result screen is visible. The optional life announcements are for this mode only.</p>
+      <p><strong>Getting ready together:</strong> Agree which person is Yellow and which is Green before starting. Check the current Controls screen, especially the second Bop assignment, if you will share one input device. One-on-One is fast, so a practice round can help both players learn their controls.</p>
+    </section>
+  </section>
+
+  <section id="roadmap">
+    <h2>What may come next</h2>
+    <p>This project is still young. Potential work includes a proper installer and first-time welcome dialogue, stronger support for the remaining game screens, and continued improvements to speech responsiveness. We may explore switching speech handling from Tolk to <a href="https://github.com/ethindp/prism">Prism</a> if it proves to be a better fit. That is an idea for research, <strong>not a current dependency or a promised switch</strong>.</p>
+    <p>Player suggestions and reports will help shape future improvements. Christopher intends to maintain the mod over time, with updates guided by real play and careful human review. The <a href="https://github.com/Chris-E-Shaw/BopItAccess">project repository</a> is the place to follow its source and documentation as they develop.</p>
+  </section>
+
+  <section id="project-credits">
+    <h2>Credits and third-party notices</h2>
+    <div class="table-scroll"><table>
+      <caption>Bop It Access project credits</caption>
+      <thead><tr><th scope="col">Contributor</th><th scope="col">Role</th></tr></thead>
+      <tbody>
+        <tr><th scope="row">Christopher Shaw</th><td>Main mod designer. Set the accessibility goals and behavior, reviewed every change, and led real-world game testing and feedback.</td></tr>
+        <tr><th scope="row">GPT-6 Luna</th><td>AI collaborator on the initial Tolk speech-output implementation and early project groundwork.</td></tr>
+        <tr><th scope="row">GPT-6 Sol</th><td>AI collaborator on subsequent research, code generation, debugging, source-history work, and documentation.</td></tr>
+        <tr><th scope="row">Human players and testers</th><td>Played on different systems, checked the mod's real behavior, and shared the feedback that made each revision useful.</td></tr>
+      </tbody>
+    </table></div>
+    <p>Published source commits identify AI collaborators in their co-author trailers. The <a href="BopItAccess-build-history.html">technical build history</a> records the work behind each earlier build. The mod's own source does not yet have a selected public license; do not assume its license is the same as its dependencies.</p>
+    <div class="table-scroll"><table>
+      <caption>Libraries, runtime components, and licenses</caption>
+      <thead><tr><th scope="col">Component</th><th scope="col">Why it matters</th><th scope="col">License / notice</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><a href="https://github.com/LavaGang/MelonLoader">MelonLoader</a></th><td>Loads the mod into the Unity game.</td><td><a href="https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md">Apache License 2.0</a>; distributed separately from this source repository.</td></tr>
+        <tr><th scope="row"><a href="https://github.com/dkager/tolk">Tolk</a></th><td>Connects the mod to screen readers and braille APIs.</td><td><a href="https://github.com/dkager/tolk/blob/master/LICENSE.txt">GNU LGPL version 3</a>; credit to the Tolk contributors.</td></tr>
+        <tr><th scope="row"><a href="https://github.com/nvaccess/nvda/tree/master/extras/controllerClient">NVDA Controller Client</a></th><td>The <code>nvdaControllerClient64.dll</code> native library used with Tolk.</td><td><a href="https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt">GNU LGPL version 2.1</a>; credit to NV Access and contributors.</td></tr>
+        <tr><th scope="row"><a href="https://dotnet.microsoft.com/">.NET 6</a></th><td>The mod targets the .NET 6 framework and needs the matching targeting pack to build.</td><td><a href="https://github.com/dotnet/core/blob/main/license-information.md">Microsoft's .NET license information</a> distinguishes MIT-licensed source from Windows runtime distributions under the .NET Library License.</td></tr>
+        <tr><th scope="row">Windows SAPI</th><td>Provides backup system speech when selected or when no supported screen reader is detected.</td><td>A Windows component; not bundled as a separate library in this source repository.</td></tr>
+        <tr><th scope="row">Game and loader build references</th><td>The mod compiles against MelonLoader, Il2CppInterop.Runtime, the game's Assembly-CSharp and Il2Cppmscorlib files, Unity Engine/UI/Input System/TextMeshPro modules, and the game's FMODUnity and DOTween assemblies.</td><td>These come from the separately installed game and loader, under their own applicable terms. The source repository does not redistribute those assemblies.</td></tr>
+      </tbody>
+    </table></div>
+    <p>See the project's <a href="THIRD-PARTY-NOTICES.txt">third-party notices</a> for the native files used by local install packages. The current GitHub repository does <strong>not</strong> include the compiled mod DLL, Tolk DLL, or NVDA Controller Client DLL. Prism is mentioned in the roadmap only; it is not currently used by the mod.</p>
+  </section>
+
+  <section id="legal">
+    <h2>Legal notes</h2>
+    <p>Bop It Access is an unofficial fan-made project. It is not made, approved, or endorsed by Hasbro, the game's developer/publisher Alliance, Valve, Microsoft, Unity, MelonLoader, Tolk, NV Access, or any screen-reader maker. <strong>Bop It!</strong> and related characters, artwork, sound, and marks belong to Hasbro and their respective rights holders. Steam belongs to Valve. Other product names, trademarks, and software remain the property of their respective owners.</p>
+    <p>You must obtain your own legal copy of the game. This guide and source repository do not grant rights to the game or its assets and do not include them. The mod's dependencies each retain their own licenses, linked above; using or distributing a future installer will need to respect those licenses. For the original game and its rights information, see the <a href="https://bopitthevideogame.com/">official Bop It! game site</a> and <a href="https://store.steampowered.com/app/3214360/">Steam listing</a>.</p>
+  </section>
+
+  <section id="thanks" class="panel">
+    <h2>Thank you</h2>
+    <p>To everyone who play tested this mod, offered feedback, tried it for the first time, or believed in me: thank you. Your support motivates me to keep making things in a world that can feel crazy and deeply flawed. I hope this project makes it easier for you to enjoy the game and share it with others. Thank you all so much. Enjoy Bop It!</p>
+    <p>— Christopher Shaw</p>
+  </section>
+</main>
+<footer>
+  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.6.13; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
+</footer>
+</body>
+</html>
