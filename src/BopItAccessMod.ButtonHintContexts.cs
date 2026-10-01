@@ -58,6 +58,7 @@ public sealed partial class BopItAccessMod
             IsHintPanelVisible(main?.controlsPanel) ||
             IsHintPanelVisible(main?.leaderboardPanel) ||
             IsHintPanelVisible(main?.creditsPanel) ||
+            IsHintPanelVisible(_pauseMenuPanel) ||
             IsHintPanelVisible(_settingsPanel) ||
             IsHintPanelVisible(_speechMenuPanel) ||
             IsHintPanelVisible(_calibrationPanel) ||
@@ -65,6 +66,17 @@ public sealed partial class BopItAccessMod
              _achievementsPanel.achievementViewState == AchievementViewState.Visible);
         if (gameState == GameState.Playing && !mainMenuScreenVisible)
             return null;
+
+        if (_lastTitleScreenId != 0 && _titleScreen != null &&
+            _titleScreen.gameObject.activeInHierarchy)
+            return ("TitleScreen", WithGlobalControlHints(
+                HintNativeAction("Bop", "open main menu", "Space", "confirm button")));
+
+        if (_uncoveredPanel != null && IsHintPanelVisible(_uncoveredPanel))
+            return ("AdditionalPanel:" + _uncoveredPanelId,
+                WithGlobalControlHints(UiSubmitHint("activate item") + " " +
+                    HintNavigation(true, "choose item") + " " +
+                    UiBackHint("return")));
 
         if (_speechMenuOpen && _speechMenuRoot != null &&
             _speechMenuRoot.activeInHierarchy && IsHintPanelVisible(_speechMenuPanel))
@@ -134,6 +146,23 @@ public sealed partial class BopItAccessMod
                 WithGlobalControlHints(use +
                     " " + HintNavigation(true, "choose control") + " " +
                     UiBackHint("return to Settings")));
+        }
+
+        if (IsHintPanelVisible(_pauseMenuPanel))
+        {
+            Button? resume = _pauseMenuPanel!.resumeButton;
+            Button? mainMenu = _pauseMenuPanel.mainMenuButton;
+            GameObject? selected = EventSystem.current?.currentSelectedGameObject;
+            Button? focused = selected != null &&
+                selected.transform.IsChildOf(_pauseMenuPanel.transform)
+                ? selected.GetComponentInParent<Button>() : null;
+            string purpose = focused != null &&
+                Matches(mainMenu, focused.GetInstanceID())
+                ? "return to main menu" : "resume game";
+            return ("Pause:" + purpose,
+                WithGlobalControlHints(UiSubmitHint(purpose) + " " +
+                    HintNavigation(true, "choose pause option") + " " +
+                    UiBackHint("resume game")));
         }
 
         if (gameState == GameState.GameOver &&

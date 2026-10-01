@@ -1,9 +1,9 @@
-Bop It Access 0.6.13 - Controls and SAPI Responsiveness
+Bop It Access 0.6.14 - More Screen Coverage
 
 What this does
 --------------
 Speech is on by default. When the mod loads with speech on, it announces
-"Bop It Access speech is ready. The game is still loading. Wait for the main menu announcement before using the controls." through Tolk. It reads
+"Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls." through Tolk. If the title screen appears, the mod announces the current Bop input for opening the main menu. It reads
 the focused main-menu button and the focused Settings row. Settings values are
 spoken with the row name on focus. Changing a value while focus stays on that
 row speaks only the new value. AUDIO LATENCY, CONTROLS, and GO ONLINE are action
@@ -164,6 +164,10 @@ only the new Extreme state. The screen introduction also explains the Twist,
 Pull, Bop, and Back actions.
 This full introduction is repeated whenever a mode is selected and the song
 screen opens again, with the current theme and Extreme state.
+Press SPEAK HINTS (H or right stick press by default) on this screen to hear
+the current mode and difficulty's native tutorial text before starting. The
+timed tutorial overlay during active play stays silent so it cannot obscure
+the game's spoken commands. The hint announces this extra use of SPEAK HINTS.
 The READ DESCRIPTIONS control speaks a visual description of the selected
 Shapes, Space, City, or Office stage on demand. It is available on this screen
 only, before gameplay starts. Its default inputs are G on keyboard and LT
@@ -281,8 +285,14 @@ announces the instructions and calibration stages, reads the warmup countdown,
 and announces the displayed latency result. It does not speak every beat during
 the timing exercise so the beat remains audible.
 
-Other gameplay screens do not yet have speech feedback. Moving the mouse over
-an item without giving it Unity UI focus may not speak.
+The pause screen announces Paused, the focused Resume or Main Menu button,
+and its button hints. Focus changes interrupt earlier pause-menu speech;
+resuming or leaving the round clears any remaining pause speech before play
+or the main menu continues. A guarded fallback also reads focused controls
+and visible text on an unexpected player-facing panel without taking priority
+over the dedicated readers above. During an active round, the mod leaves the
+game's verbal commands and in-progress score alone. Moving the mouse over an
+item without giving it Unity UI focus may not speak.
 
 Install
 -------
@@ -296,12 +306,17 @@ MelonLoader must already be installed. The ZIP includes Mods\BopItAccess.dll,
 Tolk.dll, and nvdaControllerClient64.dll. This mod was built for the installed
 MelonLoader 0.7.3 Open-Beta and Bop It! (Unity 2022.3.50f1, x64).
 
-Try the supported screens
+Try the menus and screens
 -------------------------
+Wait for the title-screen announcement if it appears, then use Bop to open the
+main menu. The game may take several seconds after the mod's ready message to
+accept this input.
 Open Play and move among the four modes. Choose one to reach song selection.
 Twist to cycle through themes and Pull to switch Extreme mode on or off. The
 mod announces each change. Press G or LT to hear the currently selected stage
-description. Bop starts the chosen mode; Back returns.
+description. Press H or right stick press to hear the mode's tutorial text and
+button hints. Bop starts the chosen mode; Back returns. During a round, use
+the game's Menu control to open Pause, then move between Resume and Main Menu.
 At the end of a game, listen for the score or One on One winner before the
 result-screen controls are announced. Press T or left stick press to repeat the
 final result while the game-over screen is visible.

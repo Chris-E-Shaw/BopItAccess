@@ -118,10 +118,11 @@
   <section id="features">
     <h2>Accessibility features</h2>
     <ul>
-      <li>Speech for the main menu, Play and song selection, Settings and Controls, speech settings, audio calibration, leaderboards, the in-game achievements book, credits, and result screens.</li>
+      <li>Speech for the title screen, main menu, Play and song selection, Settings and Controls, speech settings, audio calibration, leaderboards, the in-game achievements book, credits, pause menu, and result screens.</li>
       <li>Focused buttons, sliders, toggles, names, values, and changed values are announced. Optional indexing, control-type labels, slider ranges, and capitalization filtering let you tune the detail.</li>
       <li>Score or winner speech at game over, followed by queued menu speech, plus a Read Score shortcut on the results screen only.</li>
       <li>Four stage descriptions, spoken on request from the song-selection screen before play begins.</li>
+      <li>The game's tutorial text for the current mode and difficulty, spoken on request from song selection before play begins.</li>
       <li>Optional One-on-One colour and life-count announcements.</li>
       <li>Button hints for keyboard, controller, or both, with adjustable timing, repetitions, and an on-demand Speak Hints shortcut.</li>
       <li>Screen-reader output through Tolk, optional braille output, and configurable SAPI fallback.</li>
@@ -148,7 +149,7 @@
       <li><strong>SAPI is a backup speech engine.</strong> It is available when you prefer it or when no supported screen reader is running, but its responsiveness is still below the goal for this project. Your installed voice and system can affect the delay.</li>
       <li><strong>Some native controls are still fixed.</strong> The mod greatly expands the game's Controls menu, but it does not make every game input remappable.</li>
       <li><strong>Frame rate affects input polling.</strong> The FPS limiter can sharply reduce system load. It does not deliberately slow animations or change game timing, but the game checks frame-based input less often at lower FPS. A higher setting can give more accurate input timing, especially in fast rounds.</li>
-      <li><strong>Speech support is strongest in menus and results.</strong> Some gameplay and pause screens are not yet fully narrated. A mouse hover may not speak until that item actually receives game focus.</li>
+      <li><strong>Speech support is strongest in menus and results.</strong> On an unexpected panel, the mod can read visible text and a focused control when it finds one. A mouse hover may not speak until that item actually receives game focus.</li>
       <li><strong>Windows x64 is the current mod platform.</strong> The game may be sold for other systems, but this mod's current loading and speech dependencies are for Windows x64.</li>
     </ul>
   </section>
@@ -193,7 +194,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
       <caption>Game and mod controls, including controls outside the remapping menu</caption>
       <thead><tr><th scope="col">Action</th><th scope="col">What it does</th><th scope="col">Default keyboard</th><th scope="col">Default controller</th><th scope="col">Can you rebind it in Controls?</th></tr></thead>
       <tbody>
-        <tr><th scope="row">Bop</th><td>Respond to “Bop!” in a round; also used as a main game action.</td><td>Space</td><td>South face button (A on Xbox)</td><td>Yes</td></tr>
+        <tr><th scope="row">Bop</th><td>Respond to “Bop!” in a round; open the main menu from the title screen and start a round from song selection.</td><td>Space</td><td>South face button (A on Xbox)</td><td>Yes</td></tr>
         <tr><th scope="row">Bop (Player 2)</th><td>The second Bop input used where the game asks for it, including two-player play.</td><td>D</td><td>D-pad Right</td><td>Yes</td></tr>
         <tr><th scope="row">Twist</th><td>Respond to “Twist!”; change the selected song on the song screen.</td><td>Left Arrow</td><td>North face button (Y on Xbox)</td><td>Yes</td></tr>
         <tr><th scope="row">Pull</th><td>Respond to “Pull!”; switch Classic/Extreme on the song screen.</td><td>Right Arrow</td><td>Right stick motion</td><td>Yes</td></tr>
@@ -214,7 +215,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
         <tr><th scope="row">Read Descriptions</th><td>Speak the current stage's visual description on the song screen only.</td><td>G</td><td>Left trigger (LT)</td><td>Yes</td></tr>
         <tr><th scope="row">Read Score</th><td>Repeat the final score, or winner in One-on-One, on the results screen only.</td><td>T</td><td>Left stick press</td><td>Yes</td></tr>
         <tr><th scope="row">Toggle Speech</th><td>Turn all ordinary mod speech off or back on; the setting is saved.</td><td>F8</td><td>Select / Back / View</td><td>Yes</td></tr>
-        <tr><th scope="row">Speak Hints</th><td>Read the current screen's button hints when they are available.</td><td>H</td><td>Right stick press</td><td>Yes</td></tr>
+        <tr><th scope="row">Speak Hints</th><td>Read the current screen's button hints when available. On song selection, also read the game's tutorial text for the current mode and difficulty before starting.</td><td>H</td><td>Right stick press</td><td>Yes</td></tr>
         <tr><th scope="row">Change Speech Output</th><td>Cycle the same output choices as Speech &gt; Output Mode.</td><td>F9</td><td>West face button (X on Xbox)</td><td>Yes</td></tr>
         <tr><th scope="row">Invincible (native extra)</th><td>An assist or development action named in the game's input map; its player-facing effect has not been verified.</td><td>Shift+I</td><td>Right bumper + West face button</td><td>No separate row</td></tr>
         <tr><th scope="row">AutoPlay (native extra)</th><td>An assist or development action named in the game's input map; its player-facing effect has not been verified.</td><td>Shift+A</td><td>Right bumper + right trigger</td><td>No separate row</td></tr>
@@ -233,14 +234,14 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
     <h2>Your first launch</h2>
     <ol>
       <li>Start your screen reader if you use one. Launch Bop It! through Steam after installing MelonLoader, the mod DLL, and the required Tolk runtime files.</li>
-      <li>Wait for the announcement: <q>Bop It Access speech is ready. The game is still loading. Wait for the main menu announcement before using the controls.</q> The mod becomes ready before the game finishes loading.</li>
-      <li>Wait several more seconds for the main menu to appear and be announced. Inputs may do nothing during this interval. Once a menu item such as Play is read, you can move with Up/Down and confirm with Enter, Space, or your controller's confirm button.</li>
+      <li>Wait for the announcement: <q>Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls.</q> The mod becomes ready before the game finishes loading.</li>
+      <li>Wait several more seconds for the title screen or main menu announcement. Inputs may do nothing during loading. If you hear the title screen prompt, press Bop (Space by default, or your controller's confirm button) to open the main menu. Once a menu item such as Play is read, move with Up/Down and confirm with Enter, Space, or controller confirm.</li>
       <li>If you previously turned speech off, the saved setting stays off. The mod gives a spoken recovery message at startup with the current keyboard and controller binding for Toggle Speech. By default, press F8 or controller Select to turn it on again.</li>
       <li>For a comfortable first visit, open Settings &gt; Speech and choose your speech, braille, and hint preferences. You can press H or right stick press for available button hints on a supported menu.</li>
     </ol>
     <div class="planned">
       <h3>First-time welcome dialogue (planned, not yet in the game)</h3>
-      <p>A future build is intended to welcome first-time players and ask whether they want to configure mod settings first, which would be recommended, or skip straight to the game. <strong>This dialogue is not implemented today.</strong> You will currently reach the normal main menu after the loading announcement, and can open Settings yourself.</p>
+      <p>A future build is intended to welcome first-time players and ask whether they want to configure mod settings first, which would be recommended, or skip straight to the game. <strong>This dialogue is not implemented today.</strong> When the title screen appears, press Bop to enter the normal main menu. You can open Settings yourself.</p>
     </div>
   </section>
 
@@ -278,6 +279,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
   <section id="menu-guide">
     <h2>Menu guide</h2>
     <p>The following tables follow the path you are likely to take through the game. On ordinary menus, move focus with Up/Down, activate the focused item with Enter or Space (or controller confirm), and use Backspace (or controller back) to return. Some screens use other controls; those are explained where needed. If a choice is unavailable in your current state, the game may hide it.</p>
+    <p>If a panel appears that is not covered below, the mod tries to speak its visible text and the control that has focus. You can then move focus to hear other available controls. This general reader depends on the panel having a focusable control and does not interrupt the game's spoken commands during active play.</p>
   </section>
 
   <section id="main-menu">
@@ -315,7 +317,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 
   <section id="song-menu">
     <h3>Song and difficulty selection</h3>
-    <p>After choosing any mode, you choose one of four songs/stages and decide whether to use Extreme difficulty. The mod announces the current song and Extreme state every time this screen opens. Changing either one speaks its new value. Use <strong>Twist</strong> to change the song, <strong>Pull</strong> to change Classic/Extreme, <strong>Bop</strong> to begin, and <strong>Back</strong> to return. You may press <strong>G</strong> or <strong>left trigger</strong> to hear the selected stage's description before starting. Starting play stops menu speech so a spoken game command remains clear.</p>
+    <p>After choosing any mode, you choose one of four songs/stages and decide whether to use Extreme difficulty. The mod announces the current song and Extreme state every time this screen opens. Changing either one speaks its new value. Use <strong>Twist</strong> to change the song, <strong>Pull</strong> to change Classic/Extreme, <strong>Bop</strong> to begin, and <strong>Back</strong> to return. You may press <strong>G</strong> or <strong>left trigger</strong> to hear the selected stage's description. Press <strong>H</strong> or <strong>right stick press</strong> to hear button hints followed by the game's tutorial text for the current mode and difficulty. Read these before starting: the mod keeps the timed tutorial overlay quiet during active play so it does not cover a spoken game command. Starting play stops menu speech for the same reason.</p>
     <div class="table-scroll"><table>
       <caption>Song-selection choices and actions</caption>
       <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
@@ -485,13 +487,13 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 
   <section id="pause-menu">
     <h3>Pause menu</h3>
-    <p>Escape or controller Start invokes the game's menu action during a round. The game's pause panel includes a resume action and an action that leaves the current game. The exact on-screen wording may differ. <strong>The mod does not yet have a dedicated pause-menu speech reader</strong>, so this is an important current limitation.</p>
+    <p>Press Escape or controller Start to pause a round. The mod announces “Paused” and the focused choice when the pause menu opens. Move focus with Up/Down to hear <strong>Resume</strong> or <strong>Main menu</strong>, then confirm your choice. Press H or right stick press for the available pause-menu button hints. The usual Back input also resumes the round.</p>
     <div class="table-scroll"><table>
       <caption>Pause panel actions</caption>
       <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
       <tbody>
         <tr><th scope="row">Resume</th><td>Continue the paused round. The usual Back input also resumes.</td></tr>
-        <tr><th scope="row">Leave / return</th><td>Leave the current round. The visible label has not been confirmed.</td></tr>
+        <tr><th scope="row">Main menu</th><td>Leave the current round and return to the main menu.</td></tr>
       </tbody>
     </table></div>
   </section>
@@ -576,7 +578,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
   </section>
 </main>
 <footer>
-  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.6.13; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
+  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.6.14; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
 </footer>
 </body>
 </html>

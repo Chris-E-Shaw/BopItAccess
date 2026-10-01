@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.13", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.14", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -90,6 +90,31 @@ public sealed partial class BopItAccessMod : MelonMod
     {
         ObserveResultRank();
 
+        bool titleVisible = false;
+        try
+        {
+            titleVisible = ReadTitleScreen();
+        }
+        catch (Exception ex)
+        {
+            long now = Environment.TickCount64;
+            if (now >= _nextTitleScreenErrorLogAt)
+            {
+                WriteStatus($"Title screen speech check failed: {ex}");
+                MelonLogger.Warning($"Title screen speech check failed: {ex.Message}");
+                _nextTitleScreenErrorLogAt = now + 5000;
+            }
+            _titleScreen = null;
+            _lastTitleScreenId = 0;
+        }
+        if (titleVisible)
+        {
+            ResetUncoveredPanelFocus();
+            ResetSettingsFocus();
+            ResetMenuFocus();
+            return;
+        }
+
         bool speechMenuVisible = false;
         try
         {
@@ -102,6 +127,7 @@ public sealed partial class BopItAccessMod : MelonMod
         }
         if (speechMenuVisible)
         {
+            ResetUncoveredPanelFocus();
             ResetSettingsFocus();
             ResetMenuFocus();
             return;
@@ -228,9 +254,36 @@ public sealed partial class BopItAccessMod : MelonMod
             ResetCreditsFocus();
         }
 
-        bool gameOverVisible = false;
+        bool pauseMenuVisible = false;
         if (!calibrationVisible && !controlsVisible && !leaderboardsVisible &&
             !achievementsVisible && !creditsVisible)
+        {
+            try
+            {
+                pauseMenuVisible = ReadPauseMenuFocus();
+            }
+            catch (Exception ex)
+            {
+                long now = Environment.TickCount64;
+                if (now >= _nextPauseMenuErrorLogAt)
+                {
+                    WriteStatus($"Pause menu speech check failed: {ex}");
+                    MelonLogger.Warning($"Pause menu speech check failed: {ex.Message}");
+                    _nextPauseMenuErrorLogAt = now + 5000;
+                }
+
+                _pauseMenuPanel = null;
+                ResetPauseMenuFocus();
+            }
+        }
+        else
+        {
+            ResetPauseMenuFocus();
+        }
+
+        bool gameOverVisible = false;
+        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible &&
+            !achievementsVisible && !creditsVisible && !pauseMenuVisible)
         {
             try
             {
@@ -258,7 +311,8 @@ public sealed partial class BopItAccessMod : MelonMod
 
         bool trackSelectVisible = false;
         if (!calibrationVisible && !controlsVisible && !leaderboardsVisible &&
-            !achievementsVisible && !creditsVisible && !gameOverVisible)
+            !achievementsVisible && !creditsVisible && !pauseMenuVisible &&
+            !gameOverVisible)
         {
             try
             {
@@ -286,7 +340,8 @@ public sealed partial class BopItAccessMod : MelonMod
 
         bool playModesVisible = false;
         if (!calibrationVisible && !controlsVisible && !leaderboardsVisible &&
-            !achievementsVisible && !creditsVisible && !gameOverVisible && !trackSelectVisible)
+            !achievementsVisible && !creditsVisible && !pauseMenuVisible &&
+            !gameOverVisible && !trackSelectVisible)
         {
             try
             {
@@ -311,8 +366,10 @@ public sealed partial class BopItAccessMod : MelonMod
         }
 
         if (calibrationVisible || controlsVisible || leaderboardsVisible || achievementsVisible ||
-            creditsVisible || gameOverVisible || trackSelectVisible || playModesVisible)
+            creditsVisible || pauseMenuVisible || gameOverVisible || trackSelectVisible ||
+            playModesVisible)
         {
+            ResetUncoveredPanelFocus();
             ResetSettingsFocus();
             ResetMenuFocus();
             return;
@@ -337,6 +394,31 @@ public sealed partial class BopItAccessMod : MelonMod
             _settingsOptions = null;
             ResetSettingsFocus();
             _nextSettingsSearchAt = now + 1000;
+        }
+
+        if (settingsVisible)
+            ResetUncoveredPanelFocus();
+        else
+        {
+            try
+            {
+                if (ReadUncoveredPanelFocus())
+                {
+                    ResetMenuFocus();
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                long now = Environment.TickCount64;
+                if (now >= _nextUncoveredPanelErrorLogAt)
+                {
+                    WriteStatus($"Additional panel speech check failed: {ex}");
+                    MelonLogger.Warning($"Additional panel speech check failed: {ex.Message}");
+                    _nextUncoveredPanelErrorLogAt = now + 5000;
+                }
+                ResetUncoveredPanelFocus();
+            }
         }
 
         try

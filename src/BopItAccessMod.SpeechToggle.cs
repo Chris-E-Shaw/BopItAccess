@@ -10,7 +10,7 @@ public sealed partial class BopItAccessMod
     private volatile bool _speechEnabled = true;
     private bool _speechToggleInitialized;
     private string _startupSpeechAnnouncement =
-        "Bop It Access speech is ready. The game is still loading. Wait for the main menu announcement before using the controls.";
+        "Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls.";
     private string? _pendingToggleSpeechNotice;
     private volatile bool _speechSuppressedForBackground;
     private bool _backgroundSpeechFocusKnown;
@@ -49,7 +49,7 @@ public sealed partial class BopItAccessMod
         {
             _speechEnabled = enabled;
             _startupSpeechAnnouncement = enabled
-                ? "Bop It Access speech is ready. The game is still loading. Wait for the main menu announcement before using the controls."
+                ? "Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls."
                 : "Bop It Access speech is off. " + recovery;
         }
 

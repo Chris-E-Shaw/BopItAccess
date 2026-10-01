@@ -133,6 +133,10 @@ public sealed partial class BopItAccessMod
 
     private string SpeakHintsBindingInstruction()
     {
+        string purpose = _trackSelectUi?.gameManager?.GameState ==
+            GameState.WaitingToStart &&
+            IsHintPanelVisible(_trackSelectUi.startScreen)
+            ? "speak hints and tutorial text" : "speak hints";
         try
         {
             InputAction action = EnsureSpeakHintsAction();
@@ -140,8 +144,7 @@ public sealed partial class BopItAccessMod
                 InputActionRebindingExtensions.GetBindingDisplayString(action, 0)) ?? "H";
             string gamepad = CleanSpeechValue(
                 InputActionRebindingExtensions.GetBindingDisplayString(action, 1)) ?? "right stick press";
-            return FormatHintPress(keyboard, gamepad,
-                "speak hints");
+            return FormatHintPress(keyboard, gamepad, purpose);
         }
         catch (Exception ex)
         {
@@ -149,8 +152,7 @@ public sealed partial class BopItAccessMod
             string keyboard = HintSavedBinding(SpeakHintsKeyboardKey, "H");
             string gamepad = HintSavedBinding(SpeakHintsGamepadKey,
                 "right stick press");
-            return FormatHintPress(keyboard, gamepad,
-                "speak hints");
+            return FormatHintPress(keyboard, gamepad, purpose);
         }
     }
 

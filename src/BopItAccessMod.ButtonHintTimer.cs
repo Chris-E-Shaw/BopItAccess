@@ -283,6 +283,15 @@ public sealed partial class BopItAccessMod
             if (context == null)
                 return;
 
+            string requestedHint = context.Value.Hint;
+            if (string.Equals(context.Value.Key, "SongSelect",
+                    StringComparison.Ordinal))
+            {
+                string? tutorial = ReadPreRoundTutorialSummary();
+                if (tutorial != null)
+                    requestedHint += " " + tutorial;
+            }
+
             long now = Environment.TickCount64;
             bool protectedOutput;
             lock (_speechLock)
@@ -292,9 +301,9 @@ public sealed partial class BopItAccessMod
             if (protectedOutput ||
                 now < Volatile.Read(ref _gameOverScoreDispatchPendingUntil) ||
                 now < Volatile.Read(ref _gameOverScoreSpeechProtectedUntil))
-                QueueSequentialSpeech(context.Value.Hint);
+                QueueSequentialSpeech(requestedHint);
             else
-                QueueSpeech(context.Value.Hint);
+                QueueSpeech(requestedHint);
 
             // The manual request supplies the first hint for this cycle.
             // It replaces the pending automatic hint, but still permits the
