@@ -19,6 +19,7 @@ internal sealed class InstallerForm : Form
     private InstallerState _state = new(null, false, false, false, false, false, null);
     private CancellationTokenSource? _operationCancellation;
     private bool _updatingPath;
+    private bool _gamePathHasUnappliedEdit;
     private bool _abortRequested;
     private bool _allowAbort;
 
@@ -68,6 +69,11 @@ internal sealed class InstallerForm : Form
         _gamePath.AccessibleName = "Bop It game folder";
         _gamePath.AccessibleDescription = "Type the Bop It game folder, or use Browse.";
         _gamePath.Margin = new Padding(0, 0, 8, 0);
+        _gamePath.TextChanged += (_, _) =>
+        {
+            if (!_updatingPath)
+                _gamePathHasUnappliedEdit = true;
+        };
         _gamePath.Leave += (_, _) => ApplyGamePath();
         _gamePath.KeyDown += (_, e) =>
         {
@@ -214,14 +220,18 @@ internal sealed class InstallerForm : Form
 
     private void ApplyGamePath()
     {
-        if (_updatingPath || _operationCancellation != null)
+        if (_updatingPath || _operationCancellation != null || !_gamePathHasUnappliedEdit)
             return;
+        string requestedPath = _gamePath.Text.Trim();
+        _gamePathHasUnappliedEdit = false;
         try
         {
-            _service.SetGamePath(_gamePath.Text.Trim());
+            _service.SetGamePath(requestedPath);
         }
         catch (Exception ex)
         {
+            // Keep the user's text available for correction after an invalid path.
+            _gamePathHasUnappliedEdit = true;
             _service.SetGamePath(string.Empty);
             ShowError("Could not use that game folder", ex);
         }
@@ -314,8 +324,10 @@ internal sealed class InstallerForm : Form
 
     private void ShowState(InstallerState state)
     {
+        if (state.PathRevision < _state.PathRevision)
+            return;
         _state = state;
-        if (!_gamePath.Focused && !string.Equals(_gamePath.Text, state.GamePath,
+        if (!_gamePathHasUnappliedEdit && !string.Equals(_gamePath.Text, state.GamePath,
                 StringComparison.OrdinalIgnoreCase))
         {
             _updatingPath = true;

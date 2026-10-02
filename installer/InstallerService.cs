@@ -6,7 +6,8 @@ namespace BopItAccess.Installer;
 
 internal sealed record InstallerProgress(string Step, long Completed, long? Total);
 internal sealed record InstallerState(string? GamePath, bool ValidGamePath, bool Installed,
-    bool ReleaseAvailable, bool UpdateAvailable, bool Busy, string? Message);
+    bool ReleaseAvailable, bool UpdateAvailable, bool Busy, string? Message,
+    long PathRevision = 0);
 
 internal sealed class InstallerService
 {
@@ -16,7 +17,10 @@ internal sealed class InstallerService
 
     private readonly string _stateDirectory = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "BopItAccess");
+    private readonly object _gamePathLock = new();
     private string? _gamePath;
+    private long _gamePathRevision;
+    private bool _userSelectedGamePath;
     private GitHubRelease? _release;
     private bool _busy;
     private CancellationTokenSource? _abort;
@@ -28,12 +32,24 @@ internal sealed class InstallerService
         Log("Searching Steam libraries across available drives.");
         var found = await Task.Run(GameLocator.FindInstallations);
         var manifest = ReadManifest();
-        if (manifest is not null && GameLocator.IsGameDirectory(manifest.GameDirectory))
-            _gamePath = Path.GetFullPath(manifest.GameDirectory);
-        else if (found.Count > 0)
-            _gamePath = found[0];
-        Log(_gamePath is null ? "Bop It! was not found. Use Browse to select its game folder."
-            : $"Found Bop It! at {_gamePath}.");
+        string? detectedPath = manifest is not null && GameLocator.IsGameDirectory(manifest.GameDirectory)
+            ? Path.GetFullPath(manifest.GameDirectory)
+            : found.Count > 0 ? found[0] : null;
+        string? selectedPath;
+        bool manuallySelected;
+        lock (_gamePathLock)
+        {
+            manuallySelected = _userSelectedGamePath;
+            if (!manuallySelected)
+            {
+                _gamePath = detectedPath;
+                _gamePathRevision++;
+            }
+            selectedPath = _gamePath;
+        }
+        Log(manuallySelected ? "Keeping the game folder selected by the user."
+            : selectedPath is null ? "Bop It! was not found. Use Browse to select its game folder."
+            : $"Found Bop It! at {selectedPath}.");
         PublishState();
         try
         {
@@ -52,9 +68,15 @@ internal sealed class InstallerService
 
     internal void SetGamePath(string path)
     {
-        _gamePath = string.IsNullOrWhiteSpace(path) ? null : Path.GetFullPath(path);
-        Log(GameLocator.IsGameDirectory(_gamePath)
-            ? $"Verified Bop It! game folder: {_gamePath}."
+        string? selectedPath = string.IsNullOrWhiteSpace(path) ? null : Path.GetFullPath(path);
+        lock (_gamePathLock)
+        {
+            _gamePath = selectedPath;
+            _gamePathRevision++;
+            _userSelectedGamePath = true;
+        }
+        Log(GameLocator.IsGameDirectory(selectedPath)
+            ? $"Verified Bop It! game folder: {selectedPath}."
             : "That folder does not contain BopIt!.exe and BopIt!_Data.");
         PublishState();
     }
@@ -277,17 +299,34 @@ internal sealed class InstallerService
         }
     }
 
-    private string RequireGame() => GameLocator.IsGameDirectory(_gamePath)
-        ? Path.GetFullPath(_gamePath!)
-        : throw new InvalidOperationException("Select a valid Bop It! game folder first.");
+    private string RequireGame()
+    {
+        string? gamePath = GetGamePath();
+        return GameLocator.IsGameDirectory(gamePath)
+            ? Path.GetFullPath(gamePath!)
+            : throw new InvalidOperationException("Select a valid Bop It! game folder first.");
+    }
+
+    private string? GetGamePath()
+    {
+        lock (_gamePathLock)
+            return _gamePath;
+    }
 
     private void PublishState()
     {
-        var valid = GameLocator.IsGameDirectory(_gamePath);
+        string? gamePath;
+        long pathRevision;
+        lock (_gamePathLock)
+        {
+            gamePath = _gamePath;
+            pathRevision = _gamePathRevision;
+        }
+        var valid = GameLocator.IsGameDirectory(gamePath);
         var manifest = ReadManifest();
         var installed = valid && ((manifest is not null &&
-            string.Equals(Path.GetFullPath(manifest.GameDirectory), Path.GetFullPath(_gamePath!), StringComparison.OrdinalIgnoreCase)) ||
-            File.Exists(Path.Combine(_gamePath!, "Mods", "BopItAccess.dll")));
+            string.Equals(Path.GetFullPath(manifest.GameDirectory), Path.GetFullPath(gamePath!), StringComparison.OrdinalIgnoreCase)) ||
+            File.Exists(Path.Combine(gamePath!, "Mods", "BopItAccess.dll")));
         var update = installed && _release is not null &&
             !string.Equals(manifest?.SourceReference, _release.Tag, StringComparison.OrdinalIgnoreCase);
         string? message = !valid ? "Choose a valid Bop It! game folder."
@@ -295,8 +334,8 @@ internal sealed class InstallerService
             : _release is null ? "No GitHub release is published yet. Install alpha builds the latest source."
             : installed ? (update ? $"An update ({_release.Tag}) is available." : "Bop It Access is installed.")
             : $"Ready to install release {_release.Tag}.";
-        StateChanged?.Invoke(new InstallerState(_gamePath, valid, installed, _release is not null,
-            update, _busy, message));
+        StateChanged?.Invoke(new InstallerState(gamePath, valid, installed, _release is not null,
+            update, _busy, message, pathRevision));
     }
 
     private InstallManifest? ReadManifest()
