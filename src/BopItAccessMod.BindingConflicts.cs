@@ -94,7 +94,7 @@ public sealed partial class BopItAccessMod
     private static string SpokenBindingOwner(string name)
     {
         if (string.IsNullOrEmpty(name))
-            return "another control";
+            return L("another control");
         var words = new System.Text.StringBuilder(name.Length + 8);
         for (int i = 0; i < name.Length; i++)
         {
@@ -213,8 +213,8 @@ public sealed partial class BopItAccessMod
         manager.SaveBindings();
         InputRebindingEvents.RefreshPrompts?.Invoke();
         WriteStatus("Rejected native binding duplicate of " + conflictOwner + ".");
-        QueueSpeech("That input is already assigned to " + conflictOwner +
-            ". Binding unchanged");
+        QueueSpeech(LF("That input is already assigned to {0}. Binding unchanged",
+            L(conflictOwner)));
     }
 
     private void CaptureNativeBindingSnapshot(InputActionAsset asset)

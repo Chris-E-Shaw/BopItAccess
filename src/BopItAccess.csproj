@@ -19,6 +19,8 @@
     <None Include="..\README.txt" Link="documentation\README.txt" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\GIT-WORKFLOW.md" Link="documentation\GIT-WORKFLOW.md" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\THIRD-PARTY-NOTICES.txt" Link="documentation\THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\documentation\**\*" Link="documentation\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <EmbeddedResource Include="locales\*.json" LogicalName="BopItAccess.locales.%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
@@ -44,6 +46,10 @@
     </Reference>
     <Reference Include="UnityEngine.CoreModule">
       <HintPath>$(BopItGameDir)\MelonLoader\Il2CppAssemblies\UnityEngine.CoreModule.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="Unity.Localization">
+      <HintPath>$(BopItGameDir)\MelonLoader\Il2CppAssemblies\Unity.Localization.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="UnityEngine.AudioModule">

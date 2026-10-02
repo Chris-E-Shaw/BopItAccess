@@ -1,7 +1,13 @@
-Bop It Access 0.7.1 - Improved In-Game Guide Tables
+Bop It Access 0.8.0 - Multilingual Speech and Documentation
 
 What this does
 --------------
+The mod follows the game's Settings > Language selection for speech. It includes
+English, French, Italian, German, Spanish (Spain), Spanish (Latin America),
+Japanese, Korean, Simplified Chinese, and Brazilian Portuguese. Changing the
+game language also changes mod announcements and the in-game user's guide.
+The initial translations are machine-generated drafts and need review
+by fluent speakers.
 Speech is on by default. When the mod loads with speech on, it announces
 "Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls." through Tolk. If the title screen appears, the mod announces the current Bop input for opening the main menu. It reads
 the focused main-menu button and the focused Settings row. Settings values are
@@ -162,9 +168,12 @@ confirmation, then press it again within five seconds to restore them. Moving
 to another row or letting five seconds pass cancels the request. This does not
 change the game's MUSIC, SFX, or VOICE OVER sliders, LIMIT FPS, or custom
 keyboard and controller bindings. Back returns to Settings.
-OPEN USER'S GUIDE reads documentation\BopItAccess-user-guide.html inside the
-game. Its topic list comes from the document's table of contents and reloads
-whenever opened. Confirm opens a topic. Up and Down read its lines. In tables,
+OPEN USER'S GUIDE reads the HTML guide for the language currently selected in
+the game's Settings > Language row. The English guide is at
+documentation\BopItAccess-user-guide.html; translated guides are in language
+subfolders. If a translated copy is missing or unreadable, the English guide
+opens instead. Its topic list comes from the document's table of contents and
+reloads whenever opened. Confirm opens a topic. Up and Down read its lines. In tables,
 Left moves one column left and Right moves one column right; Up and Down keep
 the current column when moving between rows. Column headings label cells
 instead of appearing as data rows. The table is announced once on entry, and
@@ -334,10 +343,17 @@ Install
 3. Start your screen reader, then start Bop It! through Steam as usual.
 
 MelonLoader must already be installed. The ZIP includes Mods\BopItAccess.dll,
-documentation\BopItAccess-user-guide.html and its companion documents,
+documentation\BopItAccess-user-guide.html, all translated language subfolders,
+and their companion documents,
 Tolk.dll, and nvdaControllerClient64.dll. The in-game guide loads the HTML
 from that documentation folder whenever it opens. This mod was built for the installed
 MelonLoader 0.7.3 Open-Beta and Bop It! (Unity 2022.3.50f1, x64).
+The first non-English translations were made with machine translation
+and need review by fluent speakers. Please report unclear or incorrect wording.
+Gameplay action names use the game's translated terms. Shapes, Space, City,
+and Office remain English as fixed stage titles. If SAPI's system voice does
+not pronounce your language well, select a suitable installed voice in Mod
+Settings.
 
 Try the menus and screens
 -------------------------

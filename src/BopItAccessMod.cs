@@ -3,12 +3,13 @@ using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using System.Threading;
 using Il2Cpp;
+using Il2CppTMPro;
 using MelonLoader;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.7.1", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.8.0", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -33,6 +34,7 @@ public sealed partial class BopItAccessMod : MelonMod
     private SettingsPanel? _settingsPanel;
     private SettingOption[]? _settingsOptions;
     private int _lastFocusedButtonId;
+    private string? _lastFocusedMenuLabel;
     private int _lastObservedSelectionId;
     private int _lastFocusedSettingRowId;
     private int _lastObservedSettingsSelectionId;
@@ -91,6 +93,7 @@ public sealed partial class BopItAccessMod : MelonMod
     {
         try
         {
+            UpdateGameLocale();
             ReadScreenFocus();
         }
         finally
@@ -538,7 +541,9 @@ public sealed partial class BopItAccessMod : MelonMod
         {
             _lastFocusedSettingRowId = focused.Id;
             _lastSettingsValue = value;
-            string label = WithControlType(focused.Label, focused.ControlType);
+            string label = WithControlType(
+                ReadSettingRowLabel(focused.Row, focused.Label),
+                focused.ControlType);
             string announcement = value == null ? label : $"{label}, {value}";
             announcement = WithSliderRange(announcement, focused.Label,
                 focused.ControlType);
@@ -647,10 +652,29 @@ public sealed partial class BopItAccessMod : MelonMod
             () => row == null ? null : ReadDisplayedValue(row, row.Value));
 
     private static SettingOption ToggleOption(string label, SettingsToggle? row) =>
-        new(label, "toggle", row, () => row == null ? null : row.IsOn ? "On" : "Off");
+        new(label, "toggle", row, () => row == null ? null :
+            row.IsOn ? L("On") : L("Off"));
 
     private static SettingOption ActionOption(string label, SettingsButton? row) =>
         new(label, "button", row, () => null);
+
+    private static string ReadSettingRowLabel(SettingsRow? row, string fallback)
+    {
+        if (row != null)
+        {
+            TMP_Text? active = FindFpsLabel(row.ActiveContainer,
+                row.ActiveValueText);
+            TMP_Text? regular = FindFpsLabel(row.DefaultContainer,
+                row.ValueText);
+            string? rendered = CleanSpeechValue(active?.text) ??
+                CleanSpeechValue(regular?.text);
+            if (rendered != null && (CurrentGameLocale == "en" ||
+                !string.Equals(rendered, fallback,
+                    StringComparison.OrdinalIgnoreCase)))
+                return rendered;
+        }
+        return L(fallback);
+    }
 
     private static string? ReadDisplayedValue(SettingsRow row, string? gameValue)
     {
@@ -738,16 +762,11 @@ public sealed partial class BopItAccessMod : MelonMod
         EventSystem? eventSystem = EventSystem.current;
         GameObject? selected = eventSystem == null ? null : eventSystem.currentSelectedGameObject;
         int selectedId = selected == null ? 0 : selected.GetInstanceID();
-        if (selectedId == _lastObservedSelectionId)
-            return;
-
-        WriteStatus($"Main menu selected object: {(selected == null ? "none" : selected.name)}.");
-        _lastObservedSelectionId = selectedId;
-
         Button? focusedButton = selected == null ? null : selected.GetComponentInParent<Button>();
         if (focusedButton == null)
         {
             _lastFocusedButtonId = 0;
+            _lastFocusedMenuLabel = null;
             return;
         }
 
@@ -756,13 +775,18 @@ public sealed partial class BopItAccessMod : MelonMod
         if (label == null)
         {
             _lastFocusedButtonId = 0;
+            _lastFocusedMenuLabel = null;
             return;
         }
 
-        if (focusedButtonId == _lastFocusedButtonId)
+        if (focusedButtonId == _lastFocusedButtonId &&
+            string.Equals(label, _lastFocusedMenuLabel, StringComparison.Ordinal))
             return;
 
+        WriteStatus($"Main menu selected object: {(selected == null ? "none" : selected.name)}.");
+        _lastObservedSelectionId = selectedId;
         _lastFocusedButtonId = focusedButtonId;
+        _lastFocusedMenuLabel = label;
         Button?[] menuButtons =
         {
             _mainMenu!.playButton, _mainMenu.leaderboardButton,
@@ -784,13 +808,35 @@ public sealed partial class BopItAccessMod : MelonMod
 
     private string? GetMainMenuLabel(int focusedButtonId)
     {
-        if (Matches(_mainMenu!.playButton, focusedButtonId)) return "PLAY";
-        if (Matches(_mainMenu.leaderboardButton, focusedButtonId)) return "LEADERBOARDS";
-        if (Matches(_mainMenu.achievementsButton, focusedButtonId)) return "ACHIEVEMENTS";
-        if (Matches(_mainMenu.settingsButton, focusedButtonId)) return "SETTINGS";
-        if (Matches(_mainMenu.creditsButton, focusedButtonId)) return "CREDITS";
-        if (Matches(_mainMenu.quitButton, focusedButtonId)) return "QUIT";
+        if (Matches(_mainMenu!.playButton, focusedButtonId))
+            return ReadNativeButtonLabel(_mainMenu.playButton, "PLAY");
+        if (Matches(_mainMenu.leaderboardButton, focusedButtonId))
+            return ReadNativeButtonLabel(_mainMenu.leaderboardButton, "LEADERBOARDS");
+        if (Matches(_mainMenu.achievementsButton, focusedButtonId))
+            return ReadNativeButtonLabel(_mainMenu.achievementsButton, "ACHIEVEMENTS");
+        if (Matches(_mainMenu.settingsButton, focusedButtonId))
+            return ReadNativeButtonLabel(_mainMenu.settingsButton, "SETTINGS");
+        if (Matches(_mainMenu.creditsButton, focusedButtonId))
+            return ReadNativeButtonLabel(_mainMenu.creditsButton, "CREDITS");
+        if (Matches(_mainMenu.quitButton, focusedButtonId))
+            return ReadNativeButtonLabel(_mainMenu.quitButton, "QUIT");
         return null;
+    }
+
+    private static string ReadNativeButtonLabel(Button? button, string fallback)
+    {
+        if (button != null)
+            foreach (TMP_Text text in button.GetComponentsInChildren<TMP_Text>(true))
+                if (text.gameObject.activeInHierarchy)
+                {
+                    string? label = CleanSpeechValue(text.text);
+                    if (label != null)
+                        return CurrentGameLocale != "en" &&
+                            string.Equals(label, fallback,
+                                StringComparison.OrdinalIgnoreCase)
+                            ? L(fallback) : label;
+                }
+        return L(fallback);
     }
 
     private static bool Matches(Button? button, int focusedButtonId) =>
@@ -799,6 +845,7 @@ public sealed partial class BopItAccessMod : MelonMod
     private void ResetMenuFocus()
     {
         _lastFocusedButtonId = 0;
+        _lastFocusedMenuLabel = null;
         _lastObservedSelectionId = 0;
         _mainMenuWasVisible = false;
     }

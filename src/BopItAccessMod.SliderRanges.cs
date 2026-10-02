@@ -52,7 +52,8 @@ public sealed partial class BopItAccessMod
             return announcement;
 
         string? range = ReadSliderRange(label);
-        return range == null ? announcement : announcement.TrimEnd() + ", range " + range;
+        return range == null ? announcement :
+            LF("{0}, range {1}", announcement.TrimEnd(), range);
     }
 
     private string? ReadSliderRange(string label)
@@ -62,35 +63,41 @@ public sealed partial class BopItAccessMod
             case "MUSIC":
             case "SFX":
             case "VOICE OVER":
-                return "0 to 100";
+                return FormatSpeechRange("0", "100");
             case "LANGUAGE":
                 return ReadNativeSettingChoiceRange(language: true);
             case "RESOLUTION":
                 return ReadNativeSettingChoiceRange(language: false);
             case "LIMIT FPS":
-                return "30 to UNLIMITED";
+                return FormatSpeechRange("30", L("UNLIMITED"));
             case "BUTTON HINTS DELAY":
-                return "None to 60 seconds";
+                return FormatSpeechRange(L("None"),
+                    LF("{0} seconds", 60));
             case "REPEAT BUTTON HINTS":
-                return "Off to Infinitely";
+                return FormatSpeechRange(L("Off"), L("Infinitely"));
             case "REPEAT INTERVAL":
-                return "15 seconds to 60 seconds";
+                return FormatSpeechRange(LF("{0} seconds", 15),
+                    LF("{0} seconds", 60));
             case "HINTS TYPE":
-                return "Automatic to Both";
+                return FormatSpeechRange(L("Automatic"), L("Both"));
             case "OUTPUT MODE":
-                return OutputModes[0] + " to " + OutputModes[^1];
+                return FormatSpeechRange(L(OutputModes[0]), L(OutputModes[^1]));
             case "SAPI VOICE":
                 return _sapiVoices.Count == 0 ? null :
-                    _sapiVoices[0].Name + " to " + _sapiVoices[^1].Name;
+                    FormatSpeechRange(L(_sapiVoices[0].Name),
+                        L(_sapiVoices[^1].Name));
             case "SAPI VOLUME":
-                return "5% to 100%";
+                return FormatSpeechRange("5%", "100%");
             case "SAPI RATE":
             case "SAPI PITCH":
-                return "0 to 100";
+                return FormatSpeechRange("0", "100");
             default:
                 return null;
         }
     }
+
+    private static string FormatSpeechRange(string first, string last) =>
+        LF("{0} to {1}", first, last);
 
     private static string? ReadNativeSettingChoiceRange(bool language)
     {
@@ -104,7 +111,8 @@ public sealed partial class BopItAccessMod
                 return null;
             string? first = CleanSpeechValue(choices[0]);
             string? last = CleanSpeechValue(choices[choices.Count - 1]);
-            return first == null || last == null ? null : first + " to " + last;
+            return first == null || last == null ? null :
+                FormatSpeechRange(first, last);
         }
         catch
         {
@@ -119,11 +127,13 @@ public sealed partial class BopItAccessMod
         if (!_sliderRangesEnabled || control == null)
             return announcement;
         if (control is Scrollbar)
-            return announcement.TrimEnd() + ", range 0 to 1";
+            return LF("{0}, range {1} to {2}",
+                announcement.TrimEnd(), "0", "1");
         if (control is not Slider slider)
             return announcement;
         string min = slider.minValue.ToString("0.##", CultureInfo.InvariantCulture);
         string max = slider.maxValue.ToString("0.##", CultureInfo.InvariantCulture);
-        return announcement.TrimEnd() + ", range " + min + " to " + max;
+        return LF("{0}, range {1} to {2}",
+            announcement.TrimEnd(), min, max);
     }
 }

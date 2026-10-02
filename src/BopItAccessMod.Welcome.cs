@@ -20,6 +20,8 @@ public sealed partial class BopItAccessMod
     private GameObject? _welcomeRoot;
     private Panel? _welcomePanel;
     private ScrollRect? _welcomeScroll;
+    private TMP_Text? _welcomeTitle;
+    private string? _welcomeRenderedLocale;
     private SettingsButton? _welcomeIntroRow;
     private SettingsButton? _welcomeSettingsRow;
     private SettingsButton? _welcomeGuideRow;
@@ -50,6 +52,7 @@ public sealed partial class BopItAccessMod
         _activeWelcomeMod = this;
         if (_welcomeOpen)
         {
+            RefreshWelcomeLocalizedLabels();
             if (_welcomeRoot == null || _welcomePanel == null ||
                 _mainMenu == null || _mainMenu.panels == null ||
                 _mainMenu.panels.Count == 0 ||
@@ -169,7 +172,9 @@ public sealed partial class BopItAccessMod
             if (table == null || content == null || title == null)
                 throw new InvalidOperationException(
                     "The cloned Controls table is incomplete.");
-            SetClonedLabel(title, "WELCOME");
+            SetClonedLabel(title, L("WELCOME"));
+            _welcomeTitle = title;
+            _welcomeRenderedLocale = CurrentGameLocale;
             for (int i = 0; i < content.childCount; i++)
                 content.GetChild(i).gameObject.SetActive(false);
 
@@ -180,7 +185,7 @@ public sealed partial class BopItAccessMod
             _welcomeIntroRow.gameObject.name = "BopItAccess Welcome Text";
             FormatWelcomeIntroRow(_welcomeIntroRow);
             _welcomeSettingsRow = AddSpeechButton(buttonTemplate, content,
-                "open mod settings, recommended",
+                "Open mod settings, recommended",
                 _welcomeSettingsSubmitListener ??=
                     (UnityAction)OnWelcomeSettingsSubmitted);
             _welcomeGuideRow = AddSpeechButton(buttonTemplate, content,
@@ -222,8 +227,31 @@ public sealed partial class BopItAccessMod
             _welcomeGuideRow = null;
             _welcomeContinueRow = null;
             _welcomeScroll = null;
+            _welcomeTitle = null;
             throw;
         }
+    }
+
+    private void RefreshWelcomeLocalizedLabels()
+    {
+        string locale = CurrentGameLocale;
+        if (string.Equals(_welcomeRenderedLocale, locale,
+            StringComparison.Ordinal))
+            return;
+        _welcomeRenderedLocale = locale;
+        if (_welcomeTitle != null)
+            SetClonedLabel(_welcomeTitle, L("WELCOME"));
+        _welcomeIntroText = ComposeWelcomeIntroText();
+        if (_welcomeIntroRow != null)
+            SetSpeechRowLabel(_welcomeIntroRow, _welcomeIntroText);
+        if (_welcomeSettingsRow != null)
+            SetSpeechRowLabel(_welcomeSettingsRow,
+                "Open mod settings, recommended");
+        if (_welcomeGuideRow != null)
+            SetSpeechRowLabel(_welcomeGuideRow, "Read user's guide");
+        if (_welcomeContinueRow != null)
+            SetSpeechRowLabel(_welcomeContinueRow, "Continue to game");
+        _welcomeFocusedRowId = 0;
     }
 
     private string ComposeWelcomeIntroText()
@@ -248,14 +276,13 @@ public sealed partial class BopItAccessMod
             controller = HintSavedBinding(SpeakHintsGamepadKey, controller);
         }
 
-        return "Welcome to bop it access! Thank you for installing this project. " +
-            "Before diving in, please note that hints for every screen, " +
-            "including this one, can be accessed at any time by pressing " +
-            keyboard + " on keyboard or " + controller + " on controller. " +
-            "It is recommended that you visit the mod settings screen to " +
-            "customize the experience to you're liking before playing. " +
-            "If you need additional help, a full user's guide is available. " +
-            "What would you like to do?";
+        return L("Welcome to Bop It Access! Thank you for installing this project.") +
+            " " + LF("Hints for every screen, including this one, are available at any time: {0} on keyboard or {1} on controller.",
+                LocalizeBindingDisplay(keyboard),
+                LocalizeBindingDisplay(controller)) + " " +
+            L("We recommend visiting Mod Settings to customize the experience before playing.") +
+            " " + L("If you need more help, a full user's guide is available.") +
+            " " + L("What would you like to do?");
     }
 
     private static void FormatWelcomeIntroRow(SettingsButton row)
@@ -359,10 +386,10 @@ public sealed partial class BopItAccessMod
         _welcomeFocusedRowId = id;
         string announcement = index switch
         {
-            0 => "Welcome message. " + _welcomeIntroText,
-            1 => WithControlType("Open mod settings, recommended", "button"),
-            2 => WithControlType("Read user's guide", "button"),
-            _ => WithControlType("Continue to game", "button")
+            0 => L("Welcome message.") + " " + _welcomeIntroText,
+            1 => WithControlType(L("Open mod settings, recommended"), "button"),
+            2 => WithControlType(L("Read user's guide"), "button"),
+            _ => WithControlType(L("Continue to game"), "button")
         };
         QueueFocusSpeech(WithMenuIndex(announcement, index, rows.Length));
         return true;
@@ -456,7 +483,7 @@ public sealed partial class BopItAccessMod
         try
         {
             OpenWelcomeScreen(main);
-            QueueSpeech("That screen could not be opened. Please choose another option.");
+            QueueSpeech(L("That screen could not be opened. Please choose another option."));
         }
         catch (Exception ex)
         {
@@ -495,7 +522,7 @@ public sealed partial class BopItAccessMod
             main.panels == null || main.panels.Count == 0 ||
             main.panels.Peek().GetInstanceID() != _welcomePanel.GetInstanceID())
             return false;
-        QueueSpeech("Choose a welcome option to continue.");
+        QueueSpeech(L("Choose a welcome option to continue."));
         return true;
     }
 

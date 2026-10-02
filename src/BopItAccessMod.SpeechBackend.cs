@@ -358,6 +358,9 @@ public sealed partial class BopItAccessMod
     private bool OutputSpeechOnWorker(string text, bool interrupt,
         bool protectedCapture = false)
     {
+        // One output boundary covers ordinary focus, startup/recovery notices,
+        // protected results, hints, descriptions, and braille text.
+        text = LocalizeSpeechText(text);
         string mode;
         lock (_speechLock)
         {
@@ -395,7 +398,8 @@ public sealed partial class BopItAccessMod
             if (detected == null)
                 return false;
             string notice = _lastFallbackNoticeMode == "SAPI" ? text :
-                $"SAPI is unavailable. Using {detected}. {text}";
+                LF("SAPI is unavailable. Using {0}. {1}",
+                    detected, text);
             if (!TryTolkAsLastResort(notice, interrupt))
                 return false;
             _lastFallbackNoticeMode = "SAPI";
@@ -437,7 +441,8 @@ public sealed partial class BopItAccessMod
 
         bool announceFallback = _lastFallbackNoticeMode != mode;
         string sapiText = announceFallback
-            ? $"{mode} is unavailable. Using SAPI. {text}" : text;
+            ? LF("{0} is unavailable. Using SAPI. {1}",
+                L(mode), text) : text;
         if (SpeakSapiOnWorker(sapiText, interrupt, protectedCapture))
         {
             _lastFallbackNoticeMode = mode;
@@ -446,7 +451,8 @@ public sealed partial class BopItAccessMod
         if (detected == null)
             return false;
         string readerText = announceFallback
-            ? $"{mode} and SAPI are unavailable. Using {detected}. {text}" : text;
+            ? LF("{0} and SAPI are unavailable. Using {1}. {2}",
+                L(mode), detected, text) : text;
         if (!TryTolkAsLastResort(readerText, interrupt))
             return false;
         _lastFallbackNoticeMode = mode;

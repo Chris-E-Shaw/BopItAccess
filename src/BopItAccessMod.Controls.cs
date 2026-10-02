@@ -179,7 +179,7 @@ public sealed partial class BopItAccessMod
         if (_controlsIntroductionPending && Environment.TickCount64 - _controlsOpenedAt >= 500)
         {
             _controlsIntroductionPending = false;
-            QueueFocusSpeech("Controls.");
+            QueueFocusSpeech(L("Controls."));
         }
 
         return true;
@@ -250,10 +250,12 @@ public sealed partial class BopItAccessMod
             _controlsBindingChangedDuringRebind = false;
             _lastControlsResetSnapshot = null;
 
-            string label = WithControlType(GetControlRowLabel(row), "button");
-            string message = binding == null ? label : $"{label}, {binding}";
+            string label = WithControlType(L(GetControlRowLabel(row)), "button");
+            string message = binding == null ? label :
+                LF("{0}, {1}", label, LocalizeBindingDisplay(binding));
             if (rebinding)
-                message += $". {feedback ?? "Listening for input"}";
+                message += L(".") + " " +
+                    (feedback == null ? L("Listening for input") : L(feedback));
             QueueFocusSpeech(WithControlsIntroduction(message));
             return;
         }
@@ -266,28 +268,28 @@ public sealed partial class BopItAccessMod
             _lastControlsBinding = binding;
             _lastControlsFeedback = feedback;
             _lastControlsRebinding = rebinding;
-            QueueSpeech(binding);
+            QueueSpeech(LocalizeBindingDisplay(binding));
             return;
         }
 
         if (rebinding && !_lastControlsRebinding)
         {
             _controlsBindingChangedDuringRebind = false;
-            QueueSpeech(feedback ?? "Listening for input");
+            QueueSpeech(feedback == null ? L("Listening for input") : L(feedback));
         }
         else if (!rebinding && _lastControlsRebinding)
         {
             if (feedback != null &&
                 !string.Equals(feedback, _lastControlsFeedback, StringComparison.Ordinal))
-                QueueSpeech(feedback);
+                QueueSpeech(L(feedback));
             else if (!_controlsBindingChangedDuringRebind)
-                QueueSpeech("Binding unchanged");
+                QueueSpeech(L("Binding unchanged"));
 
             _controlsBindingChangedDuringRebind = false;
         }
         else if (feedback != null &&
                  !string.Equals(feedback, _lastControlsFeedback, StringComparison.Ordinal))
-            QueueSpeech(feedback);
+            QueueSpeech(L(feedback));
 
         _lastControlsFeedback = feedback;
         _lastControlsRebinding = rebinding;
@@ -310,10 +312,11 @@ public sealed partial class BopItAccessMod
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = false;
             _lastControlsResetSnapshot = null;
-            string label = WithControlType(row.Part.Label, "button");
-            string message = binding == null ? label : $"{label}, {binding}";
+            string label = WithControlType(L(row.Part.Label), "button");
+            string message = binding == null ? label :
+                LF("{0}, {1}", label, LocalizeBindingDisplay(binding));
             if (rebinding)
-                message += ". Listening for input";
+                message += L(".") + " " + L("Listening for input");
             QueueFocusSpeech(WithControlsIntroduction(message));
             return;
         }
@@ -324,18 +327,18 @@ public sealed partial class BopItAccessMod
             _lastControlsBinding = binding;
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = true;
-            QueueSpeech(binding);
+            QueueSpeech(LocalizeBindingDisplay(binding));
             return;
         }
 
         if (rebinding && !_lastControlsRebinding)
         {
             _controlsBindingChangedDuringRebind = false;
-            QueueSpeech("Listening for input");
+            QueueSpeech(L("Listening for input"));
         }
         else if (!rebinding && _lastControlsRebinding &&
             !_controlsBindingChangedDuringRebind)
-            QueueSpeech("Binding unchanged");
+            QueueSpeech(L("Binding unchanged"));
 
         _lastControlsRebinding = rebinding;
     }
@@ -378,7 +381,7 @@ public sealed partial class BopItAccessMod
             _lastControlsResetSnapshot = snapshot;
             _lastControlsResetDevice = device;
             QueueFocusSpeech(WithControlsIntroduction(
-                WithControlType("Reset to Default", "button")));
+                WithControlType(L("Reset to Default"), "button")));
             return;
         }
 
@@ -403,7 +406,7 @@ public sealed partial class BopItAccessMod
             !string.Equals(snapshot, _lastControlsResetSnapshot, StringComparison.Ordinal))
         {
             _lastControlsResetSnapshot = snapshot;
-            QueueSpeech("Bindings reset to default");
+            QueueSpeech(L("Bindings reset to default"));
         }
     }
 
@@ -555,7 +558,7 @@ public sealed partial class BopItAccessMod
             return message;
 
         _controlsIntroductionPending = false;
-        return $"Controls. {message}";
+        return L("Controls.") + " " + message;
     }
 
     private string WithControlsRowIndex(string message)

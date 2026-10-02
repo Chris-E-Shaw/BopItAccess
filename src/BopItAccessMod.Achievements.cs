@@ -178,7 +178,7 @@ public sealed partial class BopItAccessMod
             _achievementMoveDirection = 0;
             if (firstPage && !_achievementOpeningSpoken)
             {
-                QueueFocusSpeech("Achievements book. " +
+                QueueFocusSpeech(L("Achievements book. ") +
                     WithAchievementLineType(_achievementLines[0], 0, _achievementLines.Count));
                 if (GetAchievementMoveAction(controller) == null)
                 {
@@ -189,7 +189,7 @@ public sealed partial class BopItAccessMod
             }
             else
             {
-                string announcement = "Achievements page. " +
+                string announcement = L("Achievements page. ") +
                     WithAchievementLineType(_achievementLines[0], 0, _achievementLines.Count);
                 if (_achievementLines.Count > 1 && GetAchievementMoveAction(controller) == null)
                     announcement += " " + string.Join(". ",
@@ -249,7 +249,7 @@ public sealed partial class BopItAccessMod
         if (statusAt < 0)
             statusAt = line.LastIndexOf(", locked", StringComparison.OrdinalIgnoreCase);
         string typedLine = statusAt < 0 ? WithControlType(line, "list item") :
-            WithControlType(line[..statusAt], "list item") + line[statusAt..];
+            WithControlType(line[..statusAt], "list item") + L(line[statusAt..]);
         return WithMenuIndex(typedLine, index, count);
     }
 
@@ -282,7 +282,7 @@ public sealed partial class BopItAccessMod
             return;
 
         _achievementOpeningSpoken = true;
-        QueueFocusSpeech("Achievements book.");
+        QueueFocusSpeech(L("Achievements book."));
     }
 
     private static List<string> ReadAchievementPage(BookController controller)
@@ -323,7 +323,7 @@ public sealed partial class BopItAccessMod
         _achievementLines.Clear();
         _achievementLineIndex = 0;
         _achievementMoveDirection = 0;
-        QueueSpeech("Achievements book closed.");
+        QueueSpeech(L("Achievements book closed."));
         WriteStatus("Achievements book closed after its pages were opened.");
     }
 

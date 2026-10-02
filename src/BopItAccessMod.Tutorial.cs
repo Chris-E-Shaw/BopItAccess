@@ -108,26 +108,29 @@ public sealed partial class BopItAccessMod
         }
 
         return lines.Count == 0 ? null :
-            "Tutorial reference. " + string.Join(". ", lines) + ".";
+            L("Tutorial reference.") + " " + string.Join(". ", lines) + ".";
     }
 
     private string AddTutorialActionBinding(string line, Player? player,
         string actionName, bool oneOnOne, bool hasSecondBop)
     {
         string binding = ReadTutorialGameplayBinding(player, actionName);
+        binding = LocalizeBindingDisplay(binding);
         if (oneOnOne && actionName == "AltBop")
-            return $"{line}, Player 2: {binding}";
+            return LF("{0}, Player 2: {1}", line, binding);
         if (oneOnOne && actionName == "Bop")
         {
             if (hasSecondBop)
-                return $"{line}, Player 1: {binding}";
+                return LF("{0}, Player 1: {1}", line, binding);
             // Some layouts can hide the second prompt. Still identify both
             // Bop controls when its own visible label is unavailable.
             string second = ReadTutorialGameplayBinding(player, "AltBop");
-            return $"{line}, Player 1: {binding}; Player 2: {second}";
+            second = LocalizeBindingDisplay(second);
+            return LF("{0}, Player 1: {1}; Player 2: {2}", line,
+                binding, second);
         }
 
-        return $"{line}, {binding}";
+        return LF("{0}, {1}", line, binding);
     }
 
     private static string? TutorialGameplayAction(Transform label,
@@ -175,28 +178,32 @@ public sealed partial class BopItAccessMod
             player?.gameplayActionMap?.FindAction(actionName, false) ??
             FindHintAction("Gameplay", actionName);
         if (action == null)
-            return "binding unavailable";
+            return L("binding unavailable");
 
-        string? keyboard = ReadHintKeyboardBinding(action);
+        string? rawKeyboard = ReadHintKeyboardBinding(action);
+        string? keyboard = rawKeyboard == null ? null :
+            LocalizeBindingDisplay(rawKeyboard);
         string? controller = ReadTutorialControllerBinding(action);
         return EffectiveHintDevice switch
         {
-            HintDevice.Keyboard => keyboard ?? "unassigned on keyboard",
-            HintDevice.Controller => controller ?? "unassigned on controller",
-            _ => TutorialDeviceBinding(keyboard, "keyboard") + " and " +
-                TutorialDeviceBinding(controller, "controller")
+            HintDevice.Keyboard => keyboard ?? L("unassigned on keyboard"),
+            HintDevice.Controller => controller ?? L("unassigned on controller"),
+            _ => LF("{0} and {1}",
+                TutorialDeviceBinding(keyboard, "keyboard"),
+                TutorialDeviceBinding(controller, "controller"))
         };
     }
 
     private static string TutorialDeviceBinding(string? binding, string device)
     {
         if (binding == null)
-            return "unassigned on " + device;
+            return LF("unassigned on {0}", L(device));
         // A layout-specific fallback already identifies its controller.
         if (device == "controller" &&
-            binding.Contains(" controller", StringComparison.OrdinalIgnoreCase))
+            (binding.Contains(" controller", StringComparison.OrdinalIgnoreCase) ||
+             binding.Contains(L("controller"), StringComparison.OrdinalIgnoreCase)))
             return binding;
-        return binding + " on " + device;
+        return LF("{0} on {1}", binding, L(device));
     }
 
     private static string? ReadTutorialControllerBinding(InputAction action)
@@ -217,14 +224,20 @@ public sealed partial class BopItAccessMod
             string? label = ReadHintBindingLabel(action, index);
             if (label == null)
                 continue;
-            string alternative = label + " on " + TutorialControllerLayout(layout!);
+            string alternative = LF("{0} on {1}",
+                LocalizeBindingDisplay(label),
+                TutorialControllerLayout(layout!));
             if (!alternatives.Contains(alternative, StringComparer.OrdinalIgnoreCase))
                 alternatives.Add(alternative);
         }
         if (alternatives.Count == 0)
             return null;
-        return ReadHintControllerBinding(action, null,
-            JoinHintChoices(alternatives));
+        string fallback = alternatives.Count == 1 ? alternatives[0] :
+            LF("{0} or {1}", string.Join(L(", "), alternatives.Take(
+                alternatives.Count - 1)), alternatives[^1]);
+        string? selected = ReadHintControllerBinding(action, null, fallback);
+        return selected == null || selected == fallback ? selected :
+            LocalizeBindingDisplay(selected);
     }
 
     private static string TutorialControllerLayout(string layout)
@@ -232,14 +245,14 @@ public sealed partial class BopItAccessMod
         if (layout.Contains("DualSense", StringComparison.OrdinalIgnoreCase) ||
             layout.Contains("DualShock", StringComparison.OrdinalIgnoreCase) ||
             layout.Contains("PlayStation", StringComparison.OrdinalIgnoreCase))
-            return "PlayStation controller";
+            return L("PlayStation controller");
         if (layout.Contains("Switch", StringComparison.OrdinalIgnoreCase) ||
             layout.Contains("NPad", StringComparison.OrdinalIgnoreCase))
-            return "Switch controller";
+            return L("Switch controller");
         if (layout.Contains("Xbox", StringComparison.OrdinalIgnoreCase) ||
             layout.Contains("XInput", StringComparison.OrdinalIgnoreCase))
-            return "Xbox controller";
+            return L("Xbox controller");
         return layout.Equals("Gamepad", StringComparison.OrdinalIgnoreCase)
-            ? "controller" : layout + " controller";
+            ? L("controller") : LF("{0} controller", layout);
     }
 }

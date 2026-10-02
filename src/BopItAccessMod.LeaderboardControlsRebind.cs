@@ -53,7 +53,7 @@ public sealed partial class BopItAccessMod
 
             RestoreLeaderboardOriginalOverride();
             CancelLeaderboardControlRebinding(false);
-            QueueSpeech("Rebinding failed");
+            QueueSpeech(L("Rebinding failed"));
         }
     }
 
@@ -139,7 +139,7 @@ public sealed partial class BopItAccessMod
             FindLeaderboardAction(manager.playerInput?.actions, row.Part);
         if (action == null)
         {
-            QueueSpeech("Binding unavailable");
+            QueueSpeech(L("Binding unavailable"));
             return;
         }
 
@@ -148,7 +148,7 @@ public sealed partial class BopItAccessMod
             !(action.bindings[index].path ?? string.Empty)
                 .Contains(layout, StringComparison.OrdinalIgnoreCase))
         {
-            QueueSpeech("Binding unavailable for this device");
+            QueueSpeech(L("Binding unavailable for this device"));
             return;
         }
 
@@ -211,7 +211,7 @@ public sealed partial class BopItAccessMod
         {
             ReleaseLeaderboardControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech("Binding unchanged");
+            QueueSpeech(L("Binding unchanged"));
             return;
         }
 
@@ -226,7 +226,7 @@ public sealed partial class BopItAccessMod
             RestoreLeaderboardOriginalOverride();
             ReleaseLeaderboardControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech("Binding unavailable");
+            QueueSpeech(L("Binding unavailable"));
             return;
         }
 
@@ -236,7 +236,7 @@ public sealed partial class BopItAccessMod
             RestoreLeaderboardOriginalOverride();
             ReleaseLeaderboardControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech("That input is already assigned to " + owner);
+            QueueSpeech(LF("That input is already assigned to {0}", L(owner)));
             return;
         }
 
@@ -252,7 +252,7 @@ public sealed partial class BopItAccessMod
             RestoreLeaderboardOriginalOverride();
             ReleaseLeaderboardControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech(CleanSpeechValue(invalidMessage) ?? "Binding unavailable");
+            QueueSpeech(L(CleanSpeechValue(invalidMessage) ?? "Binding unavailable"));
             return;
         }
 
@@ -282,7 +282,8 @@ public sealed partial class BopItAccessMod
         _lastControlsBinding = CleanSpeechValue(spoken);
         _lastControlsRebinding = false;
         _controlsBindingChangedDuringRebind = false;
-        QueueSpeech(_lastControlsBinding ?? "Binding changed");
+        QueueSpeech(_lastControlsBinding == null ? L("Binding changed") :
+            LocalizeBindingDisplay(_lastControlsBinding));
     }
 
     private void CancelLeaderboardControlRebinding(bool announce = true)
@@ -293,7 +294,7 @@ public sealed partial class BopItAccessMod
             _lastControlsRebinding = false;
         if (wasActive && announce)
         {
-            QueueSpeech("Binding unchanged");
+            QueueSpeech(L("Binding unchanged"));
         }
     }
 

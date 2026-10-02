@@ -81,9 +81,10 @@ public sealed partial class BopItAccessMod
             _creditsAutoReading = !navigationAvailable;
             _creditsAutoStartAt = Environment.TickCount64;
             if (_creditsAutoReading)
-                QueueFocusSpeech("Credits.");
+                QueueFocusSpeech(L("Credits."));
             else
-                QueueFocusSpeech($"Credits. {WithCreditLineType(_creditsLines[0], 0, _creditsLines.Count)}.");
+                QueueFocusSpeech(LF("Credits. {0}.",
+                    WithCreditLineType(_creditsLines[0], 0, _creditsLines.Count)));
             WriteStatus($"Credits panel is visible; captured {_creditsLines.Count} spoken lines.");
             return true;
         }

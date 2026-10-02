@@ -114,14 +114,14 @@ public sealed partial class BopItAccessMod
             _lastTrackSelectFocusedId = focusedId;
             WriteStatus($"Song selection screen is visible; theme {theme ?? "unknown"}, extreme {FormatExtreme(extreme) ?? "unknown"}.");
 
-            string introduction = "Song selection";
+            string introduction = L("Song selection");
             if (theme != null)
-                introduction += $". {theme}";
+                introduction += ". " + LocalizeTrackTheme(theme);
             if (extreme.HasValue)
-                introduction += $". {FormatExtreme(extreme)}";
+                introduction += ". " + FormatExtremeSpeech(extreme);
             introduction += ".";
             if (focusedLabel != null && (_indexingEnabled || _readControlTypesEnabled ||
-                !string.Equals(focusedLabel, "Start", StringComparison.OrdinalIgnoreCase)))
+                !string.Equals(focusedLabel, L("Start"), StringComparison.OrdinalIgnoreCase)))
             {
                 string focusedControl = WithControlType(focusedLabel,
                     focusedType ?? "button");
@@ -138,13 +138,13 @@ public sealed partial class BopItAccessMod
         string? changed = null;
         if (theme != null && !string.Equals(theme, _lastTrackSelectTheme, StringComparison.Ordinal))
         {
-            changed = theme;
+            changed = LocalizeTrackTheme(theme);
             _lastTrackSelectTheme = theme;
         }
 
         if (extreme.HasValue && extreme != _lastTrackSelectExtreme)
         {
-            string state = FormatExtreme(extreme)!;
+            string state = FormatExtremeSpeech(extreme)!;
             changed = changed == null ? state : $"{changed}. {state}";
             _lastTrackSelectExtreme = extreme;
         }
@@ -178,7 +178,7 @@ public sealed partial class BopItAccessMod
             };
             if (description != null)
             {
-                QueueDescriptionSpeech(description);
+                QueueDescriptionSpeech(L(description));
                 _descriptionWasRequestedOnTrackSelect = true;
                 WriteStatus($"Read description requested for {theme}.");
                 return true;
@@ -229,6 +229,20 @@ public sealed partial class BopItAccessMod
 
     private static string? FormatExtreme(bool? extreme) =>
         extreme.HasValue ? (extreme.Value ? "Extreme mode on" : "Extreme mode off") : null;
+
+    private static string? FormatExtremeSpeech(bool? extreme) =>
+        extreme.HasValue
+            ? extreme.Value ? L("Extreme mode on") : L("Extreme mode off")
+            : null;
+
+    private static string LocalizeTrackTheme(string theme) => theme switch
+    {
+        "Shapes" => L("Shapes"),
+        "Space" => L("Space"),
+        "City" => L("City"),
+        "Office" => L("Office"),
+        _ => L(theme)
+    };
 
     private (int Id, string? Label, string? Type, int Index, int Count)
         ReadTrackSelectSelectedControl(
@@ -287,9 +301,9 @@ public sealed partial class BopItAccessMod
             return label;
         if (control.name.Contains("Start", StringComparison.OrdinalIgnoreCase) ||
             control.name.Contains("Play", StringComparison.OrdinalIgnoreCase))
-            return "Start";
+            return L("Start");
         if (control.name.Contains("Back", StringComparison.OrdinalIgnoreCase))
-            return "Back";
+            return L("Back");
         return null;
     }
 

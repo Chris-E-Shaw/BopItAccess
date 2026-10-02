@@ -9,6 +9,7 @@ public sealed partial class BopItAccessMod
     private readonly ManualResetEventSlim _startupSpeechReady = new(false);
     private volatile bool _speechEnabled = true;
     private bool _speechToggleInitialized;
+    private long _startupLocaleWaitBeganAt;
     private string _startupSpeechAnnouncement =
         "Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls.";
     private string? _pendingToggleSpeechNotice;
@@ -23,6 +24,23 @@ public sealed partial class BopItAccessMod
     {
         if (_speechToggleInitialized)
             return;
+
+        // The Unity localization tables can initially report English while
+        // Settings.Load is still restoring the player's saved language. Hold
+        // the first announcement until both agree, so it uses the language
+        // of the actual game menu. Keep a bounded fallback for unusual game
+        // startup failures, including a missing Settings.Load callback.
+        long now = Environment.TickCount64;
+        if (_startupLocaleWaitBeganAt == 0)
+            _startupLocaleWaitBeganAt = now;
+        string? savedLocale = NormalizeGameLocale(
+            _nativeLoadedSettings?.SettingsData?.Language);
+        bool localeReady = _nativeSettingsLoadObserved &&
+            (savedLocale == null || savedLocale == CurrentGameLocale);
+        if (!localeReady && now - _startupLocaleWaitBeganAt < 8000)
+            return;
+        if (!localeReady)
+            WriteStatus("Startup language did not settle within eight seconds; using the active game locale.");
 
         bool enabled = true;
         try
@@ -49,8 +67,8 @@ public sealed partial class BopItAccessMod
         {
             _speechEnabled = enabled;
             _startupSpeechAnnouncement = enabled
-                ? "Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls."
-                : "Bop It Access speech is off. " + recovery;
+                ? L("Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls.")
+                : L("Bop It Access speech is off. ") + recovery;
         }
 
         // The first focus reading must precede the worker's startup signal.
@@ -81,8 +99,8 @@ public sealed partial class BopItAccessMod
         if (enabled == _speechEnabled)
             return;
 
-        string notice = enabled ? "Speech on." :
-            "Speech off. " + GetSpeechToggleRecoveryInstruction();
+        string notice = enabled ? L("Speech on.") :
+            L("Speech off. ") + GetSpeechToggleRecoveryInstruction();
 
         lock (_speechLock)
         {
@@ -182,7 +200,7 @@ public sealed partial class BopItAccessMod
         _speechSuppressedForBackground = false;
         if (_backgroundRecoveryNoticeNeeded && !_speechEnabled)
         {
-            string notice = "Speech is off. " + GetSpeechToggleRecoveryInstruction();
+            string notice = L("Speech is off. ") + GetSpeechToggleRecoveryInstruction();
             lock (_speechLock)
             {
                 _pendingToggleSpeechNotice = notice;
@@ -201,7 +219,7 @@ public sealed partial class BopItAccessMod
         if (_speechEnabled || !_speechToggleInitialized)
             return;
 
-        string notice = "Speech is off. " + GetSpeechToggleRecoveryInstruction();
+        string notice = L("Speech is off. ") + GetSpeechToggleRecoveryInstruction();
         lock (_speechLock)
         {
             if (_speechEnabled)

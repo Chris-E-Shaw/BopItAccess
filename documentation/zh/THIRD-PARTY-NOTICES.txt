@@ -1,0 +1,43 @@
+Bop It Access 使用这些第三方运行时库：
+
+0Harmony.dll - Harmony 单独安装提供的补丁库
+MelonLoader. Bop It Access 用它来观察游戏设置何时完成
+在第一次运行 mod 时加载。源安装包和本地安装包都没有
+包含此 DLL；请参阅 MelonLoader 随附的通知。
+
+Tolk.dll — Tolk 屏幕阅读器抽象库，由 Davy Kager 和贡献者提供。
+项目及来源： https://github.com/dkager/tolk
+许可证：GNU 较宽松通用公共许可证，版本 3。
+许可证文本： https://github.com/dkager/tolk/blob/master/LICENSE.txt
+
+nvdaControllerClient64.dll — NVDA 控制器客户端库，与 Tolk 一起使用。
+项目及来源： https://github.com/nvaccess/nvda/tree/master/extras/controllerClient
+Tolk 的 x64 副本： https://github.com/dkager/tolk/tree/master/libs/x64
+许可证：GNU 较宽松通用公共许可证，版本 2.1。
+许可证文本： https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt
+
+此源寄存器没有本地 DLL 文件 。
+它还包括没有编译的Bop It Access DLL.
+构建者必须分别获取或构建兼容的x64本土DLL.
+Bop It Access在运行时动态加载它们.
+一个兼容的Tolk.dll可以在不重建mod的情况下被替换.
+
+之前准备好的本地安装包包含这些DLL并包含
+他们适用的许可文本。这些软件包不是 GitHub 版本，而是
+不属于此源存储库。
+
+翻译创作工具（游戏运行时不需要或捆绑）：
+
+Argos Translate 及其语言模型离线使用来准备草稿
+mod 演讲目录和项目文件的翻译。上游
+项目获得 MIT 或 CC0 双重许可；其型号包如下提供
+相同的条款。项目： https://github.com/argosopentech/argos-translate
+麻省理工学院许可证： https://github.com/argosopentech/argos-translate/blob/master/LICENSE
+
+经项目业主批准，使用谷歌翻译来改进
+机器翻译的草稿。创作期间发生翻译请求；
+该模组在运行时不会联系谷歌或需要互联网连接。
+
+Beautiful Soup 4 用于在准备时保留 HTML 结构
+翻译的指南。它是 MIT 许可的，不是 mod 运行时的一部分。
+项目及许可信息： https://www.crummy.com/software/BeautifulSoup/

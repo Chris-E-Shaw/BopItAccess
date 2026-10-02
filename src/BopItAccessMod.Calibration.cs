@@ -1,5 +1,6 @@
 using System.Globalization;
 using Il2Cpp;
+using Il2CppTMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -82,13 +83,13 @@ public sealed partial class BopItAccessMod
         {
             announcement = state switch
             {
-                CalibrateState.Start => "Audio calibration.",
-                CalibrateState.Warmup => "Get ready. Bop to the beat.",
-                CalibrateState.Calibrate => "Bop to the beat.",
-                CalibrateState.Finished => "Calibration finished. Calculating latency.",
+                CalibrateState.Start => L("Audio calibration."),
+                CalibrateState.Warmup => L("Get ready. Bop to the beat."),
+                CalibrateState.Calibrate => L("Bop to the beat."),
+                CalibrateState.Finished => L("Calibration finished. Calculating latency."),
                 CalibrateState.Result => result == null
-                    ? "Audio calibration complete."
-                    : $"Audio calibration complete. Latency, {result}.",
+                    ? L("Audio calibration complete.")
+                    : LF("Audio calibration complete. Latency, {0}.", result),
                 _ => null
             };
 
@@ -107,7 +108,7 @@ public sealed partial class BopItAccessMod
         }
         else if (resultChanged)
         {
-            announcement = $"Latency, {result}.";
+            announcement = LF("Latency, {0}.", result);
         }
 
         if (focusChanged && actionLabel != null)
@@ -194,7 +195,11 @@ public sealed partial class BopItAccessMod
         List<(Transform Action, string Label)> choices, Transform? action, string label)
     {
         if (action != null && action.gameObject.activeInHierarchy)
-            choices.Add((action, label));
+        {
+            string visible = CleanSpeechValue(
+                action.GetComponentInChildren<TMP_Text>(true)?.text) ?? L(label);
+            choices.Add((action, visible));
+        }
     }
 
     private static bool IsCalibrationAction(Transform selected, Transform? action) =>

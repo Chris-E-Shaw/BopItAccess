@@ -32,9 +32,12 @@ public sealed partial class BopItAccessMod
     private int _leaderboardControlsPanelId;
     private long _nextLeaderboardControlsProbeAt;
     private bool _leaderboardControlsAttempted;
+    private string? _customControlRowsLocale;
 
     public override void OnUpdate()
     {
+        UpdateGameLocale();
+        RefreshLocalizedControlRows();
         UpdateWelcomeScreen();
         UpdateGuideUi();
         UpdateGuideMusicFilter();
@@ -275,7 +278,41 @@ public sealed partial class BopItAccessMod
         if (localizationBehaviour != null)
             localizationBehaviour.enabled = false;
 
-        label.text = text;
+        label.text = L(text);
+    }
+
+    private void RefreshLocalizedControlRows()
+    {
+        string locale = CurrentGameLocale;
+        if (string.Equals(_customControlRowsLocale, locale,
+            StringComparison.Ordinal))
+            return;
+        _customControlRowsLocale = locale;
+        foreach (AddedLeaderboardControlRow row in _leaderboardControlRows.Values)
+            RefreshLocalizedControlRow(row.Root, row.Part.VisibleLabel);
+        RefreshLocalizedControlRow(_resetGyroControlRow?.Root, "RESET GYRO");
+        RefreshLocalizedControlRow(_descriptionControlRow?.Root,
+            "READ DESCRIPTIONS");
+        RefreshLocalizedControlRow(_scoreControlRow?.Root, "READ SCORE");
+        RefreshLocalizedControlRow(_toggleSpeechControlRow?.Root,
+            "TOGGLE SPEECH");
+        RefreshLocalizedControlRow(_speakHintsControlRow?.Root,
+            "SPEAK HINTS");
+        RefreshLocalizedControlRow(_changeSpeechOutputControlRow?.Root,
+            "CHANGE SPEECH OUTPUT");
+    }
+
+    private static void RefreshLocalizedControlRow(GameObject? root,
+        string label)
+    {
+        if (root == null)
+            return;
+        TMP_Text? regular = FindControlLabel(root.transform, "Default/Label");
+        TMP_Text? focused = FindControlLabel(root.transform, "Active/Label");
+        if (regular != null)
+            SetClonedLabel(regular, label);
+        if (focused != null)
+            SetClonedLabel(focused, label);
     }
 
     private static void SetDisplayPrompt(ControlPromptSpriteSwapperV2? prompt,

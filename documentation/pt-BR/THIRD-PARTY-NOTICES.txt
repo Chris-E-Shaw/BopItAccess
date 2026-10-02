@@ -1,0 +1,43 @@
+Bop It Access usa estas bibliotecas de tempo de execução de terceiros:
+
+0Harmony.dll - Harmony biblioteca de patches fornecida pela biblioteca instalada separadamente
+MelonLoader. Bop It Access usa para observar quando as configurações do jogo terminam
+carregando na primeira execução do mod. Os pacotes de instalação fonte e local não
+inclua esta DLL; consulte os avisos fornecidos com MelonLoader.
+
+Tolk.dll — Tolk biblioteca de abstração de leitor de tela por Davy Kager e colaboradores.
+Projeto e fonte: https://github.com/dkager/tolk
+Licença: Licença Pública Geral Menor GNU, versão 3.
+Texto da licença: https://github.com/dkager/tolk/blob/master/LICENSE.txt
+
+nvdaControllerClient64.dll — NVDA Biblioteca cliente do controlador, usada com Tolk.
+Projeto e fonte: https://github.com/nvaccess/nvda/tree/master/extras/controllerClient
+Cópia x64 de Tolk: https://github.com/dkager/tolk/tree/master/libs/x64
+Licença: Licença Pública Geral Menor GNU, versão 2.1.
+Texto da licença: https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt
+
+Este repositório de código-fonte não inclui arquivos DLL nativos.
+Ele também inclui nenhum compilado Bop It Access DLL.
+Construtores devem separadamente obter ou construir DLLs nativas compatíveis x64.
+Bop It Access carrega-os dinamicamente em tempo de execução.
+Um compatível Tolk.dll pode ser substituído sem reconstruir o mod.
+
+Pacotes de instalação local preparados anteriormente continham essas DLLs e incluíam
+seus textos de licença aplicáveis. Esses pacotes não são versões GitHub e são
+não faz parte deste repositório de origem.
+
+Ferramentas de autoria de tradução (não necessárias ou incluídas no tempo de execução do jogo):
+
+Argos Translate e seus modelos de linguagem foram usados offline para preparar o rascunho
+traduções do catálogo de fala do mod e documentos do projeto. A montante
+o projeto tem licença dupla sob MIT ou CC0; seus pacotes de modelos são oferecidos sob
+os mesmos termos. Projeto: https://github.com/argosopentech/argos-translate
+Licença MIT: https://github.com/argosopentech/argos-translate/blob/master/LICENSE
+
+O Google Translate foi utilizado, com a aprovação do proprietário do projeto, para melhorar o
+rascunhos traduzidos automaticamente. As solicitações de tradução aconteceram durante a autoria;
+o mod não entra em contato com o Google nem requer conexão com a Internet em tempo de execução.
+
+Beautiful Soup 4 foi usado para preservar a estrutura HTML enquanto preparava o
+guias traduzidos. É licenciado pelo MIT e não faz parte do tempo de execução do mod.
+Informações do projeto e licença: https://www.crummy.com/software/BeautifulSoup/

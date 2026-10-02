@@ -58,7 +58,7 @@ public sealed partial class BopItAccessMod
         int buttonId = button.GetInstanceID();
         string? label = GetPlayModeLabel(buttonId);
         if (label == null && button.name.Contains("Back", StringComparison.OrdinalIgnoreCase))
-            label = "BACK";
+            label = ReadNativeButtonLabel(button, "BACK");
 
         if (label == null)
         {
@@ -78,10 +78,14 @@ public sealed partial class BopItAccessMod
 
     private string? GetPlayModeLabel(int buttonId)
     {
-        if (Matches(_mainMenu!.soloButton, buttonId)) return "SOLO";
-        if (Matches(_mainMenu.partyButton, buttonId)) return "PARTY";
-        if (Matches(_mainMenu.passItButton, buttonId)) return "PASS IT";
-        if (Matches(_mainMenu.oneOnOneButton, buttonId)) return "ONE ON ONE";
+        if (Matches(_mainMenu!.soloButton, buttonId))
+            return ReadNativeButtonLabel(_mainMenu.soloButton, "SOLO");
+        if (Matches(_mainMenu.partyButton, buttonId))
+            return ReadNativeButtonLabel(_mainMenu.partyButton, "PARTY");
+        if (Matches(_mainMenu.passItButton, buttonId))
+            return ReadNativeButtonLabel(_mainMenu.passItButton, "PASS IT");
+        if (Matches(_mainMenu.oneOnOneButton, buttonId))
+            return ReadNativeButtonLabel(_mainMenu.oneOnOneButton, "ONE ON ONE");
         return null;
     }
 

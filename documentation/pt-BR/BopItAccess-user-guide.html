@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/>
+<title>Bop It Access | Guia do usuário de jogos e mods</title>
+<style>
+    :root { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.65; color: #202434; background: #f7f8fc; }
+    body { margin: 0; }
+    .skip { position: absolute; left: .75rem; top: -4rem; padding: .5rem .8rem; background: white; z-index: 5; }
+    .skip:focus { top: .75rem; }
+    header { background: #17274b; color: white; padding: 2.5rem max(1rem, calc((100vw - 68rem) / 2)); }
+    header p { max-width: 55rem; margin-bottom: 0; }
+    main, footer { max-width: 68rem; margin: auto; padding: 0 1.25rem 2rem; }
+    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 .5rem; }
+    h2 { margin-top: 3rem; padding-top: .35rem; border-top: 3px solid #6679b5; }
+    h3 { margin-top: 2rem; }
+    h4 { margin-top: 1.5rem; }
+    a { color: #164c97; text-underline-offset: .15em; }
+    a:focus-visible { outline: 3px solid #ed8d15; outline-offset: 2px; }
+    header a { color: #fff; }
+    nav, .panel, .note { background: #fff; border: 1px solid #cdd5e9; border-radius: .65rem; padding: 1rem 1.3rem; margin: 1.3rem 0; }
+    nav ul { columns: 2; padding-left: 1.5rem; }
+    nav li { break-inside: avoid; margin: .2rem 0; }
+    .note { border-left: 5px solid #b16613; }
+    .planned { background: #fdf4df; border-left: 5px solid #ae6b05; padding: .6rem .9rem; }
+    .current { background: #e9f6ed; border-left: 5px solid #24714a; padding: .6rem .9rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.6rem; background: #fff; }
+    caption { text-align: left; font-weight: 700; padding: .3rem 0; }
+    th, td { border: 1px solid #bdc8df; padding: .55rem .65rem; text-align: left; vertical-align: top; }
+    th { background: #e7ecf7; }
+    tr:nth-child(even) td { background: #f5f7fc; }
+    code, kbd { font-family: ui-monospace, Consolas, monospace; }
+    kbd { border: 1px solid #8790a7; border-bottom-width: 2px; border-radius: .25rem; padding: 0 .25rem; white-space: nowrap; }
+    pre { overflow-x: auto; padding: 1rem; border-radius: .5rem; background: #e7ecf7; }
+    .table-scroll { overflow-x: auto; }
+    .small { font-size: .93rem; }
+    footer { border-top: 3px solid #6679b5; }
+    @media (max-width: 45rem) { nav ul { columns: 1; } th, td { padding: .4rem; } }
+    @media (prefers-color-scheme: dark) {
+      :root { color: #e8ebf7; background: #121623; }
+      nav, .panel, .note, table, .skip { background: #1d2537; border-color: #4c5b79; }
+      a { color: #a9c8ff; }
+      th, pre { background: #303c59; }
+      th, td { border-color: #586782; }
+      tr:nth-child(even) td { background: #242d43; }
+      .planned { background: #453515; }
+      .current { background: #193b2b; }
+    }
+  </style>
+</head>
+<body>
+<a class="skip" href="#content">Pular para o guia</a>
+<header>
+<h1>Bop It Access</h1>
+<p>Um guia amigável para Bop It! The Video Game e seu mod de acessibilidade. Este guia descreve o mod Windows atual e rotula claramente as ideias que ainda estão planejadas.</p>
+</header>
+<main id="content">
+<nav aria-label="Índice" id="contents-nav">
+<h2 id="contents">Conteúdo</h2>
+<ul>
+<li><a href="#welcome">Bem vindo</a></li>
+<li><a href="#game">O que é Bop It!?</a></li>
+<li><a href="#mod">O que é Bop It Access?</a></li>
+<li><a href="#transparency">Nota de transparência honesta</a></li>
+<li><a href="#features">Recursos de acessibilidade</a></li>
+<li><a href="#quality">Características de qualidade de vida</a></li>
+<li><a href="#limitations">Notas e limitações</a></li>
+<li><a href="#buy">Compre o jogo e verifique seu computador</a></li>
+<li><a href="#install">Obtenha e instale o mod</a></li>
+<li><a href="#controls">Referência de controle do jogador</a></li>
+<li><a href="#first-launch">Seu primeiro lançamento</a></li>
+<li><a href="#languages">Idiomas</a></li>
+<li><a href="#in-game-guide">Leia o guia no jogo</a></li>
+<li><a href="#speech-options">Menu de configurações do mod</a></li>
+<li><a href="#menu-guide">Guia de cardápio</a></li>
+<li><a href="#main-menu">Menu principal</a></li>
+<li><a href="#play-menu">Menu de reprodução</a></li>
+<li><a href="#song-menu">Seleção de música e dificuldade</a></li>
+<li><a href="#settings-menu">Menu de configurações</a></li>
+<li><a href="#controls-menu">Menu de controles</a></li>
+<li><a href="#audio-latency-menu">Calibração de latência de áudio</a></li>
+<li><a href="#leaderboards-menu">Tabelas de classificação</a></li>
+<li><a href="#achievements-menu">Livro de conquistas</a></li>
+<li><a href="#credits-menu">Créditos do jogo</a></li>
+<li><a href="#results-menu">Resultados e fim do jogo</a></li>
+<li><a href="#pause-menu">Menu de pausa</a></li>
+<li><a href="#mode-guide">Guia de modo detalhado</a></li>
+<li><a href="#roadmap">O que pode vir a seguir</a></li>
+<li><a href="#project-credits">Créditos e avisos de terceiros</a></li>
+<li><a href="#legal">Notas legais</a></li>
+<li><a href="#thanks">Um obrigado</a></li>
+</ul>
+</nav>
+<section id="welcome">
+<h2>Bem vindo</h2>
+<p>Bem-vindo ao Bop It Access! Quer este seja seu primeiro jogo Bop It, seu primeiro videogame ou um jogo que você já adora, você é bem-vindo aqui. Este guia começa com o básico e explica os recursos do mod conforme você os encontra. Você pode usar o conteúdo acima para ir direto para um tópico.</p>
+<p>Um <strong>teclado</strong> é o conjunto de chaves do seu computador. Um <strong>controlador</strong> é um gamepad portátil. Onde este guia menciona nomes de botões do Xbox, eles são exemplos: outro controlador pode usar rótulos diferentes para a mesma posição de botão. Um <strong>item de menu</strong> é uma escolha como Reproduzir ou Configurações. O item com <strong>foco</strong> é aquele que seu próximo pressionamento de confirmação ativará.</p>
+</section>
+<section id="game">
+<h2>O que é Bop It!?</h2>
+<p><em>Bop It! The Video Game</em> traz o jogo de ritmo e reação Bop It para um computador. Uma voz chama os comandos e você dá a entrada correspondente antes que o tempo acabe. Na dificuldade Clássica os comandos principais são <strong>BATER</strong>, <strong>GIRAR</strong>e <strong>PUXAR</strong>. Dificuldade extrema também adiciona <strong>RODAR</strong> e <strong>PETELECO</strong>. Os comandos ficam mais rápidos, então ouvir e cronometrar são mais importantes à medida que a rodada avança. O jogo oferece jogo Solo, Party, Pass It e One-on-One, com quatro fases visuais e musicais: Shapes, Space, City e Office. O <a href="https://store.steampowered.com/app/3214360/">página oficial Steam</a> apresenta o jogo e o <a href="https://bopitthevideogame.com/bop-it-the-video-game-press-release">descrição oficial do jogo</a> explica seus modos.</p>
+<p>Ao ouvir um comando, use o controle atribuído. Por exemplo, no teclado padrão, BATER é Espaço. Você pode encontrar todos os padrões no <a href="#controls">referência de controle</a>. Você não precisa memorizar tudo antes de começar: o mod pode falar dicas de botões nos menus e você pode solicitar dicas sob demanda.</p>
+</section>
+<section id="mod">
+<h2>O que é Bop It Access?</h2>
+<p>Bop It Access é um mod não oficial e independente para o <strong>Versão Windowsx64 Steam</strong> do jogo. Um mod é uma adição opcional que altera o comportamento do jogo. Este adiciona suporte de fala e braille para menus e resultados, descrições sob demanda dos quatro estágios, controles extras e configurações úteis, como limite de taxa de quadros. O objetivo é tornar o jogo mais fácil de navegar, ao mesmo tempo que deixa intactas as dicas de jogo faladas e o tempo.</p>
+<p>O mod usa MelonLoader para carregar no jogo. Ele usa Tolk para se comunicar com leitores de tela suportados e pode usar a fala Windows SAPI como substituto. Ele não substitui o jogo e você ainda precisa de sua própria cópia do Bop It!.</p>
+<p>O mod segue a configuração de idioma do jogo para seus menus e anúncios. Inclui inglês, francês, italiano, alemão, espanhol (Espanha), espanhol (América Latina), japonês, coreano, chinês simplificado e português brasileiro.</p>
+</section>
+<section class="panel" id="transparency">
+<h2>Nota de transparência honesta</h2>
+<p>Este mod foi feito em forte colaboração com inteligência artificial. Toda a pesquisa para o mod foi conduzida pela IA, e seu código foi gerado pela IA, em vez de originalmente escrito à mão. As decisões de design e os testes de jogabilidade foram inteiramente humanos. Cada adição e alteração anterior foi cuidadosamente revisada por uma pessoa, e pessoas reais jogaram e testaram o mod em diferentes sistemas. O novo texto multilíngue foi elaborado com tradução automática e ainda precisa de revisão por falantes fluentes. Sem codificação agente, este projeto não existiria. Obrigado por dar uma chance a este projeto liderado por humanos e assistido por IA.</p>
+</section>
+<section id="features">
+<h2>Recursos de acessibilidade</h2>
+<ul>
+<li>Fala para a tela de título, menu principal, reprodução e seleção de músicas, configurações e controles, configurações de mod, calibração de áudio, tabelas de classificação, livro de conquistas do jogo, créditos, menu de pausa e telas de resultados.</li>
+<li>Botões em foco, controles deslizantes, alternadores, nomes, valores e valores alterados são anunciados. Indexação opcional, rótulos de tipo de controle, intervalos de controle deslizante e filtragem de letras maiúsculas permitem ajustar os detalhes.</li>
+<li>Pontuação ou discurso do vencedor no final do jogo, seguido de discurso no menu da fila, além de um atalho para Ler Pontuação apenas na tela de resultados.</li>
+<li>Quatro descrições de palco, faladas mediante solicitação na tela de seleção de músicas antes do início da partida.</li>
+<li>A referência do tutorial do jogo para o modo e dificuldade atuais, falada mediante solicitação na seleção da música com o controle atribuído atualmente a cada ação. One-on-One inclui ambas as entradas BATER.</li>
+<li>Anúncios opcionais de cores e contagem de vidas individuais.</li>
+<li>Dicas de botões para teclado, controlador ou ambos, com tempo ajustável, repetições e um atalho Speak Hints sob demanda.</li>
+<li>Saída de leitor de tela através de Tolk, saída braille opcional e fallback configurável SAPI.</li>
+<li>Remapeamento de teclado e controlador para vários controles nativos e mod, incluindo filtros de placar e atalhos de fala.</li>
+<li>Um interruptor mestre de fala salvo com instruções faladas para reativar a fala.</li>
+<li>Fala e um guia do usuário do jogo em todos os idiomas oferecidos pela configuração de idioma do jogo.</li>
+</ul>
+</section>
+<section id="quality">
+<h2>Características de qualidade de vida</h2>
+<ul>
+<li>Uma configuração de Limit FPS salva com opções de 30, 60, 120, 240 e Ilimitado. O padrão é 60.</li>
+<li>Opções separadas para silenciar o áudio do jogo ou modificar a fala quando a janela do jogo está em segundo plano.</li>
+<li>Um atalho para alterar a saída de fala que percorre os mesmos modos do menu Mod Settings.</li>
+<li>Preferências salvas em sessões de jogo, incluindo saída de voz, braille, dicas e limite de taxa de quadros.</li>
+<li>Mais controles disponíveis para remapeamento no menu Controles do próprio jogo, com atribuições duplicadas rejeitadas.</li>
+</ul>
+</section>
+<section id="limitations">
+<h2>Notas e limitações</h2>
+<ul>
+<li><strong>As descrições são solicitadas antes da rodada.</strong> O mod intencionalmente não narra o cenário durante o jogo ativo. O jogador deve ouvir e reagir aos comandos verbais do jogo; narração extra poderia cobrir um comando e encerrar a rodada.</li>
+<li><strong>SAPI é um mecanismo de fala de backup.</strong> Ele está disponível quando você preferir ou quando nenhum leitor de tela compatível estiver em execução, mas sua capacidade de resposta ainda está abaixo da meta deste projeto. A voz e o sistema instalados podem afetar o atraso. Para fala diferente do inglês, escolha uma voz SAPI instalada que suporte o idioma do jogo selecionado; o mod não instala vozes adicionais.</li>
+<li><strong>Alguns controles nativos ainda estão corrigidos.</strong> O mod expande bastante o menu de controles do jogo, mas não torna todas as entradas do jogo remapeáveis.</li>
+<li><strong>A taxa de quadros afeta a pesquisa de entrada.</strong> O limitador FPS pode reduzir drasticamente a carga do sistema. Ele não retarda deliberadamente as animações nem altera o tempo do jogo, mas o jogo verifica a entrada baseada em quadros com menos frequência em FPS mais baixos. Uma configuração mais alta pode fornecer um tempo de entrada mais preciso, especialmente em rodadas rápidas.</li>
+<li><strong>O suporte de fala é mais forte em menus e resultados.</strong> Em um painel inesperado, o mod pode ler texto visível e um controle focado quando encontrar um. Ao passar o mouse, você não pode falar até que o item realmente receba o foco do jogo.</li>
+<li><strong>Windows x64 é a plataforma mod atual.</strong> O jogo pode ser vendido para outros sistemas, mas o carregamento atual e as dependências de fala deste mod são para Windows x64.</li>
+<li><strong>As traduções precisam de revisão.</strong> O texto e os guias iniciais do mod em idioma diferente do inglês foram traduzidos automaticamente. Algumas palavras, termos do jogo e nomes de entrada podem precisar de correção por falantes fluentes. Por favor, relate qualquer coisa pouco clara ou imprecisa.</li>
+</ul>
+</section>
+<section id="buy">
+<h2>Compre o jogo e verifique seu computador</h2>
+<p>Comprar <a href="https://store.steampowered.com/app/3214360/">Bop It! The Video Game em Steam</a>. Se Steam é novo para você, <a href="https://store.steampowered.com/about/">instalar Steam</a>, crie ou faça login em uma conta, compre o jogo na página da Loja e instale-o na Biblioteca Steam. O <a href="https://help.steampowered.com/en/faqs/view/6F74-68BA-1B77-8727">Steam guia de primeiros passos</a> cobre essas etapas. A compra do jogo é separada deste mod.</p>
+<p>Antes de comprar ou instalar, verifique o <strong>requisitos mínimos atuais do sistema na página Steam</strong>. No momento em que este guia foi escrito, seu mínimo de Windows incluía Windows 10 de 64 bits, um Intel i5-4460 ou AMD FX-6300, 8 GB de memória, um processador gráfico com 2 GB de memória de vídeo e 2 GB de armazenamento. A página também diz que é necessária uma conexão com a Internet para as tabelas de classificação. Os requisitos podem mudar, portanto a listagem de Steam é a referência final.</p>
+<p>Você ainda pode tentar relatar problemas em um computador abaixo dos requisitos mínimos do jogo. Se um problema for causado por um sistema abaixo das especificações, entretanto, uma correção não pode ser garantida.</p>
+</section>
+<section id="install">
+<h2>Obtenha e instale o mod</h2>
+<p class="planned"><strong>Status do instalador:</strong> Um instalador de mod público ainda não foi projetado ou lançado, portanto, não há nenhum link de download do instalador real ou tela do instalador a seguir. Por favor, observe o <a href="https://github.com/Chris-E-Shaw/BopItAccess">Bop It Access página do projeto</a> para disponibilidade futura. Este é o local pretendido do link do instalador, não uma afirmação de que um instalador está lá agora.</p>
+<h3>Rota de instalação atual: construir a partir da fonte</h3>
+<p>O repositório público GitHub atualmente contém fonte e documentação, sem download compilado ou versão GitHub. Construir significa transformar os arquivos de origem na DLL do mod. O <a href="README.md#build-from-source">instruções de construção do repositório</a> são a referência mantida. Aqui está a rota atual completa na linguagem cotidiana:</p>
+<ol>
+<li>Instale o jogo através de Steam em Windows x64. Encontre sua pasta na Biblioteca de Steam se você não usou o local padrão.</li>
+<li>Com o jogo encerrado, <a href="https://github.com/LavaGang/MelonLoader#how-to-use-the-installer">instalar MelonLoader</a> naquela pasta do jogo. O desenvolvimento usou x64 MelonLoader 0.7.3 Open-Beta com este jogo; outras combinações ainda não foram verificadas. Inicie o jogo uma vez e feche-o novamente. Isso permite que MelonLoader prepare os arquivos que o mod precisa.</li>
+<li>Instale um SDK .NET que inclui o pacote de segmentação .NET 6. <a href="https://github.com/Chris-E-Shaw/BopItAccess">Baixe ou clone a fonte Bop It Access</a>, abra PowerShell na pasta que contém seu <code>README.md</code>e execute o comando abaixo. Altere o caminho do jogo de exemplo se sua biblioteca Steam estiver em outro lugar.</li>
+</ol>
+<pre><code>$gameDir = 'C:\Program Files (x86)\Steam\steamapps\common\Bop It!'
+dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</code></pre>
+<ol start="4">
+<li>Com o jogo fechado, copie o arquivo construído <code>src\bin\Release\net6.0\BopItAccess.dll</code> dentro do jogo <code>Mods</code> pasta. Crie essa pasta, se necessário. Copie o build <code>src\bin\Release\net6.0\documentation</code> pasta na pasta do jogo também. Ele contém este guia e os documentos complementares de que seus links precisam.</li>
+<li>Obtenha 64 bits compatível <code>Tolk.dll</code> e <code>nvdaControllerClient64.dll</code> de suas fontes a montante, conforme descrito no <a href="README.md#install-your-build">instruções de instalação do repositório</a>. Coloque ambos ao lado do executável do jogo, na pasta principal do jogo, <strong>não</strong> dentro <code>Mods</code>.</li>
+<li>Inicie seu leitor de tela, se você usar um, e inicie o jogo por meio de Steam. Se não houver um leitor de tela em execução compatível, o mod pode usar a fala SAPI.</li>
+</ol>
+<p>Um local comum Steam é <code>C:\Program Files (x86)\Steam\steamapps\common\Bop It!</code>. Sua localização pode ser diferente se você escolher uma biblioteca Steam diferente. Se você tiver um ZIP de instalação do projeto fornecido localmente, feche o jogo e extraia seu conteúdo para a pasta do jogo, permitindo que o <code>Mods</code> pasta para mesclar. Esses pacotes locais são separados do repositório GitHub somente de origem.</p>
+<h3>Passo a passo do instalador futuro (planejado)</h3>
+<div class="planned">
+<p><strong>Apenas esboço provisório:</strong> Quando existe um instalador oficial, as etapas esperadas são obtê-lo na página do projeto, fechar o jogo, executar o instalador, apontar para a pasta Bop It! se não conseguir encontrar o jogo automaticamente, deixá-lo instalar o mod e os arquivos de fala necessários e, em seguida, iniciar através de Steam. O instalador real pode ter opções diferentes. Suas telas exatas, método de atualização, método de remoção e link para download serão documentados aqui assim que existirem.</p>
+<p>Por enquanto, use a página do projeto e as instruções de origem acima. Atualmente, nenhuma página de terceiros pode fornecer um instalador oficial Bop It Access.</p>
+</div>
+</section>
+<section id="controls">
+<h2>Referência de controle do jogador</h2>
+<p>Estes são os controles padrão usados para reprodução e navegação no menu. <strong>A religação pode alterá-los</strong>, portanto, o menu Controles é a palavra final para sua própria configuração. A coluna do controlador descreve a ação normal do jogo ou um exemplo no estilo Xbox; o movimento físico e os rótulos podem variar de acordo com o tipo de controlador. Um traço significa que nenhuma atribuição padrão foi encontrada para esse dispositivo, e não que a ação seja impossível de ser executada de outra maneira.</p>
+<p><strong>Orientação rápida:</strong> D-pad significa o teclado direcional de quatro direções. Um pára-choque fica acima de um gatilho. Pressionar o stick esquerdo e pressionar o stick direito significam empurrar o stick correspondente para dentro até ouvir um clique. Select pode ser chamado de Back ou View em alguns controladores; Iniciar pode ser chamado de Menu.</p>
+<div class="table-scroll"><table>
+<caption>Controles do player, incluindo controles fora do menu de remapeamento</caption>
+<thead><tr><th scope="col">Ação</th><th scope="col">O que isso faz</th><th scope="col">Teclado padrão</th><th scope="col">Controlador padrão</th><th scope="col">Você pode religá-lo nos controles?</th></tr></thead>
+<tbody>
+<tr><th scope="row">Bater</th><td>Responda a “BATER!” em uma rodada; abra o menu principal na tela de título e inicie uma rodada a partir da seleção de músicas.</td><td>Barra de espaço</td><td>Botão da face sul (A no Xbox)</td><td>Sim</td></tr>
+<tr><th scope="row">BATER (Jogador 2)</th><td>A segunda entrada BATER usada onde o jogo solicita, incluindo jogo para dois jogadores.</td><td>D</td><td>D-pad direito</td><td>Sim</td></tr>
+<tr><th scope="row">Girar</th><td>Responda “GIRAR!”; altere a música selecionada na tela da música.</td><td>Seta para a esquerda</td><td>Botão da face norte (Y no Xbox)</td><td>Sim</td></tr>
+<tr><th scope="row">Puxar</th><td>Responda “PUXAR!”; alterne Clássico/Extremo na tela da música.</td><td>Seta para a direita</td><td>Movimento do stick direito</td><td>Sim</td></tr>
+<tr><th scope="row">Rodar</th><td>Responda a “RODAR!” em extrema dificuldade.</td><td>S</td><td>D-pad para baixo no mapa estilo Xbox inspecionado; outros controladores podem diferir</td><td>Sim</td></tr>
+<tr><th scope="row">Peteleco</th><td>Responda a “PETELECO!” em extrema dificuldade.</td><td>W</td><td>Movimento do controle esquerdo no mapa estilo Xbox inspecionado; outros controladores podem diferir</td><td>Sim</td></tr>
+<tr><th scope="row">Redefinir giroscópio</th><td>Centralize novamente um sensor de movimento do controlador quando o jogo usar um.</td><td>R</td><td>Gatilho direito</td><td>Sim, exposto pelo mod</td></tr>
+<tr><th scope="row">Mover o foco do menu</th><td>Escolha o item de menu seguinte ou anterior.</td><td>Setas para cima/para baixo ou W/S; Setas para esquerda/direita ou A/D onde a tela permitir</td><td>Stick ou D-pad, dependendo da tela</td><td>Nenhuma linha separada</td></tr>
+<tr><th scope="row">Confirmar/ativar</th><td>Abra ou use o item de menu em foco.</td><td>Entrar ou Espaço</td><td>Botão da face sul (A no Xbox)</td><td>Nenhuma linha separada</td></tr>
+<tr><th scope="row">Voltar</th><td>Retorne ao menu anterior ou saia de um painel.</td><td>Retrocesso</td><td>Botão da face leste (B no Xbox)</td><td>Nenhuma linha separada</td></tr>
+<tr><th scope="row">Menu/pausa</th><td>Abra o menu do jogo ou pause uma rodada quando disponível.</td><td>Fuga</td><td>Iniciar / Menu</td><td>Nenhuma linha separada</td></tr>
+<tr><th scope="row">Alternar tela cheia</th><td>Alterne a janela do jogo entre tela inteira e janela.</td><td>F11</td><td>Nenhum padrão encontrado</td><td>Nenhuma linha separada</td></tr>
+<tr><th scope="row">Grupo da tabela de classificação anterior/próximo</th><td>Mova-se entre Local, Amigos e Global, quando disponível.</td><td>O/P</td><td>Pára-choques esquerdo/pára-choques direito</td><td>Sim, duas linhas adicionadas por mod</td></tr>
+<tr><th scope="row">Data da tabela de classificação anterior/próxima</th><td>Alterne entre Hoje, Este Mês e Todo o Tempo, quando disponível.</td><td>K/L</td><td>D-pad esquerdo / D-pad direito</td><td>Sim, duas linhas adicionadas por mod</td></tr>
+<tr><th scope="row">Filtro de dispositivo do placar</th><td>Altere a categoria do dispositivo selecionado onde esse filtro aparece.</td><td>Seta para a direita</td><td>Controle direito para direita/baixo, dependendo do controle conectado</td><td>Nenhuma linha separada</td></tr>
+<tr><th scope="row">Ler linha do placar</th><td>Fale uma linha de pontuação de cada vez.</td><td>Página para cima/página para baixo</td><td>Para cima/para baixo quando nenhum filtro de placar está em foco</td><td>Nenhuma linha separada</td></tr>
+<tr><th scope="row">Virar página de conquistas</th><td>Mostrar a página anterior ou seguinte do livro.</td><td>Setas Esquerda/Direita</td><td>Pára-choques esquerdo/direito</td><td>Nenhuma linha separada</td></tr>
+<tr><th scope="row">Ler conquista ou linha de crédito</th><td>Percorra as entradas faladas em uma página ou nos créditos.</td><td>Setas para cima/para baixo ou W/S</td><td>Menu acima / abaixo</td><td>Nenhuma linha separada</td></tr>
+<tr><th scope="row">Leia as descrições</th><td>Fale a descrição visual do estágio atual apenas na tela da música.</td><td>G</td><td>Gatilho esquerdo (LT)</td><td>Sim</td></tr>
+<tr><th scope="row">Ler pontuação</th><td>Repita a pontuação final, ou vencedor no One-on-One, apenas na tela de resultados.</td><td>T</td><td>Pressione o controle esquerdo</td><td>Sim</td></tr>
+<tr><th scope="row">Alternar fala</th><td>Desligue ou ligue novamente toda a fala mod comum; a configuração é salva.</td><td>F8</td><td>Selecionar / Voltar / Ver</td><td>Sim</td></tr>
+<tr><th scope="row">Fale dicas</th><td>Leia as dicas dos botões da tela atual, quando disponíveis. Na seleção de músicas, leia também a referência do tutorial com o controle atualmente atribuído a cada ação para o modo e dificuldade selecionados, incluindo ambas as entradas BATER no One-on-One.</td><td>H</td><td>Pressione o controle direito</td><td>Sim</td></tr>
+<tr><th scope="row">Alterar saída de fala</th><td>Percorra as mesmas opções de saída de Mod Settings &gt; Output Mode.</td><td>F9</td><td>Botão face oeste (X no Xbox)</td><td>Sim</td></tr>
+</tbody>
+</table></div>
+<p>Use Configurações&gt; Controles para alterar as linhas marcadas como “Sim”. O mod rejeita atribuições duplicadas, portanto, uma entrada não executa silenciosamente duas ações ativas. Redefinir para padrão restaura os padrões. As ações de UI dedicadas, virada de página e leitura de linha de pontuação não possuem atualmente linhas nesse menu.</p>
+</section>
+<section id="first-launch">
+<h2>Seu primeiro lançamento</h2>
+<ol>
+<li>Inicie seu leitor de tela, se você usar um. Inicie Bop It! a Steam após instalar MelonLoader, o mod DLL e os arquivos de tempo de execução Tolk necessários.</li>
+<li>No primeiro uso do mod, os volumes de música, SFX e narração do jogo começam em 30. Se você estiver atualizando, os níveis de áudio do jogo salvos permanecerão como estavam.</li>
+<li>Aguarde o anúncio: <q>Bop It Access o discurso está pronto. O jogo ainda está carregando. Aguarde a tela de título ou o anúncio do menu principal antes de usar os controles.</q> O mod fica pronto antes que o jogo termine de carregar.</li>
+<li>Aguarde mais alguns segundos pelo anúncio da tela de título. As entradas não podem fazer nada durante o carregamento. Pressione BATER (espaço por padrão ou o botão de confirmação do controlador) para sair da tela de título. Na sua primeira inicialização com o recurso de boas-vindas, a tela de boas-vindas ganha destaque antes do menu principal. Mova com Cima/Baixo e confirme com Enter, Espaço ou confirmação do controlador.</li>
+<li>Se você desativou a fala anteriormente, a configuração salva permanecerá desativada. O mod fornece uma mensagem de recuperação falada na inicialização com o teclado atual e a ligação do controlador para Toggle Speech. Por padrão, pressione F8 ou selecione o controlador para ligá-lo novamente.</li>
+<li>Escolha <strong>abra as configurações do mod, recomendado</strong> na tela de boas-vindas para configurar primeiro a fala, o braille e as dicas. Escolha <strong>Leia o guia do usuário</strong> para ler este documento no jogo, ou <strong>Continuar para o jogo</strong> para chegar ao menu principal.</li>
+</ol>
+<div class="current">
+<h3>Tela de boas-vindas</h3>
+<p>A mensagem introdutória é em si um item focalizável acima das três opções. Volte para ouvir a mensagem inteira novamente. Ele nomeia ambas as ligações atuais do Speak Hints, mesmo que o Tipo de dicas esteja definido para mostrar apenas um dispositivo. Por padrão, pressione <kbd>H</kbd> no teclado ou pressione o controle direito do controlador para dentro para solicitar as dicas da tela atual.</p>
+<p>A tela de boas-vindas é marcada como concluída somente depois que uma de suas opções abre o destino selecionado. Se o jogo fechar enquanto você ainda estiver na tela de boas-vindas, ele aparecerá novamente no próximo lançamento. Para vê-lo novamente após concluí-lo, use <strong>Configurações &gt; Configurações do Mod &gt; Redefinir tela de boas-vindas</strong>; a redefinição entra em vigor na próxima inicialização.</p>
+</div>
+</section>
+<section id="languages">
+<h2>Idiomas</h2>
+<p>No jogo <strong>Configurações &gt; Idioma</strong> linha, escolha o idioma desejado. O mod segue essa escolha para o texto do menu falado, dicas, avisos e outros anúncios. Você pode alterá-lo durante uma sessão. O texto e o áudio originais do jogo permanecem sob o controle do próprio jogo.</p>
+<p>Cada idioma possui uma cópia separada deste guia HTML em <code>documentation\&lt;language&gt;\BopItAccess-user-guide.html</code>. Abrir o guia no jogo carrega a cópia para o idioma atualmente selecionado em Configurações. Se essa cópia estiver faltando ou não puder ser lida, o guia em inglês será aberto. Os demais documentos do projeto também possuem cópias traduzidas nas pastas do mesmo idioma.</p>
+<p>Os idiomas incluídos são inglês, francês, italiano, alemão, espanhol (Espanha), espanhol (América Latina), japonês, coreano, chinês simplificado e português brasileiro. As primeiras traduções para outros idiomas diferentes do inglês são rascunhos gerados por máquina e correções bem-vindas de falantes fluentes.</p>
+<p>Nomes de ação Gameplay seguem as próprias traduções do jogo para que os cinco comandos falados permaneçam distintos. Os quatro títulos de palco — Shapes, Space, City e Office — permanecem em inglês porque são exibidos como nomes fixos no jogo. O mod envia texto traduzido para o seu resultado de voz selecionado; esse resultado também precisa de uma voz para o seu idioma. Se você usar SAPI, selecione uma voz instalada em Mod Settings quando a voz padrão do sistema não pronunciar bem o texto traduzido.</p>
+</section>
+<section id="in-game-guide">
+<h2>Leia o guia no jogo</h2>
+<p>Escolha <strong>Leia o guia do usuário</strong> na tela de boas-vindas ou <strong>Abra o Guia do usuário</strong> nas configurações do mod. O guia abre dentro de Bop It!, usando o arquivo HTML para o idioma do jogo atual no jogo <code>documentation</code> pasta. Sua lista de tópicos segue o índice desse documento, portanto, atualizar o documento instalado atualiza os tópicos do jogo e seu texto.</p>
+<p>Na lista de tópicos, use os controles do menu Acima/Abaixo do jogo para escolher um tópico e Confirme para abri-lo. Em um tópico, use Para cima/Para baixo para percorrer o texto, uma linha por vez. Em uma tabela, a Esquerda se move para a coluna da esquerda e a Direita se move para a coluna da direita. Para cima/para baixo move-se entre as linhas enquanto mantém a coluna atual. Os títulos das colunas rotulam as células que você ouve; elas não são linhas de dados extras. O guia anuncia a tabela ao entrar e seu final ao sair, sem repetir a descrição da tabela para cada célula. Confirmar repete a linha atual. Voltar retorna de um tópico para a lista de tópicos; De volta novamente deixa o guia. A música usa o filtro de áudio de fácil leitura do jogo enquanto o guia está aberto.</p>
+</section>
+<section id="speech-options">
+<h2>Menu de configurações do mod</h2>
+<p>Abrir <strong>Configurações&gt; Configurações de mod</strong>. Percorra as linhas com o controle do menu para cima/para baixo. Confirme uma alternância ou botão; use Esquerda/Direita para alterar um controle deslizante. Os padrões abaixo são para uma nova configuração. As alterações são lembradas entre as sessões. Se a fala estiver desativada, Alternar fala ainda funciona e a linha Saída de fala usa a mesma chave mestre.</p>
+<div class="table-scroll"><table>
+<caption>Cada linha atual de configurações de mod, na ordem do menu</caption>
+<thead><tr><th scope="col">Configuração</th><th scope="col">Escolhas/padrão</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Saída de fala</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Chave mestre para mod discurso. Desligá-lo fornece uma instrução final de recuperação falada com ambas as ligações de dispositivos atuais. Ativá-lo novamente anuncia que a fala está ativada.</td></tr>
+<tr><th scope="row">Saída Braille</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Envia os mesmos anúncios para a saída braille de um leitor de tela compatível. Um display braille conectado ou o Braille Viewer do NVDA podem mostrá-los.</td></tr>
+<tr><th scope="row">Silenciar fala em segundo plano</th><td>Ligado/Desligado; <strong>Desligado</strong></td><td>Quando ativado, interrompe e descarta a fala mod enquanto outra janela está em foco.</td></tr>
+<tr><th scope="row">Indexação</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Adiciona a posição de um item, como “Reproduzir, 1 de 6”, nos menus suportados.</td></tr>
+<tr><th scope="row">Filtrar letras maiúsculas</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Altera o texto todo em maiúsculas para maiúsculas e minúsculas somente para fala e braille. As letras visíveis do jogo permanecem conforme projetadas.</td></tr>
+<tr><th scope="row">Ler tipos de controle</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Adiciona rótulos como “botão”, “alternar” ou “controle deslizante” aos controles em foco.</td></tr>
+<tr><th scope="row">Intervalos de controle deslizante</th><td>Ligado/Desligado; <strong>Desligado</strong></td><td>Lê os pontos finais disponíveis de um controle deslizante em foco, como “intervalo de 0 a 100”. Alterá-lo ainda lê apenas o novo valor.</td></tr>
+<tr><th scope="row">Feedback individual</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Fala a cor verde ou amarela ativa e a contagem de vidas restantes quando uma vida é perdida ou ganha no One-on-One.</td></tr>
+<tr><th scope="row">Tipo de dicas</th><td>Automático, Teclado, Controlador, Ambos; <strong>Automático</strong></td><td>Escolhe quais controles do dispositivo as dicas descrevem. Automático segue a última entrada de teclado ou controlador usada. Ambos nomeiam cada dispositivo explicitamente.</td></tr>
+<tr><th scope="row">Dicas do botão de fala automática</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Controla dicas automáticas. O atalho Falar dicas ainda funciona sob demanda quando está desativado.</td></tr>
+<tr><th scope="row">Atraso nas dicas dos botões</th><td>Nenhum, 5, 10, 15, 30, 60 segundos; <strong>10 segundos</strong></td><td>Nenhum coloca a dica após o anúncio do item em foco, em uma sequência de fala. Uma escolha cronometrada aguarda a inatividade antes da primeira dica separada. Mover o foco ou alterar uma configuração inicia a espera novamente. A escolha de 5 segundos pode interromper a fala já em andamento.</td></tr>
+<tr><th scope="row">Repetir dicas de botão</th><td>Desligado, 2x, 3x, 4x, 5x, Infinitamente; <strong>Infinitamente</strong></td><td>Define o número total de vezes que uma dica será ouvida em um ciclo. “2x” significa a primeira leitura mais uma repetição.</td></tr>
+<tr><th scope="row">Intervalo de repetição</th><td>15, 30, 45, 60 segundos; <strong>30 segundos</strong></td><td>Tempo entre as leituras repetidas acima. Falar uma dica sob demanda substitui a primeira dica automática pendente, mas ainda permite repetições configuradas.</td></tr>
+<tr><th scope="row">Modo de saída</th><td>Automático, SAPI, JAWS, Window-Eyes, NVDA, Acesso ao Sistema, ZoomText; <strong>Automático</strong></td><td>Auto usa um leitor de tela detectado e volta para SAPI. Um leitor nomeado deve estar disponível; uma escolha indisponível volta para SAPI. Isso também é controlado por Alterar saída de fala.</td></tr>
+<tr><th scope="row">SAPI Voz</th><td>Padrão do sistema ou vozes SAPI de 64 bits instaladas; <strong>Padrão do sistema</strong></td><td>Escolhe a voz Windows usada para SAPI direto ou substituto SAPI do Auto.</td></tr>
+<tr><th scope="row">SAPIVolume</th><td>5%–100% em etapas de 5; <strong>100%</strong></td><td>Ajusta o volume da fala SAPI. O mínimo permanece acima de zero para que as mensagens de recuperação permaneçam audíveis.</td></tr>
+<tr><th scope="row">SAPI Taxa</th><td>0–100 em passos de 5; <strong>50</strong></td><td>Ajusta a velocidade de fala de SAPI.</td></tr>
+<tr><th scope="row">SAPI Parcela</th><td>0–100 em passos de 5; <strong>50</strong></td><td>Ajusta o tom da voz SAPI.</td></tr>
+<tr><th scope="row">Abra o Guia do usuário</th><td>Botão</td><td>Abre este documento no jogo. Escolha um tópico em seu índice e leia-o linha por linha.</td></tr>
+<tr><th scope="row">Redefinir tela de boas-vindas</th><td>Botão</td><td>Pressione uma vez para solicitar confirmação e pressione novamente dentro de cinco segundos. Mover para outra linha ou esperar cinco segundos cancela a solicitação. Uma reinicialização bem-sucedida é anunciada e a tela de boas-vindas aparece na próxima vez que o jogo for iniciado.</td></tr>
+<tr><th scope="row">Restaurar padrões de mod</th><td>Botão</td><td>Pressione uma vez para solicitar confirmação e pressione novamente dentro de cinco segundos para restaurar os padrões das configurações do Mod acima. Mover para outra linha ou esperar cinco segundos cancela a solicitação. Isso não altera os volumes de música, SFX ou narração do jogo, o limite de FPS ou as ligações personalizadas do teclado e do controlador.</td></tr>
+<tr><th scope="row">Voltar</th><td>Botão</td><td>Retorne às configurações.</td></tr>
+</tbody>
+</table></div>
+<p>As dicas são mantidas em silêncio durante o jogo ativo e durante a parte da calibração do áudio, quando a fala pode cobrir um som importante. Mesmo se você desligar a fala, o mod ainda poderá anunciar como ligá-la novamente na inicialização ou quando você fizer essa alteração.</p>
+</section>
+<section id="menu-guide">
+<h2>Guia de cardápio</h2>
+<p>As tabelas a seguir seguem o caminho que você provavelmente seguirá no jogo. Em menus normais, mova o foco com Up/Down, ative o item em foco com Enter ou Space (ou confirme o controlador) e use Backspace (ou controlador back) para retornar. Algumas telas utilizam outros controles; eles são explicados quando necessário. Se uma opção não estiver disponível no seu estado atual, o jogo poderá ocultá-la.</p>
+<p>Se aparecer um painel que não esteja coberto abaixo, o mod tenta falar seu texto visível e o controle que está em foco. Você pode então mover o foco para ouvir outros controles disponíveis. Este leitor geral depende do painel ter um controle focalizável e não interromper os comandos falados do jogo durante o jogo ativo.</p>
+</section>
+<section id="main-menu">
+<h3>Menu principal</h3>
+<p>É aqui que você chega quando o jogo termina de carregar. O mod fala cada opção focada.</p>
+<div class="table-scroll"><table>
+<caption>Opções do menu principal</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Jogar</th><td>Abra os quatro modos de jogo.</td></tr>
+<tr><th scope="row">Placares</th><td>Navegue pelas pontuações classificadas e pelos filtros disponíveis.</td></tr>
+<tr><th scope="row">Conquistas</th><td>Abra o livro de conquistas do próprio jogo, onde você pode ler páginas e entradas.</td></tr>
+<tr><th scope="row">Configurações</th><td>Altere áudio, exibição, controles e preferências de fala.</td></tr>
+<tr><th scope="row">Créditos</th><td>Mostre os créditos originais do jogo. O mod permite que você leia as falas no seu próprio ritmo.</td></tr>
+<tr><th scope="row">Sair</th><td>Feche o jogo.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="play-menu">
+<h3>Menu de reprodução</h3>
+<p>Cada modo é apresentado brevemente aqui. Para uma explicação detalhada de cada regra, como termina uma rodada e como funcionam os resultados, visite o <a href="#mode-guide">guia de modo detalhado</a>.</p>
+<div class="table-scroll"><table>
+<caption>Escolhas de jogo</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Sozinho</th><td>Jogue sozinho uma corrida contínua de construção de pontuação.</td></tr>
+<tr><th scope="row">Festa</th><td>Faça turnos separados com outros jogadores e compare as pontuações em uma tabela de classificação da sessão.</td></tr>
+<tr><th scope="row">Passe</th><td>Compartilhe uma corrida contínua, entregando o controle ao próximo jogador quando o jogo exigir.</td></tr>
+<tr><th scope="row">Um a Um</th><td>Dois jogadores, Verde e Amarelo, competem com vidas em vez de uma pontuação final numérica.</td></tr>
+<tr><th scope="row">Voltar, se mostrado</th><td>Retorne ao menu principal. O controle Voltar normal também pode retornar.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="song-menu">
+<h3>Seleção de música e dificuldade</h3>
+<p>Após escolher qualquer modo, você escolhe uma das quatro músicas/etapas e decide se deseja usar a dificuldade Extrema. O mod anuncia a música atual e o estado extremo sempre que esta tela é aberta. Mudar qualquer um deles revela seu novo valor. Usar <strong>GIRAR</strong> para mudar a música, <strong>PUXAR</strong> para mudar Clássico/Extremo, <strong>BATER</strong> para começar, e <strong>Voltar</strong> para retornar. Você pode pressionar <strong>G</strong> ou <strong>gatilho esquerdo</strong> para ouvir a descrição do estágio selecionado. Pressione <strong>H</strong> ou <strong>pressione o controle direito</strong> para ouvir dicas de botões seguidas pela referência do tutorial para o modo e dificuldade atuais. Ele nomeia o controle atribuído atualmente a cada ação, incluindo ambas as entradas BATER no One-on-One. Leia isto antes de começar: o mod mantém a sobreposição do tutorial cronometrado silenciosa durante o jogo ativo, para que não cubra um comando de jogo falado. Iniciar a reprodução interrompe a fala do menu pelo mesmo motivo.</p>
+<div class="table-scroll"><table>
+<caption>Opções e ações de seleção de músicas</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Shapes</th><td>Escolha o palco geométrico lúdico e sua música.</td></tr>
+<tr><th scope="row">Space</th><td>Escolha o colorido palco da galáxia e sua música.</td></tr>
+<tr><th scope="row">City</th><td>Escolha o palco animado da cidade e sua música.</td></tr>
+<tr><th scope="row">Office</th><td>Escolha o palco extravagante do local de trabalho e sua música.</td></tr>
+<tr><th scope="row">Extremo ligado/desligado</th><td>Ative o Extreme para adicionar RODAR e PETELECO aos comandos Classic BATER/GIRAR/PUXAR ou desative-o para Classic.</td></tr>
+<tr><th scope="row">Iniciar / BATER</th><td>Comece o modo, música e dificuldade selecionados.</td></tr>
+<tr><th scope="row">Voltar</th><td>Retorne sem iniciar a rodada.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="settings-menu">
+<h3>Menu de configurações</h3>
+<p>O foco fala o nome de uma configuração e o valor atual. Quando você altera um controle deslizante ou alterna enquanto ele permanece focado, o mod fala <em>apenas o novo valor</em> em vez de repetir o rótulo inteiro.</p>
+<div class="table-scroll"><table>
+<caption>Linhas de configurações na ordem atual do menu</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Música</th><td>Ajuste o volume da música do jogo. Começa aos 30 no primeiro uso do mod.</td></tr>
+<tr><th scope="row">Efeitos sonoros</th><td>Ajuste o volume do efeito sonoro. Começa aos 30 no primeiro uso do mod.</td></tr>
+<tr><th scope="row">Voz sobre</th><td>Ajuste o volume da voz do comando falado do jogo. Começa aos 30 no primeiro uso do mod; mantenha-o audível para jogar.</td></tr>
+<tr><th scope="row">Silenciar áudio em segundo plano</th><td>Quando ativado, silencia o áudio do jogo enquanto outra janela está em foco; restaure-o quando você retornar. Desativado por padrão.</td></tr>
+<tr><th scope="row">Idioma</th><td>Escolha um idioma de jogo disponível.</td></tr>
+<tr><th scope="row">Vibração</th><td>Ative ou desative a vibração do controlador compatível.</td></tr>
+<tr><th scope="row">Tela cheia</th><td>Alternar entre tela cheia e exibição em janela.</td></tr>
+<tr><th scope="row">Resolução</th><td>Altere a resolução de exibição do jogo usando as opções disponíveis em seu sistema.</td></tr>
+<tr><th scope="row">Limitar FPS</th><td>Limite a taxa de quadros em 30, 60, 120 ou 240 ou escolha Ilimitado. Padrão: 60. Consulte o <a href="#limitations">nota de tempo</a>.</td></tr>
+<tr><th scope="row">Latência de áudio</th><td>Abra a tela de calibração para alinhar o tempo do jogo com o que você ouve.</td></tr>
+<tr><th scope="row">Controles</th><td>Revise e reatribua os controles expostos do jogo e os controles de mod adicionados.</td></tr>
+<tr><th scope="row">Configurações de mod</th><td>Abra as preferências de fala, braille e dicas do mod, listadas na íntegra <a href="#speech-options">acima</a>.</td></tr>
+<tr><th scope="row">Fique on-line, quando disponível</th><td>Conecte-se aos recursos online do jogo quando esta opção for exibida.</td></tr>
+<tr><th scope="row">Voltar</th><td>Retorne ao menu principal.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="controls-menu">
+<h3>Menu de controles</h3>
+<p>Foque uma linha para ouvir a ligação atual do dispositivo de entrada ativo. Confirme e siga o prompt de religação do jogo para atribuir um substituto. Uma ligação duplicada é rejeitada em vez de compartilhada. A lista rola, então as linhas específicas do mod perto da parte inferior podem levar vários toques para baixo para serem alcançadas.</p>
+<div class="table-scroll"><table>
+<caption>Linhas do menu Controles atuais</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Bater</th><td>Revincule a primeira ação BATER.</td></tr>
+<tr><th scope="row">BATER (Jogador 2)</th><td>Revincule a segunda ação BATER.</td></tr>
+<tr><th scope="row">Peteleco</th><td>Religue a ação Extreme PETELECO.</td></tr>
+<tr><th scope="row">Girar</th><td>Religue GIRAR.</td></tr>
+<tr><th scope="row">Rodar</th><td>Religue a ação Extreme RODAR.</td></tr>
+<tr><th scope="row">Puxar</th><td>Religue PUXAR.</td></tr>
+<tr><th scope="row">Redefinir giroscópio</th><td>Religue a ação recentradora do sensor de movimento do jogo.</td></tr>
+<tr><th scope="row">Grupo Anterior</th><td>Revincule a mudança para o grupo anterior da tabela de classificação.</td></tr>
+<tr><th scope="row">Grupo próximo</th><td>Revincule a mudança para o próximo grupo da tabela de classificação.</td></tr>
+<tr><th scope="row">Data Anterior</th><td>Revincule a mudança para o período anterior da tabela de classificação.</td></tr>
+<tr><th scope="row">Próxima data</th><td>Revincule a mudança para o próximo período da tabela de classificação.</td></tr>
+<tr><th scope="row">Leia as descrições</th><td>Revincule descrições de palco de música sob demanda.</td></tr>
+<tr><th scope="row">Ler pontuação</th><td>Revincule o discurso de resultados sob demanda.</td></tr>
+<tr><th scope="row">Alternar fala</th><td>Religue o interruptor mestre de fala. Se você alterá-lo enquanto a fala estiver desligada, o mod anunciará os novos controles de recuperação.</td></tr>
+<tr><th scope="row">Fale dicas</th><td>Revincule dicas de botão sob demanda.</td></tr>
+<tr><th scope="row">Alterar saída de fala</th><td>Revincule o atalho que alterna os modos de saída.</td></tr>
+<tr><th scope="row">Redefinir para o padrão</th><td>Restaure as ligações padrão originais para as linhas expostas de jogos e mods.</td></tr>
+</tbody>
+</table></div>
+<p>Pressione o comando Voltar normal para retornar às Configurações; Voltar não é uma linha de ligação selecionável separada aqui. Para as atribuições iniciais de teclado e controlador usadas no jogo, consulte o <a href="#controls">referência de controle do jogador</a>.</p>
+</section>
+<section id="audio-latency-menu">
+<h3>Calibração de latência de áudio</h3>
+<p>A latência de áudio é o atraso entre a produção de um som pelo jogo e sua audição. Esta tela ajuda o jogo a contabilizar esse atraso. Ouça as instruções, siga o aquecimento e use BATER com a batida de calibração. O mod anuncia as instruções, a contagem regressiva e o resultado medido, mas não narra cada batida porque isso pode ocultar o som do tempo.</p>
+<div class="table-scroll"><table>
+<caption>Tela de latência de áudio</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Calibrar</th><td>Comece o exercício de cronometragem.</td></tr>
+<tr><th scope="row">BATER durante a calibração</th><td>Registre sua entrada em relação à batida conforme as instruções do jogo.</td></tr>
+<tr><th scope="row">Latência medida</th><td>Exibe e fala o resultado da calibração quando o exercício termina.</td></tr>
+<tr><th scope="row">Voltar</th><td>Retorne às configurações.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="leaderboards-menu">
+<h3>Tabelas de classificação</h3>
+<p>Abra Placares no menu principal ou na tela de resultados. Os filtros em foco são anunciados primeiro e, em seguida, as pontuações seguem em ordem, para que uma linha não corte o nome do filtro. Os grupos online precisam de uma conexão com a Internet. Os filtros e linhas exatos disponíveis dependem da placa e da sua conexão.</p>
+<div class="table-scroll"><table>
+<caption>Controles e informações da tabela de classificação</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Música / palco</th><td>Escolha ou identifique em qual etapa serão mostradas as pontuações, onde o quadro oferece esse filtro.</td></tr>
+<tr><th scope="row">Clássico / Extremo</th><td>Escolha quais pontuações de dificuldade serão mostradas.</td></tr>
+<tr><th scope="row">Categoria do dispositivo, quando mostrada</th><td>Escolha a categoria do dispositivo de entrada exibida.</td></tr>
+<tr><th scope="row">Local</th><td>Mostre as pontuações disponíveis localmente.</td></tr>
+<tr><th scope="row">Amigos</th><td>Mostre as pontuações dos amigos elegíveis quando conectados.</td></tr>
+<tr><th scope="row">Global</th><td>Mostre pontuações mundiais qualificadas quando conectado.</td></tr>
+<tr><th scope="row">Hoje</th><td>Filtre as pontuações de hoje.</td></tr>
+<tr><th scope="row">Este mês</th><td>Filtre pelas pontuações do mês atual.</td></tr>
+<tr><th scope="row">Todos os tempos</th><td>Mostre pontuações em todo o tempo registrado.</td></tr>
+<tr><th scope="row">Linha de pontuação</th><td>Leia a classificação, o nome e a pontuação de um jogador. Page Up e Page Down leem as linhas individualmente, mesmo quando um filtro está em foco.</td></tr>
+<tr><th scope="row">Carregando / sem pontuação</th><td>Mensagens de status informam quando os resultados estão sendo carregados ou quando nenhum está disponível.</td></tr>
+<tr><th scope="row">Continuar, quando mostrado</th><td>Passe de um resultado ou quadro de festa.</td></tr>
+<tr><th scope="row">Voltar</th><td>Retorne à tela anterior.</td></tr>
+</tbody>
+</table></div>
+<p>Por padrão, <strong>O/P</strong> ou os botões do controlador se movem entre Local, Amigos e Global. <strong>K/L</strong> ou D-pad para esquerda/direita movem-se entre períodos de tempo. No tabuleiro do Grupo, o jogo pode primeiro pedir que você escolha ou insira um nome para a pontuação; o mod fala esse estado de seleção de nome e confirmação.</p>
+<div class="table-scroll"><table>
+<caption>Etapas adicionais da tabela de classificação do grupo</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Nome do jogador</th><td>Escolha ou digite o nome anexado à festa finalizada.</td></tr>
+<tr><th scope="row">Confirmar nome</th><td>Salve esse nome com a pontuação desta sessão do Party.</td></tr>
+<tr><th scope="row">Linhas de pontuação da sessão</th><td>Compare as classificações, nomes e pontuações dos jogadores nesta sessão do Party.</td></tr>
+<tr><th scope="row">Continuar/Voltar</th><td>Prossiga com a sessão ou retorne, dependendo da tela atual da Party.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="achievements-menu">
+<h3>Livro de conquistas</h3>
+<p>O jogo tem seu próprio livro de conquistas, em vez de enviar você apenas para a página Steam. As conquistas conquistadas podem adicionar adesivos a este livro. Vire as páginas com as setas para esquerda/direita ou com os botões do controlador. Use os controles do menu Para cima/Para baixo para ouvir o nome, a descrição e o estado bloqueado ou desbloqueado de cada entrada. O mod anuncia as instruções do livro somente após ele ser aberto.</p>
+<div class="table-scroll"><table>
+<caption>Elementos do livro de conquistas</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Título da página</th><td>Identifica a página atual do livro.</td></tr>
+<tr><th scope="row">Entrada de conquista</th><td>Fornece seu título, descrição e se está bloqueado ou desbloqueado.</td></tr>
+<tr><th scope="row">Adesivo</th><td>Representa uma conquista conquistada no livro.</td></tr>
+<tr><th scope="row">Página anterior/próxima</th><td>Vá para outra página com o controle Esquerda/Direita do jogo.</td></tr>
+<tr><th scope="row">Voltar</th><td>Feche o livro e volte ao menu principal.</td></tr>
+</tbody>
+</table></div>
+<p>As entradas mudam conforme você ganha conquistas, então este guia descreve os controles do livro em vez de congelar uma lista de itens bloqueados e desbloqueados que podem ser diferentes do seu próprio jogo.</p>
+</section>
+<section id="credits-menu">
+<h3>Créditos do jogo</h3>
+<p>Os créditos originais do jogo continuam rolando visualmente. Pressione para cima/para baixo com os controles normais do menu para ouvir uma linha de crédito por vez, sem precisar seguir essa rolagem. Voltar retorna ao menu principal. Estes são os <em>jogo</em> créditos; este guia <a href="#project-credits">créditos mod</a> aparecer mais tarde.</p>
+<div class="table-scroll"><table>
+<caption>Controles de créditos do jogo</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Linha de crédito atual</th><td>Fale a linha seguinte ou anterior com Up/Down.</td></tr>
+<tr><th scope="row">Rolagem visual automática</th><td>Continua mostrando os créditos na tela.</td></tr>
+<tr><th scope="row">Voltar</th><td>Retorne ao menu principal.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="results-menu">
+<h3>Resultados e fim do jogo</h3>
+<p>Quando uma rodada termina, o mod primeiro anuncia a pontuação numérica final para Solo, Party ou Pass It. No One-on-One, ele anuncia a cor vencedora. Em seguida, fala a escolha do resultado focado, para que o menu não corte o resultado importante. O movimento posterior do menu pode interromper a fala anterior do menu. Pressione T ou pressione o controle esquerdo para repetir o resultado sempre que esta tela estiver visível. Esse atalho está deliberadamente indisponível durante uma rodada.</p>
+<div class="table-scroll"><table>
+<caption>Informações e opções da tela de resultados</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Pontuação, Solo / Festa / Passe</th><td>Mostra quantas ações corretas a execução concluída registrou; o mod fala automaticamente e mediante solicitação.</td></tr>
+<tr><th scope="row">Vencedor, um contra um</th><td>Mostra Verde ou Amarelo como vencedor; o mod fala isso em vez de inventar uma pontuação numérica.</td></tr>
+<tr><th scope="row">Jogar novamente</th><td>Inicie outra execução do modo selecionado.</td></tr>
+<tr><th scope="row">Tabela de classificação, Solo</th><td>Abra as pontuações classificadas relevantes após uma corrida Solo.</td></tr>
+<tr><th scope="row">Continuar, quando mostrado</th><td>Avance para a próxima etapa de festa ou modo compartilhado.</td></tr>
+<tr><th scope="row">Voltar</th><td>Retorne da tela de resultados.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="pause-menu">
+<h3>Menu de pausa</h3>
+<p>Pressione Escape ou Iniciar no controle para pausar uma rodada. O mod anuncia “Pausado” e a escolha focada quando o menu de pausa abre. Mova o foco com cima/baixo para ouvir <strong>Currículo</strong> ou <strong>Menu principal</strong>e confirme sua escolha. Pressione H ou pressione o controle direito para obter as dicas disponíveis sobre o botão do menu de pausa. A entrada habitual de Voltar também retoma a rodada.</p>
+<div class="table-scroll"><table>
+<caption>Pausar ações do painel</caption>
+<thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
+<tbody>
+<tr><th scope="row">Currículo</th><td>Continue a rodada pausada. A entrada Voltar normal também é retomada.</td></tr>
+<tr><th scope="row">Menu principal</th><td>Saia da rodada atual e retorne ao menu principal.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="mode-guide">
+<h2>Guia de modo detalhado</h2>
+<p>Todos os quatro modos começam escolhendo uma música/palco e escolhendo Clássico ou Extremo. O palco muda o que você vê e ouve, enquanto os comandos informam quais informações devem ser tomadas. Classic pede BATER, GIRAR e PUXAR. Extreme também pode pedir RODAR e PETELECO. Quando o jogo falar um comando, pressione a entrada atribuída antes que a janela de tempo termine. Você pode revisar ou alterar as atribuições em Configurações &gt; Controles antes de jogar. O andamento aumenta durante uma execução bem-sucedida, portanto não há uma última seção fixa da música a ser alcançada. Essas regras vêm do <a href="https://bopitthevideogame.com/bop-it-the-video-game-press-release">descrição oficial do jogo</a> e as telas atuais de pontuação e resultados do jogo.</p>
+<section id="solo-mode">
+<h3>Sozinho</h3>
+<p>Solo é o lugar mais simples para aprender o ritmo. Uma pessoa responde a cada comando falado. Se o jogo disser BATER, use sua entrada BATER; se disser GIRAR ou PUXAR, use essa entrada. No Extreme, esteja preparado para RODAR e PETELECO também. Continue enquanto os comandos ficam mais rápidos.</p>
+<p><strong>Pontuação:</strong> Cada resposta correta adiciona um ponto à corrida em andamento. A pontuação é a sua contagem de respostas bem-sucedidas. Uma resposta errada ou perdida, inclusive uma dada tarde demais, encerra essa execução. A tela do resultado final mostra sua pontuação numérica. O mod anuncia isso antes de ler Replay, Leaderboard ou Back. Você pode pressionar Read Score para ouvi-la novamente. As pontuações individuais também podem aparecer nas visualizações de placar local, de amigos e global quando essas visualizações estiverem disponíveis.</p>
+<p><strong>Como recomeçar:</strong> Selecione Replay na tela de resultados ou retorne e escolha outro modo ou música. Um replay é uma nova corrida; seu resultado anterior ainda pode ser comparado na tabela de classificação onde o jogo o registra.</p>
+</section>
+<section id="party-mode">
+<h3>Festa</h3>
+<p>A festa é para um grupo se revezando. Cada pessoa joga <em>seus próprios</em> execute, respondendo aos mesmos tipos de comandos chamados que Solo. Quando a corrida de uma pessoa termina, o jogo pode pedir um nome para anexar a essa pontuação. Continue até a tabela de classificação do grupo da sessão e deixe a próxima pessoa jogar. Esta é uma maneira amigável de comparar corridas sem que todos ajam ao mesmo tempo.</p>
+<p><strong>Pontuação:</strong> As respostas bem-sucedidas criam a pontuação numérica da corrida desse jogador. Um comando errado, perdido ou tardio encerra a corrida e a pontuação final pertence a esse jogador. A tabela de classificação da sessão lista nomes, classificações e pontuações para que o grupo possa comparar os resultados. O jogo não impõe um único vencedor formal; seu grupo pode decidir o que conta como vitória. O mod lê a pontuação no final do jogo, depois a próxima opção de menu e fala o nome do grupo e as etapas da tabela de classificação.</p>
+<p><strong>Como continuar jogando:</strong> Use Continuar quando for oferecido, escolha ou confirme o nome se solicitado e siga o jogo até o próximo jogador ou visualização de pontuação. Se você repetir, isso inicia outra sequência pontuada, em vez de estender a que acabou de terminar.</p>
+</section>
+<section id="pass-it-mode">
+<h3>Passe</h3>
+<p>Pass It é um desafio compartilhado. Um jogador responde aos comandos até o jogo chamar <q>Passe!</q> Nessa chamada, entregue o controlador imediatamente para a próxima pessoa. O próximo jogador continua o <em>mesmo</em> raia. Continue passando quando solicitado e continue respondendo aos comandos Bop It do jogo. Este modo funciona melhor quando todos sabem quem receberá o controlador em seguida e têm espaço suficiente para passá-lo com segurança.</p>
+<p><strong>Pontuação:</strong> As respostas corretas continuam uma pontuação numérica compartilhada em vez de iniciar uma nova pontuação para cada pessoa. A pessoa que quebra a seqüência ao errar um comando encerra a rodada. A tela de resultados mostra a pontuação final compartilhada, que o mod fala automaticamente e pode repetir com Read Score. A pontuação informa até onde o grupo chegou; não é uma classificação individual do jogador neste modo.</p>
+<p><strong>Como tentar novamente:</strong> Escolha Repetir para iniciar uma nova sequência compartilhada ou Voltar para sair dos resultados.</p>
+</section>
+<section id="one-on-one-mode">
+<h3>Um a Um</h3>
+<p>One-on-One coloca dois jogadores, <strong>Amarelo</strong> e <strong>Verde</strong>, na mesma rodada. Cada um começa com <strong>três vidas</strong>. Amarelo responde a GIRAR e PUXAR; Green responde a RODAR e PETELECO. BATER é uma corrida compartilhada: ambos os jogadores devem estar prontos, e o primeiro a acertar BATER ganha uma vida, até o limite de três vidas do jogo. O jogo fornece sons sutis para algumas mudanças. Com Configurações &gt; Configurações do Mod &gt; Feedback Individual ativado (o padrão), o mod anuncia o início ou mudança da cor ativa e o número de vidas após uma perda ou ganho.</p>
+<p><strong>Como termina uma rodada:</strong> Perder um comando obrigatório custa uma vida ao jogador responsável. O primeiro jogador cujas vidas chegam a zero perde e a outra cor ganha. Ao contrário de Solo, Party e Pass It, o resultado é um <strong>vencedor, não uma pontuação final numérica</strong>. O mod anuncia a cor vencedora no final do jogo; Read Score repete esse resultado enquanto a tela de resultados está visível. Os anúncios de vida opcionais são apenas para este modo.</p>
+<p><strong>Preparando-se juntos:</strong> Combine qual pessoa é Amarela e qual é Verde antes de começar. Verifique a tela de controles atual, especialmente a segunda atribuição BATER, se você compartilhar um dispositivo de entrada. Um contra um é rápido, então uma rodada de treino pode ajudar ambos os jogadores a aprenderem seus controles.</p>
+</section>
+</section>
+<section id="roadmap">
+<h2>O que pode vir a seguir</h2>
+<p>Este projeto ainda é jovem. O trabalho potencial inclui um instalador adequado, suporte mais forte para as telas restantes do jogo e melhorias contínuas na capacidade de resposta à fala. Podemos explorar a mudança do tratamento de fala de Tolk para <a href="https://github.com/ethindp/prism">Prisma</a> se for um ajuste melhor. Essa é uma ideia para pesquisa, <strong>não é uma dependência atual ou uma mudança prometida</strong>.</p>
+<p>As sugestões e relatórios dos jogadores ajudarão a moldar melhorias futuras. Christopher pretende manter o mod ao longo do tempo, com atualizações guiadas por jogo real e revisão humana cuidadosa. O <a href="https://github.com/Chris-E-Shaw/BopItAccess">repositório de projetos</a> é o lugar para acompanhar sua fonte e documentação à medida que se desenvolvem.</p>
+</section>
+<section id="project-credits">
+<h2>Créditos e avisos de terceiros</h2>
+<div class="table-scroll"><table>
+<caption>Bop It Access créditos do projeto</caption>
+<thead><tr><th scope="col">Colaborador</th><th scope="col">Função</th></tr></thead>
+<tbody>
+<tr><th scope="row">Christopher Shaw</th><td>Designer de mod principal. Defina as metas e o comportamento de acessibilidade, revise versões anteriores e conduza testes e feedback de jogos no mundo real. Novas traduções ainda aguardam revisão por falantes fluentes.</td></tr>
+<tr><th scope="row">GPT-6 Luna</th><td>Colaborador de IA na implementação inicial da saída de voz Tolk e nas bases iniciais do projeto.</td></tr>
+<tr><th scope="row">GPT-6 Sol</th><td>Colaborador de IA em pesquisas subsequentes, geração de código, depuração, trabalho de histórico de origem e documentação.</td></tr>
+<tr><th scope="row">Jogadores e testadores humanos</th><td>Joguei em diferentes sistemas, verifiquei o comportamento real do mod e compartilhei o feedback que tornou cada revisão útil.</td></tr>
+</tbody>
+</table></div>
+<p>Os commits de origem publicados identificam colaboradores de IA em seus trailers de coautor. O <a href="BopItAccess-build-history.html">histórico de construção técnica</a> registra o trabalho por trás de cada construção anterior. A própria fonte do mod ainda não possui uma licença pública selecionada; não presuma que sua licença seja igual às suas dependências.</p>
+<div class="table-scroll"><table>
+<caption>Bibliotecas, componentes de tempo de execução e licenças</caption>
+<thead><tr><th scope="col">Componente</th><th scope="col">Por que isso importa</th><th scope="col">Licença/aviso</th></tr></thead>
+<tbody>
+<tr><th scope="row"><a href="https://github.com/LavaGang/MelonLoader">MelonLoader</a></th><td>Carrega o mod no jogo Unity.</td><td><a href="https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md">Licença Apache 2.0</a>; distribuído separadamente deste repositório de origem.</td></tr>
+<tr><th scope="row">Harmony (<code>0Harmony.dll</code>)</th><td>Permite que o mod detecte quando as configurações salvas do jogo terminam de carregar, para que os níveis de áudio do primeiro uso sejam aplicados posteriormente.</td><td>Fornecido com o MelonLoader instalado separadamente; consulte os avisos que o acompanham. Não incluído neste repositório de origem ou no pacote mod local.</td></tr>
+<tr><th scope="row"><a href="https://github.com/dkager/tolk">Tolk</a></th><td>Conecta o mod a leitores de tela e APIs braille.</td><td><a href="https://github.com/dkager/tolk/blob/master/LICENSE.txt">GNU LGPL versão 3</a>; crédito aos colaboradores Tolk.</td></tr>
+<tr><th scope="row"><a href="https://github.com/nvaccess/nvda/tree/master/extras/controllerClient">NVDA Cliente Controlador</a></th><td>O <code>nvdaControllerClient64.dll</code> biblioteca nativa usada com Tolk.</td><td><a href="https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt">GNU LGPL versão 2.1</a>; crédito para NV Access e contribuidores.</td></tr>
+<tr><th scope="row"><a href="https://dotnet.microsoft.com/">.NET6</a></th><td>O mod tem como alvo a estrutura .NET 6 e precisa do pacote de segmentação correspondente para ser construído.</td><td><a href="https://github.com/dotnet/core/blob/main/license-information.md">Informações de licença .NET da Microsoft</a> distingue a fonte licenciada pelo MIT das distribuições de tempo de execução Windows sob a licença de biblioteca .NET.</td></tr>
+<tr><th scope="row">Windows SAPI</th><td>Fornece fala do sistema de backup quando selecionado ou quando nenhum leitor de tela compatível é detectado.</td><td>Um componente Windows; não empacotado como uma biblioteca separada neste repositório de origem.</td></tr>
+<tr><th scope="row">Referências de compilação de jogos e carregadores</th><td>O mod compila contra MelonLoader, Il2CppInterop.Runtime, os arquivos Assembly-CSharp e Il2Cppmscorlib do jogo, Unity Engine/UI/Input System/TextMeshPro módulos e os módulos do jogo FMODUnity e montagens DOTween.</td><td>Eles vêm do jogo e do carregador instalados separadamente, sob seus próprios termos aplicáveis. O repositório de origem não redistribui esses assemblies.</td></tr>
+<tr><th scope="row"><a href="https://github.com/argosopentech/argos-translate">Argos Traduzir</a></th><td>Ferramenta de autoria offline usada para preparar o primeiro mod e texto de documentação em outro idioma. Não é necessário durante o jogo.</td><td><a href="https://github.com/argosopentech/argos-translate/blob/master/LICENSE">Licença MIT</a> ou CC0; os modelos e o pacote Python não vêm com o mod.</td></tr>
+<tr><th scope="row"><a href="https://www.crummy.com/software/BeautifulSoup/">Sopa Linda</a></th><td>Ferramenta de autoria usada para preservar a estrutura HTML durante a tradução dos guias. Não é necessário durante o jogo.</td><td>Licença MIT; o pacote Python não vem com o mod.</td></tr>
+</tbody>
+</table></div>
+<p>Veja o projeto <a href="THIRD-PARTY-NOTICES.txt">avisos de terceiros</a> para os arquivos nativos usados pelos pacotes de instalação local. O repositório GitHub atual faz <strong>não</strong> inclua o mod DLL compilado, Tolk DLL ou NVDA Controller Client DLL. O Prism é mencionado apenas no roteiro; atualmente não é usado pelo mod.</p>
+</section>
+<section id="legal">
+<h2>Notas legais</h2>
+<p>Bop It Access é um projeto não oficial feito por um fã. Não é feito, aprovado ou endossado pela Hasbro, desenvolvedora/editora do jogo Alliance, Valve, Microsoft, Unity, MelonLoader, Tolk, NV Access ou qualquer fabricante de leitor de tela. <strong>Bop It!</strong> e personagens, obras de arte, sons e marcas relacionados pertencem à Hasbro e seus respectivos detentores de direitos. Steam pertence à Valve. Outros nomes de produtos, marcas registradas e software permanecem propriedade de seus respectivos proprietários.</p>
+<p>Você deve obter sua própria cópia legal do jogo. Este guia e repositório de fontes não concedem direitos ao jogo ou seus ativos e não os incluem. Cada uma das dependências do mod mantém suas próprias licenças, vinculadas acima; usar ou distribuir um instalador futuro precisará respeitar essas licenças. Para o jogo original e informações sobre seus direitos, consulte o <a href="https://bopitthevideogame.com/">site oficial do jogo Bop It!</a> e <a href="https://store.steampowered.com/app/3214360/">Listagem Steam</a>.</p>
+</section>
+<section class="panel" id="thanks">
+<h2>Obrigado</h2>
+<p>A todos que testaram este mod, deram feedback, experimentaram pela primeira vez ou acreditaram em mim: obrigado. Seu apoio me motiva a continuar fazendo coisas em um mundo que pode parecer louco e profundamente falho. Espero que este projeto torne mais fácil para você aproveitar o jogo e compartilhá-lo com outras pessoas. Muito obrigado a todos. Aproveite Bop It!</p>
+<p>-Christopher Shaw</p>
+</section>
+</main>
+<footer>
+<p class="small">Bop It Access guia do usuário. Os recursos atuais refletem a fonte na versão 0.8.0; os itens planejados estão claramente marcados. <a href="#contents">Voltar ao conteúdo</a>.</p>
+</footer>
+</body>
+</html>

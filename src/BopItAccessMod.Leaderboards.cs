@@ -92,7 +92,7 @@ public sealed partial class BopItAccessMod
             if (now - _leaderboardOuterVisibleAt >= 500 && _leaderboardPanelId == 0)
             {
                 _leaderboardPanelId = mainOuter!.GetInstanceID();
-                QueueSpeech("Leaderboards loading.");
+                QueueSpeech(L("Leaderboards loading."));
             }
             return true;
         }
@@ -195,16 +195,16 @@ public sealed partial class BopItAccessMod
             _leaderboardMoveDirection = 0;
             _leaderboardSuppressUiMoveUntilAt = now + 500;
             immediateSpeech = opening
-                ? $"{context}." +
+                ? context + L(".") +
                     (focusedText == null ? string.Empty : " " + WithMenuIndex(
                         WithLeaderboardFocusedType(focusedText, panel.transform),
-                        focusedIndex, focusedCount) + ".")
+                        focusedIndex, focusedCount) + L("."))
                 : focusChanged && IsLeaderboardFilterLabel(focusedText)
                     ? WithMenuIndex(WithLeaderboardFocusedType(focusedText!, panel.transform),
                         focusedIndex, focusedCount)
                     : (changedValue != null
-                        ? WithMenuIndex(changedValueType == null ? changedValue :
-                            WithControlType(changedValue, changedValueType),
+                        ? WithMenuIndex(changedValueType == null ? L(changedValue) :
+                            WithControlType(L(changedValue), changedValueType),
                             changedIndex, changedCount) : null)
                         ?? (focusChanged && focusedText != null
                         ? WithMenuIndex(WithLeaderboardFocusedType(focusedText, panel.transform),
@@ -260,8 +260,16 @@ public sealed partial class BopItAccessMod
         return true;
     }
 
-    private static bool IsLeaderboardFilterLabel(string? label) =>
-        label is "Local" or "Friends" or "Global" or "Today" or "This month" or "All time";
+    private static bool IsLeaderboardFilterLabel(string? label)
+    {
+        GameObject? selected = EventSystem.current?.currentSelectedGameObject;
+        if (selected?.GetComponentInParent<GroupFilterTab>() != null ||
+            selected?.GetComponentInParent<DateFilterTab>() != null)
+            return true;
+        return label != null && new[] { "Local", "Friends", "Global",
+            "Today", "This month", "All time" }
+            .Any(filter => label == filter || label == L(filter));
+    }
 
     private bool ReadPartyLeaderboard(PartyLeaderboardPanel panel)
     {
@@ -302,11 +310,12 @@ public sealed partial class BopItAccessMod
             _leaderboardPartyState = panel.State;
             _leaderboardPartyName = ReadPartySelectedName(panel);
             _leaderboardContinueVisible = IsLeaderboardPanelVisible(panel.ContinuePrompt);
-            string initialName = _leaderboardPartyName == null ? string.Empty : $" Selected name: {_leaderboardPartyName}.";
-            announcements.Add($"{context}.{initialName}" +
+            string initialName = _leaderboardPartyName == null ? string.Empty :
+                " " + LF("Selected name: {0}.", _leaderboardPartyName);
+            announcements.Add(context + L(".") + initialName +
                 (focusedText == null ? string.Empty : " " + WithMenuIndex(
                     WithLeaderboardFocusedType(focusedText, panel.transform),
-                    focusedIndex, focusedCount) + "."));
+                    focusedIndex, focusedCount) + L(".")));
             focusAnnouncement = true;
             WriteStatus($"Party leaderboard context: {context}.");
         }
@@ -332,9 +341,10 @@ public sealed partial class BopItAccessMod
             _leaderboardPartyName = name;
             string stateSpeech = state switch
             {
-                PartyLeaderboardState.Input => name == null ? "Enter a name." : $"Enter a name. {name}.",
-                PartyLeaderboardState.Complete => "Name confirmed. Continue.",
-                _ => name == null ? "Choose a name." : $"Choose a name. {name}."
+                PartyLeaderboardState.Input => name == null ? L("Enter a name.") :
+                    LF("Enter a name. {0}.", name),
+                PartyLeaderboardState.Complete => L("Name confirmed. Continue."),
+                _ => name == null ? L("Choose a name.") : LF("Choose a name. {0}.", name)
             };
             if (!contextChanged)
                 announcements.Add(stateSpeech);
@@ -344,11 +354,11 @@ public sealed partial class BopItAccessMod
         {
             _leaderboardPartyName = name;
             if (!contextChanged)
-                announcements.Add($"Name: {name}.");
+                announcements.Add(LF("Name: {0}.", name));
         }
 
         if (continueVisible && !_leaderboardContinueVisible && !contextChanged)
-            announcements.Add("Continue.");
+            announcements.Add(L("Continue."));
         _leaderboardContinueVisible = continueVisible;
 
         if (focusedId != _leaderboardSelectedId)
@@ -386,14 +396,15 @@ public sealed partial class BopItAccessMod
     private static string ReadCombinedLeaderboardContext(CombinedLeaderboardPanel panel)
     {
         string location = panel.Mode == CombinedLeaderboardMode.Game
-            ? "Solo leaderboard" : "Leaderboards";
+            ? L("Solo leaderboard") : L("Leaderboards");
         string? track = ReadLeaderboardTrack(panel.TitleImage, panel.LeaderboardManager, panel.app);
         string? device = ReadLeaderboardDevice(panel.deviceContainer, panel.LeaderboardManager);
         string group = ReadLeaderboardGroup(panel);
         string date = ReadLeaderboardDate(panel);
         string offline = panel.LeaderboardManager != null &&
-            !panel.LeaderboardManager.isOnline ? "offline" : string.Empty;
-        return string.Join(", ", new[] { location, track, device, group, date, offline }
+            !panel.LeaderboardManager.isOnline ? L("offline") : string.Empty;
+        return string.Join(L(", "), new[] { location, L(track ?? string.Empty),
+            L(device ?? string.Empty), L(group), L(date), offline }
             .Where(part => !string.IsNullOrEmpty(part)));
     }
 
@@ -402,7 +413,8 @@ public sealed partial class BopItAccessMod
         LeaderboardManager? manager = panel.LeaderboardManager;
         string? track = ReadLeaderboardTrack(panel.TitleImage, manager, manager?.app);
         string? device = ReadLeaderboardDevice(manager?.DeviceContainer, manager);
-        return string.Join(", ", new[] { "Party leaderboard", track, device }
+        return string.Join(L(", "), new[] { L("Party leaderboard"),
+            L(track ?? string.Empty), L(device ?? string.Empty) }
             .Where(part => !string.IsNullOrEmpty(part)));
     }
 
@@ -482,17 +494,17 @@ public sealed partial class BopItAccessMod
             string rank = entry.Rank > 0 ? entry.Rank.ToString() :
                 CleanSpeechValue(entry.RankText?.text) ?? (index + 1).ToString();
             string alias = CleanSpeechValue(entry.AliasText?.text) ??
-                CleanSpeechValue(score?.Identity?.Alias) ?? "Unnamed player";
+                CleanSpeechValue(score?.Identity?.Alias) ?? L("Unnamed player");
             string value = score == null
-                ? CleanSpeechValue(entry.ScoreText?.text) ?? "unknown"
+                ? CleanSpeechValue(entry.ScoreText?.text) ?? L("unknown")
                 : score.Score.ToString();
             string owner = entry.ItemType switch
             {
-                LeaderboardItemType.Me => "your score, ",
-                LeaderboardItemType.MostRecent => "most recent score, ",
+                LeaderboardItemType.Me => L("your score, "),
+                LeaderboardItemType.MostRecent => L("most recent score, "),
                 _ => string.Empty
             };
-            rows.Add($"Rank {rank}, {owner}{alias}, score {value}");
+            rows.Add(LF("Rank {0}, {1}{2}, score {3}", rank, owner, alias, value));
         }
         return rows;
     }
@@ -513,12 +525,13 @@ public sealed partial class BopItAccessMod
             string rank = entry.Rank > 0 ? entry.Rank.ToString() :
                 CleanSpeechValue(entry.RankText?.text) ?? (index + 1).ToString();
             string alias = CleanSpeechValue(entry.AliasText?.text) ??
-                CleanSpeechValue(score?.Identity?.Alias) ?? "Unnamed player";
+                CleanSpeechValue(score?.Identity?.Alias) ?? L("Unnamed player");
             string value = score == null
-                ? CleanSpeechValue(entry.ScoreText?.text) ?? "unknown"
+                ? CleanSpeechValue(entry.ScoreText?.text) ?? L("unknown")
                 : score.Score.ToString();
-            string current = entry.ItemType == PartyLeaderboardItemType.Current ? "current score, " : string.Empty;
-            rows.Add($"Rank {rank}, {current}{alias}, score {value}");
+            string current = entry.ItemType == PartyLeaderboardItemType.Current ?
+                L("current score, ") : string.Empty;
+            rows.Add(LF("Rank {0}, {1}{2}, score {3}", rank, current, alias, value));
         }
         return rows;
     }
@@ -537,8 +550,8 @@ public sealed partial class BopItAccessMod
             _leaderboardRowsSpoken = true;
             _leaderboardEmptySpoken = false;
             _leaderboardRowIndex = 0;
-            string announcement = $"{rows.Count} scores. " +
-                WithMenuIndex(WithLeaderboardRowType(rows[0]), 0, rows.Count) + ".";
+            string announcement = LF("{0} scores.", rows.Count) + " " +
+                WithMenuIndex(WithLeaderboardRowType(rows[0]), 0, rows.Count) + L(".");
             WriteStatus($"Leaderboard rows loaded: {rows.Count}; first row: {rows[0]}.");
             return announcement;
         }
@@ -546,7 +559,7 @@ public sealed partial class BopItAccessMod
         {
             _leaderboardEmptySpoken = true;
             WriteStatus("Leaderboard has no displayed scores.");
-            return "No scores available.";
+            return L("No scores available.");
         }
         return null;
     }
@@ -577,9 +590,10 @@ public sealed partial class BopItAccessMod
         LeaderboardLineItem? regular = selected.GetComponentInParent<LeaderboardLineItem>();
         if (regular != null)
         {
-            string label = $"Rank {regular.Rank}, " +
-                $"{CleanSpeechValue(regular.AliasText?.text) ?? "Unnamed player"}, " +
-                $"score {regular.Score?.Score.ToString() ?? CleanSpeechValue(regular.ScoreText?.text) ?? "unknown"}";
+            string label = LF("Rank {0}, {1}, score {2}", regular.Rank,
+                CleanSpeechValue(regular.AliasText?.text) ?? L("Unnamed player"),
+                regular.Score?.Score.ToString() ??
+                CleanSpeechValue(regular.ScoreText?.text) ?? L("unknown"));
             var position = GetLeaderboardComponentIndex(panel, regular,
                 item => item.Score != null);
             return (regular.GetInstanceID(), label, position.Index, position.Count);
@@ -596,16 +610,18 @@ public sealed partial class BopItAccessMod
             var position = nameControl == null ? (-1, 0) :
                 GetLeaderboardComponentIndex(panel, nameControl,
                     item => item.IsInteractable());
-            return (nameSelect.GetInstanceID(), name == null ? "Choose name" : $"Name: {name}",
+            return (nameSelect.GetInstanceID(), name == null ? L("Choose name") :
+                LF("Name: {0}", name),
                 position.Item1, position.Item2);
         }
 
         PartyLeaderboardLineItem? party = selected.GetComponentInParent<PartyLeaderboardLineItem>();
         if (party != null)
         {
-            string label = $"Rank {party.Rank}, " +
-                $"{CleanSpeechValue(party.AliasText?.text) ?? "Unnamed player"}, " +
-                $"score {party.Score?.Score.ToString() ?? CleanSpeechValue(party.ScoreText?.text) ?? "unknown"}";
+            string label = LF("Rank {0}, {1}, score {2}", party.Rank,
+                CleanSpeechValue(party.AliasText?.text) ?? L("Unnamed player"),
+                party.Score?.Score.ToString() ??
+                CleanSpeechValue(party.ScoreText?.text) ?? L("unknown"));
             var position = GetLeaderboardComponentIndex(panel, party,
                 item => item.Score != null);
             return (party.GetInstanceID(), label, position.Index, position.Count);
@@ -614,8 +630,8 @@ public sealed partial class BopItAccessMod
         GroupFilterTab? group = selected.GetComponentInParent<GroupFilterTab>();
         if (group != null)
         {
-            string? label = NormalizeLeaderboardFilterLabel(CleanSpeechValue(group.Text?.text)) ??
-                DescribeLeaderboardControlName(group.name);
+            string? label = DescribeLeaderboardControlName(group.name) ??
+                NormalizeLeaderboardFilterLabel(CleanSpeechValue(group.Text?.text));
             var position = GetLeaderboardComponentIndex(panel, group);
             return (group.GetInstanceID(), label, position.Index, position.Count);
         }
@@ -649,34 +665,40 @@ public sealed partial class BopItAccessMod
     {
         GameObject? selected = EventSystem.current?.currentSelectedGameObject;
         if (selected == null || !selected.transform.IsChildOf(panel))
-            return label;
+            return L(label);
         if (selected.GetComponentInParent<LeaderboardLineItem>() != null ||
             selected.GetComponentInParent<PartyLeaderboardLineItem>() != null)
             return WithLeaderboardRowType(label);
-        if (selected.GetComponentInParent<PartyLeaderboardNameSelect>() != null)
+        PartyLeaderboardNameSelect? nameSelect =
+            selected.GetComponentInParent<PartyLeaderboardNameSelect>();
+        if (nameSelect != null)
         {
-            const string prefix = "Name: ";
-            return label.StartsWith(prefix, StringComparison.Ordinal)
-                ? WithControlType("Name", "text field") + ", " + label[prefix.Length..]
-                : WithControlType(label, "text field");
+            string? name = CleanSpeechValue(nameSelect.NameInput?.text) ??
+                CleanSpeechValue(nameSelect.playerAlias) ??
+                CleanSpeechValue(nameSelect.Label?.text);
+            return name == null ? WithControlType(L("Choose name"), "text field") :
+                LF("{0}, {1}", WithControlType(L("Name"), "text field"), name);
         }
         if (selected.GetComponentInParent<GroupFilterTab>() != null ||
             selected.GetComponentInParent<DateFilterTab>() != null)
-            return WithControlType(label, "tab");
+            return WithControlType(L(label), "tab");
         Slider? slider = selected.GetComponentInParent<Slider>();
         if (slider != null)
-            return WithUnitySliderRange(WithControlType(label, "slider"), slider);
+            return WithUnitySliderRange(WithControlType(L(label), "slider"), slider);
         Scrollbar? scrollbar = selected.GetComponentInParent<Scrollbar>();
         if (scrollbar != null)
-            return WithUnitySliderRange(WithControlType(label, "slider"), scrollbar);
+            return WithUnitySliderRange(WithControlType(L(label), "slider"), scrollbar);
         if (selected.GetComponentInParent<Toggle>() != null)
-            return WithControlType(label, "toggle");
-        return WithControlType(label, "button");
+            return WithControlType(L(label), "toggle");
+        return WithControlType(L(label), "button");
     }
 
     private string WithLeaderboardRowType(string row)
     {
-        int scoreAt = row.LastIndexOf(", score ", StringComparison.OrdinalIgnoreCase);
+        string scoreSeparator = L(", score ");
+        int scoreAt = row.LastIndexOf(scoreSeparator, StringComparison.OrdinalIgnoreCase);
+        if (scoreAt < 0)
+            scoreAt = row.LastIndexOf(", score ", StringComparison.OrdinalIgnoreCase);
         return scoreAt < 0 ? WithControlType(row, "list item") :
             WithControlType(row[..scoreAt], "list item") + row[scoreAt..];
     }
@@ -748,7 +770,7 @@ public sealed partial class BopItAccessMod
         _nextLeaderboardMoveAt = now + 350;
         _leaderboardRowIndex = Math.Clamp(_leaderboardRowIndex + direction, 0, rows.Count - 1);
         string speech = WithMenuIndex(WithLeaderboardRowType(rows[_leaderboardRowIndex]),
-            _leaderboardRowIndex, rows.Count) + ".";
+            _leaderboardRowIndex, rows.Count) + L(".");
         WriteStatus($"Leaderboard row {_leaderboardRowIndex + 1} of {rows.Count}: {speech}");
         return speech;
     }

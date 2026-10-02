@@ -101,7 +101,8 @@ public sealed partial class BopItAccessMod
             "<Keyboard>/f8", "F8");
         string gamepad = ReadToggleSpeechBindingLabel(1, ToggleSpeechGamepadKey,
             "<Gamepad>/select", "Select");
-        return $"{keyboard} on keyboard or {gamepad} on controller, turn speech back on.";
+        return LF("{0} on keyboard or {1} on controller, turn speech back on.",
+            LocalizeBindingDisplay(keyboard), LocalizeBindingDisplay(gamepad));
     }
 
     private string ReadToggleSpeechFallbackRecoveryInstruction()
@@ -113,7 +114,8 @@ public sealed partial class BopItAccessMod
             ToggleSpeechKeyboardKey, "F8");
         string gamepad = ReadToggleSpeechSavedBindingLabel(
             ToggleSpeechGamepadKey, "Select");
-        return $"{keyboard} on keyboard or {gamepad} on controller, turn speech back on.";
+        return LF("{0} on keyboard or {1} on controller, turn speech back on.",
+            LocalizeBindingDisplay(keyboard), LocalizeBindingDisplay(gamepad));
     }
 
     private string ReadToggleSpeechBindingLabel(int index, string preference,
@@ -262,10 +264,11 @@ public sealed partial class BopItAccessMod
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = false;
             _lastControlsResetSnapshot = null;
-            string label = WithControlType("Toggle Speech", "button");
-            string message = binding == null ? label : $"{label}, {binding}";
+            string label = WithControlType(L("Toggle Speech"), "button");
+            string message = binding == null ? label : LF("{0}, {1}", label,
+                LocalizeBindingDisplay(binding));
             if (rebinding)
-                message += ". Listening for input";
+                message += L(".") + " " + L("Listening for input");
             QueueSpeech(WithControlsIntroduction(message));
             return;
         }
@@ -276,18 +279,18 @@ public sealed partial class BopItAccessMod
             _lastControlsBinding = binding;
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = true;
-            QueueSpeech(binding);
+            QueueSpeech(LocalizeBindingDisplay(binding));
             return;
         }
 
         if (rebinding && !_lastControlsRebinding)
         {
             _controlsBindingChangedDuringRebind = false;
-            QueueSpeech("Listening for input");
+            QueueSpeech(L("Listening for input"));
         }
         else if (!rebinding && _lastControlsRebinding &&
             !_controlsBindingChangedDuringRebind)
-            QueueSpeech("Binding unchanged");
+            QueueSpeech(L("Binding unchanged"));
 
         _lastControlsRebinding = rebinding;
     }
@@ -319,7 +322,7 @@ public sealed partial class BopItAccessMod
             if (!wasRebinding)
                 _toggleSpeechControlRow = null;
             if (wasRebinding)
-                QueueSpeech("Rebinding failed");
+                QueueSpeech(L("Rebinding failed"));
         }
     }
 
@@ -450,7 +453,7 @@ public sealed partial class BopItAccessMod
             RestoreToggleSpeechOriginalOverride();
             ReleaseToggleSpeechControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech("Binding unavailable");
+            QueueSpeech(L("Binding unavailable"));
             return;
         }
 
@@ -460,7 +463,7 @@ public sealed partial class BopItAccessMod
             RestoreToggleSpeechOriginalOverride();
             ReleaseToggleSpeechControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech("That input is already assigned to " + owner);
+            QueueSpeech(LF("That input is already assigned to {0}", L(owner)));
             return;
         }
 
@@ -476,7 +479,8 @@ public sealed partial class BopItAccessMod
         _lastControlsRebinding = false;
         _controlsBindingChangedDuringRebind = false;
         WriteStatus($"Rebound Toggle Speech to {path}.");
-        QueueSpeech(_lastControlsBinding ?? "Binding changed");
+        QueueSpeech(_lastControlsBinding == null ? L("Binding changed") :
+            LocalizeBindingDisplay(_lastControlsBinding));
         if (!_speechEnabled)
             AnnounceSpeechToggleRecoveryNow();
     }
@@ -559,7 +563,7 @@ public sealed partial class BopItAccessMod
         if (wasActive)
             _lastControlsRebinding = false;
         if (wasActive && announce)
-            QueueSpeech("Binding unchanged");
+            QueueSpeech(L("Binding unchanged"));
     }
 
     private void ReleaseToggleSpeechControlRebinding()

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Il2Cpp;
 using Il2CppInterop.Runtime;
@@ -48,6 +49,7 @@ public sealed partial class BopItAccessMod
     {
         if (_guideOpen)
             return true;
+        UpdateGameLocale(force: true);
         MainMenuUIManager? main = _mainMenu;
         if (main == null)
             main = UnityEngine.Object.FindFirstObjectByType<MainMenuUIManager>();
@@ -58,14 +60,26 @@ public sealed partial class BopItAccessMod
             settings = UnityEngine.Object.FindFirstObjectByType<SettingsPanel>();
         if (main == null || source == null || settings?.controls == null)
         {
-            QueueSpeech("The user's guide is unavailable because the game menu is not ready.");
+            QueueSpeech(L("The user's guide is unavailable because the game menu is not ready."));
             return false;
         }
         _mainMenu = main;
 
         string gameDirectory = Path.GetDirectoryName(Environment.ProcessPath ??
             string.Empty) ?? Environment.CurrentDirectory;
-        string guidePath = Path.Combine(gameDirectory, "documentation", GuideFileName);
+        string documentation = Path.Combine(gameDirectory, "documentation");
+        string englishGuidePath = Path.Combine(documentation, GuideFileName);
+        string guidePath = englishGuidePath;
+        if (CurrentGameLocale != "en")
+        {
+            string localizedPath = Path.Combine(documentation,
+                CurrentGameLocale, GuideFileName);
+            if (File.Exists(localizedPath))
+                guidePath = localizedPath;
+            else
+                WriteStatus("Guide for " + CurrentGameLocale +
+                    " is missing; using the English document.");
+        }
         List<GuideTopic> topics;
         try
         {
@@ -73,13 +87,36 @@ public sealed partial class BopItAccessMod
         }
         catch (Exception ex)
         {
-            WriteStatus("Could not load the user's guide from " + guidePath + ": " + ex);
-            QueueSpeech("The user's guide could not be opened. Check the documentation folder in the game directory.");
-            return false;
+            if (!string.Equals(guidePath, englishGuidePath,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                WriteStatus("Could not load the guide for " + CurrentGameLocale +
+                    " from " + guidePath + ": " + ex +
+                    ". Trying the English document.");
+                guidePath = englishGuidePath;
+                try
+                {
+                    topics = ReadGuideDocument(guidePath);
+                }
+                catch (Exception fallbackError)
+                {
+                    WriteStatus("Could not load the English user's guide from " +
+                        guidePath + ": " + fallbackError);
+                    QueueSpeech(L("The user's guide could not be opened. Check the documentation folder in the game directory."));
+                    return false;
+                }
+            }
+            else
+            {
+                WriteStatus("Could not load the user's guide from " + guidePath +
+                    ": " + ex);
+                QueueSpeech(L("The user's guide could not be opened. Check the documentation folder in the game directory."));
+                return false;
+            }
         }
         if (topics.Count == 0)
         {
-            QueueSpeech("The user's guide has no topics in its table of contents.");
+            QueueSpeech(L("The user's guide has no topics in its table of contents."));
             return false;
         }
 
@@ -126,7 +163,7 @@ public sealed partial class BopItAccessMod
             if (sourceHidden)
                 source.Show();
             SetGuideMusicFilter(false);
-            QueueSpeech("The user's guide could not be displayed.");
+            QueueSpeech(L("The user's guide could not be displayed."));
             return false;
         }
     }
@@ -139,7 +176,7 @@ public sealed partial class BopItAccessMod
         _guideTopicsRoot = topicsRoot;
         _guideTopicsPanel = topicsPanel;
         _guideTopicsScroll = topicScroll;
-        SetClonedLabel(topicTitle, "USER'S GUIDE: TOPICS");
+        SetClonedLabel(topicTitle, L("USER'S GUIDE: TOPICS"));
 
         _guideTopicAction ??= (UnityAction)OnGuideTopicSubmitted;
         for (int index = 0; index < _guideTopics.Count; index++)
@@ -182,7 +219,7 @@ public sealed partial class BopItAccessMod
 
         _guideRepeatAction ??= (UnityAction)RepeatGuideLine;
         _guideRepeatRow = AddSpeechButton(settings.controls, pageContent,
-            "READ CURRENT LINE", _guideRepeatAction);
+            L("READ CURRENT LINE"), _guideRepeatAction);
         pagePanel.firstSelectedButton = _guideRepeatRow.gameObject;
         pagePanel.lastSelectedButton = null;
         if (pageContent is RectTransform pageRect)
@@ -407,7 +444,7 @@ public sealed partial class BopItAccessMod
             {
                 _guideLastPageFocus = key;
                 string prefix = _guideLineIndex == 0
-                    ? "User's guide. "
+                    ? L("User's guide") + ". "
                     : string.Empty;
                 QueueFocusSpeech(prefix + CurrentGuideLineSpeech());
             }
@@ -433,7 +470,8 @@ public sealed partial class BopItAccessMod
                 string text = WithMenuIndex(WithControlType(_guideTopics[i].Title,
                     "button"), i, _guideTopics.Count);
                 if (i == 0)
-                    text = "User's guide. Topics. " + text;
+                    text = L("User's guide") + ". " + L("Topics") +
+                        ". " + text;
                 QueueFocusSpeech(text);
             }
             return true;
@@ -446,12 +484,12 @@ public sealed partial class BopItAccessMod
         if (!_guideOpen)
             return null;
         string hint = _guidePageOpen
-            ? HintNavigation(true, "read previous or next line") + " " +
-              HintNavigation(false, "change column in a table") + " " +
-              UiBackHint("return to guide topics")
-            : HintNavigation(true, "choose a guide topic") + " " +
-              UiSubmitHint("open topic") + " " +
-              UiBackHint("leave the user's guide");
+            ? HintNavigation(true, L("read previous or next line")) + " " +
+              HintNavigation(false, L("change column in a table")) + " " +
+              UiBackHint(L("return to guide topics"))
+            : HintNavigation(true, L("choose a guide topic")) + " " +
+              UiSubmitHint(L("open topic")) + " " +
+              UiBackHint(L("leave the user's guide"));
         return (_guidePageOpen ? "Guide:Page" : "Guide:Topics",
             WithGlobalControlHints(hint));
     }
@@ -526,7 +564,7 @@ public sealed partial class BopItAccessMod
             return;
         GuideTopic topic = _guideTopics[_guideTopicIndex];
         _guidePageText.text = topic.Lines.Count == 0
-            ? "This topic has no readable text. Press Back to return to topics."
+            ? L("This topic has no readable text. Press Back to return to topics.")
             : CurrentGuideLineSpeech();
         if (_guidePageScroll != null)
             _guidePageScroll.verticalNormalizedPosition = 1f;
@@ -536,29 +574,35 @@ public sealed partial class BopItAccessMod
     {
         GuideTopic topic = _guideTopics[_guideTopicIndex];
         if (topic.Lines.Count == 0)
-            return "This topic has no readable text.";
+            return L("This topic has no readable text.");
         GuideLine line = topic.Lines[_guideLineIndex];
         if (line.Cells != null && line.Cells.Count > 0)
         {
             int column = Math.Clamp(_guideColumnIndex, 0, line.Cells.Count - 1);
             string heading = line.Headers != null && column < line.Headers.Count
-                ? line.Headers[column] : "Column " + (column + 1);
+                ? line.Headers[column] : string.Format(
+                    CultureInfo.CurrentCulture, L("Column {0}"), column + 1);
             string rowName = line.Cells[0].Length > 0
-                ? line.Cells[0] : "Row " + line.TableRow;
-            string rowLabel = rowName + (_indexingEnabled
-                ? ", " + line.TableRow + " of " + line.TableRows
-                : string.Empty);
+                ? line.Cells[0] : string.Format(
+                    CultureInfo.CurrentCulture, L("Row {0}"), line.TableRow);
+            string rowLabel = _indexingEnabled
+                ? string.Format(CultureInfo.CurrentCulture,
+                    L("{0}, {1} of {2}"), rowName, line.TableRow, line.TableRows)
+                : rowName;
             return column == 0
                 ? rowLabel
-                : rowLabel + ". " + heading + ": " + line.Cells[column];
+                : string.Format(CultureInfo.CurrentCulture,
+                    L("{0}. {1}: {2}"), rowLabel, heading,
+                    line.Cells[column]);
         }
         string plainText = line.Text;
         if (line.IsTableMarker)
             return _guideLastLineDirection < 0
                 ? line.ReverseTableText : plainText;
         return _indexingEnabled
-            ? plainText + " Line " + (_guideLineIndex + 1) + " of " +
-              topic.Lines.Count + "."
+            ? string.Format(CultureInfo.CurrentCulture,
+                L("{0} Line {1} of {2}."), plainText,
+                _guideLineIndex + 1, topic.Lines.Count)
             : plainText;
     }
 
@@ -615,16 +659,19 @@ public sealed partial class BopItAccessMod
         RegexOptions.Compiled | RegexOptions.Singleline);
     private static readonly Regex GuideSpace = new(@"\s+", RegexOptions.Compiled);
 
-    private static List<GuideTopic> ReadGuideDocument(string path)
+    private List<GuideTopic> ReadGuideDocument(string path)
     {
         if (!File.Exists(path))
             throw new FileNotFoundException("Guide HTML is missing.", path);
         string html = File.ReadAllText(path);
         GuideHtmlNode document = ParseGuideHtml(html);
         GuideHtmlNode? contents = FindGuideNode(document, node =>
-            node.Name == "nav" && string.Equals(
-                GuideAttribute(node, "aria-label"), "Table of contents",
-                StringComparison.OrdinalIgnoreCase));
+            node.Name == "nav" &&
+            (string.Equals(GuideAttribute(node, "id"), "contents-nav",
+                StringComparison.Ordinal) ||
+             GuideDescendants(node).Any(child => child.Name == "h2" &&
+                 string.Equals(GuideAttribute(child, "id"), "contents",
+                     StringComparison.Ordinal))));
         if (contents == null)
             throw new FormatException("Guide table of contents was not found.");
 
@@ -743,7 +790,7 @@ public sealed partial class BopItAccessMod
             AppendGuideText(child, text);
     }
 
-    private static void AppendGuideLines(GuideHtmlNode node,
+    private void AppendGuideLines(GuideHtmlNode node,
         List<GuideLine> lines)
     {
         if (node.Name == "table")
@@ -757,19 +804,52 @@ public sealed partial class BopItAccessMod
             string value = GuideText(node);
             if (value.Length > 0)
                 AppendGuideWrappedText(node.Name == "li"
-                    ? "Bullet. " + value : value, lines);
+                    ? L("Bullet") + ". " + value : value, lines);
             return;
         }
         foreach (GuideHtmlNode child in node.Children)
             AppendGuideLines(child, lines);
     }
 
-    private static void AppendGuideWrappedText(string text,
+    private void AppendGuideWrappedText(string text,
         List<GuideLine> lines)
     {
         // A paragraph can span much of a visual page. Short speech lines let
         // native Up/Down navigation advance through it at a reading pace.
-        const int lineLength = 120;
+        // Japanese and Chinese commonly have no spaces between words. Count
+        // grapheme clusters rather than splitting only at whitespace there.
+        // Korean normally has word spaces, so use the word-aware path below.
+        if (CurrentGameLocale is "ja" or "zh")
+        {
+            const int textElementsPerLine = 58;
+            var currentCjk = new System.Text.StringBuilder();
+            int elements = 0;
+            TextElementEnumerator iterator = StringInfo.GetTextElementEnumerator(text);
+            while (iterator.MoveNext())
+            {
+                string element = iterator.GetTextElement();
+                if (string.IsNullOrWhiteSpace(element))
+                {
+                    if (currentCjk.Length == 0 || currentCjk[^1] == ' ')
+                        continue;
+                    element = " ";
+                }
+                if (elements >= textElementsPerLine)
+                {
+                    lines.Add(new GuideLine(currentCjk.ToString().TrimEnd()));
+                    currentCjk.Clear();
+                    elements = 0;
+                    if (element == " ")
+                        continue;
+                }
+                currentCjk.Append(element);
+                elements++;
+            }
+            if (currentCjk.Length > 0)
+                lines.Add(new GuideLine(currentCjk.ToString().TrimEnd()));
+            return;
+        }
+        int lineLength = CurrentGameLocale == "ko" ? 60 : 120;
         var current = new System.Text.StringBuilder();
         foreach (Match word in Regex.Matches(text, @"\S+"))
         {
@@ -788,7 +868,7 @@ public sealed partial class BopItAccessMod
             lines.Add(new GuideLine(current.ToString()));
     }
 
-    private static void AppendGuideTable(GuideHtmlNode table,
+    private void AppendGuideTable(GuideHtmlNode table,
         List<GuideLine> lines)
     {
         GuideHtmlNode? captionNode = FindGuideNode(table,
@@ -814,11 +894,17 @@ public sealed partial class BopItAccessMod
         }
         int columns = Math.Max(headers?.Count ?? 0,
             dataRows.Count == 0 ? 0 : dataRows.Max(row => row.Count));
-        string name = caption.Length > 0 ? caption + " table" : "Table";
-        string rowCount = dataRows.Count + (dataRows.Count == 1 ? " row" : " rows");
-        string columnCount = columns + (columns == 1 ? " column" : " columns");
-        string entry = name + ". " + rowCount + ", " + columnCount + ".";
-        string exit = "End of " + name + ".";
+        string entry = caption.Length > 0
+            ? string.Format(CultureInfo.CurrentCulture,
+                L("Table: {0}. Rows: {1}. Columns: {2}."),
+                caption, dataRows.Count, columns)
+            : string.Format(CultureInfo.CurrentCulture,
+                L("Table. Rows: {0}. Columns: {1}."),
+                dataRows.Count, columns);
+        string exit = caption.Length > 0
+            ? string.Format(CultureInfo.CurrentCulture,
+                L("End of table: {0}."), caption)
+            : L("End of table.");
         lines.Add(new GuideLine(entry, TableCaption: caption,
             IsTableMarker: true, ReverseTableText: exit));
         for (int index = 0; index < dataRows.Count; index++)

@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+
+<html lang="zh">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/>
+<title>Bop It Access |游戏和模组用户指南</title>
+<style>
+    :root { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.65; color: #202434; background: #f7f8fc; }
+    body { margin: 0; }
+    .skip { position: absolute; left: .75rem; top: -4rem; padding: .5rem .8rem; background: white; z-index: 5; }
+    .skip:focus { top: .75rem; }
+    header { background: #17274b; color: white; padding: 2.5rem max(1rem, calc((100vw - 68rem) / 2)); }
+    header p { max-width: 55rem; margin-bottom: 0; }
+    main, footer { max-width: 68rem; margin: auto; padding: 0 1.25rem 2rem; }
+    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 .5rem; }
+    h2 { margin-top: 3rem; padding-top: .35rem; border-top: 3px solid #6679b5; }
+    h3 { margin-top: 2rem; }
+    h4 { margin-top: 1.5rem; }
+    a { color: #164c97; text-underline-offset: .15em; }
+    a:focus-visible { outline: 3px solid #ed8d15; outline-offset: 2px; }
+    header a { color: #fff; }
+    nav, .panel, .note { background: #fff; border: 1px solid #cdd5e9; border-radius: .65rem; padding: 1rem 1.3rem; margin: 1.3rem 0; }
+    nav ul { columns: 2; padding-left: 1.5rem; }
+    nav li { break-inside: avoid; margin: .2rem 0; }
+    .note { border-left: 5px solid #b16613; }
+    .planned { background: #fdf4df; border-left: 5px solid #ae6b05; padding: .6rem .9rem; }
+    .current { background: #e9f6ed; border-left: 5px solid #24714a; padding: .6rem .9rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.6rem; background: #fff; }
+    caption { text-align: left; font-weight: 700; padding: .3rem 0; }
+    th, td { border: 1px solid #bdc8df; padding: .55rem .65rem; text-align: left; vertical-align: top; }
+    th { background: #e7ecf7; }
+    tr:nth-child(even) td { background: #f5f7fc; }
+    code, kbd { font-family: ui-monospace, Consolas, monospace; }
+    kbd { border: 1px solid #8790a7; border-bottom-width: 2px; border-radius: .25rem; padding: 0 .25rem; white-space: nowrap; }
+    pre { overflow-x: auto; padding: 1rem; border-radius: .5rem; background: #e7ecf7; }
+    .table-scroll { overflow-x: auto; }
+    .small { font-size: .93rem; }
+    footer { border-top: 3px solid #6679b5; }
+    @media (max-width: 45rem) { nav ul { columns: 1; } th, td { padding: .4rem; } }
+    @media (prefers-color-scheme: dark) {
+      :root { color: #e8ebf7; background: #121623; }
+      nav, .panel, .note, table, .skip { background: #1d2537; border-color: #4c5b79; }
+      a { color: #a9c8ff; }
+      th, pre { background: #303c59; }
+      th, td { border-color: #586782; }
+      tr:nth-child(even) td { background: #242d43; }
+      .planned { background: #453515; }
+      .current { background: #193b2b; }
+    }
+  </style>
+</head>
+<body>
+<a class="skip" href="#content">跳至指南</a>
+<header>
+<h1>Bop It Access</h1>
+<p>Bop It! The Video Game 及其辅助功能模块的友好指南。本指南描述了当前的 Windows mod，并清楚地标记了仍在计划中的想法。</p>
+</header>
+<main id="content">
+<nav aria-label="目录" id="contents-nav">
+<h2 id="contents">内容</h2>
+<ul>
+<li><a href="#welcome">欢迎</a></li>
+<li><a href="#game">什么是 Bop It!？</a></li>
+<li><a href="#mod">什么是 Bop It Access？</a></li>
+<li><a href="#transparency">坦诚的透明说明</a></li>
+<li><a href="#features">无障碍功能</a></li>
+<li><a href="#quality">便利功能</a></li>
+<li><a href="#limitations">注意事项与限制</a></li>
+<li><a href="#buy">购买游戏并检查电脑配置</a></li>
+<li><a href="#install">获取并安装模组</a></li>
+<li><a href="#controls">玩家操作一览</a></li>
+<li><a href="#first-launch">首次启动</a></li>
+<li><a href="#languages">支持的语言</a></li>
+<li><a href="#in-game-guide">在游戏中阅读指南</a></li>
+<li><a href="#speech-options">模组设置菜单</a></li>
+<li><a href="#menu-guide">菜单指南</a></li>
+<li><a href="#main-menu">主菜单</a></li>
+<li><a href="#play-menu">游玩菜单</a></li>
+<li><a href="#song-menu">选择歌曲和难度</a></li>
+<li><a href="#settings-menu">设置菜单</a></li>
+<li><a href="#controls-menu">控制设置菜单</a></li>
+<li><a href="#audio-latency-menu">音频延迟校准</a></li>
+<li><a href="#leaderboards-menu">排行榜</a></li>
+<li><a href="#achievements-menu">成就图册</a></li>
+<li><a href="#credits-menu">游戏制作人员</a></li>
+<li><a href="#results-menu">结算与游戏结束</a></li>
+<li><a href="#pause-menu">暂停菜单</a></li>
+<li><a href="#mode-guide">各模式详细指南</a></li>
+<li><a href="#roadmap">未来计划</a></li>
+<li><a href="#project-credits">制作人员及第三方声明</a></li>
+<li><a href="#legal">法律声明</a></li>
+<li><a href="#thanks">感谢</a></li>
+</ul>
+</nav>
+<section id="welcome">
+<h2>欢迎</h2>
+<p>欢迎使用 Bop It Access！无论这是您的第一个 Bop It 游戏、您的第一个视频游戏，还是您已经喜欢的游戏，这里都欢迎您。本指南从基础知识开始，并在您遇到该模组的功能时解释它们。您可以使用上面的内容直接跳到主题。</p>
+<p>一个 <strong>键盘</strong> 是计算机上的一组按键。一个 <strong>控制器</strong> 是一款手持游戏手柄。本指南提到 Xbox 按钮名称的地方，它们只是示例：另一个控制器可能对同一按钮位置使用不同的标签。一个 <strong>菜单项</strong> 是一个选择，例如“播放”或“设置”。该项目与 <strong>焦点</strong> 是您下一次确认时将激活的。</p>
+</section>
+<section id="game">
+<h2>什么是 Bop It!？</h2>
+<p><em>Bop It! The Video Game</em> 将 Bop It 节奏和反应游戏带到电脑上。语音会发出命令，您可以在时间用完之前进行匹配的输入。在经典难度下，主要命令是 <strong>拍打</strong>, <strong>扭转</strong>, 和 <strong>拉动</strong>。极端难度也增加了 <strong>转动</strong> 和 <strong>拨动</strong>。命令变得更快，因此随着回合的进行，聆听和计时变得更加重要。该游戏提供单人、派对、传球和一对一游戏，有四个视觉和音乐阶段：形状、空间、城市和办公室。的 <a href="https://store.steampowered.com/app/3214360/">官方Steam页面</a> 介绍了游戏，以及 <a href="https://bopitthevideogame.com/bop-it-the-video-game-press-release">官方游戏说明</a> 解释其模式。</p>
+<p>当您听到命令时，请使用指定的控件。例如，在默认键盘上，拍打 是空格。您可以在中找到每个默认值 <a href="#controls">控制参考</a>。您不必在开始之前记住所有内容：模组可以说出菜单上的按钮提示，并且您可以根据需要请求提示。</p>
+</section>
+<section id="mod">
+<h2>什么是 Bop It Access？</h2>
+<p>Bop It Access 是一个非官方的独立模组 <strong>Windows x64 Steam 版本</strong> 游戏的。模组是一种可选的附加内容，可以改变游戏的行为方式。这一功能增加了对菜单和结果的语音和盲文支持、四个阶段的按需描述、额外的控件以及帧速率限制等有用的设置。它的目的是让游戏更容易导航，同时保持其语音游戏提示和时间安排不变。</p>
+<p>该mod使用MelonLoader加载到游戏中。它使用 Tolk 与支持的屏幕阅读器进行通信，并可以使用 Windows SAPI 语音作为后备。它不会取代游戏，您仍然需要自己的 Bop It! 副本。</p>
+<p>该模组的菜单和公告遵循游戏的语言设置。它包括英语、法语、意大利语、德语、西班牙语（西班牙）、西班牙语（拉丁美洲）、日语、韩语、简体中文和巴西葡萄牙语。</p>
+</section>
+<section class="panel" id="transparency">
+<h2>坦诚的透明说明</h2>
+<p>该模组是与人工智能密切合作制作的。该模组的所有研究都是由人工智能进行的，其代码也是由人工智能生成的，而不是最初由手工编写的。设计决策和游戏测试完全是人为的。每一个早期的添加和更改都经过一个人的仔细审查，并且真人在不同的系统上玩和测试了该模组。新的多语言文本是通过机器翻译编写的，仍需要流利的使用者进行审阅。如果没有代理编码，这个项目就不会存在。感谢您给这个由人类主导、人工智能辅助的项目一个机会。</p>
+</section>
+<section id="features">
+<h2>无障碍功能</h2>
+<ul>
+<li>标题屏幕、主菜单、播放和歌曲选择、设置和控制、模组设置、音频校准、排行榜、游戏内成就簿、制作人员名单、暂停菜单和结果屏幕的语音。</li>
+<li>公布焦点按钮、滑块、切换开关、名称、值和更改的值。可选的索引、控件类型标签、滑块范围和大写过滤让您可以调整细节。</li>
+<li>游戏结束时得分或获胜者演讲，然后是排队的菜单演讲，以及仅在结果屏幕上的“阅读得分”快捷方式。</li>
+<li>四个阶段描述，在比赛开始前根据歌曲选择屏幕的要求进行朗读。</li>
+<li>游戏当前模式和难度的教程参考，根据歌曲选择的要求以及每个动作当前指定的控制进行朗读。一对一包括 拍打 输入。</li>
+<li>可选的一对一颜色和生命计数公告。</li>
+<li>键盘、控制器或两者的按钮提示，具有可调节的时间、重复次数和按需发言提示快捷方式。</li>
+<li>通过 Tolk 进行屏幕阅读器输出、可选盲文输出以及可配置的 SAPI 后备。</li>
+<li>键盘和控制器重新映射多个本机和 mod 控件，包括排行榜过滤器和语音快捷方式。</li>
+<li>已保存的主语音开关，带有用于重新打开语音的语音指令。</li>
+<li>游戏语言设置提供的每种语言的语音和游戏内用户指南。</li>
+</ul>
+</section>
+<section id="quality">
+<h2>便利功能</h2>
+<ul>
+<li>已保存的限制 FPS 设置，具有 30、60、120、240 和无限制选项。默认值为 60。</li>
+<li>当游戏窗口位于后台时，用于静音游戏音频或模组语音的单独选项。</li>
+<li>更改语音输出快捷方式，可在与 Mod 设置菜单相同的模式之间循环。</li>
+<li>保存游戏会话中的偏好设置，包括语音输出、盲文、提示和帧速率上限。</li>
+<li>更多控件可用于在游戏自己的控件菜单中重新映射，并且拒绝重复分配。</li>
+</ul>
+</section>
+<section id="limitations">
+<h2>注意事项与限制</h2>
+<ul>
+<li><strong>在回合开始前要求提供描述。</strong> 该模组故意不在游戏进行过程中叙述场景。玩家必须听到游戏的口头命令并做出反应；额外的旁白可以涵盖命令并结束回合。</li>
+<li><strong>SAPI是备份语音引擎。</strong> 当您喜欢或没有支持的屏幕阅读器正在运行时，它就可用，但其响应能力仍然低于该项目的目标。您安装的语音和系统会影响延迟。对于非英语语音，请选择已安装的支持您选择的游戏语言的 SAPI 语音；该模组不安装额外的声音。</li>
+<li><strong>一些本机控件仍然是固定的。</strong> 该模组极大地扩展了游戏的控制菜单，但它并没有使每个游戏输入都可以重新映射。</li>
+<li><strong>帧速率影响输入轮询。</strong> FPS限制器可以大幅降低系统负载。它不会故意减慢动画速度或改变游戏时间，但游戏在较低 FPS 时检查基于帧的输入的频率较低。较高的设置可以提供更准确的输入计时，尤其是在快速回合中。</li>
+<li><strong>菜单和结果中的语音支持最强。</strong> 在意外的面板上，mod 可以在找到可见文本和聚焦控件时读取可见文本和焦点控件。鼠标悬停可能不会说话，直到该项目真正获得游戏焦点。</li>
+<li><strong>Windows x64 是当前的 mod 平台。</strong> 该游戏可能适用于其他系统，但该模组当前的加载和语音依赖性适用于 Windows x64。</li>
+<li><strong>翻译需要审核。</strong> 最初的非英语模组文本和指南是机器翻译的。某些措辞、游戏术语和输入名称可能需要流利的说话者进行纠正。请报告任何不清楚或不准确的内容。</li>
+</ul>
+</section>
+<section id="buy">
+<h2>购买游戏并检查电脑配置</h2>
+<p>购买 <a href="https://store.steampowered.com/app/3214360/">Bop It! The Video Game 于 Steam</a>。如果 Steam 对您来说是新号码， <a href="https://store.steampowered.com/about/">安装Steam</a>，创建或登录帐户，从商店页面购买游戏，然后从 Steam 库安装游戏。的 <a href="https://help.steampowered.com/en/faqs/view/6F74-68BA-1B77-8727">Steam 入门指南</a> 涵盖了这些步骤。游戏的购买与此模组是分开的。</p>
+<p>购买或安装前，请检查 <strong>Steam 页面上的当前最低系统要求</strong>。在撰写本指南时，其 Windows 最低配置包括 Windows 10 64 位、Intel i5-4460 或 AMD FX-6300、8 GB 内存、具有 2 GB 视频内存的图形处理器和 2 GB 存储空间。该页面还表示排行榜需要互联网连接。要求可能会发生变化，因此 Steam 的列表是最终参考。</p>
+<p>我们仍然欢迎您在低于游戏最低要求的计算机上尝试并报告问题。但是，如果问题是由不符合规格的系统引起的，则无法保证修复。</p>
+</section>
+<section id="install">
+<h2>获取并安装模组</h2>
+<p class="planned"><strong>安装人员状态：</strong> 公共模组安装程序尚未设计或发布，因此没有真正的安装程序下载链接或安装程序屏幕可供遵循。请观看 <a href="https://github.com/Chris-E-Shaw/BopItAccess">Bop It Access 项目页面</a> 以备将来使用。这是安装程序链接的预期主页，而不是声称安装程序现在就在那里。</p>
+<h3>当前安装路径：从源构建</h3>
+<p>公共 GitHub 存储库当前包含源代码和文档，没有编译的下载或 GitHub 版本。构建意味着将源文件转换为 mod 的 DLL。的 <a href="README.md#build-from-source">存储库的构建说明</a> 是维护的参考。以下是用日常语言表达的完整当前路线：</p>
+<ol>
+<li>通过 Steam 在 Windows x64 上安装游戏。如果您没有使用默认位置，请从 Steam 的库中找到其文件夹。</li>
+<li>随着比赛结束， <a href="https://github.com/LavaGang/MelonLoader#how-to-use-the-installer">安装MelonLoader</a> 进入该游戏文件夹。该游戏的开发使用了 x64 MelonLoader 0.7.3 Open-Beta；其他组合尚未验证。启动游戏一次并再次关闭。这让 MelonLoader 准备 mod 所需的文件。</li>
+<li>安装包含 .NET 6 定位包的 .NET SDK。 <a href="https://github.com/Chris-E-Shaw/BopItAccess">下载或克隆 Bop It Access 源</a>，在包含其的文件夹中打开PowerShell <code>README.md</code>，然后运行以下命令。如果您的 Steam 库位于其他位置，请更改示例游戏路径。</li>
+</ol>
+<pre><code>$gameDir = 'C:\Program Files (x86)\Steam\steamapps\common\Bop It!'
+dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</code></pre>
+<ol start="4">
+<li>游戏关闭后，复制构建的文件 <code>src\bin\Release\net6.0\BopItAccess.dll</code> 进入游戏的 <code>Mods</code> 文件夹。如果需要，创建该文件夹。复制构建的 <code>src\bin\Release\net6.0\documentation</code> 文件夹也放到游戏文件夹里。它包含本指南及其链接所需的配套文档。</li>
+<li>获取兼容的64位 <code>Tolk.dll</code> 和 <code>nvdaControllerClient64.dll</code> 如中所述，来自其上游来源 <a href="README.md#install-your-build">存储库的安装说明</a>。将两者放在游戏的可执行文件旁边，在主游戏文件夹中， <strong>不</strong> 里面 <code>Mods</code>.</li>
+<li>如果您使用屏幕阅读器，请启动屏幕阅读器，然后通过 Steam 启动游戏。如果没有兼容的正在运行的屏幕阅读器，模组可以使用 SAPI 语音。</li>
+</ol>
+<p>一个常见的 Steam 位置是 <code>C:\Program Files (x86)\Steam\steamapps\common\Bop It!</code>。如果您选择不同的 Steam 图书馆，您的位置可能会有所不同。如果您有项目中本地提供的安装 ZIP，请关闭游戏并将其内容解压到游戏文件夹中，从而允许 <code>Mods</code> 要合并的文件夹。这些本地包与纯源代码 GitHub 存储库是分开的。</p>
+<h3>未来的安装程序演练（计划）</h3>
+<div class="planned">
+<p><strong>仅临时大纲：</strong> 当存在官方安装程序时，预期的步骤是从项目页面获取它，关闭游戏，运行安装程序，如果无法自动找到游戏，则将其指向Bop It!文件夹，让它安装mod和所需的语音文件，然后通过Steam启动。真正的安装程序可能有不同的选择。其确切屏幕、更新方法、删除方法和下载链接一旦存在，将在此处记录。</p>
+<p>现在，请使用上面的项目页面和源说明。目前没有第三方页面可以提供官方的 Bop It Access 安装程序。</p>
+</div>
+</section>
+<section id="controls">
+<h2>玩家操作一览</h2>
+<p>这些是用于播放和菜单导航的默认控件。 <strong>重新绑定可以改变它们</strong>，因此您的控制菜单是您自己设置的最终决定。控制器栏描述了游戏的通常动作或Xbox风格的示例；物理运动和标签可能因控制器类型而异。破折号表示未找到该设备的默认分配，而不是表示该操作无法以其他方式执行。</p>
+<p><strong>快速定位：</strong> D-pad 表示四向方向键。保险杠位于扳机上方。按下左摇杆和按下右摇杆意味着将相应的摇杆向内推，直至听到“咔哒”声。在某些控制器上，选择可能称为“后退”或“查看”；开始可以称为菜单。</p>
+<div class="table-scroll"><table>
+<caption>播放器控件，包括重新映射菜单之外的控件</caption>
+<thead><tr><th scope="col">行动</th><th scope="col">它的作用</th><th scope="col">默认键盘</th><th scope="col">默认控制器</th><th scope="col">您可以在控件中重新绑定它吗？</th></tr></thead>
+<tbody>
+<tr><th scope="row">拍打</th><td>回复“拍打！”一轮；从标题屏幕打开主菜单，然后从歌曲选择开始一轮。</td><td>空格键</td><td>南面按钮（Xbox 上的 A）</td><td>是的</td></tr>
+<tr><th scope="row">拍打（玩家2）</th><td>第二个 拍打 输入用于游戏要求的地方，包括双人游戏。</td><td>D</td><td>方向键右</td><td>是的</td></tr>
+<tr><th scope="row">扭转</th><td>回复“扭转！”；更改歌曲屏幕上所选的歌曲。</td><td>向左箭头</td><td>北面按钮（Xbox 上的 Y）</td><td>是的</td></tr>
+<tr><th scope="row">拉动</th><td>回复“拉动！”；在歌曲屏幕上切换经典/极限。</td><td>右箭头</td><td>右摇杆动作</td><td>是的</td></tr>
+<tr><th scope="row">转动</th><td>回复“转动！”在极其困难的情况下。</td><td>S</td><td>在检查的 Xbox 风格地图中按下方向键；其他控制器可能有所不同</td><td>是的</td></tr>
+<tr><th scope="row">拨动</th><td>回复“拨动！”在极其困难的情况下。</td><td>瓦</td><td>检查的 Xbox 风格地图中的左摇杆动作；其他控制器可能有所不同</td><td>是的</td></tr>
+<tr><th scope="row">重置陀螺仪</th><td>当游戏使用控制器运动传感器时，将其置于中心位置。</td><td>右</td><td>右扳机</td><td>是的，被mod暴露了</td></tr>
+<tr><th scope="row">移动菜单焦点</th><td>选择下一个或上一个菜单项。</td><td>上/下箭头或 W/S；在屏幕允许的情况下，向左/向右箭头或 A/D</td><td>摇杆或方向键，具体取决于屏幕</td><td>没有单独的行</td></tr>
+<tr><th scope="row">确认/激活</th><td>打开或使用聚焦的菜单项。</td><td>输入或空格</td><td>南面按钮（Xbox 上的 A）</td><td>没有单独的行</td></tr>
+<tr><th scope="row">后退</th><td>返回上一级菜单或离开面板。</td><td>退格键</td><td>东面按钮（Xbox 上的 B）</td><td>没有单独的行</td></tr>
+<tr><th scope="row">菜单/暂停</th><td>打开游戏菜单或暂停一轮（如果有）。</td><td>逃亡</td><td>开始/菜单</td><td>没有单独的行</td></tr>
+<tr><th scope="row">切换全屏</th><td>在全屏和窗口显示之间切换游戏窗口。</td><td>F11</td><td>未找到默认值</td><td>没有单独的行</td></tr>
+<tr><th scope="row">排行榜组上一个/下一个</th><td>如果可以的话，可以在本地、朋友和全球之间移动。</td><td>输出/输出</td><td>左保险杠/右保险杠</td><td>是的，两行添加了 mod</td></tr>
+<tr><th scope="row">排行榜日期上一个/下一个</th><td>在“今天”、“本月”和“所有时间”（如果可用）之间移动。</td><td>钾/升</td><td>方向键左/方向键右</td><td>是的，两行添加了 mod</td></tr>
+<tr><th scope="row">排行榜设备过滤器</th><td>更改显示该过滤器的选定设备类别。</td><td>右箭头</td><td>右摇杆向右/向下，取决于所连接的控制器</td><td>没有单独的行</td></tr>
+<tr><th scope="row">读取排行榜行</th><td>一次说出一行乐谱。</td><td>向上翻页/向下翻页</td><td>当没有排行榜过滤器获得焦点时向上/向下</td><td>没有单独的行</td></tr>
+<tr><th scope="row">翻成就页</th><td>显示书本的上一页或下一页。</td><td>左/右箭头</td><td>左/右保险杠</td><td>没有单独的行</td></tr>
+<tr><th scope="row">阅读成就或信用额度</th><td>逐步浏览页面或片尾字幕中的语音条目。</td><td>向上/向下箭头或 W/S</td><td>菜单向上/向下</td><td>没有单独的行</td></tr>
+<tr><th scope="row">阅读说明</th><td>仅在歌曲屏幕上说出当前阶段的视觉描述。</td><td>G</td><td>左扳机 (LT)</td><td>是的</td></tr>
+<tr><th scope="row">阅读分数</th><td>仅在结果屏幕上重复最终得分或一对一的获胜者。</td><td>时间</td><td>按下左摇杆</td><td>是的</td></tr>
+<tr><th scope="row">切换语音</th><td>关闭或重新打开所有普通 mod 语音；设置已保存。</td><td>F8</td><td>选择/返回/查看</td><td>是的</td></tr>
+<tr><th scope="row">说出提示</th><td>阅读当前屏幕的按钮提示（如果可用）。关于歌曲选择，还请阅读教程参考，其中包含针对所选模式和难度的每个动作的当前分配控制，包括一对一中的 拍打 输入。</td><td>H</td><td>右摇杆按下</td><td>是的</td></tr>
+<tr><th scope="row">更改语音输出</th><td>循环使用与 Mod Settings &gt; Output Mode 相同的输出选项。</td><td>F9</td><td>西面按钮（Xbox 上的 X）</td><td>是的</td></tr>
+</tbody>
+</table></div>
+<p>使用“设置”&gt;“控件”更改标记为“是”的行。该模组拒绝重复分配，因此一个输入不会默默地采取两个主动操作。重置为默认值可恢复默认值。专用 UI​​ 操作、翻页和乐谱行阅读当前在该菜单中没有行。</p>
+</section>
+<section id="first-launch">
+<h2>首次启动</h2>
+<ol>
+<li>如果您使用屏幕阅读器，请启动屏幕阅读器。安装 MelonLoader、mod DLL 和所需的 Tolk 运行时文件后，启动 Bop It! 到 Steam。</li>
+<li>在您第一次使用该模组时，游戏的音乐、SFX 和 Voice Over 音量从 30 开始。如果您要升级，您保存的游戏音频级别将保持不变。</li>
+<li>等待公告： <q>Bop It Access 演讲已准备就绪。游戏仍在加载中。在使用控件之前，请等待标题屏幕或主菜单公告。</q> 该模组在游戏完成加载之前就已准备就绪。</li>
+<li>再等待几秒钟，即可看到标题屏幕公告。输入在加载期间可能不执行任何操作。按 拍打（默认为空格键，或控制器的确认按钮）从标题屏幕继续。首次启动欢迎功能时，欢迎屏幕会在主菜单之前获得焦点。使用向上/向下移动并使用 Enter、空格或控制器确认进行确认。</li>
+<li>如果您之前关闭了语音，则保存的设置将保持关闭状态。该模组在启动时会使用当前的键盘和控制器绑定来提供切换语音的语音恢复消息。默认情况下，按 F8 或控制器选择可再次打开它。</li>
+<li>选择 <strong>打开mod设置，推荐</strong> 在欢迎屏幕上首先配置语音、盲文和提示。选择 <strong>阅读用户指南</strong> 在游戏中阅读此文档，或 <strong>继续游戏</strong> 到达主菜单。</li>
+</ol>
+<div class="current">
+<h3>欢迎屏幕</h3>
+<p>介绍性消息本身就是三个选项之上的一个可聚焦的项目。向后移动以再次听到整个消息。它会命名您当前的两个说出提示绑定，即使提示类型设置为仅显示一台设备也是如此。默认情况下，按 <kbd>H</kbd> 或向内按下控制器的右摇杆以请求当前屏幕的提示。</p>
+<p>仅当其选项之一打开所选目的地后，欢迎屏幕才会被标记为完成。如果游戏在您仍在欢迎屏幕上时关闭，则下次启动时会再次出现。要在完成后再次查看它，请使用 <strong>设置 &gt; 模组设置 &gt; 重置欢迎屏幕</strong>;重置将在下次启动时生效。</p>
+</div>
+</section>
+<section id="languages">
+<h2>支持的语言</h2>
+<p>在游戏中的 <strong>设置 &gt; 语言</strong> 行，选择您想要的语言。该模组会遵循该选择来选择其语音菜单文本、提示、提示和其他公告。您可以在会话期间更改它。游戏的原始文本和音频仍由游戏自己控制。</p>
+<p>每种语言都有此 HTML 指南的单独副本 <code>documentation\&lt;language&gt;\BopItAccess-user-guide.html</code>。在游戏中打开指南会加载当前在“设置”中选择的语言的副本。如果该副本丢失或无法阅读，则会打开英文指南。其他项目文档也有相同语言文件夹中的翻译副本。</p>
+<p>包含的语言包括英语、法语、意大利语、德语、西班牙语（西班牙）、西班牙语（拉丁美洲）、日语、韩语、简体中文和巴西葡萄牙语。第一个非英语翻译是机器生成的草稿，欢迎流利的使用者进行更正。</p>
+<p>Gameplay动作名称遵循游戏自己的翻译,因此五个口语指令保持区别. 四个舞台标题——Shapes,Space,City,Office——保留英文,因为它们在游戏中被显示为固定名称. mod 向您选定的语音输出发送翻译过的文本; 该输出还需要您语言的声音 。 如果使用SAPI,当系统默认语音不善发音时,在Mod设置中选择一个已安装的声音.</p>
+</section>
+<section id="in-game-guide">
+<h2>在游戏中阅读指南</h2>
+<p>选择 <strong>阅读用户指南</strong> 在欢迎屏幕上或 <strong>打开用户指南</strong> 在模组设置中。该指南在 Bop It! 中打开，使用游戏中当前游戏语言的 HTML 文件 <code>documentation</code> 文件夹。它的主题列表遵循该文档的目录，因此更新已安装的文档会更新游戏中的主题及其文本。</p>
+<p>在主题列表上，使用游戏的向上/向下菜单控件选择一个主题，然后单击“确认”将其打开。在主题中，使用向上/向下在文本中一次移动一行。在表中，“左”移动到左侧的列，“右”移动到右侧的列。向上/向下在行之间移动，同时保留当前列。列标题标记您听到的单元格；它们不是额外的数据行。当您进入表格时，指南会宣布表格，当您离开表格时，指南会宣布表格结束，而不会为每个单元格重复表格描述。确认重复当前行。 back 从一个主题返回到主题列表；再次离开导游。当指南打开时，音乐使用游戏的适合阅读的音频过滤器。</p>
+</section>
+<section id="speech-options">
+<h2>模组设置菜单</h2>
+<p>打开 <strong>设置 &gt; 模组设置</strong>。使用菜单上/下控件在行中移动。确认切换或按钮；使用左/右更改滑块。以下默认值适用于新设置。会话之间的更改会被记住。如果语音关闭，切换语音仍然有效，并且语音输出行使用相同的主开关。</p>
+<div class="table-scroll"><table>
+<caption>每个当前的 Mod 设置行（按菜单顺序）</caption>
+<thead><tr><th scope="col">设置</th><th scope="col">选择/默认</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">语音输出</th><td>开/关； <strong>开</strong></td><td>mod 语音的主开关。将其关闭会给出当前两个设备绑定的最终语音恢复指令。将其重新打开即表示语音已开始。</td></tr>
+<tr><th scope="row">盲文输出</th><td>开/关； <strong>开</strong></td><td>将相同的公告发送到兼容屏幕阅读器的盲文输出。连接的盲文显示器或 NVDA 的盲文查看器可以显示它们。</td></tr>
+<tr><th scope="row">背景静音</th><td>开/关； <strong>关闭</strong></td><td>启用后，在另一个窗口获得焦点时停止并放弃 mod 语音。</td></tr>
+<tr><th scope="row">索引</th><td>开/关； <strong>开</strong></td><td>在支持的菜单中添加项目的位置，例如“播放，第 1 个，共 6 个”。</td></tr>
+<tr><th scope="row">过滤大小写</th><td>开/关； <strong>开</strong></td><td>将全大写文本更改为自然句子大小写，仅适用于语音和盲文。游戏的可见字体保持设计不变。</td></tr>
+<tr><th scope="row">读取控件类型</th><td>开/关； <strong>开</strong></td><td>向聚焦控件添加“按钮”、“切换”或“滑块”等标签。</td></tr>
+<tr><th scope="row">滑块范围</th><td>开/关； <strong>关闭</strong></td><td>读取聚焦滑块的可用端点，例如“范围 0 到 100”。更改它仍然只读取新值。</td></tr>
+<tr><th scope="row">一对一反馈</th><td>开/关； <strong>开</strong></td><td>当一对一失去或获得生命时，说出活跃的绿色或黄色以及剩余生命计数。</td></tr>
+<tr><th scope="row">提示类型</th><td>自动、键盘、控制器、两者； <strong>自动</strong></td><td>选择提示描述的设备控件。自动遵循上次使用的键盘或控制器输入。两者都明确命名每个设备。</td></tr>
+<tr><th scope="row">自动朗读按钮提示</th><td>开/关； <strong>开</strong></td><td>控制自动提示。当此功能关闭时，“说出提示”快捷方式仍然可以按需使用。</td></tr>
+<tr><th scope="row">按钮提示延迟</th><td>无、5、10、15、30、60 秒； <strong>10秒</strong></td><td>没有人将提示放在一个语音字符串中的焦点项目宣布之后。定时选择在第一个单独提示之前等待不活动。移动焦点或更改设置会再次开始等待。 5 秒的选择可能会打断正在进行的演讲。</td></tr>
+<tr><th scope="row">重复按钮提示</th><td>关闭、2x、3x、4x、5x、无限； <strong>无限</strong></td><td>设置一个周期内听到提示的总次数。 “2x”表示第一次读数加一次重复。</td></tr>
+<tr><th scope="row">重复间隔</th><td>15、30、45、60 秒； <strong>30秒</strong></td><td>上述重复读数之间的时间。按需说出提示会替换待处理的第一个自动提示，但仍允许配置的重复。</td></tr>
+<tr><th scope="row">输出方式</th><td>自动、SAPI、JAWS、Window-Eyes、NVDA、系统访问、ZoomText； <strong>汽车</strong></td><td>自动使用检测到的屏幕阅读器并回退到 SAPI。指定的阅读器必须可用；不可用的选项会回退到 SAPI。这也由更改语音输出控制。</td></tr>
+<tr><th scope="row">SAPI 语音</th><td>系统默认或安装64位SAPI语音； <strong>系统默认</strong></td><td>选择用于直接 SAPI 或自动 SAPI 后备的 Windows 语音。</td></tr>
+<tr><th scope="row">SAPI 卷</th><td>5%–100%，步长为 5； <strong>100%</strong></td><td>调整 SAPI 语音响度。最小值保持在零以上，因此恢复消息仍然可以听到。</td></tr>
+<tr><th scope="row">SAPI 评分</th><td>0–100，步长为 5； <strong>50</strong></td><td>调整 SAPI 说话速度。</td></tr>
+<tr><th scope="row">SAPI 推介</th><td>0–100，步长为 5； <strong>50</strong></td><td>调整 SAPI 音调。</td></tr>
+<tr><th scope="row">打开用户指南</th><td>按钮</td><td>在游戏中打开此文档。从目录中选择一个主题，然后逐行阅读。</td></tr>
+<tr><th scope="row">重置欢迎屏幕</th><td>按钮</td><td>按一次请求确认，然后在五秒内再次按一次。移动到另一行或等待五秒钟会取消请求。将宣布重置成功，并在下次游戏启动时出现欢迎屏幕。</td></tr>
+<tr><th scope="row">恢复模组默认值</th><td>按钮</td><td>按一次请求确认，然后在五秒内再次按以恢复上述 Mod 设置默认值。移动到另一行或等待五秒钟会取消请求。它不会更改游戏的音乐、SFX 或旁白音量、限制 FPS 或自定义键盘和控制器绑定。</td></tr>
+<tr><th scope="row">后退</th><td>按钮</td><td>返回“设置”。</td></tr>
+</tbody>
+</table></div>
+<p>在活跃的游戏过程中以及音频校准的节拍计时部分（当语音可能覆盖重要声音时），提示会保持安静。即使您关闭语音，该模组仍然可以在启动时或进行更改时宣布如何重新打开它。</p>
+</section>
+<section id="menu-guide">
+<h2>菜单指南</h2>
+<p>下表遵循您可能在游戏中采取的路径。在普通菜单上，使用向上/向下移动焦点，使用 Enter 或 Space（或控制器确认）激活焦点项目，然后使用 Backspace（或控制器后退）返回。有些屏幕使用其他控件；这些在需要时进行了解释。如果某个选项在您当前的状态下不可用，游戏可能会隐藏它。</p>
+<p>如果出现下面未覆盖的面板，模组会尝试说出其可见文本和具有焦点的控件。然后，您可以移动焦点以听到其他可用的控件。该通用阅读器依赖于具有可聚焦控件的面板，并且在活动游戏期间不会中断游戏的语音命令。</p>
+</section>
+<section id="main-menu">
+<h3>主菜单</h3>
+<p>这是游戏加载完成后您到达的位置。该模组讲述了每个重点选项。</p>
+<div class="table-scroll"><table>
+<caption>主菜单选项</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">玩</th><td>打开四种游戏模式。</td></tr>
+<tr><th scope="row">排行榜</th><td>浏览排名分数和可用的过滤器。</td></tr>
+<tr><th scope="row">成就</th><td>打开游戏自己的成就书，您可以在其中阅读页面和条目。</td></tr>
+<tr><th scope="row">设置</th><td>更改音频、显示、控制和语音首选项。</td></tr>
+<tr><th scope="row">制作人员</th><td>显示游戏的原始制作人员名单。该模组可让您按照自己的节奏阅读台词。</td></tr>
+<tr><th scope="row">戒烟</th><td>关闭游戏。</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="play-menu">
+<h3>游玩菜单</h3>
+<p>这里对每种模式进行简单介绍。要深入了解每条规则、一轮如何结束以及结果如何产生，请访问 <a href="#mode-guide">详细模式指南</a>.</p>
+<div class="table-scroll"><table>
+<caption>游玩选择</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">独奏</th><td>自己玩一场连续的得分游戏。</td></tr>
+<tr><th scope="row">派对</th><td>与其他玩家分开轮流，并在会话排行榜上比较分数。</td></tr>
+<tr><th scope="row">通过它</th><td>共享一次连续运行，在游戏需要时将控制器交给下一个玩家。</td></tr>
+<tr><th scope="row">一对一</th><td>两名玩家，绿色和黄色，用生命而不是最终的数字来竞争。</td></tr>
+<tr><th scope="row">返回（如果显示）</th><td>返回主菜单。通常的 Back 控件也可以返回。</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="song-menu">
+<h3>选择歌曲和难度</h3>
+<p>选择任何模式后，您可以选择四首歌曲/阶段之一，并决定是否使用极限难度。每次此屏幕打开时，模组都会宣布当前歌曲和极限状态。改变其中任何一个都说明了它的新价值。使用 <strong>扭转</strong> 改变歌曲， <strong>拉动</strong> 更改经典/极限， <strong>拍打</strong> 开始，并且 <strong>返回</strong> 返回。您可以按 <strong>G</strong> 或 <strong>左扳机</strong> 听取所选阶段的描述。新闻 <strong>H</strong> 或 <strong>右摇杆按下</strong> 听到按钮提示，然后是当前模式和难度的教程参考。它命名每个操作当前分配的控件，包括一对一中的两个 拍打 输入。在开始之前阅读这些内容：该模组在活动游戏期间保持定时教程覆盖安静，因此它不会覆盖口头游戏命令。出于同样的原因，开始播放会停止菜单语音。</p>
+<div class="table-scroll"><table>
+<caption>歌曲选择选择和动作</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">Shapes</th><td>选择俏皮的几何舞台及其音乐。</td></tr>
+<tr><th scope="row">Space</th><td>选择色彩缤纷的银河舞台及其音乐。</td></tr>
+<tr><th scope="row">City</th><td>选择动画城市舞台及其音乐。</td></tr>
+<tr><th scope="row">Office</th><td>选择异想天开的工作场所舞台及其音乐。</td></tr>
+<tr><th scope="row">极限开/关</th><td>打开 Extreme 可将 转动 和 拨动 添加到 Classic 拍打/扭转/拉动 命令，或关闭 Classic。</td></tr>
+<tr><th scope="row">开始/拍打</th><td>开始选择的模式、歌曲和难度。</td></tr>
+<tr><th scope="row">后退</th><td>返回而不开始回合。</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="settings-menu">
+<h3>设置菜单</h3>
+<p>焦点说出设置的名称和当前值。当您在保持焦点的情况下更改滑块或切换开关时，模组会说话 <em>只是新值</em> 而不是重复整个标签。</p>
+<div class="table-scroll"><table>
+<caption>按当前菜单顺序设置行</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">音乐</th><td>调整游戏的音乐音量。第一次使用 mod 时从 30 开始。</td></tr>
+<tr><th scope="row">音效</th><td>调节音效音量。第一次使用 mod 时从 30 开始。</td></tr>
+<tr><th scope="row">画外音</th><td>调整游戏的语音命令音量。第一次使用 mod 从 30 开始；保持播放时的声音。</td></tr>
+<tr><th scope="row">将后台音频静音</th><td>启用后，在另一个窗口获得焦点时使游戏音频静音；当你回来时恢复它。默认关闭。</td></tr>
+<tr><th scope="row">语言</th><td>选择可用的游戏语言。</td></tr>
+<tr><th scope="row">振动</th><td>打开或关闭兼容控制器振动。</td></tr>
+<tr><th scope="row">全屏</th><td>在全屏和窗口显示之间切换。</td></tr>
+<tr><th scope="row">分辨率</th><td>使用系统上可用的选项更改游戏的显示分辨率。</td></tr>
+<tr><th scope="row">限制帧率</th><td>将帧速率限制为 30、60、120 或 240，或选择“无限制”。默认值：60。请参阅 <a href="#limitations">计时说明</a>.</td></tr>
+<tr><th scope="row">音频延迟</th><td>打开校准屏幕，将游戏的时间与您听到的声音对齐。</td></tr>
+<tr><th scope="row">控制</th><td>检查并重新分配游戏的公开控件和添加的 mod 控件。</td></tr>
+<tr><th scope="row">模组设置</th><td>打开模组的语音、盲文和提示首选项，完整列出 <a href="#speech-options">上面</a>.</td></tr>
+<tr><th scope="row">如果可用，请上网</th><td>显示此选项时连接到游戏的在线功能。</td></tr>
+<tr><th scope="row">后退</th><td>返回主菜单。</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="controls-menu">
+<h3>控制设置菜单</h3>
+<p>聚焦一行以收听活动输入设备的当前绑定。确认并按照游戏的重新绑定提示分配替代者。重复的绑定将被拒绝而不是共享。列表会滚动，因此底部附近的特定于模组的行可能需要按几次向下键才能到达。</p>
+<div class="table-scroll"><table>
+<caption>当前控件菜单行</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">拍打</th><td>重新绑定第一个 拍打 操作。</td></tr>
+<tr><th scope="row">拍打（玩家2）</th><td>重新绑定第二个拍打动作。</td></tr>
+<tr><th scope="row">拨动</th><td>重新绑定 Extreme 拨动 动作。</td></tr>
+<tr><th scope="row">扭转</th><td>重新绑定扭转。</td></tr>
+<tr><th scope="row">转动</th><td>重新绑定 Extreme 转动 动作。</td></tr>
+<tr><th scope="row">拉动</th><td>重新绑定拉动。</td></tr>
+<tr><th scope="row">重置陀螺仪</th><td>重新绑定游戏的运动传感器最近的动作。</td></tr>
+<tr><th scope="row">上一页</th><td>将移动重新绑定到之前的排行榜组。</td></tr>
+<tr><th scope="row">下一个组</th><td>将移动重新绑定到下一个排行榜组。</td></tr>
+<tr><th scope="row">上一个日期</th><td>将移动重新绑定到上一个排行榜时间段。</td></tr>
+<tr><th scope="row">下一个日期</th><td>将移动重新绑定到下一个排行榜时间段。</td></tr>
+<tr><th scope="row">阅读说明</th><td>重新绑定点播歌曲舞台描述。</td></tr>
+<tr><th scope="row">阅读分数</th><td>重新绑定按需结果演讲。</td></tr>
+<tr><th scope="row">切换语音</th><td>重新绑定主语音开关。如果您在语音关闭时更改它，模组会宣布新的恢复控制。</td></tr>
+<tr><th scope="row">说出提示</th><td>重新绑定按需按钮提示。</td></tr>
+<tr><th scope="row">更改语音输出</th><td>重新绑定循环输出模式的快捷方式。</td></tr>
+<tr><th scope="row">重置为默认值</th><td>恢复暴露的游戏和模组行的原始默认绑定。</td></tr>
+</tbody>
+</table></div>
+<p>按常用的“返回”命令返回“设置”；此处的“背面”不是单独的可选择装订行。有关游戏中使用的起始键盘和控制器分配，请参阅 <a href="#controls">播放器控制参考</a>.</p>
+</section>
+<section id="audio-latency-menu">
+<h3>音频延迟校准</h3>
+<p>音频延迟是指游戏发出声音和您听到声音之间的延迟。此屏幕有助于游戏解释该延迟。听其说明，进行热身，并使用 拍打 和校准节拍。该模组会宣布说明、倒计时和测量结果，但不会叙述每个节拍，因为这可能会隐藏计时声音。</p>
+<div class="table-scroll"><table>
+<caption>音频延迟屏幕</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">校准</th><td>开始计时练习。</td></tr>
+<tr><th scope="row">拍打 校准期间</th><td>按照游戏的指示记录您对节拍的输入。</td></tr>
+<tr><th scope="row">测量的延迟</th><td>练习结束时显示并说出校准结果。</td></tr>
+<tr><th scope="row">后退</th><td>返回“设置”。</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="leaderboards-menu">
+<h3>排行榜</h3>
+<p>从主菜单或结果屏幕打开排行榜。首先公布重点过滤器，然后按顺序公布分数，因此一行不会切断其过滤器名称。在线团体需要互联网连接。确切的可用过滤器和行取决于板和您的连接。</p>
+<div class="table-scroll"><table>
+<caption>排行榜控件和信息</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">歌曲/舞台</th><td>选择或确定显示哪个阶段的分数，其中董事会提供此过滤器。</td></tr>
+<tr><th scope="row">经典/极限</th><td>选择显示哪个难度的分数。</td></tr>
+<tr><th scope="row">设备类别（显示时）</th><td>选择显示的输入设备类别。</td></tr>
+<tr><th scope="row">本地</th><td>显示本地可用的分数。</td></tr>
+<tr><th scope="row">好友</th><td>连接后显示符合条件的朋友的分数。</td></tr>
+<tr><th scope="row">全球</th><td>连接后显示符合条件的全球分数。</td></tr>
+<tr><th scope="row">本日</th><td>过滤到今天的分数。</td></tr>
+<tr><th scope="row">本月</th><td>过滤到当月的分数。</td></tr>
+<tr><th scope="row">所有时间</th><td>显示所有记录时间内的分数。</td></tr>
+<tr><th scope="row">分数行</th><td>读取玩家的排名、姓名和分数。即使筛选器具有焦点，Page Up 和 Page Down 也会单独读取行。</td></tr>
+<tr><th scope="row">正在加载/没有分数</th><td>状态消息会告诉您结果何时正在加载或没有可用的结果。</td></tr>
+<tr><th scope="row">显示后继续</th><td>从结果或政党委员会继续前进。</td></tr>
+<tr><th scope="row">后退</th><td>返回上一屏幕。</td></tr>
+</tbody>
+</table></div>
+<p>默认情况下， <strong>输出/输出</strong> 或者控制器缓冲器在本地、好友和全局之间移动。 <strong>克/升</strong> 或方向键在时间段之间向左/向右移动。在派对板上，游戏可能首先要求您选择或输入分数的名称；该模组会说出名称选择状态和确认。</p>
+<div class="table-scroll"><table>
+<caption>额外的政党排行榜步骤</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">球员姓名</th><td>选择或输入已完成的派对运行所附的名称。</td></tr>
+<tr><th scope="row">确认姓名</th><td>将该名称与本次聚会会话的分数一起保存。</td></tr>
+<tr><th scope="row">会话分数行</th><td>比较本次派对中玩家的排名、姓名和分数。</td></tr>
+<tr><th scope="row">继续/返回</th><td>继续会话或返回，具体取决于当前的聚会屏幕。</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="achievements-menu">
+<h3>成就图册</h3>
+<p>该游戏有自己的成就书，而不是只将您发送到 Steam 页面。获得的成就可以在本书中添加贴纸。使用左/右箭头或控制器缓冲器翻页。使用向上/向下菜单控件可听到每个条目的名称、描述以及锁定或解锁状态。该模组仅在书籍打开后才宣布书籍说明。</p>
+<div class="table-scroll"><table>
+<caption>成就书元素</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">页面标题</th><td>标识当前书籍页。</td></tr>
+<tr><th scope="row">成就录入</th><td>给出其标题、描述以及是否锁定或解锁。</td></tr>
+<tr><th scope="row">贴纸</th><td>代表书中获得的成就。</td></tr>
+<tr><th scope="row">上一页/下一页</th><td>使用游戏的左/右控件转到另一页。</td></tr>
+<tr><th scope="row">后退</th><td>合上书本并返回主菜单。</td></tr>
+</tbody>
+</table></div>
+<p>随着您获得成就，条目会发生变化，因此本指南描述了本书的控件，而不是冻结可能与您自己的游戏不同的锁定和解锁项目列表。</p>
+</section>
+<section id="credits-menu">
+<h3>游戏制作人员</h3>
+<p>游戏的原始制作人员名单在视觉上不断滚动。使用正常菜单控件按向上/向下即可一次听到一个字幕行，而无需遵循该滚动条。返回返回主菜单。这些是 <em>游戏的</em> 学分；本指南的 <a href="#project-credits">模组学分</a> 稍后出现。</p>
+<div class="table-scroll"><table>
+<caption>游戏积分控制</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">当前信用额度</th><td>使用向上/向下说出下一行或上一行。</td></tr>
+<tr><th scope="row">自动视觉滚动</th><td>继续在屏幕上显示制作人员名单。</td></tr>
+<tr><th scope="row">后退</th><td>返回主菜单。</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="results-menu">
+<h3>结算与游戏结束</h3>
+<p>当一轮结束时，模组首先会宣布单人、组队或及格的最终数字分数。在一对一中，它会宣布获胜颜色。然后它会说出重点结果选择，因此菜单不会切断重要结果。稍后的菜单移动可能会中断先前的菜单语音。每当此屏幕可见时，按 T 或左摇杆即可重复结果。该捷径在一轮中故意不可用。</p>
+<div class="table-scroll"><table>
+<caption>结果屏幕信息和选择</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">得分、独奏/派对/通过</th><td>显示完成的跑步记录了多少个正确动作；该模组会根据要求自动说出它。</td></tr>
+<tr><th scope="row">获胜者，一对一</th><td>显示绿色或黄色为获胜者； mod 会说出它而不是发明一个数字分数。</td></tr>
+<tr><th scope="row">重玩</th><td>开始另一次运行所选模式。</td></tr>
+<tr><th scope="row">排行榜，独奏</th><td>单独运行后打开相关排名分数。</td></tr>
+<tr><th scope="row">显示后继续</th><td>继续进行下一个聚会或共享模式步骤。</td></tr>
+<tr><th scope="row">后退</th><td>从结果屏幕返回。</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="pause-menu">
+<h3>暂停菜单</h3>
+<p>按 Esc 键或控制器 Start 可暂停回合。当暂停菜单打开时，模组会宣布“已暂停”和焦点选择。通过向上/向下移动焦点来收听 <strong>简历</strong> 或 <strong>主菜单</strong>，然后确认您的选择。按 H 或按右摇杆可获得可用的暂停菜单按钮提示。通常的后退输入也会恢复该回合。</p>
+<div class="table-scroll"><table>
+<caption>暂停面板操作</caption>
+<thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
+<tbody>
+<tr><th scope="row">简历</th><td>继续暂停的回合。通常的后退输入也会恢复。</td></tr>
+<tr><th scope="row">主菜单</th><td>离开当前回合并返回主菜单。</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="mode-guide">
+<h2>各模式详细指南</h2>
+<p>所有四种模式都首先选择歌曲/舞台并选择经典或极限。舞台会改变您所看到和听到的内容，而命令会告诉您要进行哪些输入。 Classic 要求 拍打、扭转 和 拉动。Extreme 还可以要求 转动 和 拨动。当游戏说出命令时，请在时间窗口结束之前按下指定的输入。您可以在玩之前在“设置”&gt;“控制”中查看或更改分配。在成功的跑步过程中，节奏会加快，因此没有固定的最后一首歌曲要到达的部分。这些规则来自于 <a href="https://bopitthevideogame.com/bop-it-the-video-game-press-release">官方游戏说明</a> 以及游戏当前的得分和结果屏幕。</p>
+<section id="solo-mode">
+<h3>独奏</h3>
+<p>独奏是学习节奏最简单的地方。每个口头命令都有一个人响应。如果游戏显示 拍打，请使用您的 拍打 输入；如果显示 扭转 或 拉动，请改用该输入。在 Extreme 中，也要准备好 转动 和 拨动。随着命令变得更快，继续前进。</p>
+<p><strong>评分：</strong> 每个正确的反应都会为正在进行的跑步加一分。分数是您成功回复的次数。错误或错过的反应，包括反应太迟的反应，都会导致该轮运行结束。最终结果屏幕显示您的数字分数。该模组会在读取重播、排行榜或返回之前宣布它。您可以按“阅读乐谱”再次收听。当本地、好友和全球排行榜视图可用时，单人得分也可能会显示在这些视图中。</p>
+<p><strong>如何重新开始：</strong> 在结果屏幕上选择“重播”，或返回并选择其他模式或歌曲。重播是一次新的比赛；您之前的成绩仍然可以在游戏记录的排行榜上进行比较。</p>
+</section>
+<section id="party-mode">
+<h3>派对</h3>
+<p>聚会是一群人轮流进行的。每个人都玩 <em>他们自己的</em> run，响应与 Solo 相同类型的调用命令。当一个人的跑步结束时，游戏可以要求一个名字附加到该分数上。继续查看会话的政党排行榜，然后让下一个人轮流。这是一种比较运行的友好方式，无需每个人立即采取行动。</p>
+<p><strong>评分：</strong> 成功的响应会建立该玩家的数字跑分。错误、错过或迟到的命令会结束他们的奔跑，最终得分属于该玩家。会话排行榜列出了姓名、排名和分数，以便小组可以比较结果。游戏不强制规定单一的正式获胜者；您的团队可以决定什么才算获胜。该模组会在游戏结束时读取分数，然后读取下一个菜单选项，并说出队伍名称和排行榜步骤。</p>
+<p><strong>如何继续玩：</strong> 当出现提示时使用“继续”，在出现提示时选择或确认名称，然后按照游戏进行到下一个玩家或得分视图。如果重玩，则会开始另一轮得分比赛，而不是延长刚刚结束的比赛。</p>
+</section>
+<section id="pass-it-mode">
+<h3>通过它</h3>
+<p>通过这是一个共同的挑战。一名玩家响应命令，直到游戏调用 <q>通过它！</q> 接到电话后，立即将控制器交给下一个人。下一位玩家继续 <em>一样</em> 连胜。接到通知后继续通过并继续回答游戏的 Bop It 命令。当每个人都知道谁是下一个接收控制器并且有足够的空间安全地通过它时，此模式效果最佳。</p>
+<p><strong>评分：</strong> 正确的回答会延续一个共享的数字分数，而不是为每个人开始一个新的分数。因错过命令而中断连胜的人结束该回合。结果屏幕显示最终的共享分数，模组会自动说出该分数，并且可以通过阅读分数重复该分数。分数告诉你该小组走了多远；在此模式下，并不是个人玩家的排名。</p>
+<p><strong>如何重试：</strong> 选择“重播”开始新的共享连胜，或选择“返回”留下结果。</p>
+</section>
+<section id="one-on-one-mode">
+<h3>一对一</h3>
+<p>一对一让两名玩家， <strong>黄色</strong> 和 <strong>绿色</strong>，进入同一轮。每个都以 <strong>三个生命</strong>。黄色响应扭转和拉动；格林回应 转动 和 拨动。 拍打 是一场共享竞赛：两名玩家都应该做好准备，第一个击中 拍打 的人会获得一条生命，最高可达游戏的三条生命限制。游戏为一些变化提供了微妙的声音。当“设置”&gt;“模组设置”&gt;“一对一反馈”（默认）打开时，模组会宣布开始或更改的活动颜色以及失去或获得后的生命数。</p>
+<p><strong>一轮如何结束：</strong> 错过所需的命令会让负责的玩家丧命。第一个生命值为零的玩家失败，其他颜色的玩家获胜。与 Solo、Party 和 Pass It 不同，结果是 <strong>获胜者，而不是数字最终分数</strong>。该模组会在游戏结束时宣布获胜颜色；当结果屏幕可见时，读取分数会重复该结果。可选的生命公告仅适用于此模式。</p>
+<p><strong>一起准备：</strong> 在开始之前先商定哪个人是黄色的，哪个人是绿色的。如果您要共享一台输入设备，请检查当前的“控制”屏幕，尤其是第二个 拍打 分配。一对一的比赛速度很快，因此一轮练习可以帮助双方球员学习控制能力。</p>
+</section>
+</section>
+<section id="roadmap">
+<h2>未来计划</h2>
+<p>这个项目还很年轻。潜在的工作包括适当的安装程序、对其余游戏屏幕的更强支持以及对语音响应能力的持续改进。我们可以探索将语音处理从 Tolk 切换为 <a href="https://github.com/ethindp/prism">棱镜</a> 如果事实证明它更合适。这是一个研究想法， <strong>不是当前的依赖项或承诺的切换</strong>.</p>
+<p>玩家的建议和报告将有助于塑造未来的改进。克里斯托弗打算随着时间的推移维护该模组，并在真实游戏和仔细的人工审查指导下进行更新。的 <a href="https://github.com/Chris-E-Shaw/BopItAccess">项目库</a> 是在其开发过程中跟踪其来源和文档的地方。</p>
+</section>
+<section id="project-credits">
+<h2>制作人员及第三方声明</h2>
+<div class="table-scroll"><table>
+<caption>Bop It Access 项目学分</caption>
+<thead><tr><th scope="col">贡献者</th><th scope="col">角色</th></tr></thead>
+<tbody>
+<tr><th scope="row">克里斯托弗·肖</th><td>主要模组设计师。设定可访问性目标和行为，审查早期版本，并领导现实世界的游戏测试和反馈。新翻译仍在等待流利的使用者审阅。</td></tr>
+<tr><th scope="row">GPT-6 Luna</th><td>AI 合作者负责最初的 Tolk 语音输出实施和早期项目基础工作。</td></tr>
+<tr><th scope="row">GPT-6 Sol</th><td>人工智能合作者负责后续研究、代码生成、调试、源代码历史工作和文档。</td></tr>
+<tr><th scope="row">人类玩家和测试人员</th><td>在不同的系统上玩，检查模组的真实行为，并分享使每个修订版变得有用的反馈。</td></tr>
+</tbody>
+</table></div>
+<p>已发布的源代码提交在合著者预告片中识别了人工智能合作者。的 <a href="BopItAccess-build-history.html">技术构建历史</a> 记录每个早期构建背后的工作。该模组自己的来源尚未获得选定的公共许可证；不要假设其许可证与其依赖项相同。</p>
+<div class="table-scroll"><table>
+<caption>库、运行时组件和许可证</caption>
+<thead><tr><th scope="col">组件</th><th scope="col">为什么这很重要</th><th scope="col">许可/通知</th></tr></thead>
+<tbody>
+<tr><th scope="row"><a href="https://github.com/LavaGang/MelonLoader">MelonLoader</a></th><td>将 mod 加载到 Unity 游戏中。</td><td><a href="https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md">阿帕奇许可证 2.0</a>;与此源存储库分开分发。</td></tr>
+<tr><th scope="row">Harmony (<code>0Harmony.dll</code>)</th><td>让 mod 检测游戏保存的设置何时完成加载，以便随后应用首次使用的音频级别。</td><td>提供单独安装的 MelonLoader；请查阅其随附的通知。不包含在此源存储库或本地 mod 包中。</td></tr>
+<tr><th scope="row"><a href="https://github.com/dkager/tolk">Tolk</a></th><td>将 mod 连接到屏幕阅读器和盲文 API。</td><td><a href="https://github.com/dkager/tolk/blob/master/LICENSE.txt">GNU LGPL 版本 3</a>;感谢 Tolk 贡献者。</td></tr>
+<tr><th scope="row"><a href="https://github.com/nvaccess/nvda/tree/master/extras/controllerClient">NVDA 控制器客户端</a></th><td>的 <code>nvdaControllerClient64.dll</code> 与 Tolk 一起使用的本机库。</td><td><a href="https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt">GNU LGPL 版本 2.1</a>;感谢 NV Access 和贡献者。</td></tr>
+<tr><th scope="row"><a href="https://dotnet.microsoft.com/">.NET 6</a></th><td>该 mod 针对 .NET 6 框架，需要匹配的目标包才能构建。</td><td><a href="https://github.com/dotnet/core/blob/main/license-information.md">Microsoft 的 .NET 许可证信息</a> 将 MIT 许可的源代码与 .NET 库许可下的 Windows 运行时发行版区分开来。</td></tr>
+<tr><th scope="row">Windows SAPI</th><td>当选择或未检测到支持的屏幕阅读器时提供备份系统语音。</td><td>Windows组件；未在此源存储库中捆绑为单独的库。</td></tr>
+<tr><th scope="row">游戏和加载器构建参考</th><td>该 mod 针对 MelonLoader、Il2CppInterop.Runtime、游戏的 Assembly-CSharp 和 Il2Cppmscorlib 文件、Unity Engine/UI/Input System/TextMeshPro 模块以及游戏的FMODUnity 和 DOTween 组件。</td><td>这些来自单独安装的游戏和加载程序，根据其自己的适用条款。源存储库不会重新分发这些程序集。</td></tr>
+<tr><th scope="row"><a href="https://github.com/argosopentech/argos-translate">阿尔戈斯 翻译</a></th><td>用于准备第一个非英语模组和文档文本的离线创作工具。玩的时候不需要。</td><td><a href="https://github.com/argosopentech/argos-translate/blob/master/LICENSE">麻省理工学院许可证</a> 或CC0；模型和 Python 包不与 mod 捆绑在一起。</td></tr>
+<tr><th scope="row"><a href="https://www.crummy.com/software/BeautifulSoup/">美丽的汤</a></th><td>用于在翻译指南时保留 HTML 结构的创作工具。玩的时候不需要。</td><td>麻省理工学院许可证； Python 包未与 mod 捆绑在一起。</td></tr>
+</tbody>
+</table></div>
+<p>查看项目的 <a href="THIRD-PARTY-NOTICES.txt">第三方通知</a> 用于本地安装包使用的本机文件。当前的 GitHub 存储库确实 <strong>不</strong> 包括已编译的 mod DLL、Tolk DLL 或 NVDA 控制器客户端 DLL。 Prism 仅在路线图中提到；该模组目前尚未使用它。</p>
+</section>
+<section id="legal">
+<h2>法律声明</h2>
+<p>Bop It Access是一个非官方的粉丝制作项目。它并非由 Hasbro、游戏开发商/发行商 Alliance、Valve、Microsoft、Unity、MelonLoader、Tolk、NV Access 或任何屏幕阅读器制造商制作、批准或认可。 <strong>Bop It!</strong> 相关角色、艺术作品、声音和标记均属于孩之宝及其各自的权利所有者。 Steam 属于阀门。其他产品名称、商标和软件仍属于其各自所有者的财产。</p>
+<p>您必须获得自己的游戏的合法副本。本指南和源存储库不授予游戏或其资产的权利，也不包含它们。每个 mod 的依赖项都保留自己的许可证，链接见上文；使用或分发未来的安装程序将需要尊重这些许可证。有关原版游戏及其版权信息，请参阅 <a href="https://bopitthevideogame.com/">官方Bop It! 游戏网站</a> 和 <a href="https://store.steampowered.com/app/3214360/">Steam 挂牌</a>.</p>
+</section>
+<section class="panel" id="thanks">
+<h2>谢谢你</h2>
+<p>对于所有测试过这个模组、提供反馈、第一次尝试或相信我的人：谢谢。你们的支持激励我在一个让人感到疯狂和存在严重缺陷的世界里继续创造东西。我希望这个项目能让您更轻松地享受游戏并与他人分享。非常感谢大家。享受Bop It!</p>
+<p>— 克里斯托弗·肖</p>
+</section>
+</main>
+<footer>
+<p class="small">Bop It Access 用户指南。当前功能反映版本 0.8.0 的来源；计划项目有明确标记。 <a href="#contents">返回内容</a>.</p>
+</footer>
+</body>
+</html>

@@ -179,8 +179,8 @@ public sealed partial class BopItAccessMod
     {
         return control switch
         {
-            TMP_InputField field => CleanSpeechValue(field.text) ?? "Empty",
-            Toggle toggle => toggle.isOn ? "On" : "Off",
+            TMP_InputField field => CleanSpeechValue(field.text) ?? L("Empty"),
+            Toggle toggle => toggle.isOn ? L("On") : L("Off"),
             Slider slider => slider.value.ToString("0.##",
                 System.Globalization.CultureInfo.InvariantCulture),
             _ => null

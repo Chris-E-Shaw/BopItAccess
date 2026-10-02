@@ -52,9 +52,9 @@ public sealed partial class BopItAccessMod
                 {
                     string focused = text.TrimEnd();
                     if (focused.Length > 0 &&
-                        focused[^1] != '.' && focused[^1] != '!' &&
-                        focused[^1] != '?')
-                        focused += ".";
+                        focused[^1] is not ('.' or '!' or '?' or '。' or
+                            '！' or '？'))
+                        focused += L(".");
                     text = focused + " " + context.Value.Hint;
                 }
             }

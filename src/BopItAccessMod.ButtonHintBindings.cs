@@ -93,7 +93,7 @@ public sealed partial class BopItAccessMod
             if (label != null && !labels.Contains(label))
                 labels.Add(label);
         }
-        return labels.Count == 0 ? null : string.Join(" or ", labels);
+        return labels.Count == 0 ? null : JoinHintChoices(labels);
     }
 
     private static string? ReadHintControllerBinding(InputAction? action,
@@ -311,7 +311,9 @@ public sealed partial class BopItAccessMod
             }
             else if (controller && (binding.effectivePath ?? string.Empty)
                 .Contains("/dpad", StringComparison.OrdinalIgnoreCase))
-                direct.Add(label + (vertical ? " up and down" : " left and right"));
+                direct.Add(vertical
+                    ? label + " up and down"
+                    : label + " left and right");
         }
         var pairs = new List<string>();
         for (int index = 0; index < Math.Min(first.Count, second.Count); index++)
@@ -372,8 +374,8 @@ public sealed partial class BopItAccessMod
 
     private string HintLeaderboardRows(bool controllerMoveAvailable)
     {
-        const string keyboard = "Page Up and Page Down, read score rows.";
-        const string bothKeyboard = "Page Up and Page Down on keyboard, read score rows.";
+        string keyboard = L("Page Up and Page Down, read score rows.");
+        string bothKeyboard = L("Page Up and Page Down on keyboard, read score rows.");
         if (!controllerMoveAvailable)
             return EffectiveHintDevice switch
             {
@@ -384,9 +386,10 @@ public sealed partial class BopItAccessMod
         InputAction? move = HintUiMoveAction();
         string? controller = ReadHintDirections(move, "up", "down", true, true);
         string controllerHint = controller == null ? string.Empty :
-            $"{controller}, read score rows.";
+            LF("{0}, read score rows.", LocalizeBindingDisplay(controller));
         string bothController = controller == null ? string.Empty :
-            $"{controller} on controller, read score rows.";
+            LF("{0} on controller, read score rows.",
+                LocalizeBindingDisplay(controller));
         return EffectiveHintDevice switch
         {
             HintDevice.Keyboard => keyboard,

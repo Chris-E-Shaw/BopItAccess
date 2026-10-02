@@ -1,0 +1,569 @@
+<!DOCTYPE html>
+
+<html lang="de">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1" name="viewport"/>
+<meta content="light dark" name="color-scheme"/>
+<title>Bop It Access | Spiel- und Mod-Benutzerhandbuch</title>
+<style>
+    :root { font-family: system-ui, -apple-system, "Segoe UI", sans-serif; line-height: 1.65; color: #202434; background: #f7f8fc; }
+    body { margin: 0; }
+    .skip { position: absolute; left: .75rem; top: -4rem; padding: .5rem .8rem; background: white; z-index: 5; }
+    .skip:focus { top: .75rem; }
+    header { background: #17274b; color: white; padding: 2.5rem max(1rem, calc((100vw - 68rem) / 2)); }
+    header p { max-width: 55rem; margin-bottom: 0; }
+    main, footer { max-width: 68rem; margin: auto; padding: 0 1.25rem 2rem; }
+    h1 { font-size: clamp(2rem, 5vw, 3rem); line-height: 1.15; margin: 0 0 .5rem; }
+    h2 { margin-top: 3rem; padding-top: .35rem; border-top: 3px solid #6679b5; }
+    h3 { margin-top: 2rem; }
+    h4 { margin-top: 1.5rem; }
+    a { color: #164c97; text-underline-offset: .15em; }
+    a:focus-visible { outline: 3px solid #ed8d15; outline-offset: 2px; }
+    header a { color: #fff; }
+    nav, .panel, .note { background: #fff; border: 1px solid #cdd5e9; border-radius: .65rem; padding: 1rem 1.3rem; margin: 1.3rem 0; }
+    nav ul { columns: 2; padding-left: 1.5rem; }
+    nav li { break-inside: avoid; margin: .2rem 0; }
+    .note { border-left: 5px solid #b16613; }
+    .planned { background: #fdf4df; border-left: 5px solid #ae6b05; padding: .6rem .9rem; }
+    .current { background: #e9f6ed; border-left: 5px solid #24714a; padding: .6rem .9rem; }
+    table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.6rem; background: #fff; }
+    caption { text-align: left; font-weight: 700; padding: .3rem 0; }
+    th, td { border: 1px solid #bdc8df; padding: .55rem .65rem; text-align: left; vertical-align: top; }
+    th { background: #e7ecf7; }
+    tr:nth-child(even) td { background: #f5f7fc; }
+    code, kbd { font-family: ui-monospace, Consolas, monospace; }
+    kbd { border: 1px solid #8790a7; border-bottom-width: 2px; border-radius: .25rem; padding: 0 .25rem; white-space: nowrap; }
+    pre { overflow-x: auto; padding: 1rem; border-radius: .5rem; background: #e7ecf7; }
+    .table-scroll { overflow-x: auto; }
+    .small { font-size: .93rem; }
+    footer { border-top: 3px solid #6679b5; }
+    @media (max-width: 45rem) { nav ul { columns: 1; } th, td { padding: .4rem; } }
+    @media (prefers-color-scheme: dark) {
+      :root { color: #e8ebf7; background: #121623; }
+      nav, .panel, .note, table, .skip { background: #1d2537; border-color: #4c5b79; }
+      a { color: #a9c8ff; }
+      th, pre { background: #303c59; }
+      th, td { border-color: #586782; }
+      tr:nth-child(even) td { background: #242d43; }
+      .planned { background: #453515; }
+      .current { background: #193b2b; }
+    }
+  </style>
+</head>
+<body>
+<a class="skip" href="#content">Springe zum Leitfaden</a>
+<header>
+<h1>Bop It Access</h1>
+<p>Eine freundliche Anleitung zu Bop It! The Video Game und seinem Barrierefreiheits-Mod. Dieser Leitfaden beschreibt den aktuellen Windows-Mod und kennzeichnet deutlich Ideen, die noch geplant sind.</p>
+</header>
+<main id="content">
+<nav aria-label="Inhaltsverzeichnis" id="contents-nav">
+<h2 id="contents">Inhalt</h2>
+<ul>
+<li><a href="#welcome">Willkommen</a></li>
+<li><a href="#game">Was ist Bop It!?</a></li>
+<li><a href="#mod">Was ist Bop It Access?</a></li>
+<li><a href="#transparency">Ehrlicher Transparenzhinweis</a></li>
+<li><a href="#features">Barrierefreiheitsfunktionen</a></li>
+<li><a href="#quality">Merkmale der Lebensqualität</a></li>
+<li><a href="#limitations">Hinweise und Einschränkungen</a></li>
+<li><a href="#buy">Kaufen Sie das Spiel und überprüfen Sie Ihren Computer</a></li>
+<li><a href="#install">Holen Sie sich den Mod und installieren Sie ihn</a></li>
+<li><a href="#controls">Referenz zur Spielerkontrolle</a></li>
+<li><a href="#first-launch">Ihr erster Start</a></li>
+<li><a href="#languages">Sprachen</a></li>
+<li><a href="#in-game-guide">Lesen Sie die Anleitung im Spiel</a></li>
+<li><a href="#speech-options">Mod-Einstellungen-Menü</a></li>
+<li><a href="#menu-guide">Menüführung</a></li>
+<li><a href="#main-menu">Hauptmenü</a></li>
+<li><a href="#play-menu">Play-Menü</a></li>
+<li><a href="#song-menu">Song- und Schwierigkeitsgradauswahl</a></li>
+<li><a href="#settings-menu">Einstellungsmenü</a></li>
+<li><a href="#controls-menu">Menü „Steuerung“.</a></li>
+<li><a href="#audio-latency-menu">Kalibrierung der Audiolatenz</a></li>
+<li><a href="#leaderboards-menu">Bestenlisten</a></li>
+<li><a href="#achievements-menu">Erfolgsbuch</a></li>
+<li><a href="#credits-menu">Spielguthaben</a></li>
+<li><a href="#results-menu">Ergebnisse und Spiel vorbei</a></li>
+<li><a href="#pause-menu">Pause-Menü</a></li>
+<li><a href="#mode-guide">Detaillierte Modusanleitung</a></li>
+<li><a href="#roadmap">Was kann als nächstes kommen?</a></li>
+<li><a href="#project-credits">Quellennachweise und Hinweise Dritter</a></li>
+<li><a href="#legal">Rechtliche Hinweise</a></li>
+<li><a href="#thanks">Ein Dankeschön</a></li>
+</ul>
+</nav>
+<section id="welcome">
+<h2>Willkommen</h2>
+<p>Willkommen bei Bop It Access! Egal, ob dies Ihr erstes Bop It-Spiel, Ihr erstes Videospiel oder ein Spiel ist, das Sie bereits lieben, Sie sind hier willkommen. Diese Anleitung beginnt mit den Grundlagen und erklärt die Funktionen des Mods, sobald Sie sie kennenlernen. Sie können die Inhalte oben verwenden, um direkt zu einem Thema zu springen.</p>
+<p>A <strong>Tastatur</strong> ist der Schlüsselsatz auf Ihrem Computer. A <strong>Controller</strong> ist ein Handheld-Gamepad. Wenn in dieser Anleitung Xbox-Tastennamen erwähnt werden, handelt es sich hierbei um Beispiele: Ein anderer Controller verwendet möglicherweise andere Bezeichnungen für dieselbe Tastenposition. A <strong>Menüpunkt</strong> ist eine Auswahl wie „Wiedergabe“ oder „Einstellungen“. Der Artikel mit <strong>Fokus</strong> ist diejenige, die durch das nächste Drücken der Bestätigung aktiviert wird.</p>
+</section>
+<section id="game">
+<h2>Was ist Bop It!?</h2>
+<p><em>Bop It! The Video Game</em> bringt das Rhythmus- und Reaktionsspiel Bop It auf einen Computer. Eine Stimme ruft Befehle auf und Sie tätigen die passenden Eingaben, bevor die Zeit abläuft. Im klassischen Schwierigkeitsgrad sind die Hauptbefehle <strong>KLOPFEN</strong>, <strong>DREHEN</strong>, und <strong>ZIEHEN</strong>. Hinzu kommt der extreme Schwierigkeitsgrad <strong>KREISEN</strong> und <strong>SCHNIPSEN</strong>. Die Befehle werden schneller, sodass Zuhören und Timing im Laufe einer Runde immer wichtiger werden. Das Spiel bietet Solo-, Party-, Pass It- und One-on-One-Spiele mit vier visuellen und musikalischen Bühnen: Formen, Raum, Stadt und Büro. Die <a href="https://store.steampowered.com/app/3214360/">offizielle Steam Seite</a> stellt das Spiel vor und die <a href="https://bopitthevideogame.com/bop-it-the-video-game-press-release">Offizielle Spielbeschreibung</a> erklärt seine Modi.</p>
+<p>Wenn Sie einen Befehl hören, verwenden Sie die ihm zugewiesene Steuerung. Auf der Standardtastatur ist beispielsweise KLOPFEN die Leertaste. Sie finden alle Standardeinstellungen im <a href="#controls">Steuerreferenz</a>. Sie müssen sich nicht alles merken, bevor Sie beginnen: Der Mod kann Schaltflächenhinweise in Menüs vorlesen, und Sie können bei Bedarf einen Hinweis anfordern.</p>
+</section>
+<section id="mod">
+<h2>Was ist Bop It Access?</h2>
+<p>Bop It Access ist ein inoffizieller, unabhängiger Mod für <strong>Windows x64 Steam Version</strong> des Spiels. Ein Mod ist eine optionale Ergänzung, die das Verhalten eines Spiels ändert. Dieses bietet Sprach- und Braille-Unterstützung für Menüs und Ergebnisse, On-Demand-Beschreibungen der vier Phasen, zusätzliche Steuerelemente und nützliche Einstellungen wie eine Begrenzung der Bildrate. Ziel ist es, die Navigation im Spiel zu vereinfachen und gleichzeitig die gesprochenen Spielhinweise und das Timing beizubehalten.</p>
+<p>Der Mod verwendet MelonLoader, um in das Spiel zu laden. Es verwendet Tolk für die Kommunikation mit unterstützten Bildschirmleseprogrammen und kann Windows SAPI Sprache als Fallback verwenden. Es ersetzt das Spiel nicht und Sie benötigen weiterhin Ihre eigene Kopie von Bop It!.</p>
+<p>Der Mod folgt für seine Menüs und Ankündigungen den Spracheinstellungen des Spiels. Es umfasst Englisch, Französisch, Italienisch, Deutsch, Spanisch (Spanien), Spanisch (Lateinamerika), Japanisch, Koreanisch, vereinfachtes Chinesisch und brasilianisches Portugiesisch.</p>
+</section>
+<section class="panel" id="transparency">
+<h2>Ehrlicher Transparenzhinweis</h2>
+<p>Dieser Mod wurde in enger Zusammenarbeit mit künstlicher Intelligenz erstellt. Die gesamte Recherche für den Mod wurde von KI durchgeführt und der Code wurde von KI generiert und nicht ursprünglich von Hand geschrieben. Die Designentscheidungen und Gameplay-Tests waren völlig menschlich. Jede frühere Ergänzung und Änderung wurde sorgfältig von einer Person überprüft und echte Menschen haben die Mod auf verschiedenen Systemen gespielt und getestet. Der neue mehrsprachige Text wurde mit maschineller Übersetzung erstellt und muss noch von fließenden Sprechern überprüft werden. Ohne Agentencodierung würde dieses Projekt nicht existieren. Vielen Dank, dass Sie diesem von Menschen geführten, KI-gestützten Projekt eine Chance geben.</p>
+</section>
+<section id="features">
+<h2>Barrierefreiheitsfunktionen</h2>
+<ul>
+<li>Sprache für den Titelbildschirm, das Hauptmenü, die Wiedergabe- und Songauswahl, Einstellungen und Steuerung, Mod-Einstellungen, Audiokalibrierung, Bestenlisten, das Erfolgsbuch im Spiel, Credits, Pausenmenü und Ergebnisbildschirme.</li>
+<li>Fokussierte Schaltflächen, Schieberegler, Umschalter, Namen, Werte und geänderte Werte werden angesagt. Mit optionaler Indizierung, Steuerelementbeschriftungen, Schiebereglerbereichen und Groß-/Kleinschreibungsfilterung können Sie die Details optimieren.</li>
+<li>Ergebnis- oder Siegerrede bei Spielende, gefolgt von einer Ansprache im Menü in der Warteschlange sowie einer Tastenkombination „Ergebnis lesen“ nur auf dem Ergebnisbildschirm.</li>
+<li>Vier Bühnenbeschreibungen, die auf Wunsch vor Spielbeginn über den Songauswahlbildschirm gesprochen werden.</li>
+<li>Die Tutorial-Referenz des Spiels für den aktuellen Modus und Schwierigkeitsgrad, gesprochen auf Anfrage von der Songauswahl mit der aktuell zugewiesenen Steuerung jeder Aktion. One-on-One umfasst beide KLOPFEN-Eingaben.</li>
+<li>Optionale Eins-zu-Eins-Ankündigungen in Farbe und Lebenszählung.</li>
+<li>Tastenhinweise für Tastatur, Controller oder beides, mit einstellbarem Timing, Wiederholungen und einer On-Demand-Tastenkombination zum Sprechen von Hinweisen.</li>
+<li>Screenreader-Ausgabe über Tolk, optionale Braille-Ausgabe und konfigurierbarer SAPI-Fallback.</li>
+<li>Tastatur- und Controller-Neuzuordnung für mehrere native und modifizierte Steuerelemente, einschließlich Bestenlistenfilter und Sprachverknüpfungen.</li>
+<li>Ein gespeicherter Master-Sprachschalter mit gesprochenen Anweisungen zum Wiedereinschalten der Sprache.</li>
+<li>Sprache und ein Benutzerhandbuch im Spiel in jeder Sprache, die in der Spracheinstellung des Spiels angeboten wird.</li>
+</ul>
+</section>
+<section id="quality">
+<h2>Merkmale der Lebensqualität</h2>
+<ul>
+<li>Eine gespeicherte FPS-Limit-Einstellung mit den Optionen 30, 60, 120, 240 und Unbegrenzt. Der Standardwert ist 60.</li>
+<li>Separate Optionen zum Stummschalten des Spiel-Audios oder der Mod-Sprache, wenn das Spielfenster im Hintergrund läuft.</li>
+<li>Eine Verknüpfung zum Ändern der Sprachausgabe, die durch dieselben Modi wie das Menü „Mod-Einstellungen“ wechselt.</li>
+<li>Gespeicherte Einstellungen über Spielsitzungen hinweg, einschließlich Sprachausgabe, Blindenschrift, Hinweise und die Obergrenze der Bildrate.</li>
+<li>Im spieleigenen Steuerungsmenü stehen mehr Steuerelemente zur Neuzuordnung zur Verfügung, wobei doppelte Zuweisungen abgelehnt werden.</li>
+</ul>
+</section>
+<section id="limitations">
+<h2>Hinweise und Einschränkungen</h2>
+<ul>
+<li><strong>Beschreibungen werden vor der Runde erbeten.</strong> Der Mod erzählt absichtlich keine Szenerie während des aktiven Spiels. Ein Spieler muss die verbalen Befehle des Spiels hören und darauf reagieren; Eine zusätzliche Erzählung könnte einen Befehl abdecken und die Runde beenden.</li>
+<li><strong>SAPI ist eine Backup-Sprach-Engine.</strong> Es ist verfügbar, wenn Sie es bevorzugen oder wenn kein unterstützter Bildschirmleser ausgeführt wird, aber seine Reaktionsfähigkeit liegt immer noch unter dem Ziel dieses Projekts. Ihre installierte Stimme und Ihr System können die Verzögerung beeinflussen. Wählen Sie für nicht-englische Sprache eine installierte SAPI-Stimme, die Ihre ausgewählte Spielsprache unterstützt; Der Mod installiert keine zusätzlichen Stimmen.</li>
+<li><strong>Einige native Steuerelemente sind noch behoben.</strong> Der Mod erweitert das Steuerungsmenü des Spiels erheblich, macht jedoch nicht jede Spieleingabe neu zuordenbar.</li>
+<li><strong>Die Bildrate beeinflusst die Eingabeabfrage.</strong> Der FPS-Limiter kann die Systemlast stark reduzieren. Animationen werden nicht absichtlich verlangsamt oder das Spiel-Timing verändert, aber das Spiel prüft bei niedrigeren FPS seltener Frame-basierte Eingaben. Eine höhere Einstellung kann insbesondere bei schnellen Runden zu einem genaueren Eingabe-Timing führen.</li>
+<li><strong>Die Sprachunterstützung ist in Menüs und Ergebnissen am stärksten.</strong> Auf einem unerwarteten Panel kann der Mod sichtbaren Text und ein fokussiertes Steuerelement lesen, wenn er eines findet. Ein Mauszeiger spricht möglicherweise erst, wenn der Gegenstand tatsächlich den Spielfokus erhält.</li>
+<li><strong>Windows x64 ist die aktuelle Mod-Plattform.</strong> Das Spiel wird möglicherweise für andere Systeme verkauft, aber die aktuellen Lade- und Sprachabhängigkeiten dieses Mods gelten für Windows x64.</li>
+<li><strong>Übersetzungen müssen überprüft werden.</strong> Der ursprüngliche nicht-englische Mod-Text und die Anleitungen wurden maschinell übersetzt. Einige Formulierungen, Spielbegriffe und Eingabenamen müssen möglicherweise von Sprechern korrigiert werden, die fließend sprechen. Bitte melden Sie Unklarheiten oder Ungenauigkeiten.</li>
+</ul>
+</section>
+<section id="buy">
+<h2>Kaufen Sie das Spiel und überprüfen Sie Ihren Computer</h2>
+<p>Kaufen <a href="https://store.steampowered.com/app/3214360/">Bop It! The Video Game auf Steam</a>. Wenn Steam neu für Sie ist, <a href="https://store.steampowered.com/about/">Installieren Sie Steam</a>, erstellen Sie ein Konto oder melden Sie sich an, kaufen Sie das Spiel auf der Store-Seite und installieren Sie es aus Ihrer Steam-Bibliothek. Die <a href="https://help.steampowered.com/en/faqs/view/6F74-68BA-1B77-8727">Steam Erste-Schritte-Anleitung</a> deckt diese Schritte ab. Ein Kauf des Spiels ist unabhängig von diesem Mod.</p>
+<p>Bitte überprüfen Sie vor dem Kauf oder der Installation die <strong>Die aktuellen Mindestsystemanforderungen finden Sie auf der Seite Steam</strong>. Zum Zeitpunkt der Erstellung dieses Handbuchs umfasste das Minimum Windows Windows 10 64-Bit, einen Intel i5-4460 oder AMD FX-6300, 8 GB Arbeitsspeicher, einen Grafikprozessor mit 2 GB Videospeicher und 2 GB Speicher. Auf der Seite heißt es außerdem, dass für Bestenlisten eine Internetverbindung erforderlich sei. Anforderungen können sich ändern, daher ist die Auflistung von Steam die letzte Referenz.</p>
+<p>Sie können dennoch gerne versuchen, Probleme auf einem Computer zu melden, der die Mindestanforderungen des Spiels nicht erfüllt. Wenn ein Problem jedoch durch ein unter den Spezifikationen liegendes System verursacht wird, kann eine Behebung nicht garantiert werden.</p>
+</section>
+<section id="install">
+<h2>Holen Sie sich den Mod und installieren Sie ihn</h2>
+<p class="planned"><strong>Installateurstatus:</strong> Ein öffentlicher Mod-Installer wurde noch nicht entworfen oder veröffentlicht, daher gibt es keinen echten Installer-Download-Link oder Installer-Bildschirm, dem man folgen kann. Bitte schauen Sie sich das an <a href="https://github.com/Chris-E-Shaw/BopItAccess">Bop It Access Projektseite</a> für zukünftige Verfügbarkeit. Dies ist die beabsichtigte Startseite des Installationsprogramm-Links und kein Anspruch darauf, dass dort jetzt ein Installationsprogramm vorhanden ist.</p>
+<h3>Aktuelle Installationsroute: Aus dem Quellcode erstellen</h3>
+<p>Das öffentliche GitHub-Repository enthält derzeit Quellcode und Dokumentation, ohne kompilierten Download oder GitHub-Release. Erstellen bedeutet, die Quelldateien in die DLL des Mods umzuwandeln. Die <a href="README.md#build-from-source">Bauanweisungen für das Repository</a> sind die gepflegte Referenz. Hier die komplette aktuelle Route in Alltagssprache:</p>
+<ol>
+<li>Installieren Sie das Spiel über Steam auf Windows x64. Suchen Sie den Ordner in der Bibliothek von Steam, wenn Sie nicht den Standardspeicherort verwendet haben.</li>
+<li>Wenn das Spiel geschlossen ist, <a href="https://github.com/LavaGang/MelonLoader#how-to-use-the-installer">Installieren Sie MelonLoader</a> in diesen Spielordner. Die Entwicklung hat x64 MelonLoader 0.7.3 Open-Beta für dieses Spiel verwendet; andere Kombinationen sind noch nicht verifiziert. Starten Sie das Spiel einmal und schließen Sie es wieder. Dadurch kann MelonLoader die Dateien vorbereiten, die der Mod benötigt.</li>
+<li>Installieren Sie ein .NET SDK, das das Targeting-Paket .NET 6 enthält. <a href="https://github.com/Chris-E-Shaw/BopItAccess">Laden Sie die Quelle Bop It Access herunter oder klonen Sie sie</a>, öffnen Sie PowerShell in dem Ordner, der es enthält <code>README.md</code>, und führen Sie den folgenden Befehl aus. Ändern Sie den Beispielspielpfad, wenn sich Ihre Steam-Bibliothek an einem anderen Ort befindet.</li>
+</ol>
+<pre><code>$gameDir = 'C:\Program Files (x86)\Steam\steamapps\common\Bop It!'
+dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</code></pre>
+<ol start="4">
+<li>Kopieren Sie bei geschlossenem Spiel die erstellte Datei <code>src\bin\Release\net6.0\BopItAccess.dll</code> ins Spiel <code>Mods</code> Ordner. Erstellen Sie diesen Ordner bei Bedarf. Kopieren Sie die Builds <code>src\bin\Release\net6.0\documentation</code> Ordner auch in den Spielordner. Es enthält diesen Leitfaden und die Begleitdokumente, die für die Links erforderlich sind.</li>
+<li>Erhalten Sie eine kompatible 64-Bit-Version <code>Tolk.dll</code> und <code>nvdaControllerClient64.dll</code> aus ihren Upstream-Quellen, wie im beschrieben <a href="README.md#install-your-build">Installationsanweisungen für das Repository</a>. Platzieren Sie beide neben der ausführbaren Datei des Spiels im Hauptspielordner. <strong>nicht</strong> drinnen <code>Mods</code>.</li>
+<li>Starten Sie Ihren Bildschirmleser, falls Sie einen verwenden, und starten Sie dann das Spiel über Steam. Wenn kein kompatibler laufender Bildschirmleser vorhanden ist, kann der Mod die Sprache SAPI verwenden.</li>
+</ol>
+<p>Ein häufiger Standort ist Steam <code>C:\Program Files (x86)\Steam\steamapps\common\Bop It!</code>. Ihr Standort kann abweichen, wenn Sie eine andere Bibliothek Steam ausgewählt haben. Wenn Sie über eine lokal bereitgestellte Installations-ZIP-Datei aus dem Projekt verfügen, schließen Sie das Spiel und extrahieren Sie seinen Inhalt in den Spielordner, damit die <code>Mods</code> Ordner zum Zusammenführen. Diese lokalen Pakete sind vom reinen Quell-Repository GitHub getrennt.</p>
+<h3>Komplettlösung für zukünftige Installationsprogramme (geplant)</h3>
+<div class="planned">
+<p><strong>Nur vorläufiger Überblick:</strong> Wenn ein offizielles Installationsprogramm vorhanden ist, bestehen die erwarteten Schritte darin, es von der Projektseite abzurufen, das Spiel zu schließen, das Installationsprogramm auszuführen, es auf den Ordner Bop It! zu verweisen, wenn es das Spiel nicht automatisch finden kann, die Mod und die erforderlichen Sprachdateien installieren zu lassen und dann über Steam zu starten. Das echte Installationsprogramm hat möglicherweise andere Auswahlmöglichkeiten. Die genauen Bildschirme, die Aktualisierungsmethode, die Entfernungsmethode und der Download-Link werden hier dokumentiert, sobald sie vorhanden sind.</p>
+<p>Benutzen Sie vorerst die Projektseite und die Quellanweisungen oben. Derzeit kann keine Drittanbieterseite ein offizielles Bop It Access-Installationsprogramm bereitstellen.</p>
+</div>
+</section>
+<section id="controls">
+<h2>Referenz zur Spielerkontrolle</h2>
+<p>Dies sind die Standardsteuerelemente für die Wiedergabe und Menünavigation. <strong>Durch erneutes Binden können sie geändert werden</strong>Daher ist Ihr Steuerungsmenü das letzte Wort für Ihr eigenes Setup. Die Controller-Spalte beschreibt die übliche Aktion des Spiels oder ein Beispiel im Xbox-Stil. Physische Bewegung und Bezeichnungen können je nach Controller-Typ variieren. Ein Bindestrich bedeutet, dass für dieses Gerät keine Standardzuweisung gefunden wurde, nicht aber, dass die Aktion nicht auf andere Weise ausgeführt werden kann.</p>
+<p><strong>Schnelle Orientierung:</strong> D-Pad bedeutet das Vier-Wege-Richtungspad. Über einem Abzug sitzt ein Stoßfänger. Das Drücken des linken Sticks und das Drücken des rechten Sticks bedeuten, dass der entsprechende Stick nach innen gedrückt wird, bis er einrastet. Auf manchen Controllern heißt „Auswählen“ möglicherweise „Zurück“ oder „Ansicht“. Start kann als Menü bezeichnet werden.</p>
+<div class="table-scroll"><table>
+<caption>Player-Steuerelemente, einschließlich Steuerelemente außerhalb des Neuzuordnungsmenüs</caption>
+<thead><tr><th scope="col">Aktion</th><th scope="col">Was es bewirkt</th><th scope="col">Standardtastatur</th><th scope="col">Standard-Controller</th><th scope="col">Können Sie es in Controls erneut binden?</th></tr></thead>
+<tbody>
+<tr><th scope="row">Klopfen</th><td>Antworten Sie auf „KLOPFEN!“ in einer Runde; Öffnen Sie das Hauptmenü über den Titelbildschirm und starten Sie eine Runde mit der Songauswahl.</td><td>Leertaste</td><td>Südwand-Taste (A auf Xbox)</td><td>Ja</td></tr>
+<tr><th scope="row">KLOPFEN (Spieler 2)</th><td>Die zweite KLOPFEN-Eingabe wird dort verwendet, wo das Spiel sie verlangt, einschließlich des Spiels mit zwei Spielern.</td><td>D</td><td>Steuerkreuz rechts</td><td>Ja</td></tr>
+<tr><th scope="row">Drehen</th><td>Antworten Sie auf „DREHEN!“; Ändern Sie den ausgewählten Song auf dem Song-Bildschirm.</td><td>Pfeil nach links</td><td>Nordwand-Taste (Y auf Xbox)</td><td>Ja</td></tr>
+<tr><th scope="row">Ziehen</th><td>Antworten Sie auf „ZIEHEN!“; Wechseln Sie auf dem Song-Bildschirm zwischen „Klassisch“ und „Extrem“.</td><td>Pfeil nach rechts</td><td>Bewegung des rechten Steuerknüppels</td><td>Ja</td></tr>
+<tr><th scope="row">Kreisen</th><td>Antworten Sie auf „KREISEN!“ im extremen Schwierigkeitsgrad.</td><td>S</td><td>D-Pad nach unten in der untersuchten Karte im Xbox-Stil; andere Controller können abweichen</td><td>Ja</td></tr>
+<tr><th scope="row">Schnipsen</th><td>Antworten Sie auf „SCHNIPSEN!“ im extremen Schwierigkeitsgrad.</td><td>W</td><td>Bewegung des linken Sticks in der untersuchten Karte im Xbox-Stil; andere Controller können abweichen</td><td>Ja</td></tr>
+<tr><th scope="row">Gyro zurücksetzen</th><td>Zentrieren Sie einen Controller-Bewegungssensor neu, wenn das Spiel einen verwendet.</td><td>R</td><td>Rechter Abzug</td><td>Ja, durch den Mod entlarvt</td></tr>
+<tr><th scope="row">Menüfokus verschieben</th><td>Wählen Sie den nächsten oder vorherigen Menüpunkt.</td><td>Aufwärts-/Abwärtspfeile oder W/S; Links-/Rechtspfeile oder A/D, sofern der Bildschirm dies zulässt</td><td>Je nach Bildschirm entweder Stick oder D-Pad</td><td>Keine separate Zeile</td></tr>
+<tr><th scope="row">Bestätigen/aktivieren</th><td>Öffnen oder verwenden Sie den fokussierten Menüpunkt.</td><td>Eingabe oder Leertaste</td><td>Südwand-Taste (A auf Xbox)</td><td>Keine separate Zeile</td></tr>
+<tr><th scope="row">Zurück</th><td>Kehren Sie zum vorherigen Menü zurück oder verlassen Sie ein Panel.</td><td>Rücktaste</td><td>Ostwand-Taste (B auf Xbox)</td><td>Keine separate Zeile</td></tr>
+<tr><th scope="row">Menü / Pause</th><td>Öffnen Sie das Menü des Spiels oder pausieren Sie eine Runde, sofern verfügbar.</td><td>Flucht</td><td>Start / Menü</td><td>Keine separate Zeile</td></tr>
+<tr><th scope="row">Vollbild umschalten</th><td>Schalten Sie das Spielfenster zwischen Vollbild- und Fensteranzeige um.</td><td>F11</td><td>Kein Standard gefunden</td><td>Keine separate Zeile</td></tr>
+<tr><th scope="row">Bestenlistengruppe vorherige / nächste</th><td>Wechseln Sie zwischen „Lokal“, „Freunde“ und „Global“, sofern verfügbar.</td><td>O/P</td><td>Linke Stoßstange / rechte Stoßstange</td><td>Ja, zwei vom Mod hinzugefügte Zeilen</td></tr>
+<tr><th scope="row">Datum der Bestenliste vorher/nächst</th><td>Wechseln Sie zwischen „Heute“, „Dieser Monat“ und „Alle Zeiten“, sofern verfügbar.</td><td>K/L</td><td>D-Pad links / D-Pad rechts</td><td>Ja, zwei vom Mod hinzugefügte Zeilen</td></tr>
+<tr><th scope="row">Leaderboard-Gerätefilter</th><td>Ändern Sie die ausgewählte Gerätekategorie, in der dieser Filter angezeigt wird.</td><td>Pfeil nach rechts</td><td>Rechter Stick rechts/unten, abhängig vom angeschlossenen Controller</td><td>Keine separate Zeile</td></tr>
+<tr><th scope="row">Lesen Sie die Bestenlistenzeile</th><td>Sprechen Sie jeweils eine Punktezeile nach der anderen.</td><td>Seite nach oben / Seite nach unten</td><td>Nach oben/unten, wenn kein Bestenlistenfilter den Fokus hat</td><td>Keine separate Zeile</td></tr>
+<tr><th scope="row">Erfolgsseite umblättern</th><td>Zeigt die vorherige oder nächste Buchseite an.</td><td>Links-/Rechtspfeile</td><td>Linker / rechter Stoßfänger</td><td>Keine separate Zeile</td></tr>
+<tr><th scope="row">Lesen Sie Leistung oder Kreditrahmen</th><td>Gehen Sie die gesprochenen Einträge auf einer Seite oder im Abspann durch.</td><td>Auf-/Ab-Pfeiltasten oder W/S</td><td>Menü hoch/runter</td><td>Keine separate Zeile</td></tr>
+<tr><th scope="row">Beschreibungen lesen</th><td>Sprechen Sie die visuelle Beschreibung der aktuellen Phase nur auf dem Songbildschirm.</td><td>G</td><td>Linker Abzug (LT)</td><td>Ja</td></tr>
+<tr><th scope="row">Partitur lesen</th><td>Wiederholen Sie das Endergebnis oder den Gewinner im Eins-gegen-Eins nur auf dem Ergebnisbildschirm.</td><td>T</td><td>Linken Stick drücken</td><td>Ja</td></tr>
+<tr><th scope="row">Sprache umschalten</th><td>Schalten Sie die gesamte normale Mod-Sprache aus oder wieder ein. Die Einstellung wird gespeichert.</td><td>F8</td><td>Wählen Sie / Zurück / Anzeigen</td><td>Ja</td></tr>
+<tr><th scope="row">Sprechen Sie Hinweise</th><td>Lesen Sie die Schaltflächenhinweise des aktuellen Bildschirms, sofern verfügbar. Lesen Sie zur Songauswahl auch die Tutorial-Referenz mit der aktuell zugewiesenen Steuerung jeder Aktion für den ausgewählten Modus und Schwierigkeitsgrad, einschließlich beider KLOPFEN-Eingaben im Eins-gegen-Eins.</td><td>H</td><td>Drücken Sie den rechten Stick</td><td>Ja</td></tr>
+<tr><th scope="row">Sprachausgabe ändern</th><td>Durchlaufen Sie die gleichen Ausgabeoptionen wie „Mod-Einstellungen“ &gt; „Ausgabemodus“.</td><td>F9</td><td>Schaltfläche „Westseite“ (X auf Xbox)</td><td>Ja</td></tr>
+</tbody>
+</table></div>
+<p>Verwenden Sie „Einstellungen“ &gt; „Steuerelemente“, um die mit „Ja“ gekennzeichneten Zeilen zu ändern. Der Mod lehnt doppelte Zuweisungen ab, sodass eine Eingabe nicht stillschweigend zwei aktive Aktionen ausführt. „Auf Standard zurücksetzen“ stellt die Standardeinstellungen wieder her. Die dedizierten UI-Aktionen, das Umblättern von Seiten und das Lesen von Partiturzeilen verfügen derzeit nicht über Zeilen in diesem Menü.</p>
+</section>
+<section id="first-launch">
+<h2>Ihr erster Start</h2>
+<ol>
+<li>Starten Sie Ihren Screenreader, falls Sie einen verwenden. Starten Sie Bop It! bis Steam, nachdem Sie MelonLoader, die Mod-DLL und die erforderlichen Tolk-Laufzeitdateien installiert haben.</li>
+<li>Wenn Sie den Mod zum ersten Mal verwenden, beginnen die Musik-, SFX- und Voice-Over-Lautstärken des Spiels bei 30. Wenn Sie ein Upgrade durchführen, bleiben die gespeicherten Audiopegel des Spiels unverändert.</li>
+<li>Warten Sie auf die Ankündigung: <q>Bop It Access Rede ist fertig. Das Spiel wird noch geladen. Warten Sie auf die Ankündigung des Titelbildschirms oder des Hauptmenüs, bevor Sie die Steuerelemente verwenden.</q> Der Mod ist fertig, bevor das Spiel vollständig geladen ist.</li>
+<li>Warten Sie noch einige Sekunden auf die Ankündigung auf dem Titelbildschirm. Eingaben bewirken möglicherweise beim Laden nichts. Drücken Sie KLOPFEN (standardmäßig die Leertaste oder die Bestätigungstaste Ihres Controllers), um vom Titelbildschirm fortzufahren. Bei Ihrem ersten Start mit der Begrüßungsfunktion wird der Begrüßungsbildschirm vor dem Hauptmenü hervorgehoben. Bewegen Sie sich mit Auf/Ab und bestätigen Sie mit Enter, Leertaste oder Controller-Bestätigung.</li>
+<li>Wenn Sie die Sprachausgabe zuvor ausgeschaltet haben, bleibt die gespeicherte Einstellung ausgeschaltet. Der Mod gibt beim Start eine gesprochene Wiederherstellungsmeldung mit der aktuellen Tastatur- und Controller-Anbindung für „Sprache umschalten“ aus. Drücken Sie standardmäßig F8 oder Controller-Auswahl, um es wieder einzuschalten.</li>
+<li>Wählen Sie <strong>Öffnen Sie die Mod-Einstellungen, empfohlen</strong> auf dem Begrüßungsbildschirm, um zunächst Sprache, Brailleschrift und Hinweise zu konfigurieren. Wählen Sie <strong>Lesen Sie die Bedienungsanleitung</strong> um dieses Dokument im Spiel zu lesen, oder <strong>Weiter zum Spiel</strong> um zum Hauptmenü zu gelangen.</li>
+</ol>
+<div class="current">
+<h3>Willkommensbildschirm</h3>
+<p>Die einleitende Botschaft selbst ist ein fokussierbarer Punkt oberhalb der drei Auswahlmöglichkeiten. Gehen Sie zurück nach oben, um die gesamte Nachricht noch einmal zu hören. Es benennt beide Ihrer aktuellen Speak Hints-Bindungen, auch wenn Hints Type so eingestellt ist, dass nur ein Gerät angezeigt wird. Drücken Sie standardmäßig <kbd>H</kbd> auf der Tastatur oder drücken Sie den rechten Stick des Controllers nach innen, um die Hinweise des aktuellen Bildschirms anzufordern.</p>
+<p>Der Begrüßungsbildschirm wird erst dann als abgeschlossen markiert, wenn eine seiner Auswahlmöglichkeiten das ausgewählte Ziel öffnet. Wenn das Spiel geschlossen wird, während Sie sich noch auf dem Begrüßungsbildschirm befinden, wird dieser beim nächsten Start erneut angezeigt. Um es nach Abschluss noch einmal anzuzeigen, verwenden Sie <strong>Einstellungen &gt; Mod-Einstellungen &gt; Begrüßungsbildschirm zurücksetzen</strong>; Der Reset wird beim nächsten Start wirksam.</p>
+</div>
+</section>
+<section id="languages">
+<h2>Sprachen</h2>
+<p>Im Spiel <strong>Einstellungen &gt; Sprache</strong> Wählen Sie in der Zeile die gewünschte Sprache aus. Der Mod folgt dieser Wahl für seinen gesprochenen Menütext, Hinweise, Eingabeaufforderungen und andere Ankündigungen. Sie können es während einer Sitzung ändern. Der Originaltext und -ton des Spiels bleibt unter der eigenen Kontrolle des Spiels.</p>
+<p>Für jede Sprache gibt es eine separate Kopie dieses HTML-Leitfadens <code>documentation\&lt;language&gt;\BopItAccess-user-guide.html</code>. Wenn Sie die Anleitung im Spiel öffnen, wird die Kopie für die aktuell in den Einstellungen ausgewählte Sprache geladen. Wenn diese Kopie fehlt oder nicht gelesen werden kann, wird stattdessen der englische Leitfaden geöffnet. Auch die anderen Projektdokumente verfügen über übersetzte Kopien in den gleichen Sprachordnern.</p>
+<p>Die enthaltenen Sprachen sind Englisch, Französisch, Italienisch, Deutsch, Spanisch (Spanien), Spanisch (Lateinamerika), Japanisch, Koreanisch, vereinfachtes Chinesisch und brasilianisches Portugiesisch. Die ersten nicht-englischen Übersetzungen sind maschinell erstellte Entwürfe und willkommene Korrekturen von fließenden Sprechern.</p>
+<p>Gameplay-Aktionsnamen folgen den eigenen Übersetzungen des Spiels, so dass die fünf gesprochenen Befehle unterschiedlich bleiben. Die vier Bühnentitel - Shapes, Space, City und Office - bleiben in Englisch, weil sie als feste Namen im Spiel angezeigt werden. Der Mod sendet übersetzten Text an Ihre ausgewählte Sprachausgabe; diese Ausgabe benötigt auch eine Stimme für Ihre Sprache. Wenn Sie SAPI verwenden, wählen Sie in den Mod-Einstellungen eine installierte Stimme aus, wenn die Standardsprache des Systems den übersetzten Text nicht gut ausspricht.</p>
+</section>
+<section id="in-game-guide">
+<h2>Lesen Sie die Anleitung im Spiel</h2>
+<p>Wählen Sie <strong>Lesen Sie die Bedienungsanleitung</strong> auf dem Begrüßungsbildschirm oder <strong>Öffnen Sie das Benutzerhandbuch</strong> in den Mod-Einstellungen. Die Anleitung wird in Bop It! geöffnet und verwendet die HTML-Datei für Ihre aktuelle Spielsprache im Spiel <code>documentation</code> Ordner. Die Themenliste folgt dem Inhaltsverzeichnis des Dokuments. Wenn Sie also das installierte Dokument aktualisieren, werden auch die Themen im Spiel und deren Text aktualisiert.</p>
+<p>Verwenden Sie in der Themenliste die Auf-/Ab-Menüsteuerung des Spiels, um ein Thema auszuwählen, und bestätigen Sie, um es zu öffnen. Verwenden Sie in einem Thema die Auf-/Ab-Taste, um Zeile für Zeile durch den Text zu navigieren. In einer Tabelle bewegt sich „Links“ zur linken Spalte und „Rechts“ zur rechten Spalte. Mit „Auf/Ab“ können Sie zwischen den Zeilen wechseln und dabei Ihre aktuelle Spalte beibehalten. Spaltenüberschriften beschriften die Zellen, die Sie hören; es handelt sich nicht um zusätzliche Datenzeilen. Der Leitfaden kündigt die Tabelle an, wenn Sie sie betreten, und ihr Ende, wenn Sie sie verlassen, ohne die Tabellenbeschreibung für jede Zelle zu wiederholen. Bestätigen wiederholt die aktuelle Zeile. Zurück kehrt von einem Thema zur Themenliste zurück; Zurück verlässt der Reiseführer wieder. Die Musik nutzt den lesefreundlichen Audiofilter des Spiels, während der Guide geöffnet ist.</p>
+</section>
+<section id="speech-options">
+<h2>Mod-Einstellungen-Menü</h2>
+<p>Offen <strong>Einstellungen &gt; Mod-Einstellungen</strong>. Bewegen Sie sich mit der Auf-/Ab-Steuerung im Menü durch die Zeilen. Bestätigen Sie einen Schalter oder eine Schaltfläche. Verwenden Sie Links/Rechts, um einen Schieberegler zu ändern. Die folgenden Standardeinstellungen gelten für eine neue Einrichtung. Änderungen werden zwischen den Sitzungen gespeichert. Wenn die Sprachausgabe deaktiviert ist, funktioniert „Sprache umschalten“ weiterhin und die Zeile „Sprachausgabe“ verwendet denselben Hauptschalter.</p>
+<div class="table-scroll"><table>
+<caption>Jede aktuelle Zeile „Mod-Einstellungen“ in der Menüreihenfolge</caption>
+<thead><tr><th scope="col">Einstellung</th><th scope="col">Auswahlmöglichkeiten/Standard</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Sprachausgabe</th><td>Ein/Aus; <strong>Auf</strong></td><td>Hauptschalter für Mod-Sprache. Wenn Sie es ausschalten, erhalten Sie eine abschließende gesprochene Wiederherstellungsanweisung für beide aktuellen Gerätebindungen. Wenn Sie es wieder einschalten, wird angezeigt, dass die Sprachausgabe aktiviert ist.</td></tr>
+<tr><th scope="row">Braille-Ausgabe</th><td>Ein/Aus; <strong>Auf</strong></td><td>Sendet dieselben Ankündigungen an die Brailleausgabe eines kompatiblen Bildschirmlesegeräts. Eine angeschlossene Braillezeile oder der Braille Viewer von NVDA können sie anzeigen.</td></tr>
+<tr><th scope="row">Stummschaltung der Sprache im Hintergrund</th><td>Ein/Aus; <strong>Aus</strong></td><td>Wenn diese Option aktiviert ist, wird die Mod-Sprache gestoppt und verworfen, während ein anderes Fenster den Fokus hat.</td></tr>
+<tr><th scope="row">Indizierung</th><td>Ein/Aus; <strong>Auf</strong></td><td>Fügt die Position eines Elements, z. B. „Wiedergabe, 1 von 6“, in allen unterstützten Menüs hinzu.</td></tr>
+<tr><th scope="row">Filtern Sie die Großschreibung</th><td>Ein/Aus; <strong>Auf</strong></td><td>Ändert Großbuchstaben nur für Sprache und Blindenschrift in die natürliche Groß-/Kleinschreibung. Der sichtbare Schriftzug des Spiels bleibt wie vorgesehen.</td></tr>
+<tr><th scope="row">Steuerelementtypen lesen</th><td>Ein/Aus; <strong>Auf</strong></td><td>Fügt den fokussierten Steuerelementen Beschriftungen wie „Schaltfläche“, „Umschalten“ oder „Schieberegler“ hinzu.</td></tr>
+<tr><th scope="row">Schiebereglerbereiche</th><td>Ein/Aus; <strong>Aus</strong></td><td>Liest die verfügbaren Endpunkte eines fokussierten Schiebereglers, z. B. „Bereich 0 bis 100“. Bei einer Änderung wird immer noch nur der neue Wert angezeigt.</td></tr>
+<tr><th scope="row">Persönliches Feedback</th><td>Ein/Aus; <strong>Auf</strong></td><td>Spricht die aktive grüne oder gelbe Farbe und die verbleibende Lebenszahl an, wenn im Eins-gegen-Eins ein Leben verloren oder gewonnen wird.</td></tr>
+<tr><th scope="row">Hinweistyp</th><td>Automatisch, Tastatur, Controller, Beides; <strong>Automatisch</strong></td><td>Wählt die Steuerelemente des Geräts aus, die in den Hinweisen beschrieben werden. Automatisch folgt der zuletzt verwendeten Tastatur- oder Controller-Eingabe. Beide benennen jedes Gerät explizit.</td></tr>
+<tr><th scope="row">Hinweise zur Auto-Speak-Taste</th><td>Ein/Aus; <strong>Auf</strong></td><td>Steuert automatische Hinweise. Die Verknüpfung „Hinweise sprechen“ funktioniert bei Bedarf weiterhin, wenn diese Option deaktiviert ist.</td></tr>
+<tr><th scope="row">Verzögerung der Tastenhinweise</th><td>Keine, 5, 10, 15, 30, 60 Sekunden; <strong>10 Sekunden</strong></td><td>None fügt den Hinweis nach der Ankündigung des fokussierten Elements in eine Sprachzeichenfolge ein. Bei einer zeitgesteuerten Auswahl wird vor dem ersten separaten Hinweis auf Inaktivität gewartet. Wenn Sie den Fokus verschieben oder eine Einstellung ändern, beginnt das Warten erneut. Die 5-Sekunden-Auswahl kann eine bereits laufende Rede unterbrechen.</td></tr>
+<tr><th scope="row">Hinweise zur Schaltfläche „Wiederholen“.</th><td>Aus, 2x, 3x, 4x, 5x, unendlich; <strong>Unendlich</strong></td><td>Legt fest, wie oft ein Hinweis in einem Zyklus insgesamt gehört wird. „2x“ bedeutet die erste Lesung plus eine Wiederholung.</td></tr>
+<tr><th scope="row">Wiederholungsintervall</th><td>15, 30, 45, 60 Sekunden; <strong>30 Sekunden</strong></td><td>Zeit zwischen den Wiederholungsmessungen oben. Das Sprechen eines Hinweises bei Bedarf ersetzt den ausstehenden ersten automatischen Hinweis, ermöglicht aber weiterhin konfigurierte Wiederholungen.</td></tr>
+<tr><th scope="row">Ausgabemodus</th><td>Auto, SAPI, JAWS, Window-Eyes, NVDA, Systemzugriff, ZoomText; <strong>Automatisch</strong></td><td>Auto verwendet einen erkannten Bildschirmleser und greift auf SAPI zurück. Ein benannter Leser muss verfügbar sein; Eine nicht verfügbare Auswahl fällt auf SAPI zurück. Dies wird auch durch „Sprachausgabe ändern“ gesteuert.</td></tr>
+<tr><th scope="row">SAPI Stimme</th><td>Systemstandard oder installierte 64-Bit-SAPI-Stimmen; <strong>Systemstandard</strong></td><td>Wählt die Windows-Stimme, die für den direkten SAPI-Fallback verwendet wird, oder den SAPI-Fallback von Auto.</td></tr>
+<tr><th scope="row">SAPI Band</th><td>5 %–100 % in 5er-Schritten; <strong>100%</strong></td><td>Passt die Sprachlautstärke an. Der Mindestwert bleibt über Null, sodass Wiederherstellungsmeldungen weiterhin hörbar sind.</td></tr>
+<tr><th scope="row">SAPI Tarif</th><td>0–100 in 5er-Schritten; <strong>50</strong></td><td>Passt die Sprechgeschwindigkeit an.</td></tr>
+<tr><th scope="row">SAPI Tonhöhe</th><td>0–100 in 5er-Schritten; <strong>50</strong></td><td>Passt die Stimmhöhe von SAPI an.</td></tr>
+<tr><th scope="row">Öffnen Sie das Benutzerhandbuch</th><td>Knopf</td><td>Öffnet dieses Dokument im Spiel. Wählen Sie ein Thema aus dem Inhaltsverzeichnis aus und lesen Sie es dann Zeile für Zeile.</td></tr>
+<tr><th scope="row">Begrüßungsbildschirm zurücksetzen</th><td>Knopf</td><td>Drücken Sie einmal, um eine Bestätigung anzufordern, und drücken Sie dann innerhalb von fünf Sekunden erneut. Wenn Sie in eine andere Zeile wechseln oder fünf Sekunden warten, wird die Anfrage abgebrochen. Ein erfolgreicher Reset wird angekündigt und der Begrüßungsbildschirm erscheint beim nächsten Start des Spiels.</td></tr>
+<tr><th scope="row">Mod-Standardeinstellungen wiederherstellen</th><td>Knopf</td><td>Drücken Sie einmal, um eine Bestätigung anzufordern, und drücken Sie dann innerhalb von fünf Sekunden erneut, um die oben genannten Standardeinstellungen der Mod-Einstellungen wiederherzustellen. Wenn Sie in eine andere Zeile wechseln oder fünf Sekunden warten, wird die Anfrage abgebrochen. Die Musik-, SFX- oder Voice-Over-Lautstärke des Spiels, die FPS-Begrenzung und die benutzerdefinierten Tastatur- und Controller-Zuordnungen werden nicht geändert.</td></tr>
+<tr><th scope="row">Zurück</th><td>Knopf</td><td>Kehren Sie zu den Einstellungen zurück.</td></tr>
+</tbody>
+</table></div>
+<p>Hinweise werden während des aktiven Spielens und im Beat-Timing-Teil der Audiokalibrierung geheim gehalten, wenn Sprache einen wichtigen Ton überdecken könnte. Selbst wenn Sie die Sprachausgabe ausschalten, kann der Mod beim Start oder wenn Sie diese Änderung vornehmen, immer noch ansagen, wie er sie wieder einschalten kann.</p>
+</section>
+<section id="menu-guide">
+<h2>Menüführung</h2>
+<p>Die folgenden Tabellen zeigen den Weg, den Sie wahrscheinlich durch das Spiel nehmen werden. Bewegen Sie in normalen Menüs den Fokus mit der Auf-/Ab-Taste, aktivieren Sie das fokussierte Element mit der Eingabetaste oder der Leertaste (oder bestätigen Sie mit dem Controller) und verwenden Sie die Rücktaste (oder die Rücktaste des Controllers), um zurückzukehren. Einige Bildschirme verwenden andere Steuerelemente. diese werden bei Bedarf erläutert. Wenn eine Auswahl in Ihrem aktuellen Status nicht verfügbar ist, wird sie möglicherweise vom Spiel ausgeblendet.</p>
+<p>Wenn ein Panel erscheint, das unten nicht abgedeckt ist, versucht der Mod, seinen sichtbaren Text und das Steuerelement, das den Fokus hat, anzusprechen. Anschließend können Sie den Fokus verschieben, um andere verfügbare Steuerelemente zu hören. Dieser allgemeine Leser setzt voraus, dass das Panel über eine fokussierbare Steuerung verfügt und die gesprochenen Befehle des Spiels während des aktiven Spiels nicht unterbricht.</p>
+</section>
+<section id="main-menu">
+<h3>Hauptmenü</h3>
+<p>Sobald das Spiel vollständig geladen ist, gelangen Sie hierher. Der Mod spricht jede fokussierte Option an.</p>
+<div class="table-scroll"><table>
+<caption>Auswahlmöglichkeiten im Hauptmenü</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Spielen</th><td>Öffnen Sie die vier Spielmodi.</td></tr>
+<tr><th scope="row">Bestenlisten</th><td>Durchsuchen Sie Ranglistenergebnisse und verfügbare Filter.</td></tr>
+<tr><th scope="row">Erfolge</th><td>Öffnen Sie das spieleigene Erfolgsbuch, in dem Sie Seiten und Einträge lesen können.</td></tr>
+<tr><th scope="row">Einstellungen</th><td>Ändern Sie Audio-, Anzeige-, Steuerelement- und Spracheinstellungen.</td></tr>
+<tr><th scope="row">Credits</th><td>Zeigen Sie die Original-Credits des Spiels an. Mit dem Mod können Sie Zeilen in Ihrem eigenen Tempo lesen.</td></tr>
+<tr><th scope="row">Hör auf</th><td>Schließe das Spiel.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="play-menu">
+<h3>Play-Menü</h3>
+<p>Jeder Modus wird hier kurz vorgestellt. Für eine ausführliche Erläuterung aller Regeln, wie eine Runde endet und wie die Ergebnisse funktionieren, besuchen Sie die <a href="#mode-guide">ausführliche Modusanleitung</a>.</p>
+<div class="table-scroll"><table>
+<caption>Spielmöglichkeiten</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Solo</th><td>Spielen Sie alleine einen kontinuierlichen Punkteaufbaulauf.</td></tr>
+<tr><th scope="row">Party</th><td>Spielen Sie getrennte Runden mit anderen Spielern und vergleichen Sie Ihre Ergebnisse in einer Sitzungs-Rangliste.</td></tr>
+<tr><th scope="row">Übergeben Sie es</th><td>Teilen Sie einen kontinuierlichen Lauf und geben Sie den Controller an den nächsten Spieler weiter, wenn das Spiel dies erfordert.</td></tr>
+<tr><th scope="row">Eins zu eins</th><td>Zwei Spieler, Grün und Gelb, konkurrieren mit Leben und nicht mit einem numerischen Endergebnis.</td></tr>
+<tr><th scope="row">Zurück, falls angezeigt</th><td>Zurück zum Hauptmenü. Auch die gewohnte Rückenkontrolle kann zurückkehren.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="song-menu">
+<h3>Song- und Schwierigkeitsgradauswahl</h3>
+<p>Nachdem Sie einen beliebigen Modus ausgewählt haben, wählen Sie einen von vier Songs/Stufen und entscheiden, ob Sie den Schwierigkeitsgrad „Extrem“ verwenden möchten. Der Mod kündigt jedes Mal, wenn dieser Bildschirm geöffnet wird, den aktuellen Song und den Extreme-Status an. Wenn man einen von beiden ändert, spricht man von seinem neuen Wert. Benutzen <strong>DREHEN</strong> das Lied ändern, <strong>ZIEHEN</strong> Klassisch/Extrem ändern, <strong>KLOPFEN</strong> beginnen, und <strong>Zurück</strong> zurückkehren. Sie können drücken <strong>G</strong> oder <strong>linker Abzug</strong> um die Beschreibung der ausgewählten Etappe zu hören. Drücken Sie <strong>H</strong> oder <strong>Rechten Stick drücken</strong> um Tastenhinweise zu hören, gefolgt von der Tutorial-Referenz für den aktuellen Modus und Schwierigkeitsgrad. Es benennt die aktuell zugewiesene Steuerung jeder Aktion, einschließlich beider KLOPFEN-Eingaben in One-on-One. Lesen Sie diese, bevor Sie beginnen: Der Mod hält die zeitgesteuerte Tutorial-Einblendung während des aktiven Spiels still, sodass ein gesprochener Spielbefehl nicht abgedeckt wird. Aus dem gleichen Grund stoppt das Starten der Wiedergabe die Menüausgabe.</p>
+<div class="table-scroll"><table>
+<caption>Auswahlmöglichkeiten und Aktionen bei der Songauswahl</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Shapes</th><td>Wählen Sie die verspielte geometrische Bühne und ihre Musik.</td></tr>
+<tr><th scope="row">Space</th><td>Wählen Sie die farbenfrohe Galaxienbühne und ihre Musik.</td></tr>
+<tr><th scope="row">City</th><td>Wählen Sie die animierte Stadtbühne und ihre Musik.</td></tr>
+<tr><th scope="row">Office</th><td>Wählen Sie die skurrile Arbeitsplatzbühne und ihre Musik.</td></tr>
+<tr><th scope="row">Extrem Ein/Aus</th><td>Schalten Sie „Extreme“ ein, um KREISEN und SCHNIPSEN zu den klassischen KLOPFEN/DREHEN/ZIEHEN-Befehlen hinzuzufügen, oder deaktivieren Sie sie für „Classic“.</td></tr>
+<tr><th scope="row">Start / KLOPFEN</th><td>Beginnen Sie mit dem ausgewählten Modus, Lied und Schwierigkeitsgrad.</td></tr>
+<tr><th scope="row">Zurück</th><td>Kehren Sie zurück, ohne die Runde zu beginnen.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="settings-menu">
+<h3>Einstellungsmenü</h3>
+<p>Der Fokus sagt den Namen und den aktuellen Wert einer Einstellung. Wenn Sie einen Schieberegler oder Schalter ändern, während er fokussiert bleibt, spricht der Mod <em>nur der neue Wert</em> anstatt das gesamte Etikett zu wiederholen.</p>
+<div class="table-scroll"><table>
+<caption>Einstellungszeilen in ihrer aktuellen Menüreihenfolge</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Musik</th><td>Passen Sie die Musiklautstärke des Spiels an. Beginnt bei 30 bei der ersten Mod-Nutzung.</td></tr>
+<tr><th scope="row">Soundeffekte</th><td>Passen Sie die Lautstärke des Soundeffekts an. Beginnt bei 30 bei der ersten Mod-Nutzung.</td></tr>
+<tr><th scope="row">Voice-Over</th><td>Passen Sie die Lautstärke der gesprochenen Befehlsstimme des Spiels an. Beginnt bei 30 bei der ersten Mod-Nutzung; Halten Sie es zum Spielen hörbar.</td></tr>
+<tr><th scope="row">Audio im Hintergrund stumm schalten</th><td>Wenn diese Option aktiviert ist, wird der Spielton stummgeschaltet, während ein anderes Fenster den Fokus hat. Stellen Sie es wieder her, wenn Sie zurückkommen. Standardmäßig deaktiviert.</td></tr>
+<tr><th scope="row">Sprache</th><td>Wählen Sie eine verfügbare Spielsprache.</td></tr>
+<tr><th scope="row">Vibration</th><td>Schalten Sie die Vibration des kompatiblen Controllers ein oder aus.</td></tr>
+<tr><th scope="row">Vollbild</th><td>Wechseln Sie zwischen Vollbild- und Fensteranzeige.</td></tr>
+<tr><th scope="row">Auflösung</th><td>Ändern Sie die Bildschirmauflösung des Spiels mithilfe der auf Ihrem System verfügbaren Optionen.</td></tr>
+<tr><th scope="row">FPS begrenzen</th><td>Begrenzen Sie die Bildrate auf 30, 60, 120 oder 240 oder wählen Sie „Unbegrenzt“. Standard: 60. Siehe die <a href="#limitations">Timing-Hinweis</a>.</td></tr>
+<tr><th scope="row">Audiolatenz</th><td>Öffnen Sie den Kalibrierungsbildschirm, um das Timing des Spiels an das anzupassen, was Sie hören.</td></tr>
+<tr><th scope="row">Kontrollen</th><td>Überprüfen Sie die offengelegten Steuerelemente und hinzugefügten Mod-Steuerelemente des Spiels und weisen Sie sie neu zu.</td></tr>
+<tr><th scope="row">Mod-Einstellungen</th><td>Öffne die vollständig aufgelisteten Sprach-, Braille- und Hinweiseinstellungen des Mods <a href="#speech-options">oben</a>.</td></tr>
+<tr><th scope="row">Gehen Sie online, sofern verfügbar</th><td>Stellen Sie eine Verbindung zu den Online-Funktionen des Spiels her, wenn diese Option angezeigt wird.</td></tr>
+<tr><th scope="row">Zurück</th><td>Zurück zum Hauptmenü.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="controls-menu">
+<h3>Menü „Steuerung“.</h3>
+<p>Fokussieren Sie eine Zeile, um die aktuelle Bindung für das aktive Eingabegerät zu hören. Bestätigen Sie es und befolgen Sie die Aufforderung zum erneuten Binden des Spiels, um einen Ersatz zuzuweisen. Eine doppelte Bindung wird abgelehnt und nicht freigegeben. Die Liste scrollt, sodass die modspezifischen Zeilen am unteren Rand möglicherweise mehrere Abwärtsdrücke erfordern, um sie zu erreichen.</p>
+<div class="table-scroll"><table>
+<caption>Aktuelle Steuerelemente-Menüzeilen</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Klopfen</th><td>Binden Sie die erste Aktion KLOPFEN erneut.</td></tr>
+<tr><th scope="row">KLOPFEN (Spieler 2)</th><td>Binden Sie die zweite Aktion KLOPFEN erneut.</td></tr>
+<tr><th scope="row">Schnipsen</th><td>Binden Sie die Aktion Extreme SCHNIPSEN erneut.</td></tr>
+<tr><th scope="row">Drehen</th><td>DREHEN erneut binden.</td></tr>
+<tr><th scope="row">Kreisen</th><td>Binden Sie die Aktion Extreme KREISEN erneut.</td></tr>
+<tr><th scope="row">Ziehen</th><td>ZIEHEN erneut binden.</td></tr>
+<tr><th scope="row">Gyro zurücksetzen</th><td>Binden Sie die Neuzentrierungsaktion des Bewegungssensors des Spiels neu.</td></tr>
+<tr><th scope="row">Gruppe Vorherige</th><td>Verknüpfen Sie den Umzug erneut mit der vorherigen Bestenlistengruppe.</td></tr>
+<tr><th scope="row">Als Nächstes gruppieren</th><td>Verknüpfen Sie den Umzug erneut mit der nächsten Bestenlistengruppe.</td></tr>
+<tr><th scope="row">Vorheriges Datum</th><td>Verknüpfen Sie die Verschiebung erneut mit dem vorherigen Bestenlistenzeitraum.</td></tr>
+<tr><th scope="row">Nächstes Datum</th><td>Verknüpfen Sie den Umzug erneut mit dem nächsten Bestenlistenzeitraum.</td></tr>
+<tr><th scope="row">Beschreibungen lesen</th><td>Binden Sie Song-Stage-Beschreibungen auf Abruf neu.</td></tr>
+<tr><th scope="row">Partitur lesen</th><td>Binden Sie die On-Demand-Ergebnisrede neu ein.</td></tr>
+<tr><th scope="row">Sprache umschalten</th><td>Binden Sie den Master-Sprachschalter erneut. Wenn Sie es ändern, während die Sprachausgabe ausgeschaltet ist, kündigt der Mod die neuen Wiederherstellungssteuerungen an.</td></tr>
+<tr><th scope="row">Sprechen Sie Hinweise</th><td>Binden Sie On-Demand-Schaltflächenhinweise erneut.</td></tr>
+<tr><th scope="row">Sprachausgabe ändern</th><td>Binden Sie die Verknüpfung erneut, die die Ausgabemodi wechselt.</td></tr>
+<tr><th scope="row">Auf Standard zurücksetzen</th><td>Stellen Sie die ursprünglichen Standardbindungen für die offengelegten Spiel- und Mod-Zeilen wieder her.</td></tr>
+</tbody>
+</table></div>
+<p>Drücken Sie den üblichen Zurück-Befehl, um zu den Einstellungen zurückzukehren. Hinten gibt es hier keine gesondert auswählbare Bindungsreihe. Informationen zu den beim Spielen verwendeten Starttastatur- und Controller-Zuweisungen finden Sie im <a href="#controls">Referenz zur Spielersteuerung</a>.</p>
+</section>
+<section id="audio-latency-menu">
+<h3>Kalibrierung der Audiolatenz</h3>
+<p>Die Audiolatenz ist die Verzögerung zwischen der Erzeugung eines Tons durch das Spiel und dem Hören. Dieser Bildschirm hilft dem Spiel, diese Verzögerung auszugleichen. Hören Sie sich die Anweisungen an, befolgen Sie die Aufwärmphase und verwenden Sie KLOPFEN mit dem Kalibrierungsschlag. Der Mod gibt die Anweisungen, den Countdown und das gemessene Ergebnis bekannt, erzählt jedoch nicht jeden Schlag, da dadurch der Timing-Sound verdeckt werden könnte.</p>
+<div class="table-scroll"><table>
+<caption>Bildschirm „Audiolatenz“.</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Kalibrieren</th><td>Beginnen Sie mit der Timing-Übung.</td></tr>
+<tr><th scope="row">KLOPFEN während der Kalibrierung</th><td>Registrieren Sie Ihre Eingaben gemäß den Anweisungen des Spiels im Takt.</td></tr>
+<tr><th scope="row">Gemessene Latenz</th><td>Zeigt das Kalibrierungsergebnis an und sagt es vor, wenn die Übung beendet ist.</td></tr>
+<tr><th scope="row">Zurück</th><td>Kehren Sie zu den Einstellungen zurück.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="leaderboards-menu">
+<h3>Bestenlisten</h3>
+<p>Öffnen Sie Bestenlisten über das Hauptmenü oder einen Ergebnisbildschirm. Fokussierte Filter werden zuerst angekündigt, dann folgen die Bewertungen der Reihe nach, sodass eine Zeile ihren Filternamen nicht abschneidet. Online-Gruppen benötigen eine Internetverbindung. Die genauen verfügbaren Filter und Zeilen hängen von der Platine und Ihrer Verbindung ab.</p>
+<div class="table-scroll"><table>
+<caption>Steuerelemente und Informationen zur Bestenliste</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Lied / Bühne</th><td>Wählen oder identifizieren Sie, welche Etappenergebnisse angezeigt werden und wo das Board diesen Filter anbietet.</td></tr>
+<tr><th scope="row">Klassisch / Extrem</th><td>Wählen Sie aus, welche Schwierigkeitspunkte angezeigt werden sollen.</td></tr>
+<tr><th scope="row">Gerätekategorie, sofern angezeigt</th><td>Wählen Sie die angezeigte Eingabegerätekategorie.</td></tr>
+<tr><th scope="row">Lokal</th><td>Zeigen Sie die lokal verfügbaren Ergebnisse an.</td></tr>
+<tr><th scope="row">Freunde</th><td>Zeigen Sie die Punktestände berechtigter Freunde an, wenn eine Verbindung besteht.</td></tr>
+<tr><th scope="row">Global</th><td>Zeigen Sie berechtigte weltweite Punktestände an, wenn eine Verbindung besteht.</td></tr>
+<tr><th scope="row">Heute</th><td>Filtern Sie nach den heutigen Ergebnissen.</td></tr>
+<tr><th scope="row">Diesen Monat</th><td>Filtern Sie nach den Ergebnissen des aktuellen Monats.</td></tr>
+<tr><th scope="row">Alle Zeit</th><td>Zeigen Sie die Ergebnisse über die gesamte aufgezeichnete Zeit an.</td></tr>
+<tr><th scope="row">Punktereihe</th><td>Lesen Sie den Rang, den Namen und die Punktzahl eines Spielers. Mit „Bild auf“ und „Bild ab“ werden Zeilen einzeln gelesen, auch wenn ein Filter den Fokus hat.</td></tr>
+<tr><th scope="row">Laden / keine Punkte</th><td>Statusmeldungen informieren Sie, wenn Ergebnisse geladen werden oder keine Ergebnisse verfügbar sind.</td></tr>
+<tr><th scope="row">Fahren Sie fort, wenn angezeigt</th><td>Gehen Sie von einer Ergebnis- oder Partytafel weiter.</td></tr>
+<tr><th scope="row">Zurück</th><td>Kehren Sie zum vorherigen Bildschirm zurück.</td></tr>
+</tbody>
+</table></div>
+<p>Standardmäßig ist <strong>O/P</strong> oder die Controller-Stoßfänger bewegen sich zwischen „Lokal“, „Freunde“ und „Global“. <strong>K/L</strong> oder D-Pad Links/Rechts, um zwischen Zeiträumen zu wechseln. Auf dem Party-Brett werden Sie möglicherweise zunächst aufgefordert, einen Namen für die Punktzahl auszuwählen oder einzugeben. Der Mod spricht diesen Namensauswahlstatus und die Bestätigung aus.</p>
+<div class="table-scroll"><table>
+<caption>Zusätzliche Schritte in der Gruppen-Rangliste</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Spielername</th><td>Wählen Sie den Namen aus, der dem fertigen Partylauf zugeordnet ist, oder geben Sie ihn ein.</td></tr>
+<tr><th scope="row">Namen bestätigen</th><td>Speichern Sie diesen Namen mit der Partitur für diese Party-Sitzung.</td></tr>
+<tr><th scope="row">Sitzungsbewertungszeilen</th><td>Vergleichen Sie die Ränge, Namen und Ergebnisse der Spieler aus dieser Party-Sitzung.</td></tr>
+<tr><th scope="row">Weiter / Zurück</th><td>Fahren Sie mit der Sitzung fort oder kehren Sie zurück, abhängig vom aktuellen Party-Bildschirm.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="achievements-menu">
+<h3>Erfolgsbuch</h3>
+<p>Das Spiel verfügt über ein eigenes Erfolgsbuch und schickt Sie nicht nur auf eine Steam-Seite. Durch verdiente Erfolge können diesem Buch Aufkleber hinzugefügt werden. Blättern Sie mit den Links-/Rechtspfeilen oder den Controller-Bumpern um. Verwenden Sie die Aufwärts-/Abwärts-Menüsteuerung, um den Namen, die Beschreibung und den gesperrten bzw. entsperrten Status jedes Eintrags anzuhören. Der Mod kündigt Buchanweisungen erst an, nachdem das Buch geöffnet wurde.</p>
+<div class="table-scroll"><table>
+<caption>Elemente des Erfolgsbuchs</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Seitenüberschrift</th><td>Identifiziert die aktuelle Buchseite.</td></tr>
+<tr><th scope="row">Leistungseintrag</th><td>Gibt den Titel und die Beschreibung an und gibt an, ob es gesperrt oder entsperrt ist.</td></tr>
+<tr><th scope="row">Aufkleber</th><td>Stellt eine verdiente Leistung im Buch dar.</td></tr>
+<tr><th scope="row">Vorherige / nächste Seite</th><td>Wechseln Sie mit der Links-/Rechtssteuerung des Spiels zu einer anderen Seite.</td></tr>
+<tr><th scope="row">Zurück</th><td>Schließen Sie das Buch und kehren Sie zum Hauptmenü zurück.</td></tr>
+</tbody>
+</table></div>
+<p>Die Einträge ändern sich, wenn Sie Erfolge erzielen. Daher beschreibt dieser Leitfaden die Steuerelemente des Buches, anstatt eine Liste gesperrter und freigeschalteter Gegenstände einzufrieren, die von Ihrem eigenen Spiel abweichen können.</p>
+</section>
+<section id="credits-menu">
+<h3>Spielguthaben</h3>
+<p>Die Original-Credits des Spiels scrollen visuell weiter. Drücken Sie mit den normalen Menüsteuerungen die Auf-/Ab-Taste, um sich jeweils eine Kreditlinie anzuhören, ohne dem Scrollen folgen zu müssen. Zurück kehrt zum Hauptmenü zurück. Das sind die <em>Spiel</em> Kredite; dieser Anleitung <a href="#project-credits">Mod-Credits</a> später erscheinen.</p>
+<div class="table-scroll"><table>
+<caption>Spielguthabenkontrolle</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Aktueller Kreditrahmen</th><td>Sprechen Sie die nächste oder vorherige Zeile mit Auf/Ab.</td></tr>
+<tr><th scope="row">Automatischer visueller Bildlauf</th><td>Der Abspann wird weiterhin auf dem Bildschirm angezeigt.</td></tr>
+<tr><th scope="row">Zurück</th><td>Zurück zum Hauptmenü.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="results-menu">
+<h3>Ergebnisse und Spiel vorbei</h3>
+<p>Wenn eine Runde endet, gibt der Mod zunächst die endgültige numerische Punktzahl für Solo, Party oder Pass It bekannt. Im Eins-gegen-Eins wird stattdessen die Gewinnerfarbe bekannt gegeben. Es spricht dann die fokussierte Ergebnisauswahl an, sodass das Menü das wichtige Ergebnis nicht abschneidet. Eine spätere Menübewegung kann die frühere Menüausgabe unterbrechen. Drücken Sie T oder drücken Sie den linken Stick, um das Ergebnis zu wiederholen, wann immer dieser Bildschirm sichtbar ist. Diese Abkürzung ist während einer Runde absichtlich nicht verfügbar.</p>
+<div class="table-scroll"><table>
+<caption>Informationen und Auswahlmöglichkeiten auf dem Ergebnisbildschirm</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Partitur, Solo / Party / Pass It</th><td>Zeigt an, wie viele korrekte Aktionen der abgeschlossene Lauf aufgezeichnet hat; Der Mod spricht es automatisch und auf Anfrage.</td></tr>
+<tr><th scope="row">Gewinner, Einzelgespräch</th><td>Zeigt Grün oder Gelb als Gewinner; Der Mod spricht es, anstatt eine numerische Punktzahl zu erfinden.</td></tr>
+<tr><th scope="row">Abspielen</th><td>Starten Sie einen weiteren Lauf des ausgewählten Modus.</td></tr>
+<tr><th scope="row">Bestenliste, Solo</th><td>Öffnen Sie nach einem Solo-Lauf die relevanten Ranglisten-Ergebnisse.</td></tr>
+<tr><th scope="row">Fahren Sie fort, wenn angezeigt</th><td>Fahren Sie mit dem nächsten Party- oder Shared-Modus-Schritt fort.</td></tr>
+<tr><th scope="row">Zurück</th><td>Rückkehr vom Ergebnisbildschirm.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="pause-menu">
+<h3>Pause-Menü</h3>
+<p>Drücken Sie Escape oder Controller Start, um eine Runde zu pausieren. Der Mod kündigt „Pausiert“ und die fokussierte Auswahl an, wenn das Pausenmenü geöffnet wird. Bewegen Sie den Fokus mit Oben/Unten, um zu hören <strong>Lebenslauf</strong> oder <strong>Hauptmenü</strong>, und bestätigen Sie dann Ihre Auswahl. Drücken Sie H oder drücken Sie den rechten Stick, um die verfügbaren Hinweise zur Pause-Menütaste anzuzeigen. Auch die übliche Zurück-Eingabe setzt die Runde fort.</p>
+<div class="table-scroll"><table>
+<caption>Panel-Aktionen pausieren</caption>
+<thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
+<tbody>
+<tr><th scope="row">Lebenslauf</th><td>Setzen Sie die pausierte Runde fort. Die übliche Zurück-Eingabe wird ebenfalls fortgesetzt.</td></tr>
+<tr><th scope="row">Hauptmenü</th><td>Verlassen Sie die aktuelle Runde und kehren Sie zum Hauptmenü zurück.</td></tr>
+</tbody>
+</table></div>
+</section>
+<section id="mode-guide">
+<h2>Detaillierte Modusanleitung</h2>
+<p>Alle vier Modi beginnen mit der Auswahl eines Songs/einer Bühne und der Auswahl von „Klassisch“ oder „Extrem“. Die Bühne verändert, was Sie sehen und hören, während die Befehle Ihnen sagen, welche Eingaben Sie machen müssen. Classic fragt nach KLOPFEN, DREHEN und ZIEHEN. Extreme kann auch nach KREISEN und SCHNIPSEN fragen. Wenn das Spiel einen Befehl spricht, drücken Sie die zugewiesene Eingabe, bevor das Zeitfenster abläuft. Sie können die Zuweisungen vor dem Spielen unter „Einstellungen“ &gt; „Steuerung“ überprüfen oder ändern. Bei einem erfolgreichen Durchlauf erhöht sich das Tempo, es gibt also keinen festen letzten Songabschnitt, der erreicht werden muss. Diese Regeln stammen aus der <a href="https://bopitthevideogame.com/bop-it-the-video-game-press-release">Offizielle Spielbeschreibung</a> und die aktuellen Punkte- und Ergebnisbildschirme des Spiels.</p>
+<section id="solo-mode">
+<h3>Solo</h3>
+<p>Solo ist der einfachste Ort, um den Rhythmus zu lernen. Auf jeden gesprochenen Befehl reagiert eine Person. Wenn das Spiel KLOPFEN sagt, verwenden Sie Ihre KLOPFEN-Eingabe; Wenn DREHEN oder ZIEHEN angezeigt wird, verwenden Sie stattdessen diese Eingabe. Seien Sie in Extreme auch auf KREISEN und SCHNIPSEN vorbereitet. Machen Sie weiter, während die Befehle schneller werden.</p>
+<p><strong>Wertung:</strong> Jede richtige Antwort bringt einen Punkt für den laufenden Lauf. Die Punktzahl ist Ihre Anzahl erfolgreicher Antworten. Eine falsche oder verpasste Antwort, auch wenn sie zu spät erfolgt, beendet diesen Lauf. Der Endergebnisbildschirm zeigt Ihre numerische Punktzahl. Der Mod kündigt es an, bevor er Wiederholung, Bestenliste oder Zurück liest. Sie können „Partitur lesen“ drücken, um sie noch einmal anzuhören. Solopartituren können auch in den Bestenlistenansichten „Lokal“, „Freunde“ und „Global“ angezeigt werden, sofern diese Ansichten verfügbar sind.</p>
+<p><strong>So fangen Sie von vorne an:</strong> Wählen Sie auf dem Ergebnisbildschirm „Wiederholen“ oder kehren Sie zurück und wählen Sie einen anderen Modus oder Song. Eine Wiederholung ist ein neuer Lauf; Ihr vorheriges Ergebnis kann weiterhin in der Bestenliste verglichen werden, wo das Spiel es aufzeichnet.</p>
+</section>
+<section id="party-mode">
+<h3>Party</h3>
+<p>Party ist für eine Gruppe, die sich abwechselt. Jeder spielt <em>ihre eigenen</em> ausführen und auf die gleichen aufgerufenen Befehle reagieren wie Solo. Wenn der Lauf einer Person endet, kann das Spiel nach einem Namen fragen, der dem Punktestand zugeordnet werden soll. Fahren Sie mit der Party-Bestenliste der Sitzung fort und lassen Sie dann die nächste Person an der Reihe sein. Dies ist eine benutzerfreundliche Möglichkeit, Läufe zu vergleichen, ohne dass alle gleichzeitig handeln müssen.</p>
+<p><strong>Wertung:</strong> Erfolgreiche Antworten bilden die numerische Laufpunktzahl des Spielers. Ein falscher, verpasster oder verspäteter Befehl beendet seinen Lauf und das Endergebnis gehört diesem Spieler. Die Sitzungsbestenliste listet Namen, Ränge und Punkte auf, sodass die Gruppe die Ergebnisse vergleichen kann. Das Spiel schreibt keinen einzigen formellen Gewinner vor; Ihre Gruppe kann entscheiden, was als Sieg gilt. Der Mod liest den Punktestand bei Spielende, dann die nächste Menüauswahl und spricht den Gruppennamen und die Bestenlistenschritte an.</p>
+<p><strong>So spielen Sie weiter:</strong> Klicken Sie auf „Weiter“, wenn es angeboten wird, wählen Sie den Namen aus oder bestätigen Sie ihn, wenn Sie dazu aufgefordert werden, und verfolgen Sie das Spiel bis zum nächsten Spieler oder zur nächsten Punkteansicht. Wenn Sie noch einmal spielen, beginnt ein weiterer gewerteter Lauf, anstatt den gerade beendeten zu verlängern.</p>
+</section>
+<section id="pass-it-mode">
+<h3>Übergeben Sie es</h3>
+<p>Bestehen Es ist eine gemeinsame Herausforderung. Ein Spieler reagiert auf Befehle, bis das Spiel ruft <q>Übergeben Sie es!</q> Geben Sie bei diesem Anruf den Controller umgehend an die nächste Person weiter. Der nächste Spieler setzt das Spiel fort <em>gleich</em> Streifen. Passen Sie weiter, wenn Sie dazu aufgefordert werden, und befolgen Sie weiterhin die Bop It-Befehle des Spiels. Dieser Modus funktioniert am besten, wenn jeder weiß, wer als nächstes den Controller erhält und genügend Platz hat, um ihn sicher weiterzugeben.</p>
+<p><strong>Wertung:</strong> Richtige Antworten setzen eine gemeinsame numerische Bewertung fort, anstatt für jede Person eine neue Bewertung zu beginnen. Die Person, die den Streak unterbricht, indem sie einen Befehl verpasst, beendet die Runde. Der Ergebnisbildschirm zeigt die endgültige geteilte Punktzahl, die der Mod automatisch ansagt und mit Read Score wiederholen kann. Anhand der Punktzahl erfahren Sie, wie weit die Gruppe gekommen ist. In diesem Modus handelt es sich nicht um eine Einzelspielerwertung.</p>
+<p><strong>So versuchen Sie es noch einmal:</strong> Wählen Sie „Wiederholen“, um eine neue gemeinsame Serie zu starten, oder „Zurück“, um die Ergebnisse zu verlassen.</p>
+</section>
+<section id="one-on-one-mode">
+<h3>Eins zu eins</h3>
+<p>Beim Eins-gegen-Eins treten zwei Spieler an, <strong>Gelb</strong> und <strong>Grün</strong>, in die gleiche Runde. Jeder beginnt mit <strong>drei Leben</strong>. Gelb antwortet auf DREHEN und ZIEHEN; Grün antwortet auf KREISEN und SCHNIPSEN. KLOPFEN ist ein gemeinsames Rennen: Beide Spieler sollten bereit sein, und der erste, der KLOPFEN trifft, erhält ein Leben, bis zur Drei-Lebens-Grenze des Spiels. Für einige Veränderungen sorgt das Spiel mit dezenten Sounds. Wenn „Einstellungen“ &gt; „Mod-Einstellungen“ &gt; „Eins-zu-Eins-Feedback“ aktiviert ist (Standardeinstellung), kündigt der Mod die aktive Startfarbe oder die wechselnde aktive Farbe und die Anzahl der Leben nach einem Verlust oder Gewinn an.</p>
+<p><strong>So endet eine Runde:</strong> Das Fehlen eines erforderlichen Befehls kostet den verantwortlichen Spieler ein Leben. Der erste Spieler, dessen Leben Null erreichen, verliert und die andere Farbe gewinnt. Im Gegensatz zu Solo, Party und Pass It ist das Ergebnis ein <strong>Gewinner, kein numerisches Endergebnis</strong>. Der Mod gibt die Gewinnerfarbe bekannt, wenn das Spiel zu Ende ist; „Score lesen“ wiederholt dieses Ergebnis, während der Ergebnisbildschirm sichtbar ist. Die optionalen Lebensansagen gelten nur für diesen Modus.</p>
+<p><strong>Gemeinsam vorbereiten:</strong> Vereinbaren Sie vor Beginn, welche Person Gelb und welche Grün ist. Überprüfen Sie den aktuellen Steuerungsbildschirm, insbesondere die zweite Zuweisung KLOPFEN, wenn Sie ein Eingabegerät gemeinsam nutzen möchten. Eins-gegen-Eins ist schnell, daher kann eine Übungsrunde beiden Spielern helfen, ihre Steuerung zu erlernen.</p>
+</section>
+</section>
+<section id="roadmap">
+<h2>Was kann als nächstes kommen?</h2>
+<p>Dieses Projekt ist noch jung. Zu den möglichen Arbeiten gehören ein ordnungsgemäßes Installationsprogramm, eine stärkere Unterstützung für die verbleibenden Spielbildschirme und weitere Verbesserungen der Sprachreaktionsfähigkeit. Wir können die Umstellung der Sprachverarbeitung von Tolk auf untersuchen <a href="https://github.com/ethindp/prism">Prisma</a> wenn es sich als besser erweist. Das ist eine Idee für die Forschung, <strong>keine aktuelle Abhängigkeit oder ein versprochener Wechsel</strong>.</p>
+<p>Spielervorschläge und Berichte werden dazu beitragen, zukünftige Verbesserungen zu gestalten. Christopher beabsichtigt, die Mod im Laufe der Zeit zu pflegen, wobei Aktualisierungen durch echtes Spielen und sorgfältige menschliche Überprüfung erfolgen. Die <a href="https://github.com/Chris-E-Shaw/BopItAccess">Projekt-Repository</a> ist der Ort, an dem Sie die Quelle und Dokumentation verfolgen können, während sie sich entwickeln.</p>
+</section>
+<section id="project-credits">
+<h2>Quellennachweise und Hinweise Dritter</h2>
+<div class="table-scroll"><table>
+<caption>Bop It Access Projektguthaben</caption>
+<thead><tr><th scope="col">Mitwirkender</th><th scope="col">Rolle</th></tr></thead>
+<tbody>
+<tr><th scope="row">Christopher Shaw</th><td>Haupt-Mod-Designer. Legen Sie die Barrierefreiheitsziele und das Verhalten fest, überprüfen Sie frühere Builds und leiten Sie reale Spieletests und Feedback. Neue Übersetzungen warten noch auf die Prüfung durch einen fließenden Sprecher.</td></tr>
+<tr><th scope="row">GPT-6 Luna</th><td>KI-Mitarbeiter bei der ersten Tolk Sprachausgabe-Implementierung und frühen Projektvorbereitungen.</td></tr>
+<tr><th scope="row">GPT-6 Sol</th><td>KI-Mitarbeiter bei anschließender Recherche, Codegenerierung, Debugging, Quellverlaufsarbeit und Dokumentation.</td></tr>
+<tr><th scope="row">Menschliche Spieler und Tester</th><td>Auf verschiedenen Systemen gespielt, das tatsächliche Verhalten des Mods überprüft und das Feedback geteilt, das jede Überarbeitung nützlich machte.</td></tr>
+</tbody>
+</table></div>
+<p>Veröffentlichte Quell-Commits identifizieren KI-Mitarbeiter in ihren Co-Autoren-Trailern. Die <a href="BopItAccess-build-history.html">Technische Baugeschichte</a> zeichnet die Arbeit hinter jedem früheren Build auf. Die eigene Quelle des Mods verfügt noch nicht über eine ausgewählte öffentliche Lizenz; Gehen Sie nicht davon aus, dass seine Lizenz mit seinen Abhängigkeiten identisch ist.</p>
+<div class="table-scroll"><table>
+<caption>Bibliotheken, Laufzeitkomponenten und Lizenzen</caption>
+<thead><tr><th scope="col">Komponente</th><th scope="col">Warum es wichtig ist</th><th scope="col">Lizenz/Hinweis</th></tr></thead>
+<tbody>
+<tr><th scope="row"><a href="https://github.com/LavaGang/MelonLoader">MelonLoader</a></th><td>Lädt den Mod in das Spiel Unity.</td><td><a href="https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md">Apache-Lizenz 2.0</a>; separat von diesem Quell-Repository verteilt.</td></tr>
+<tr><th scope="row">Harmony (<code>0Harmony.dll</code>)</th><td>Ermöglicht es dem Mod, zu erkennen, wann die gespeicherten Einstellungen des Spiels vollständig geladen sind, sodass die erstmaligen Audiopegel anschließend angewendet werden.</td><td>Lieferung mit separat installiertem MelonLoader; Konsultieren Sie die beigefügten Hinweise. Nicht in diesem Quell-Repository oder dem lokalen Mod-Paket enthalten.</td></tr>
+<tr><th scope="row"><a href="https://github.com/dkager/tolk">Tolk</a></th><td>Verbindet den Mod mit Bildschirmleseprogrammen und Braille-APIs.</td><td><a href="https://github.com/dkager/tolk/blob/master/LICENSE.txt">GNU LGPL Version 3</a>; Dank geht an die Tolk Mitwirkenden.</td></tr>
+<tr><th scope="row"><a href="https://github.com/nvaccess/nvda/tree/master/extras/controllerClient">NVDA Controller-Client</a></th><td>Die <code>nvdaControllerClient64.dll</code> native Bibliothek, die mit Tolk verwendet wird.</td><td><a href="https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt">GNU LGPL-Version 2.1</a>; Dank geht an NV Access und Mitwirkende.</td></tr>
+<tr><th scope="row"><a href="https://dotnet.microsoft.com/">.NET 6</a></th><td>Der Mod zielt auf das .NET 6-Framework ab und benötigt zum Erstellen das passende Targeting-Paket.</td><td><a href="https://github.com/dotnet/core/blob/main/license-information.md">Lizenzinformationen .NET von Microsoft</a> unterscheidet MIT-lizenzierte Quellen von Windows-Laufzeitverteilungen unter der .NET-Bibliothekslizenz.</td></tr>
+<tr><th scope="row">Windows SAPI</th><td>Bietet eine Backup-Systemsprache, wenn diese Option ausgewählt ist oder kein unterstützter Bildschirmleser erkannt wird.</td><td>Eine Windows-Komponente; nicht als separate Bibliothek in diesem Quell-Repository gebündelt.</td></tr>
+<tr><th scope="row">Spiel- und Loader-Build-Referenzen</th><td>Der Mod wird mit MelonLoader, Il2CppInterop.Runtime, den Assembly-CSharp- und Il2Cppmscorlib-Dateien des Spiels, den Modulen Unity Engine/UI/Input System/TextMeshPro und den Modulen des Spiels kompiliert FMODUnity und DOTween-Baugruppen.</td><td>Diese stammen aus dem separat installierten Spiel und Loader und unterliegen ihren eigenen geltenden Bedingungen. Das Quell-Repository verteilt diese Assemblys nicht weiter.</td></tr>
+<tr><th scope="row"><a href="https://github.com/argosopentech/argos-translate">Argos Translate</a></th><td>Offline-Authoring-Tool zur Vorbereitung des ersten nicht-englischen Mod- und Dokumentationstextes. Beim Spielen wird es nicht benötigt.</td><td><a href="https://github.com/argosopentech/argos-translate/blob/master/LICENSE">MIT-Lizenz</a> oder CC0; Die Modelle und das Python-Paket sind nicht im Mod enthalten.</td></tr>
+<tr><th scope="row"><a href="https://www.crummy.com/software/BeautifulSoup/">Wunderschöne Suppe</a></th><td>Autorentool zum Beibehalten der HTML-Struktur beim Übersetzen der Leitfäden. Beim Spielen wird es nicht benötigt.</td><td>MIT-Lizenz; Das Python-Paket ist nicht im Mod enthalten.</td></tr>
+</tbody>
+</table></div>
+<p>Sehen Sie sich die Projekte an <a href="THIRD-PARTY-NOTICES.txt">Hinweise Dritter</a> für die nativen Dateien, die von lokalen Installationspaketen verwendet werden. Das aktuelle GitHub-Repository tut dies <strong>nicht</strong> Dazu gehören die kompilierte Mod-DLL, die DLL Tolk oder die Controller-Client-DLL NVDA. Prism wird nur in der Roadmap erwähnt; Es wird derzeit nicht vom Mod verwendet.</p>
+</section>
+<section id="legal">
+<h2>Rechtliche Hinweise</h2>
+<p>Bop It Access ist ein inoffizielles, von Fans erstelltes Projekt. Es wurde nicht von Hasbro, der Entwickler-/Herausgeberallianz des Spiels, Valve, Microsoft, Unity, MelonLoader, Tolk, NV Access oder einem anderen Hersteller von Bildschirmlesegeräten erstellt, genehmigt oder unterstützt. <strong>Bop It!</strong> und zugehörige Charaktere, Grafiken, Sounds und Marken sind Eigentum von Hasbro und ihren jeweiligen Rechteinhabern. Steam gehört zu Valve. Andere Produktnamen, Marken und Software bleiben Eigentum ihrer jeweiligen Inhaber.</p>
+<p>Sie müssen Ihre eigene legale Kopie des Spiels erwerben. Dieses Handbuch und das Quell-Repository gewähren keine Rechte am Spiel oder seinen Assets und beinhalten diese auch nicht. Die Abhängigkeiten des Mods behalten jeweils ihre eigenen Lizenzen, die oben verlinkt sind. Bei der Verwendung oder Verteilung eines zukünftigen Installationsprogramms müssen diese Lizenzen respektiert werden. Informationen zum Originalspiel und seinen Rechten finden Sie im <a href="https://bopitthevideogame.com/">offizielle Bop It!-Spieleseite</a> und <a href="https://store.steampowered.com/app/3214360/">Steam Auflistung</a>.</p>
+</section>
+<section class="panel" id="thanks">
+<h2>Vielen Dank</h2>
+<p>An alle, die diesen Mod getestet, Feedback gegeben, ihn zum ersten Mal ausprobiert oder an mich geglaubt haben: Danke. Ihre Unterstützung motiviert mich, weiterhin Dinge in einer Welt zu schaffen, die sich verrückt und zutiefst fehlerhaft anfühlen kann. Ich hoffe, dass dieses Projekt es Ihnen leichter macht, das Spiel zu genießen und es mit anderen zu teilen. Vielen Dank euch allen. Genießen Sie Bop It!</p>
+<p>— Christopher Shaw</p>
+</section>
+</main>
+<footer>
+<p class="small">Bop It Access Benutzerhandbuch. Aktuelle Funktionen spiegeln die Quelle in der Version 0.8.0 wider; Geplante Artikel sind deutlich gekennzeichnet. <a href="#contents">Zurück zum Inhalt</a>.</p>
+</footer>
+</body>
+</html>

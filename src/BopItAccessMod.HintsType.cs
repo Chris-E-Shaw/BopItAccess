@@ -119,23 +119,33 @@ public sealed partial class BopItAccessMod
     {
         // The binding comes first so a listener hears the control before its
         // effect. The hint's purpose then explains what that input does.
-        string action = purpose.Trim().TrimEnd('.');
+        string action = L(purpose.Trim().TrimEnd('.'));
+        string keyboardName = LocalizeBindingDisplay(keyboard);
+        string controllerName = LocalizeBindingDisplay(controller);
         return EffectiveHintDevice switch
         {
-            HintDevice.Keyboard => $"{keyboard}, {action}.",
-            HintDevice.Controller => $"{controller}, {action}.",
-            _ => $"{keyboard} on keyboard; {controller} on controller, {action}."
+            HintDevice.Keyboard => LF("{0}, {1}.",
+                keyboardName, action),
+            HintDevice.Controller => LF("{0}, {1}.",
+                controllerName, action),
+            _ => LF("{0} on keyboard; {1} on controller, {2}.",
+                keyboardName, controllerName, action)
         };
     }
 
     private string FormatHintUse(string keyboard, string controller, string purpose)
     {
-        string action = purpose.Trim().TrimEnd('.');
+        string action = L(purpose.Trim().TrimEnd('.'));
+        string keyboardName = LocalizeBindingDisplay(keyboard);
+        string controllerName = LocalizeBindingDisplay(controller);
         return EffectiveHintDevice switch
         {
-            HintDevice.Keyboard => $"{keyboard}, {action}.",
-            HintDevice.Controller => $"{controller}, {action}.",
-            _ => $"{keyboard} on keyboard; {controller} on controller, {action}."
+            HintDevice.Keyboard => LF("{0}, {1}.",
+                keyboardName, action),
+            HintDevice.Controller => LF("{0}, {1}.",
+                controllerName, action),
+            _ => LF("{0} on keyboard; {1} on controller, {2}.",
+                keyboardName, controllerName, action)
         };
     }
 }

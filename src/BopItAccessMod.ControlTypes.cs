@@ -48,8 +48,8 @@ public sealed partial class BopItAccessMod
             return label;
 
         string stem = label.TrimEnd();
-        if (stem.EndsWith(".", StringComparison.Ordinal))
+        if (stem.Length > 0 && (stem[^1] is '.' or '。'))
             stem = stem[..^1];
-        return $"{stem} {type}";
+        return LF("{0} {1}", stem, L(type));
     }
 }

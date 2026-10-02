@@ -130,14 +130,17 @@ public sealed partial class BopItAccessMod
                     string.Empty;
                 bool controller = IsGamepadDevice(device);
                 string deviceSuffix = _hintsType == "Both"
-                    ? controller ? " on controller" : " on keyboard"
+                    ? controller ? L(" on controller") : L(" on keyboard")
                     : string.Empty;
                 string assign = controller
-                    ? "Press a new button" + deviceSuffix + " to assign it. "
-                    : "Press a new key" + deviceSuffix + " to assign it. ";
+                    ? LF("Press a new button{0} to assign it. ",
+                        deviceSuffix)
+                    : LF("Press a new key{0} to assign it. ",
+                        deviceSuffix);
                 string cancel = custom
-                    ? (controller ? "East face button" : "Escape") + deviceSuffix +
-                        ", cancel rebinding."
+                    ? LF("{0}{1}, cancel rebinding.",
+                        L(controller ? "East face button" : "Escape"),
+                        deviceSuffix)
                     : UiBackHint("cancel rebinding");
                 return ("Controls:Rebinding", assign + cancel);
             }
@@ -179,20 +182,29 @@ public sealed partial class BopItAccessMod
                 IsHintPanelVisible(party?.leaderboardWrapper))
             {
                 string nameHint = party!.State == PartyLeaderboardState.Input
-                    ? "Choose name for score. " + UiSubmitHint("confirm name")
-                    : "Choose name for score.";
+                    ? L("Choose name for score.") + " " +
+                        UiSubmitHint("confirm name")
+                    : L("Choose name for score.");
                 string continueHint = party.State == PartyLeaderboardState.Input
                     ? string.Empty : UiSubmitHint("continue");
                 string backHint = UiBackHint("return to result screen");
                 string? focused = ReadLeaderboardFocusedItem(party.transform).Label;
                 string rowsHint = _leaderboardCachedRows.Count > 0
                     ? HintLeaderboardRows(focused == null) : string.Empty;
-                string? focusedHint = focused switch
+                GameObject? selectedParty =
+                    EventSystem.current?.currentSelectedGameObject;
+                string partyControlName = selectedParty?.name ?? string.Empty;
+                string? focusedHint = partyControlName switch
                 {
-                    "Back" => backHint,
-                    "Continue" => continueHint,
-                    _ when focused != null && focused.StartsWith("Rank ",
-                        StringComparison.OrdinalIgnoreCase) => rowsHint,
+                    _ when partyControlName.Contains("Back",
+                        StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(focused, L("Back"),
+                            StringComparison.OrdinalIgnoreCase) => backHint,
+                    _ when partyControlName.Contains("Continue",
+                        StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(focused, L("Continue"),
+                            StringComparison.OrdinalIgnoreCase) => continueHint,
+                    _ when selectedParty?.GetComponentInParent<PartyLeaderboardLineItem>() != null => rowsHint,
                     _ => null
                 };
                 var hints = new List<string>(5);
@@ -244,7 +256,7 @@ public sealed partial class BopItAccessMod
             string read = !_creditsAutoReading && _creditsLines.Count > 1
                 ? HintNavigation(true, "read credits line by line",
                     HintUiMoveAction()) + " "
-                : "Credits read automatically. ";
+                : L("Credits read automatically.") + " ";
             return ("Credits:" + (_creditsAutoReading ? "Auto" : "Manual"),
                 WithGlobalControlHints(read + UiBackHint("return to main menu")));
         }
@@ -282,12 +294,20 @@ public sealed partial class BopItAccessMod
                 ? selected.GetComponentInParent<Selectable>() : null;
             string? label = focused == null ? null :
                 ReadTrackSelectControlLabel(focused);
-            string? primary = label switch
+            string controlName = focused?.gameObject.name ?? string.Empty;
+            string? primary = controlName switch
             {
-                "Start" => startHint,
-                "Back" => backHint,
-                _ when label != null && label.Contains("Extreme",
-                    StringComparison.OrdinalIgnoreCase) => difficultyHint,
+                _ when controlName.Contains("Start", StringComparison.OrdinalIgnoreCase) ||
+                    controlName.Contains("Play", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(label, L("Start"),
+                        StringComparison.OrdinalIgnoreCase) => startHint,
+                _ when controlName.Contains("Back", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(label, L("Back"),
+                        StringComparison.OrdinalIgnoreCase) => backHint,
+                _ when controlName.Contains("Extreme", StringComparison.OrdinalIgnoreCase) ||
+                    controlName.Contains("Difficulty", StringComparison.OrdinalIgnoreCase) ||
+                    label?.Contains(L("Extreme"),
+                        StringComparison.OrdinalIgnoreCase) == true => difficultyHint,
                 _ => songHint
             };
             var hints = new List<string>(5) { primary };
@@ -328,8 +348,8 @@ public sealed partial class BopItAccessMod
             "Left Arrow", "top face button");
         string difficultyHint = HintNativeAction("Pull",
             "change difficulty", "Right Arrow", "right stick", true);
-        string groupHint = LeaderboardAxisHint("ChangeGroup", "group");
-        string dateHint = LeaderboardAxisHint("ChangeDateRange", "date");
+        string groupHint = LeaderboardAxisHint("ChangeGroup");
+        string dateHint = LeaderboardAxisHint("ChangeDateRange");
         string continueHint = result ? UiSubmitHint("continue") : string.Empty;
         string backHint = result ? UiBackHint("return") :
             UiBackHint("return to main menu");
@@ -351,18 +371,33 @@ public sealed partial class BopItAccessMod
             else if (selected.GetComponentInParent<LeaderboardLineItem>() != null ||
                 selected.GetComponentInParent<PartyLeaderboardLineItem>() != null)
                 primary = rowsHint;
-            else if (string.Equals(focusedLabel, "Continue",
-                StringComparison.OrdinalIgnoreCase))
-                primary = continueHint;
-            else if (string.Equals(focusedLabel, "Back",
-                StringComparison.OrdinalIgnoreCase))
-                primary = backHint;
-            else if (string.Equals(focusedLabel, "Classic",
+            else if (selected!.name.Contains("Continue",
                 StringComparison.OrdinalIgnoreCase) ||
-                string.Equals(focusedLabel, "Extreme",
+                string.Equals(focusedLabel, L("Continue"),
+                    StringComparison.OrdinalIgnoreCase))
+                primary = continueHint;
+            else if (selected.name.Contains("Back",
+                StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(focusedLabel, L("Back"),
+                    StringComparison.OrdinalIgnoreCase))
+                primary = backHint;
+            else if (selected.name.Contains("Classic",
+                StringComparison.OrdinalIgnoreCase) ||
+                selected.name.Contains("Extreme",
+                    StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(focusedLabel, L("Classic"),
+                    StringComparison.OrdinalIgnoreCase) ||
+                string.Equals(focusedLabel, L("Extreme"),
                     StringComparison.OrdinalIgnoreCase))
                 primary = difficultyHint;
-            else if (focusedLabel is "Shapes" or "Space" or "City" or "Office")
+            else if (selected.name.Contains("Shapes",
+                    StringComparison.OrdinalIgnoreCase) ||
+                selected.name.Contains("Space", StringComparison.OrdinalIgnoreCase) ||
+                selected.name.Contains("City", StringComparison.OrdinalIgnoreCase) ||
+                selected.name.Contains("Office", StringComparison.OrdinalIgnoreCase) ||
+                new[] { "Shapes", "Space", "City", "Office" }.Any(theme =>
+                    string.Equals(focusedLabel, L(theme),
+                        StringComparison.OrdinalIgnoreCase)))
                 primary = songHint;
         }
         var hints = new List<string>(7);
@@ -377,7 +412,7 @@ public sealed partial class BopItAccessMod
             WithGlobalControlHints(string.Join(" ", hints)));
     }
 
-    private string LeaderboardAxisHint(string actionName, string noun)
+    private string LeaderboardAxisHint(string actionName)
     {
         InputRebindingManager? manager = _controlsRebindingManager;
         if (manager == null)
@@ -392,10 +427,12 @@ public sealed partial class BopItAccessMod
             .FindAction(actionName, false);
         bool group = actionName == "ChangeGroup";
         string previous = HintActionSentence(action, null,
-            "choose previous " + noun, group ? "O" : "K",
+            group ? "choose previous group" : "choose previous date",
+            group ? "O" : "K",
             group ? "left shoulder button" : "D-Pad Left", "negative");
         string next = HintActionSentence(action, null,
-            "choose next " + noun, group ? "P" : "L",
+            group ? "choose next group" : "choose next date",
+            group ? "P" : "L",
             group ? "right shoulder button" : "D-Pad Right", "positive");
         return previous + " " + next;
     }
@@ -408,8 +445,10 @@ public sealed partial class BopItAccessMod
             "toggle" => UiSubmitHint("change toggle"),
             _ => UiSubmitHint("activate button")
         };
+        string returnPurpose = returnTo == "Settings"
+            ? "return to Settings" : "return to main menu";
         return focused + " " + HintNavigation(true, "choose option") + " " +
-            UiBackHint("return to " + returnTo);
+            UiBackHint(returnPurpose);
     }
 
     private string WithGlobalControlHints(string hint)

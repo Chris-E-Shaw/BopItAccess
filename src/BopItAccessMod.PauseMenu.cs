@@ -1,4 +1,5 @@
 using Il2Cpp;
+using Il2CppTMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -58,7 +59,7 @@ public sealed partial class BopItAccessMod
         {
             _pauseMenuWasVisible = true;
             _lastPauseMenuFocusedId = focusedId;
-            string introduction = "Paused.";
+            string introduction = L("Paused.");
             if (label != null)
                 introduction += " " + WithMenuIndex(
                     WithControlType(label, "button"), index, count) + ".";
@@ -88,8 +89,10 @@ public sealed partial class BopItAccessMod
             selected.transform.IsChildOf(panel.transform)
             ? selected.GetComponentInParent<Button>() : null;
         int id = button?.GetInstanceID() ?? 0;
-        string? label = Matches(resume, id) ? "Resume" :
-            Matches(mainMenu, id) ? "Main menu" : null;
+        string? label = Matches(resume, id)
+            ? ReadPauseButtonLabel(resume, "Resume")
+            : Matches(mainMenu, id)
+                ? ReadPauseButtonLabel(mainMenu, "Main menu") : null;
         if (label == null)
             return (0, null, -1, 0);
 
@@ -105,6 +108,10 @@ public sealed partial class BopItAccessMod
         }
         return (id, label, index, count);
     }
+
+    private static string ReadPauseButtonLabel(Button? button, string fallback) =>
+        CleanSpeechValue(button?.GetComponentInChildren<TMP_Text>(true)?.text)
+        ?? L(fallback);
 
     private void ResetPauseMenuFocus()
     {

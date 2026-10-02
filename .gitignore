@@ -5,6 +5,8 @@
 /runtime/
 /source-package/
 /tools/
+/scripts/__pycache__/
+*.pyc
 /src/bin/
 /src/obj/
 

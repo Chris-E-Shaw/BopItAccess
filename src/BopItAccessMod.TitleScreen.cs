@@ -70,14 +70,15 @@ public sealed partial class BopItAccessMod
         if (id != _lastTitleScreenId)
         {
             _lastTitleScreenId = id;
-            string bop = HintNativeAction("Bop", "open main menu",
+            string bop = HintNativeAction("Bop", L("open main menu"),
                 "Space", "confirm button");
             string instruction = _readButtonHintsEnabled &&
                 _buttonHintsDelaySeconds == 0
                 ? WithGlobalControlHints(bop) : bop;
             // The mod's startup notice may still be speaking. Queue this
             // instruction behind it, while a later menu focus may interrupt.
-            QueueSpeech("Title screen. " + instruction, interrupt: false);
+            QueueSpeech(L("Title screen.") + " " + instruction,
+                interrupt: false);
             WriteStatus("Title screen visible; announced Bop to open main menu.");
         }
 

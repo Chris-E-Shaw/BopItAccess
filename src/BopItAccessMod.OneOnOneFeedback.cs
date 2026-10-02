@@ -138,7 +138,7 @@ public sealed partial class BopItAccessMod
                 _oneOnOneLastColour = colour;
                 if (colour.HasValue)
                 {
-                    QueueSpeech(colour.Value.ToString());
+                    QueueSpeech(L(colour.Value.ToString()));
                     WriteStatus("One-on-one starting colour: " + colour.Value + ".");
                 }
                 return;
@@ -156,10 +156,10 @@ public sealed partial class BopItAccessMod
                 bool bothLivesChanged = yellowLifeChanged && greenLifeChanged;
                 lifeChanged = yellowLifeChanged || greenLifeChanged;
                 if (yellowLifeChanged)
-                    announcements.Add((bothLivesChanged ? "Yellow, " : "") +
+                    announcements.Add((bothLivesChanged ? L("Yellow") + ", " : "") +
                         FormatOneOnOneLives(yellowLives));
                 if (greenLifeChanged)
-                    announcements.Add((bothLivesChanged ? "Green, " : "") +
+                    announcements.Add((bothLivesChanged ? L("Green") + ", " : "") +
                         FormatOneOnOneLives(greenLives));
             }
 
@@ -170,7 +170,7 @@ public sealed partial class BopItAccessMod
             // side through them; guessing a colour there would mislead play.
             if (colour.HasValue && colour != _oneOnOneLastColour)
             {
-                announcements.Add(colour.Value.ToString());
+                announcements.Add(L(colour.Value.ToString()));
                 _oneOnOneLastColour = colour;
             }
 
@@ -213,7 +213,7 @@ public sealed partial class BopItAccessMod
     };
 
     private static string FormatOneOnOneLives(int count) =>
-        count == 1 ? "1 life" : $"{count} lives";
+        count == 1 ? L("1 life") : LF("{0} lives", count);
 
     private void ResetOneOnOneFeedbackSession()
     {

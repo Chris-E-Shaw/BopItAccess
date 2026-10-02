@@ -143,10 +143,11 @@ public sealed partial class BopItAccessMod
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = false;
             _lastControlsResetSnapshot = null;
-            string label = WithControlType("Reset Gyro", "button");
-            string message = binding == null ? label : $"{label}, {binding}";
+            string label = WithControlType(L("Reset Gyro"), "button");
+            string message = binding == null ? label : LF("{0}, {1}", label,
+                LocalizeBindingDisplay(binding));
             if (rebinding)
-                message += ". Listening for input";
+                message += L(".") + " " + L("Listening for input");
             QueueFocusSpeech(WithControlsIntroduction(message));
             return;
         }
@@ -157,14 +158,14 @@ public sealed partial class BopItAccessMod
             _lastControlsBinding = binding;
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = true;
-            QueueSpeech(binding);
+            QueueSpeech(LocalizeBindingDisplay(binding));
             return;
         }
         if (rebinding && !_lastControlsRebinding)
-            QueueSpeech("Listening for input");
+            QueueSpeech(L("Listening for input"));
         else if (!rebinding && _lastControlsRebinding &&
                  !_controlsBindingChangedDuringRebind)
-            QueueSpeech("Binding unchanged");
+            QueueSpeech(L("Binding unchanged"));
         _lastControlsRebinding = rebinding;
     }
 
@@ -186,7 +187,7 @@ public sealed partial class BopItAccessMod
                 RestoreResetGyroOriginalOverride();
             CancelResetGyroControlRebinding(false);
             if (wasRebinding)
-                QueueSpeech("Rebinding failed");
+                QueueSpeech(L("Rebinding failed"));
         }
     }
 
@@ -244,7 +245,7 @@ public sealed partial class BopItAccessMod
             FindResetGyroAction(manager.playerInput?.actions);
         if (action == null)
         {
-            QueueSpeech("Reset Gyro binding unavailable");
+            QueueSpeech(L("Reset Gyro binding unavailable"));
             return;
         }
         string device = manager.ActiveDevice ?? manager.deviceTracker?.ActiveDevice ?? string.Empty;
@@ -252,7 +253,7 @@ public sealed partial class BopItAccessMod
         int index = FindResetGyroBindingIndex(action, gamepad);
         if (index < 0)
         {
-            QueueSpeech("Reset Gyro binding unavailable for this device");
+            QueueSpeech(L("Reset Gyro binding unavailable for this device"));
             return;
         }
         string? originalPath = action.bindings[index].overridePath;
@@ -315,7 +316,7 @@ public sealed partial class BopItAccessMod
             RestoreResetGyroOriginalOverride();
             ReleaseResetGyroControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech("Binding unavailable");
+            QueueSpeech(L("Binding unavailable"));
             return;
         }
 
@@ -325,7 +326,7 @@ public sealed partial class BopItAccessMod
             RestoreResetGyroOriginalOverride();
             ReleaseResetGyroControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech("That input is already assigned to " + owner);
+            QueueSpeech(LF("That input is already assigned to {0}", L(owner)));
             return;
         }
 
@@ -336,7 +337,7 @@ public sealed partial class BopItAccessMod
             RestoreResetGyroOriginalOverride();
             ReleaseResetGyroControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech(CleanSpeechValue(invalidMessage) ?? "Binding unavailable");
+            QueueSpeech(L(CleanSpeechValue(invalidMessage) ?? "Binding unavailable"));
             return;
         }
 
@@ -362,7 +363,8 @@ public sealed partial class BopItAccessMod
         _lastControlsRebinding = false;
         _controlsBindingChangedDuringRebind = false;
         WriteStatus($"Rebound Reset Gyro to {path}.");
-        QueueSpeech(_lastControlsBinding ?? "Binding changed");
+        QueueSpeech(_lastControlsBinding == null ? L("Binding changed") :
+            LocalizeBindingDisplay(_lastControlsBinding));
     }
 
     private void CancelResetGyroControlRebinding(bool announce = true)
@@ -372,7 +374,7 @@ public sealed partial class BopItAccessMod
         if (wasActive)
             _lastControlsRebinding = false;
         if (wasActive && announce)
-            QueueSpeech("Binding unchanged");
+            QueueSpeech(L("Binding unchanged"));
     }
 
     private void ReleaseResetGyroControlRebinding()

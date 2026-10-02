@@ -16,6 +16,7 @@ public sealed partial class BopItAccessMod
     private SettingsSlider? _fpsSettingsSlider;
     private UnityAction<int>? _fpsSliderMovedListener;
     private int _fpsSettingsPanelId;
+    private string? _fpsSettingsRenderedLocale;
     private long _nextFpsSettingsProbeAt;
     private long _nextFpsSettingsErrorLogAt;
 
@@ -50,7 +51,15 @@ public sealed partial class BopItAccessMod
 
         int panelId = panel.GetInstanceID();
         if (_fpsSettingsSlider != null && _fpsSettingsPanelId == panelId)
+        {
+            if (!string.Equals(_fpsSettingsRenderedLocale,
+                CurrentGameLocale, StringComparison.Ordinal))
+            {
+                _fpsSettingsRenderedLocale = CurrentGameLocale;
+                RefreshFpsLocalizedRow(_fpsSettingsSlider);
+            }
             return;
+        }
 
         try
         {
@@ -91,8 +100,8 @@ public sealed partial class BopItAccessMod
             TMP_Text? activeLabel = FindFpsLabel(slider.ActiveContainer, slider.ActiveValueText);
             if (defaultLabel == null || activeLabel == null)
                 throw new InvalidOperationException("Cloned slider labels are unavailable.");
-            SetClonedLabel(defaultLabel, "LIMIT FPS");
-            SetClonedLabel(activeLabel, "LIMIT FPS");
+            SetClonedLabel(defaultLabel, L("LIMIT FPS"));
+            SetClonedLabel(activeLabel, L("LIMIT FPS"));
             if (slider.ValueText != null)
                 DisableFpsValueLocalization(slider.ValueText);
             if (slider.ActiveValueText != null)
@@ -101,12 +110,13 @@ public sealed partial class BopItAccessMod
             // A cloned UnityEvent retains serialized listeners from Resolution.
             // Replacing the event prevents left/right from changing resolution.
             slider.SliderMoved = new UnityEvent<int>();
-            slider.SetValue(FpsLimitText(_fpsLimit));
+            slider.SetValue(L(FpsLimitText(_fpsLimit)));
             _fpsSliderMovedListener ??= (UnityAction<int>)OnFpsSliderMoved;
             slider.SliderMoved.AddListener(_fpsSliderMovedListener);
 
             _fpsSettingsSlider = slider;
             _fpsSettingsPanelId = panel.GetInstanceID();
+            _fpsSettingsRenderedLocale = CurrentGameLocale;
             clone.SetActive(true);
             RectTransform? content = parent.GetComponent<RectTransform>();
             if (content != null)
@@ -122,6 +132,19 @@ public sealed partial class BopItAccessMod
             UnityEngine.Object.Destroy(clone);
             throw;
         }
+    }
+
+    private void RefreshFpsLocalizedRow(SettingsSlider slider)
+    {
+        TMP_Text? regular = FindFpsLabel(slider.DefaultContainer,
+            slider.ValueText);
+        TMP_Text? focused = FindFpsLabel(slider.ActiveContainer,
+            slider.ActiveValueText);
+        if (regular != null)
+            SetClonedLabel(regular, L("LIMIT FPS"));
+        if (focused != null)
+            SetClonedLabel(focused, L("LIMIT FPS"));
+        slider.SetValue(L(FpsLimitText(_fpsLimit)));
     }
 
     private static TMP_Text? FindFpsLabel(GameObject? container, TMP_Text? value)
@@ -163,7 +186,7 @@ public sealed partial class BopItAccessMod
         _fpsLimit = FpsLimitChoices[next];
         PlayerPrefs.SetInt(FpsLimitPreference, _fpsLimit);
         PlayerPrefs.Save();
-        _fpsSettingsSlider?.SetValue(FpsLimitText(_fpsLimit));
+        _fpsSettingsSlider?.SetValue(L(FpsLimitText(_fpsLimit)));
         // Apply on the same frame so the displayed value matches the cap.
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = _fpsLimit;

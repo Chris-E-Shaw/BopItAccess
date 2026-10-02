@@ -16,11 +16,28 @@ Tolk's x64 copy: https://github.com/dkager/tolk/tree/master/libs/x64
 License: GNU Lesser General Public License, version 2.1.
 License text: https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt
 
-This source repository does not include either native DLL or a compiled Bop It
-Access DLL. A person building the mod must obtain or build compatible x64
-native DLLs separately. Bop It Access loads them dynamically at runtime, so a
-compatible Tolk.dll can be replaced without rebuilding the mod.
+This source repository includes no native DLL files.
+It also includes no compiled Bop It Access DLL.
+Builders must separately obtain or build compatible x64 native DLLs.
+Bop It Access loads them dynamically at runtime.
+A compatible Tolk.dll can be replaced without rebuilding the mod.
 
 Previously prepared local install packages contained these DLLs and included
 their applicable license texts. Those packages are not GitHub releases and are
 not part of this source repository.
+
+Translation authoring tools (not needed or bundled at game runtime):
+
+Argos Translate and its language models were used offline to prepare draft
+translations of the mod's speech catalog and project documents. The upstream
+project is dual-licensed under MIT or CC0; its model packages are offered under
+the same terms. Project: https://github.com/argosopentech/argos-translate
+MIT license: https://github.com/argosopentech/argos-translate/blob/master/LICENSE
+
+Google Translate was used, with the project owner's approval, to improve the
+machine-translated drafts. Translation requests happened during authoring;
+the mod does not contact Google or require an internet connection at runtime.
+
+Beautiful Soup 4 was used to preserve HTML structure while preparing the
+translated guides. It is MIT-licensed and is not part of the mod runtime.
+Project and license information: https://www.crummy.com/software/BeautifulSoup/

@@ -21,6 +21,8 @@ public sealed partial class BopItAccessMod
     private GameObject? _speechMenuRoot;
     private Panel? _speechMenuPanel;
     private ScrollRect? _speechMenuScroll;
+    private TMP_Text? _speechMenuTitle;
+    private string? _speechMenuRenderedLocale;
     private readonly List<SpeechUiOption> _speechUiOptions = new();
     private SettingsToggle? _speechOutputToggle;
     private SettingsToggle? _brailleOutputToggle;
@@ -97,8 +99,46 @@ public sealed partial class BopItAccessMod
         -1 => "Infinitely",
         _ => count + "x"
     };
+
+    private static string LocalizedButtonHintsDelayValue(int seconds) => seconds switch
+    {
+        0 => L("None"),
+        5 => LF("{0} seconds (May interrupt speech)", 5),
+        _ => LF("{0} seconds", seconds)
+    };
+
+    private static string LocalizedRepeatButtonHintsValue(int count) => count switch
+    {
+        0 => L("Off"),
+        -1 => L("Infinitely"),
+        _ => LF("{0}x", count)
+    };
+
+    private static string LocalizedRepeatIntervalValue(int seconds) =>
+        LF("{0} seconds", seconds);
+
+    private void RefreshSpeechMenuLocalizedLabels()
+    {
+        string locale = CurrentGameLocale;
+        if (string.Equals(_speechMenuRenderedLocale, locale,
+            StringComparison.Ordinal))
+            return;
+        _speechMenuRenderedLocale = locale;
+        if (_speechSettingsButton != null)
+            SetSpeechRowLabel(_speechSettingsButton, "MOD SETTINGS");
+        if (_speechMenuTitle != null)
+            SetClonedLabel(_speechMenuTitle, L("MOD SETTINGS"));
+        foreach (SpeechUiOption option in _speechUiOptions)
+            SetSpeechRowLabel(option.Row, option.Label);
+        UpdateSpeechMenuValues();
+        _lastSpeechMenuRowId = 0;
+        _lastSpeechMenuValue = null;
+        _cachedButtonHintContext = null;
+        _nextButtonHintContextProbeAt = 0;
+    }
     private void UpdateSpeechMenuUi()
     {
+        RefreshSpeechMenuLocalizedLabels();
         // The guide can temporarily sit above Mod Settings in the native
         // panel stack. Keep this menu's state so Back returns to its row.
         if (_guideOpen)
@@ -380,7 +420,9 @@ public sealed partial class BopItAccessMod
             TMP_Text? title = table?.Find("Title")?.GetComponent<TMP_Text>();
             if (table == null || content == null || title == null)
                 throw new InvalidOperationException("The cloned Controls table is incomplete.");
-            SetClonedLabel(title, "MOD SETTINGS");
+            SetClonedLabel(title, L("MOD SETTINGS"));
+            _speechMenuTitle = title;
+            _speechMenuRenderedLocale = CurrentGameLocale;
 
             // Only visual pieces of the Controls panel are cloned. Its native
             // rebinding manager stays on the original panel, and its copied
@@ -574,6 +616,7 @@ public sealed partial class BopItAccessMod
             _speechVolumeSlider = null;
             _speechRateSlider = null;
             _speechPitchSlider = null;
+            _speechMenuTitle = null;
             _openUserGuideButton = null;
             _resetWelcomeScreenButton = null;
             _restoreModDefaultsButton = null;
@@ -664,8 +707,8 @@ public sealed partial class BopItAccessMod
         TMP_Text? active = FindFpsLabel(row.ActiveContainer, row.ActiveValueText);
         if (regular == null || active == null)
             throw new InvalidOperationException("A cloned settings row has no visible labels.");
-        SetClonedLabel(regular, label);
-        SetClonedLabel(active, label);
+        SetClonedLabel(regular, L(label));
+        SetClonedLabel(active, L(label));
         if (row.ValueText != null)
             DisableFpsValueLocalization(row.ValueText);
         if (row.ActiveValueText != null)
@@ -675,7 +718,7 @@ public sealed partial class BopItAccessMod
     private static void SetSpeechToggleDisplay(SettingsToggle row, bool enabled)
     {
         row.SetValue(enabled);
-        string value = enabled ? "On" : "Off";
+        string value = L(enabled ? "On" : "Off");
         if (row.ValueText != null)
             row.ValueText.text = value;
         if (row.ActiveValueText != null)
@@ -775,11 +818,14 @@ public sealed partial class BopItAccessMod
                 _oneOnOneFeedbackEnabled);
         if (_readButtonHintsToggle != null)
             SetSpeechToggleDisplay(_readButtonHintsToggle, _readButtonHintsEnabled);
-        _hintsTypeSlider?.SetValue(_hintsType);
-        _buttonHintsDelaySlider?.SetValue(ButtonHintsDelayValue(_buttonHintsDelaySeconds));
-        _repeatButtonHintsSlider?.SetValue(RepeatButtonHintsValue(_repeatButtonHintsCount));
-        _repeatButtonHintsIntervalSlider?.SetValue(_repeatButtonHintsIntervalSeconds + " seconds");
-        _speechModeSlider?.SetValue(_outputMode);
+        _hintsTypeSlider?.SetValue(L(_hintsType));
+        _buttonHintsDelaySlider?.SetValue(
+            LocalizedButtonHintsDelayValue(_buttonHintsDelaySeconds));
+        _repeatButtonHintsSlider?.SetValue(
+            LocalizedRepeatButtonHintsValue(_repeatButtonHintsCount));
+        _repeatButtonHintsIntervalSlider?.SetValue(
+            LocalizedRepeatIntervalValue(_repeatButtonHintsIntervalSeconds));
+        _speechModeSlider?.SetValue(L(_outputMode));
         if (_trimSilenceToggle != null)
             SetSpeechToggleDisplay(_trimSilenceToggle, _trimSilence);
         _speechVoiceSlider?.SetValue(ReadCurrentSapiVoiceName());
@@ -793,9 +839,10 @@ public sealed partial class BopItAccessMod
         foreach (SpeechVoiceOption voice in _sapiVoices)
         {
             if (string.Equals(voice.Id, _sapiVoiceId, StringComparison.OrdinalIgnoreCase))
-                return voice.Name;
+                return voice.Id.Length == 0 ? L(voice.Name) : voice.Name;
         }
-        return _sapiVoices.Count == 0 ? "No SAPI voices installed" : _sapiVoices[0].Name;
+        return _sapiVoices.Count == 0 ? L("No SAPI voices installed") :
+            L(_sapiVoices[0].Name);
     }
 
     private void OnSpeechOutputSubmitted()
@@ -893,7 +940,7 @@ public sealed partial class BopItAccessMod
         if (next == current)
             return;
         SetOutputModeFromMenu(OutputModes[next]);
-        _speechModeSlider?.SetValue(_outputMode);
+        _speechModeSlider?.SetValue(L(_outputMode));
     }
 
     private void OnHintsTypeMoved(int movement)
@@ -910,7 +957,7 @@ public sealed partial class BopItAccessMod
         if (next == current)
             return;
         SetHintsTypeFromMenu(HintsTypes[next]);
-        _hintsTypeSlider?.SetValue(_hintsType);
+        _hintsTypeSlider?.SetValue(L(_hintsType));
     }
 
     private void OnRepeatButtonHintsMoved(int movement)
@@ -926,7 +973,8 @@ public sealed partial class BopItAccessMod
         if (next == current)
             return;
         SetRepeatButtonHintsFromMenu(RepeatButtonHintsOptions[next]);
-        _repeatButtonHintsSlider?.SetValue(RepeatButtonHintsValue(_repeatButtonHintsCount));
+        _repeatButtonHintsSlider?.SetValue(
+            LocalizedRepeatButtonHintsValue(_repeatButtonHintsCount));
     }
 
     private void OnButtonHintsDelayMoved(int movement)
@@ -942,7 +990,8 @@ public sealed partial class BopItAccessMod
         if (next == current)
             return;
         SetButtonHintsDelayFromMenu(ButtonHintsDelayOptions[next]);
-        _buttonHintsDelaySlider?.SetValue(ButtonHintsDelayValue(_buttonHintsDelaySeconds));
+        _buttonHintsDelaySlider?.SetValue(
+            LocalizedButtonHintsDelayValue(_buttonHintsDelaySeconds));
     }
 
     private void OnRepeatButtonHintsIntervalMoved(int movement)
@@ -960,7 +1009,7 @@ public sealed partial class BopItAccessMod
             return;
         SetRepeatButtonHintsIntervalFromMenu(RepeatButtonHintsIntervalOptions[next]);
         _repeatButtonHintsIntervalSlider?.SetValue(
-            _repeatButtonHintsIntervalSeconds + " seconds");
+            LocalizedRepeatIntervalValue(_repeatButtonHintsIntervalSeconds));
     }
 
     private void OnSpeechVoiceMoved(int movement)
@@ -1037,7 +1086,7 @@ public sealed partial class BopItAccessMod
         CancelResetWelcomeScreenConfirmation();
         CancelRestoreModDefaultsConfirmation();
         if (!OpenGuide())
-            QueueSpeech("User's guide could not be opened.");
+            QueueSpeech(L("User's guide could not be opened."));
         else
             ResetSpeechMenuFocus();
     }
@@ -1080,9 +1129,9 @@ public sealed partial class BopItAccessMod
                 return;
             CancelResetWelcomeScreenConfirmation();
             if (ResetWelcomeScreenForNextLaunch())
-                QueueSpeech("Welcome screen reset. It will appear the next time the game launches.");
+                QueueSpeech(L("Welcome screen reset. It will appear the next time the game launches."));
             else
-                QueueSpeech("Welcome screen could not be reset.");
+                QueueSpeech(L("Welcome screen could not be reset."));
             return;
         }
 
@@ -1091,10 +1140,10 @@ public sealed partial class BopItAccessMod
         _resetWelcomeScreenConfirmUntil = now + 5000;
         _resetWelcomeScreenFirstFrame = Time.frameCount;
         _resetWelcomeScreenInputReleased = false;
-        _resetWelcomeScreenButton?.SetValue("Press again to confirm");
+        _resetWelcomeScreenButton?.SetValue(L("Press again to confirm"));
         _lastSpeechMenuRowId = _resetWelcomeScreenButton!.GetInstanceID();
         _lastSpeechMenuValue = "Press again to confirm";
-        QueueSpeech("Are you sure? Press again to confirm.");
+        QueueSpeech(L("Are you sure? Press again to confirm."));
         WriteStatus("Reset welcome screen confirmation requested.");
     }
 
@@ -1146,10 +1195,10 @@ public sealed partial class BopItAccessMod
         _restoreModDefaultsConfirmUntil = now + 5000;
         _restoreModDefaultsFirstFrame = Time.frameCount;
         _restoreModDefaultsInputReleased = false;
-        _restoreModDefaultsButton?.SetValue("Press again to confirm");
+        _restoreModDefaultsButton?.SetValue(L("Press again to confirm"));
         _lastSpeechMenuRowId = _restoreModDefaultsButton!.GetInstanceID();
         _lastSpeechMenuValue = "Press again to confirm";
-        QueueSpeech("Are you sure? Press again to confirm.");
+        QueueSpeech(L("Are you sure? Press again to confirm."));
         WriteStatus("Restore mod defaults confirmation requested.");
     }
 
@@ -1179,9 +1228,9 @@ public sealed partial class BopItAccessMod
         UpdateSpeechMenuValues();
         _lastSpeechMenuValue = null;
         if (speechWasOff)
-            QueueSequentialSpeech("Mod defaults restored.");
+            QueueSequentialSpeech(L("Mod defaults restored."));
         else
-            QueueSpeech("Mod defaults restored.");
+            QueueSpeech(L("Mod defaults restored."));
         WriteStatus("Restored all Mod Settings values to defaults.");
     }
 
@@ -1215,7 +1264,7 @@ public sealed partial class BopItAccessMod
                 Environment.TickCount64 - _speechMenuOpenedAt > 800)
             {
                 _speechMenuIntroductionPending = false;
-                QueueSpeech("Mod settings menu.");
+                QueueSpeech(L("Mod settings menu."));
             }
             return true;
         }
@@ -1248,14 +1297,15 @@ public sealed partial class BopItAccessMod
         {
             _lastSpeechMenuRowId = id;
             _lastSpeechMenuValue = value;
-            string label = WithControlType(focused.Label, focused.ControlType);
-            string message = value == null ? label : label + ", " + value;
+            string label = WithControlType(L(focused.Label), focused.ControlType);
+            string message = value == null ? label :
+                LF("{0}, {1}", label, LocalizeSpeechUiValue(focused, value));
             message = WithSliderRange(message, focused.Label, focused.ControlType);
             message = WithMenuIndex(message, _speechUiOptions.IndexOf(focused),
                 _speechUiOptions.Count);
             if (_speechMenuIntroductionPending)
             {
-                message = "Mod settings. " + message;
+                message = L("Mod settings.") + " " + message;
                 _speechMenuIntroductionPending = false;
             }
             QueueFocusSpeech(message);
@@ -1266,7 +1316,7 @@ public sealed partial class BopItAccessMod
             _lastSpeechMenuValue = value;
             RecordButtonHintUiActivity(Environment.TickCount64);
             if (focused.Row != _speechOutputToggle)
-                QueueSpeech(value);
+                QueueSpeech(LocalizeSpeechUiValue(focused, value));
         }
         return true;
     }
@@ -1276,6 +1326,19 @@ public sealed partial class BopItAccessMod
         _lastSpeechMenuRowId = 0;
         _lastSpeechMenuValue = null;
     }
+
+    private string LocalizeSpeechUiValue(SpeechUiOption option, string value) =>
+        option.Label switch
+        {
+            "BUTTON HINTS DELAY" =>
+                LocalizedButtonHintsDelayValue(_buttonHintsDelaySeconds),
+            "REPEAT BUTTON HINTS" =>
+                LocalizedRepeatButtonHintsValue(_repeatButtonHintsCount),
+            "REPEAT INTERVAL" =>
+                LocalizedRepeatIntervalValue(_repeatButtonHintsIntervalSeconds),
+            "SAPI VOICE" when !string.IsNullOrEmpty(_sapiVoiceId) => value,
+            _ => L(value)
+        };
 
     private sealed record SpeechUiOption(string Label, string ControlType,
         SettingsRow Row,

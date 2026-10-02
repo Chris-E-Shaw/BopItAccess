@@ -15,6 +15,7 @@ public sealed partial class BopItAccessMod
     private SettingsToggle? _backgroundAudioToggle;
     private UnityAction? _backgroundAudioSubmitListener;
     private int _backgroundAudioSettingsPanelId;
+    private string? _backgroundAudioRenderedLocale;
     private long _nextBackgroundAudioSettingsProbeAt;
     private long _nextBackgroundAudioErrorAt;
     private Action<bool>? _managedBackgroundFocusCallback;
@@ -181,6 +182,15 @@ public sealed partial class BopItAccessMod
         if (_backgroundAudioToggle != null &&
             _backgroundAudioSettingsPanelId == panel.GetInstanceID())
         {
+            if (!string.Equals(_backgroundAudioRenderedLocale,
+                CurrentGameLocale, StringComparison.Ordinal))
+            {
+                _backgroundAudioRenderedLocale = CurrentGameLocale;
+                SetSpeechRowLabel(_backgroundAudioToggle,
+                    "MUTE AUDIO IN BACKGROUND");
+                SetSpeechToggleDisplay(_backgroundAudioToggle,
+                    _muteAudioInBackground);
+            }
             // Native SettingsToggle.Start can update its visual state after
             // our listener; keep the row tied to the saved preference.
             if (_backgroundAudioToggle.IsOn != _muteAudioInBackground)
@@ -227,6 +237,7 @@ public sealed partial class BopItAccessMod
 
             _backgroundAudioToggle = row;
             _backgroundAudioSettingsPanelId = panel.GetInstanceID();
+            _backgroundAudioRenderedLocale = CurrentGameLocale;
             clone.SetActive(true);
             if (parent.GetComponent<RectTransform>() is RectTransform content)
                 LayoutRebuilder.ForceRebuildLayoutImmediate(content);

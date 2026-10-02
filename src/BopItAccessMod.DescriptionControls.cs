@@ -94,7 +94,7 @@ public sealed partial class BopItAccessMod
             string gamepad = CleanSpeechValue(
                 InputActionRebindingExtensions.GetBindingDisplayString(action, 1)) ?? "left trigger";
             return FormatHintPress(keyboard, gamepad,
-                "read stage description");
+                L("read stage description"));
         }
         catch (Exception ex)
         {
@@ -102,7 +102,7 @@ public sealed partial class BopItAccessMod
             string keyboard = HintSavedBinding(DescriptionKeyboardKey, "G");
             string gamepad = HintSavedBinding(DescriptionGamepadKey, "left trigger");
             return FormatHintPress(keyboard, gamepad,
-                "read stage description");
+                L("read stage description"));
         }
     }
 
@@ -124,8 +124,8 @@ public sealed partial class BopItAccessMod
 
         row.ActionMapName = "BopItAccess";
         row.ActionName = "ReadDescriptions";
-        SetClonedLabel(defaultLabel, "READ DESCRIPTIONS");
-        SetClonedLabel(activeLabel, "READ DESCRIPTIONS");
+        SetClonedLabel(defaultLabel, L("READ DESCRIPTIONS"));
+        SetClonedLabel(activeLabel, L("READ DESCRIPTIONS"));
         InputActionReference reference = InputActionReference.Create(action);
         _leaderboardPromptReferences.Add(reference);
         SetDisplayPrompt(row.ActiveDisplayPrompt, reference,
@@ -146,6 +146,19 @@ public sealed partial class BopItAccessMod
         // this action in the game's asset, so only the visual row is kept.
         row.enabled = false;
         UnityEngine.Object.Destroy(row);
+    }
+
+    private void RefreshDescriptionControlLocale()
+    {
+        GameObject? root = _descriptionControlRow?.Root;
+        if (root == null)
+            return;
+        TMP_Text? regular = FindControlLabel(root.transform, "Default/Label");
+        TMP_Text? active = FindControlLabel(root.transform, "Active/Label");
+        if (regular != null)
+            SetClonedLabel(regular, L("READ DESCRIPTIONS"));
+        if (active != null)
+            SetClonedLabel(active, L("READ DESCRIPTIONS"));
     }
 
     private AddedDescriptionControlRow? FindAddedDescriptionControlRow(GameObject? selected)
@@ -192,10 +205,11 @@ public sealed partial class BopItAccessMod
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = false;
             _lastControlsResetSnapshot = null;
-            string label = WithControlType("Read Descriptions", "button");
-            string message = binding == null ? label : $"{label}, {binding}";
+            string label = WithControlType(L("Read Descriptions"), "button");
+            string message = binding == null ? label :
+                LF("{0}, {1}", label, LocalizeBindingDisplay(binding));
             if (rebinding)
-                message += ". Listening for input";
+                message += ". " + L("Listening for input");
             QueueFocusSpeech(WithControlsIntroduction(message));
             return;
         }
@@ -206,18 +220,18 @@ public sealed partial class BopItAccessMod
             _lastControlsBinding = binding;
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = true;
-            QueueSpeech(binding);
+            QueueSpeech(LocalizeBindingDisplay(binding));
             return;
         }
 
         if (rebinding && !_lastControlsRebinding)
         {
             _controlsBindingChangedDuringRebind = false;
-            QueueSpeech("Listening for input");
+            QueueSpeech(L("Listening for input"));
         }
         else if (!rebinding && _lastControlsRebinding &&
             !_controlsBindingChangedDuringRebind)
-            QueueSpeech("Binding unchanged");
+            QueueSpeech(L("Binding unchanged"));
 
         _lastControlsRebinding = rebinding;
     }
@@ -249,7 +263,7 @@ public sealed partial class BopItAccessMod
             if (!wasRebinding)
                 _descriptionControlRow = null;
             if (wasRebinding)
-                QueueSpeech("Rebinding failed");
+                QueueSpeech(L("Rebinding failed"));
         }
     }
 
@@ -383,8 +397,8 @@ public sealed partial class BopItAccessMod
             RestoreDescriptionOriginalOverride();
             ReleaseDescriptionControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech(unavailable ? "Binding unavailable" :
-                "That input is already assigned to " + owner);
+            QueueSpeech(unavailable ? L("Binding unavailable") :
+                LF("That input is already assigned to {0}", L(owner)));
             return;
         }
 
@@ -400,7 +414,8 @@ public sealed partial class BopItAccessMod
         _lastControlsRebinding = false;
         _controlsBindingChangedDuringRebind = false;
         WriteStatus($"Rebound Read Descriptions to {path}.");
-        QueueSpeech(_lastControlsBinding ?? "Binding changed");
+        QueueSpeech(_lastControlsBinding == null ? L("Binding changed") :
+            LocalizeBindingDisplay(_lastControlsBinding));
     }
 
     private void ResetDescriptionControlBindings()
@@ -422,7 +437,7 @@ public sealed partial class BopItAccessMod
         if (wasActive)
             _lastControlsRebinding = false;
         if (wasActive && announce)
-            QueueSpeech("Binding unchanged");
+            QueueSpeech(L("Binding unchanged"));
     }
 
     private void ReleaseDescriptionControlRebinding()

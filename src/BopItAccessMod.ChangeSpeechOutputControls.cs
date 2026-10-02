@@ -122,8 +122,8 @@ public sealed partial class BopItAccessMod
             mode => string.Equals(mode, _outputMode, StringComparison.OrdinalIgnoreCase));
         string next = OutputModes[(Math.Max(0, current) + 1) % OutputModes.Length];
         SetOutputModeFromMenu(next);
-        _speechModeSlider?.SetValue(_outputMode);
-        QueueSpeech("Output mode, " + _outputMode);
+        _speechModeSlider?.SetValue(L(_outputMode));
+        QueueSpeech(LF("Output mode, {0}", L(_outputMode)));
     }
 
     private string ChangeSpeechOutputBindingInstruction()
@@ -235,10 +235,11 @@ public sealed partial class BopItAccessMod
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = false;
             _lastControlsResetSnapshot = null;
-            string label = WithControlType("Change Speech Output", "button");
-            string message = binding == null ? label : $"{label}, {binding}";
+            string label = WithControlType(L("Change Speech Output"), "button");
+            string message = binding == null ? label : LF("{0}, {1}", label,
+                LocalizeBindingDisplay(binding));
             if (rebinding)
-                message += ". Listening for input";
+                message += L(".") + " " + L("Listening for input");
             QueueFocusSpeech(WithControlsIntroduction(message));
             return;
         }
@@ -249,18 +250,18 @@ public sealed partial class BopItAccessMod
             _lastControlsBinding = binding;
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = true;
-            QueueSpeech(binding);
+            QueueSpeech(LocalizeBindingDisplay(binding));
             return;
         }
 
         if (rebinding && !_lastControlsRebinding)
         {
             _controlsBindingChangedDuringRebind = false;
-            QueueSpeech("Listening for input");
+            QueueSpeech(L("Listening for input"));
         }
         else if (!rebinding && _lastControlsRebinding &&
             !_controlsBindingChangedDuringRebind)
-            QueueSpeech("Binding unchanged");
+            QueueSpeech(L("Binding unchanged"));
 
         _lastControlsRebinding = rebinding;
     }
@@ -292,7 +293,7 @@ public sealed partial class BopItAccessMod
             if (!wasRebinding)
                 _changeSpeechOutputControlRow = null;
             if (wasRebinding)
-                QueueSpeech("Rebinding failed");
+                QueueSpeech(L("Rebinding failed"));
         }
     }
 
@@ -423,7 +424,7 @@ public sealed partial class BopItAccessMod
             RestoreChangeSpeechOutputOriginalOverride();
             ReleaseChangeSpeechOutputControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech("Binding unavailable");
+            QueueSpeech(L("Binding unavailable"));
             return;
         }
 
@@ -433,7 +434,7 @@ public sealed partial class BopItAccessMod
             RestoreChangeSpeechOutputOriginalOverride();
             ReleaseChangeSpeechOutputControlRebinding();
             _lastControlsRebinding = false;
-            QueueSpeech("That input is already assigned to " + owner);
+            QueueSpeech(LF("That input is already assigned to {0}", L(owner)));
             return;
         }
 
@@ -449,7 +450,8 @@ public sealed partial class BopItAccessMod
         _lastControlsRebinding = false;
         _controlsBindingChangedDuringRebind = false;
         WriteStatus($"Rebound Change Speech Output to {path}.");
-        QueueSpeech(_lastControlsBinding ?? "Binding changed");
+        QueueSpeech(_lastControlsBinding == null ? L("Binding changed") :
+            LocalizeBindingDisplay(_lastControlsBinding));
     }
 
     private void ResetChangeSpeechOutputControlBindings()
@@ -483,7 +485,7 @@ public sealed partial class BopItAccessMod
         if (wasActive)
             _lastControlsRebinding = false;
         if (wasActive && announce)
-            QueueSpeech("Binding unchanged");
+            QueueSpeech(L("Binding unchanged"));
     }
 
     private void ReleaseChangeSpeechOutputControlRebinding()

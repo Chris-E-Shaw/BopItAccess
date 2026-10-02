@@ -108,12 +108,12 @@ public sealed partial class BopItAccessMod
             WasReadScorePressed(readScoreAvailable);
             if (soloVisible)
             {
-                string score = $"Score: {solo!.playerScore}.";
+                string score = LF("Score: {0}.", solo!.playerScore);
                 // The panel can retain its previous high-score flag. Only a
                 // current result callback makes that flag trustworthy.
                 _lastSoloHighScore = GetFreshResultRank() == 1 && solo.isHighScore;
                 if (_lastSoloHighScore)
-                    score += " New high score.";
+                    score += " " + L("New high score.");
 
                 (int focusedId, _) = GetFocusedSoloResultButton(solo);
                 _lastGameOverFocusedId = focusedId != 0
@@ -128,13 +128,13 @@ public sealed partial class BopItAccessMod
                 WithFriendsKillScreenPanel currentFriends = friends!;
                 _lastGameOverWinner = initialWinner;
                 string score = mode == GameMode.OneOnOne
-                    ? $"{_lastGameOverWinner}."
-                    : $"Score: {friends!.playerScore}.";
+                    ? L(_lastGameOverWinner!) + "."
+                    : LF("Score: {0}.", friends!.playerScore);
 
                 int rank = ReadFriendsRank(currentFriends, mode!.Value);
                 _lastGameOverRank = GetFreshResultRank() == rank ? rank : 0;
                 if (_lastGameOverRank > 0)
-                    score += $" Rank: {_lastGameOverRank}.";
+                    score += " " + LF("Rank: {0}.", _lastGameOverRank);
 
                 _lastGameOverPrompts = ReadFriendsPrompts(currentFriends, mode!.Value);
                 string? initialPrompts = _lastGameOverPrompts;
@@ -161,7 +161,7 @@ public sealed partial class BopItAccessMod
             if (GetFreshResultRank() == 1 && solo!.isHighScore && !_lastSoloHighScore)
             {
                 _lastSoloHighScore = true;
-                resultChanges.Add("New high score.");
+                resultChanges.Add(L("New high score."));
             }
 
             (int focusedId, string? label) = GetFocusedSoloResultButton(solo!);
@@ -204,14 +204,14 @@ public sealed partial class BopItAccessMod
             if (winner != null && !string.Equals(winner, _lastGameOverWinner, StringComparison.Ordinal))
             {
                 _lastGameOverWinner = winner;
-                resultChanges.Add($"{winner}.");
+                resultChanges.Add(L(winner) + ".");
             }
 
             int rank = ReadFriendsRank(currentFriends, mode!.Value);
             if (rank > 0 && GetFreshResultRank() == rank && rank != _lastGameOverRank)
             {
                 _lastGameOverRank = rank;
-                resultChanges.Add($"Rank: {rank}.");
+                resultChanges.Add(LF("Rank: {0}.", rank));
             }
 
             AnnounceGameOverUpdates(resultChanges, menuChange, "With-friends");
@@ -233,9 +233,9 @@ public sealed partial class BopItAccessMod
         string? result;
         if (solo != null)
         {
-            result = $"Score: {solo.playerScore}.";
+            result = LF("Score: {0}.", solo.playerScore);
             if (GetFreshResultRank() == 1 && solo.isHighScore)
-                result += " New high score.";
+                result += " " + L("New high score.");
         }
         else if (friends != null && mode.HasValue)
         {
@@ -244,14 +244,14 @@ public sealed partial class BopItAccessMod
                 string? winner = ReadOneOnOneWinner(friends);
                 if (winner == null)
                     return;
-                result = $"{winner}.";
+                result = L(winner) + ".";
             }
             else
-                result = $"Score: {friends.playerScore}.";
+                result = LF("Score: {0}.", friends.playerScore);
 
             int rank = ReadFriendsRank(friends, mode.Value);
             if (rank > 0 && GetFreshResultRank() == rank)
-                result += $" Rank: {rank}.";
+                result += " " + LF("Rank: {0}.", rank);
         }
         else
             return;
@@ -276,7 +276,16 @@ public sealed partial class BopItAccessMod
     private static long EstimateGameOverScoreSpeechMs(string score)
     {
         int wordCount = score.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
-        return Math.Clamp(1000L + wordCount * 550L, 2200L, 4500L);
+        long estimate = 1000L + wordCount * 550L;
+        // Japanese and Chinese normally have no word spaces, and Korean score
+        // phrases can be compact too. Give the entire translated result time
+        // to finish before the focused Replay/Leaderboard choice may speak.
+        if (CurrentGameLocale is "ja" or "ko" or "zh")
+        {
+            int spokenCharacters = score.Count(char.IsLetterOrDigit);
+            estimate = Math.Max(estimate, 1100L + spokenCharacters * 210L);
+        }
+        return Math.Clamp(estimate, 2200L, 6000L);
     }
 
     private void CompleteGameOverScoreSpeechDispatch(string score, bool accepted)
@@ -341,7 +350,7 @@ public sealed partial class BopItAccessMod
             "Back.", StringComparison.OrdinalIgnoreCase)?.Trim();
         bool hasMenuAnnouncement = !string.IsNullOrEmpty(menu);
         if (hasMenuAnnouncement)
-            changes.Add(menu!);
+            changes.Add(LocalizeResultPromptText(menu!));
         string announcement = string.Join(" ", changes);
         _deferredGameOverResultUpdates.Clear();
         _deferredGameOverMenuUpdate = null;
@@ -384,7 +393,7 @@ public sealed partial class BopItAccessMod
         {
             if (choices[index].Button.GetInstanceID() == button.GetInstanceID())
                 return (button.GetInstanceID(),
-                    WithMenuIndex(WithControlType(choices[index].Label, "button"),
+                    WithMenuIndex(WithControlType(L(choices[index].Label), "button"),
                         index, choices.Count));
         }
         return (0, null);
@@ -394,9 +403,9 @@ public sealed partial class BopItAccessMod
     {
         // Result buttons can be non-interactable during the score animation.
         // They are still the two choices that appear when the menu opens.
-        return WithMenuIndex(WithControlType("Replay", "button"), 0, 2) + ". " +
-            WithMenuIndex(WithControlType("Leaderboard", "button"), 1, 2) +
-            ". Back.";
+        return WithMenuIndex(WithControlType(L("Replay"), "button"), 0, 2) + ". " +
+            WithMenuIndex(WithControlType(L("Leaderboard"), "button"), 1, 2) +
+            ". " + L("Back") + ".";
     }
 
     private static List<(Button Button, string Label)> GetAvailableSoloResultButtons(
@@ -426,6 +435,25 @@ public sealed partial class BopItAccessMod
         return prompts.Count == 0 ? null : string.Join(". ", prompts) + ".";
     }
 
+    // Keep the English prompt list stable for visibility and timing checks;
+    // translate its individual instructions only when they are spoken.
+    private static string LocalizeResultPromptText(string text)
+    {
+        string[] pieces = text.Split(". ", StringSplitOptions.None);
+        for (int index = 0; index < pieces.Length; index++)
+        {
+            string punctuation = pieces[index].EndsWith('.') ? "." : "";
+            string instruction = pieces[index].TrimEnd('.');
+            pieces[index] = instruction switch
+            {
+                "Continue to leaderboard" or "Continue" or "Replay" or
+                "Back to return" or "Back" => L(instruction) + punctuation,
+                _ => pieces[index]
+            };
+        }
+        return string.Join(". ", pieces);
+    }
+
     private static bool IsGameOverPromptVisible(Panel? prompt) =>
         prompt != null && prompt.IsVisible && prompt.gameObject.activeInHierarchy;
 
@@ -437,7 +465,7 @@ public sealed partial class BopItAccessMod
         bool yellow = panel.yellowWins != null && panel.yellowWins.activeSelf;
         if (green == yellow)
             return null;
-        return green ? "Green wins" : "Yellow wins";
+        return green ? L("Green wins") : L("Yellow wins");
     }
 
     private static int ReadFriendsRank(WithFriendsKillScreenPanel panel, GameMode mode)

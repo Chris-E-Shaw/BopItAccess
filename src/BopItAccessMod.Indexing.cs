@@ -47,8 +47,9 @@ public sealed partial class BopItAccessMod
             return text;
 
         string label = text.TrimEnd();
-        if (label.EndsWith(".", StringComparison.Ordinal))
+        if (label.Length > 0 && (label[^1] is '.' or '。'))
             label = label[..^1];
-        return $"{label}, {zeroBasedIndex + 1} of {count}";
+        return LF("{0}, {1} of {2}", label,
+            zeroBasedIndex + 1, count);
     }
 }

@@ -1,0 +1,415 @@
+Bop It Access 0.8.0 - Discorso e documentazione multilingue
+
+Cosa fa questo
+--------------
+La mod segue le Impostazioni del gioco > Selezione della lingua per il parlato. Include
+inglese, francese, italiano, tedesco, spagnolo (Spagna), spagnolo (America Latina),
+Giapponese, coreano, cinese semplificato e portoghese brasiliano. Modificando il
+la lingua del gioco cambia anche gli annunci delle mod e la guida dell'utente nel gioco.
+Le traduzioni iniziali sono bozze generate automaticamente e necessitano di revisione
+da parlanti fluenti.
+La sintesi vocale è attiva per impostazione predefinita. Quando la mod si carica con la voce attiva, annuncia
+"Il discorso Bop It Access è pronto. Il gioco è ancora in caricamento. Attendi l'annuncio della schermata del titolo o del menu principale prima di utilizzare i controlli." fino a Tolk. Se viene visualizzata la schermata del titolo, la mod annuncia l'attuale input COLPISCI per l'apertura del menu principale. Si legge
+il pulsante del menu principale con focus e la riga Impostazioni con focus. I valori delle impostazioni sono
+pronunciato con il nome della riga in evidenza. Modificare un valore mentre il focus rimane su quello
+riga pronuncia solo il nuovo valore. LATENZA AUDIO, CONTROLLI e VAI ONLINE sono azioni
+pulsanti, quindi vengono pronunciati senza il segnaposto insignificante del gioco "0".
+Il menu Impostazioni ha anche un cursore LIMITE FPS con 30, 60, 120, 240 e
+Scelte ILLIMITATE. Si comincia a 60 per una nuova installazione e si ricorda il
+valore selezionato tra le sessioni. Focus parla del nome e del valore; cambiandolo
+parla solo del nuovo valore. Il limite modifica il frame rate target di Unity mentre
+lasciando intatta la scala temporale del gioco, i tempi di aggiornamento fissi e l'audio.
+Come ogni limite di frame, un'impostazione più bassa significa anche meno poll di input basati su frame.
+Se 30 FPS ti sembrano meno reattivi in un gioco veloce, scegli 60, 120 o ILLIMITATO.
+L'interruttore MUTE AUDIO IN BACKGROUND appare direttamente sotto VOICE OVER in
+Impostazioni. Se abilitato, disattiva l'audio del gioco mentre la finestra di gioco non lo è
+focalizzato, quindi ripristina lo stato audio del gioco precedente quando ritorna il focus.
+Si avvia e viene salvato tra le sessioni.
+Al primo utilizzo in assoluto della mod, della MUSICA nativa del gioco, degli effetti sonori e della VOCE OVER
+i cursori iniziano da 30. L'aggiornamento mantiene le impostazioni audio del gioco salvate in precedenza.
+Una volta che il gioco raggiunge il menu principale per la prima volta, viene visualizzata una schermata di benvenuto
+messa a fuoco. Il suo messaggio può essere focalizzato nuovamente con Up, e le sue scelte aprono Mod
+Impostazioni, apri la guida dell'utente all'interno del gioco o continua al menu principale.
+La schermata di benvenuto viene contrassegnata come completata solo dopo che la scelta è stata completata con successo
+esso. Chiudendo il gioco mentre è aperto lo si lascia pronto per il lancio successivo.
+L'indicizzazione delle impostazioni ora attende prima le righe audio, FPS e IMPOSTAZIONI MOD del mod
+annunciando il primo elemento focalizzato su una schermata Impostazioni appena aperta.
+
+Sotto Controlli, Impostazioni ora ha un menu IMPOSTAZIONI MOD. SPEECH OUTPUT utilizza lo stesso
+interruttore principale salvato come F8 o selezione del controller, incluso il ripristino parlato
+istruzioni quando la voce è disattivata. L'USCITA BRAILLE si avvia e viene salvata
+tra le sessioni. Quando Tolk utilizza uno screen reader, la mod invia lo stesso
+espressione vocale e braille; quando USCITA BRAILLE è disattivata, invia la voce
+solo. Anche i discorsi diretti NVDA e SAPI inviano ciascuna espressione separatamente tramite
+Tolk's API braille quando è disponibile uno screen reader con funzionalità braille.
+La MODALITÀ DI USCITA inizia da Auto: il mod
+parla tramite un'utilità per la lettura dello schermo rilevata o utilizza SAPI quando nessuno è in esecuzione.
+SAPI può essere selezionato direttamente. Il menu elenca anche JAWS, Window-Eyes, NVDA,
+Accesso al sistema e ZoomText. L'uscita diretta NVDA è disponibile quando NVDA è
+correre. Gli altri lettori nominati vengono utilizzati quando Tolk li rileva come attivi
+autista; se il lettore scelto non è disponibile, la mod annuncia un fallback SAPI.
+La build a 64 bit di Tolk non supporta SuperNova, quindi non è elencata.
+MUTE PARLATO IN SFONDO è un'opzione salvata, disattivata per impostazione predefinita. Quando abilitato,
+la mod smette di parlare non appena il gioco perde il focus della finestra. Discorso creato
+mentre il gioco è in background viene scartato e gli annunci riprendono
+con una nuova attività dopo il ritorno dello stato attivo. Se il parlato stesso è disattivato durante il gioco
+riacquista la messa a fuoco, la mod ripristina la tastiera e il controller correnti
+istruzioni una volta.
+
+Il menu IMPOSTAZIONI MOD dispone anche di INDICIZZAZIONE, attivata per impostazione predefinita e salvata tra le sessioni.
+Quando abilitata, una voce di menu evidenziata include la sua posizione, ad esempio "PLAY, 1 di 6".
+Questo vale per i menu principale e Impostazioni, Controlli, modalità di gioco, Mod
+Impostazioni, scelte di game-over, classifiche, risultati, crediti e altro
+schermi supportati. Il conteggio segue le scelte attualmente disponibili. Cambiare
+un cursore o un interruttore mentre rimane focalizzato annuncia ancora solo il nuovo valore.
+
+FILTRO MAIUSCOLO è un interruttore salvato delle Impostazioni Mod, attivato per impostazione predefinita. Cambia soltanto
+il testo viene inviato alla voce e al braille, lasciando intatta la GUI visibile del gioco.
+Le parole del menu tutte maiuscole vengono pronunciate in maiuscole e minuscole: "PASS IT" diventa "Pass it"
+e "ONE ON ONE" diventa "Uno contro uno". La prima parola dopo il punto è
+nuovamente maiuscolo. Parole esistenti composte da maiuscole e minuscole e abbreviazioni comuni come
+SAPI, NVDA, SFX e FPS vengono conservati. Disattivando l'interruttore si invia il file
+testo del discorso originale.
+
+LEGGI TIPI DI CONTROLLO è un'altra opzione salvata per le IMPOSTAZIONI MOD, attivata per impostazione predefinita. Quando abilitato,
+il tipo dell'elemento evidenziato segue il nome e precede il valore e l'indice:
+"Slider MUSICA, 30, 1 di 12", "Commutazione VIBRAZIONE, On, 6 di 12", o
+"Pulsante PLAY, 1 di 6". I menu identificano anche schede, campi di testo e leggibili
+elencare gli elementi ove pertinenti. Le modifiche al valore continuano a parlare solo del nuovo valore.
+INTERVENTI SLIDER è un interruttore salvato, disattivato per impostazione predefinita. Quando abilitati, cursori focalizzati
+riporta anche i loro endpoint disponibili dopo il valore corrente, come ad esempio
+"Slider MUSIC, 30, intervallo da 0 a 100, 1 di 12" durante l'indicizzazione e i tipi di controllo
+sono abilitati. Lo spostamento di un cursore continua a indicare solo il nuovo valore.
+Il FEEDBACK UNO A UNO è un'opzione salvata, attivata per impostazione predefinita. Quando abilitato, esso
+annuncia il colore attivo all'inizio di un round Uno contro Uno e quando
+cambiamenti di colore. Una vita perduta annuncia il conteggio rimanente, ad esempio "2 vite"
+o "1 vita". Una vita guadagnata annuncia il nuovo conteggio allo stesso modo, fino a
+il limite di tre vite del gioco. Se il conteggio delle vite di entrambi i giocatori cambia insieme,
+entrambi i conteggi sono identificati dal colore. La funzione viene eseguita solo durante One on One
+giocare.
+
+TIPO DI SUGGERIMENTO ora appare sopra SUGGERIMENTI PULSANTE AUTO-SPEAK nel menu Impostazioni mod.
+I SUGGERIMENTI PER IL PULSANTE DI PARLAZIONE AUTOMATICA sono un interruttore salvato ed è attivato per impostazione predefinita. Girandolo
+Disattivato sopprime i suggerimenti automatici, mentre PARLARE SUGGERIMENTI rimane disponibile su richiesta.
+SUGGERIMENTI PULSANTI RITARDO ha Nessuno, 5 secondi
+(Può interrompere il parlato), 10 secondi, 15 secondi, 30 secondi e 60 secondi.
+Il valore predefinito è 10 secondi. Con Nessuno, gli input validi per la schermata corrente e
+le loro azioni sono incluse nella stringa vocale ordinaria dell'oggetto focalizzato,
+dopo un punto fermo. L'azione per il controllo focalizzato viene pronunciata prima del generale
+navigazione nel menù. Non esiste un annuncio separato del primo suggerimento. Con un cronometraggio
+ritardo, il primo annuncio di suggerimento segue tanta inattività. L'opzione di 5 secondi può
+interrompere il discorso già in corso; ritardi più lunghi si mettono in fila dietro di esso. Dopo
+dopo l'annuncio del primo suggerimento, un altro ritardo inizia solo quando il giocatore dà
+input, a meno che le ripetizioni non siano abilitate. Passare a un altro elemento focalizzato o modificare
+un cursore o un interruttore focalizzato conta come input e riavvia il ritardo, anche se il
+la scansione del collegamento dell'input del gioco non rileva l'azione del tasto o del controller. Una chiave inutilizzata
+ciò non modifica l'interfaccia utente e continua a non riavviarla.
+TIPO DI SUGGERIMENTI è uno slider salvato con Automatico, Tastiera, Controller ed Entrambi.
+Automatico è l'impostazione predefinita e segue la tastiera o la tastiera utilizzata più di recente
+ingresso del controllore. L'uso del mouse conta come la tastiera. Tastiera e controller parlano
+solo i suggerimenti di quel dispositivo; Entrambi forniscono entrambi i set di input con dispositivo esplicito
+nomi. Il ripristino della voce disattivata include sempre entrambi i dispositivi, quindi il
+il giocatore può trovare il controllo che riattiva la voce.
+
+I suggerimenti sui pulsanti mettono l'input prima della sua azione: "Invio o Spazio, attiva l'oggetto".
+I suggerimenti per un singolo dispositivo omettono il nome del dispositivo. I nomi degli stick del controller vengono pronunciati
+per intero, come "Levetta sinistra su e giù". Entrambe le modalità identificano la tastiera
+e ingressi del controller. La mod legge i collegamenti attuali del gioco in modo nativo
+cambiamenti ricolleganti si riflettono in questi suggerimenti. Quando nessun controller lo è
+connesso e il gioco ha nomi di pulsanti frontali diversi su controller diversi
+tipi, il suggerimento utilizza il "pulsante conferma" o il "pulsante indietro" anziché presupporre un
+Disposizione dell'Xbox. Le righe del punteggio della classifica utilizzano Pagina su e Pagina giù sulla tastiera.
+Il controller su/giù legge le righe solo quando nessun controllo della classifica è attivo;
+i suggerimenti riportano solo i controlli disponibili per il TIPO DI CONSIGLI selezionato. Ordinario
+i suggerimenti sullo schermo includono anche le attuali associazioni SPEAK HINTS e TOGGLE SPEECH.
+Entrambi vengono ricercati centralmente, in modo che i futuri controlli globali possano unirsi allo stesso
+elenco dei suggerimenti senza modificare ogni schermata separatamente.
+
+RIPETI SUGGERIMENTI PULSANTE è uno slider salvato separato: Off, 2x, 3x, 4x, 5x o
+Infinitamente. L'impostazione predefinita è Infinitamente. Il numero rappresenta le letture totali in uno
+ciclo: 2x significa il primo suggerimento e una ripetizione; 3x significa il primo suggerimento e
+due ripetizioni. Disattivato consente comunque il primo suggerimento automatico o manuale.
+REPEAT INTERVAL imposta il ritardo tra le ripetizioni su 15, 30, 45 o
+60 secondi e il valore predefinito è 30 secondi. Con RITARDO SUGGERIMENTI PULSANTE impostato su Nessuno,
+il timer di ripetizione inizia immediatamente dopo l'immissione. Input, un focus o un valore
+modifica oppure un cambio di schermata riavvia il ciclo di suggerimenti per la schermata corrente.
+PARLARE SUGGERIMENTI sostituisce il
+in attesa del suggerimento automatico per quel ciclo, quindi utilizza l'INTERVALLO DI RIPETIZIONE per qualsiasi
+ripetizioni configurate. Funziona anche con SUGGERIMENTI PULSANTE PARLAZIONE AUTOMATICA disattivato.
+I suggerimenti vengono soppressi durante
+gameplay attivo e fasi di timing della calibrazione audio, dove extra
+il discorso potrebbe mascherare un segnale. Un promemoria salvato esistente di 15, 30 o 60 secondi
+il ritardo dalla versione 0.6.2 diventa il nuovo valore BUTTON HINTS DELAY.
+
+Il menu IMPOSTAZIONI MOD ha anche SAPI VOICE, SAPI VOLUME, SAPI RATE e SAPI PITCH
+controlli. SAPI Voice elenca le voci SAPI predefinite del sistema e installate a 64 bit.
+Il volume inizia al 100%; Frequenza e intonazione iniziano a 50. Il volume varia dal 5% al 100%
+quindi gli avvisi di recupero SAPI rimangono udibili. La velocità e il tono variano da 0 a 100.
+Entrano tutti e tre
+passi di cinque. Si applicano alla modalità SAPI e al fallback SAPI di Auto.
+L'output diretto SAPI evita l'enumerazione vocale ripetuta per modifiche numeriche,
+utilizza testo semplice quando il tono è neutro e salta lo screen reader non necessario
+rilevamento. Il precedente esperimento di trim-silenzio rimane nascosto e inattivo.
+Le nuove misurazioni del registro SAPI individuano la maggior parte del ritardo di spedizione misurato
+il Windows SAPI COM Parla chiamata: le chiamate individuali durano da 188 a 578 ms circa,
+mentre la configurazione vocale iniziale ha richiesto dai 375 ai 609 ms. Invio braille separato
+era tipicamente da 0 a 16 ms. Il mod ora prepara il fallback SAPI della modalità Auto
+l'operatore vocale durante il caricamento del gioco e registra i tempi della coda per distinguerli
+in attesa del lavoratore dal momento della spedizione. Un primo annuncio dopo direttamente
+la selezione di SAPI potrebbe comunque includere la configurazione vocale. Questi tempi non misurano
+quando il suono diventa udibile, che dipende anche dalla voce installata e
+sistema audio.
+L'output braille separato con SAPI ora memorizza nella cache i controlli di capacità Tolk per uno
+secondo. Se l'invio stesso di SAPI è lento, il registro registra la configurazione vocale, Parla,
+e tempi di invio in braille.
+Le scelte delle impostazioni del mod vengono ricordate tra una sessione e l'altra. RIPRISTINA MODALITÀ PREDEFINITE
+riporta quelle scelte ai valori predefiniti sopra descritti. Premerlo una volta per richiedere
+conferma, quindi premerlo nuovamente entro cinque secondi per ripristinarli. In movimento
+ad un'altra riga o lasciando passare cinque secondi annulla la richiesta. Questo no
+cambia i cursori MUSICA, SFX o VOICE OVER del gioco, LIMITE FPS o personalizzato
+associazioni di tastiera e controller. Indietro torna a Impostazioni.
+OPEN USER'S GUIDE legge la guida HTML per la lingua attualmente selezionata
+nella riga Impostazioni > Lingua del gioco. La guida inglese è a
+documentation\BopItAccess-user-guide.html; le guide tradotte sono in lingua
+sottocartelle. Se una copia tradotta manca o è illeggibile, la guida in inglese
+si apre invece. L'elenco degli argomenti proviene dal sommario del documento e
+si ricarica ogni volta che viene aperto. Conferma apre un argomento. Up and Down ne leggono le righe. Nelle tabelle,
+Sinistra sposta una colonna a sinistra e Destra sposta una colonna a destra; Continua su e giù
+la colonna corrente quando ci si sposta tra le righe. Le intestazioni delle colonne etichettano le celle
+invece di apparire come righe di dati. La tabella viene annunciata una volta all'ingresso, e
+la sua fine viene annunciata all'uscita. Indietro torna agli argomenti o abbandona la guida.
+Durante la lettura, la mod applica il parametro Filtro menu-musica del gioco e
+ripristina il valore precedente all'uscita. RESET SCHERMATA DI BENVENUTO richiede a
+premendo una seconda volta entro cinque secondi, verrà visualizzata la schermata di benvenuto su
+prossimo lancio del gioco. La modifica delle righe o l'attesa di cinque secondi annulla la conferma.
+Questo aggiornamento ripristina il layout della riga delle impostazioni native del gioco, quindi su/giù
+la navigazione rimane sulle righe Impostazioni dopo l'aggiunta di IMPOSTAZIONI MOD.
+Inoltre avvia il sottomenu MOD SETTINGS su SPEECH OUTPUT ogni volta che si apre,
+impedendo a una riga INDIETRO precedentemente selezionata di chiudere immediatamente il menu
+quando Invio viene utilizzato per riaprirlo.
+L'input che apre MOD SETTINGS viene ora ignorato dalle sue righe finché non lo è quell'input
+rilasciato, quindi la riapertura del menu non può anche disattivare la sintesi vocale. I mod
+aggiunti Controlla anche le righe di associazione in attesa dell'input di apertura
+rilasciato prima di accettare una richiesta di riammissione.
+
+All'interno di Play, la mod legge Solo, Party, Pass It e One on One quando è focalizzata.
+Nella schermata di selezione del brano successiva, annuncia il tema corrente
+(Forme, Spazio, Città o Ufficio) e se la modalità Estrema è attiva. Torcendo a
+cambia la canzone parla solo del nuovo tema. Tirare per cambiare la difficoltà parla
+solo il nuovo stato Estremo. L'introduzione sullo schermo spiega anche RUOTA,
+Azioni TIRA, COLPISCI e Indietro.
+Questa introduzione completa viene ripetuta ogni volta che viene selezionata una modalità e la canzone
+si apre di nuovo la schermata, con il tema corrente e lo stato Estremo.
+Premi PARLARE SUGGERIMENTI (H o premi la levetta destra per impostazione predefinita) su questa schermata per ascoltare
+la modalità corrente e il testo tutorial nativo della difficoltà prima di iniziare. Ciascuno
+l'azione denominata in quel riferimento include la tastiera attualmente assegnata o
+controllo del controller, seguendo TIPO DI CONSIGLI. Vengono letti i controlli riassegnati
+gli attacchi del giocatore attivo; Uno contro uno nomina gli input COLPISCI di entrambi i giocatori. Il
+la sovrapposizione del tutorial temporizzato durante la riproduzione attiva rimane silenziosa, quindi non può oscurarsi
+i comandi vocali del gioco. Il suggerimento annuncia questo utilizzo aggiuntivo di SPEAK HINTS.
+Il controllo LEGGI DESCRIZIONI pronuncia una descrizione visiva dell'oggetto selezionato
+Forme, Spazio, Città o Ufficio su richiesta. È disponibile in questa schermata
+solo prima dell'inizio del gioco. I suoi input predefiniti sono G sulla tastiera e LT
+(grilletto sinistro) sul controller. La R è stata sostituita perché è il reset del gioco
+Scorciatoia giroscopica. L'introduzione sullo schermo annuncia l'associazione corrente.
+L'avvio della riproduzione interrompe qualsiasi discorso rimasto dalla selezione del brano in modo che non possa mascherare il
+segnali verbali del gioco. Le descrizioni iniziano con i dettagli della scena anziché con
+ripetendo il nome d'arte selezionato.
+
+Nella schermata dei risultati finali, Solo, Party e Passa annunciano il punteggio finale
+prima del discorso del menu. Solo legge i pulsanti Replay e Classifica focalizzati
+e spiega Indietro. Le altre modalità leggono le opzioni Continua, Replay e
+Indietro richiede. Uno contro uno mostra un vincitore anziché un punteggio finale numerico, quindi
+la mod annuncia il vincitore mostrato lì. Il discorso sul punteggio ha la priorità
+l'annuncio del menu iniziale; i prompt della schermata dei risultati vengono accodati dopo di esso.
+I successivi cambiamenti del focus del menu si interrompono a vicenda. Cambiamenti rapidi immediatamente
+dopo la fine della partita vengono combinati fino a quando non ha avuto tempo l'annuncio del punteggio breve
+per finire, mantenendo l'ultima scelta di menu mirata.
+Gli annunci del punteggio più alto in singolo e del grado del gruppo vengono annunciati quando viene segnalato il gioco
+un nuovo risultato in classifica.
+LEGGI PUNTEGGIO ripete il risultato finale su richiesta solo durante il risultato del game over
+lo schermo è visibile. Gli input predefiniti sono T sulla tastiera e pressione della levetta sinistra
+controllore. Solo, Party e Pass It ripetono il loro punteggio finale; Uno contro uno
+ripete il vincitore mostrato dal gioco. L'azione è disabilitata durante il gioco,
+selezione dei brani e tutte le altre schermate. RT (grilletto destro) non è stato utilizzato come
+predefinito perché il gioco lo associa già a Reset Gyro e Auto Play.
+Le ripetizioni richieste parlano immediatamente e possono essere interrotte dal menu dei risultati
+navigazione. Solo l'annuncio automatico del risultato ritarda il menu iniziale
+discorso in modo che la partitura venga ascoltata per prima.
+Il FEEDBACK UNO A UNO è attivo per impostazione predefinita in Impostazioni > Impostazioni Mod per la voce attiva
+colore e vite rimanenti durante quella modalità. I segnali condivisi COLPISCI non passano
+stessi identificano un colore, quindi la mod mantiene l'ultimo colore definito.
+
+TOGGLE SPEECH attiva o disattiva tutta la normale voce mod da qualsiasi schermata. Suo
+le impostazioni predefinite sono F8 sulla tastiera e Seleziona sul controller. Quando è spento, il mod
+interrompe la conversazione corrente e annuncia che la conversazione è disattivata, insieme alla conversazione corrente
+controlli della tastiera e del controller per riaccenderlo. Lo stato spento è
+salvati tra le sessioni di gioco. Se il gioco inizia con la voce disattivata, la mod dà
+quelle istruzioni di ripristino invece del solito messaggio di caricamento. Girando
+il discorso riattivato annuncia "Discorso attivato". Gli altri dialoghi mod rimangono silenziosi mentre sono spenti.
+Il controllo Attiva/Disattiva voce rimane attivo anche quando la voce è disattivata.
+
+Le classifiche raggiunte dal menu principale, dai risultati in singolo e dai risultati del gruppo
+annunciare il brano, il dispositivo, il gruppo e la data selezionati, ove disponibili. Leggono
+grado, nome del giocatore e punteggio, inclusi gli stati di caricamento e di risultato vuoto. Pagina su
+e Pagina giù leggono le singole righe del punteggio anche quando è attivo un filtro. Nativo
+controlli mirati come Locale, Amici, Globale, Oggi, Questo mese, Tutto,
+Vengono pronunciati Indietro e Continua. La classifica del Partito riporta anche il suo nome
+stato di selezione e conferma.
+
+Questo aggiornamento mantiene silenziose le classifiche dei risultati durante la selezione della modalità e del brano.
+I nomi dei filtri della classifica parlano per primi, seguiti dai riepiloghi dei punteggi.
+Il pulsante del menu degli obiettivi parla normalmente; prenotare le istruzioni attendere fino a
+le sue pagine vengono effettivamente aperte e solo dopo viene annunciata la chiusura.
+
+Il libro degli obiettivi del gioco annuncia la sua pagina visibile e ogni obiettivo
+nome, descrizione e stato bloccato o sbloccato. Utilizzare Su e Giù per leggere gli elementi
+su una pagina. I controlli Sinistra e Destra del gioco girano le pagine come al solito.
+
+I crediti annunciano la prima riga quando viene aperta. Utilizza il menu Su e Giù del gioco
+controlli per la lettura di ciascuna linea di credito. Lo scorrimento automatico visivo continua come
+prima. Se questi controlli non sono disponibili, le linee vengono accodate così come appaiono;
+se anche questo non funziona, l'intero testo dei titoli di coda viene annunciato una volta.
+
+All'interno dei controlli, la mod recita COLPISCI, COLPISCI (Giocatore 2), SCUOTI, RUOTA, GIRA, TIRA,
+e Ripristina impostazioni predefinite. Legge l'associazione corrente per il dispositivo di input attivo,
+annuncia i collegamenti modificati e legge il feedback visibile del ricollegamento del gioco.
+Annuncia come tornare alle Impostazioni una volta per visita. Quando il ripristino alle impostazioni predefinite cambia a
+associazione, segnala che le associazioni sono state ripristinate.
+
+La mod espone una riga RESET GYRO nativa e aggiunge un CHANGE SPEECH OUTPUT
+scorciatoia. Reset Gyro si trova con i controlli del gioco; le righe specifiche della mod
+rimangono insieme nella parte inferiore del menu, prima di Ripristina impostazioni predefinite. CAMBIARE
+SPEECH OUTPUT scorre attraverso le stesse modalità di Impostazioni > Impostazioni Mod > USCITA
+MODALITÀ: Auto, SAPI, JAWS, Window-Eyes, NVDA, Accesso al sistema e ZoomText. Suo
+gli input predefiniti sono F9 sulla tastiera e il pulsante Fronte ovest (X su Xbox
+controllore). Il pulsante Start del controller è riservato al nativo del gioco
+Azione del menu. La scelta corrente viene annunciata quando viene utilizzata la scorciatoia e
+viene salvato dalla stessa impostazione della modalità di output.
+
+La mod aggiunge nove righe al menu Controlli del gioco: Gruppo Precedente,
+Gruppo successivo, Data precedente, Data successiva, LEGGI DESCRIZIONI, LEGGI PUNTEGGIO,
+ALTERNA LA PAROLA, PRONUNCIA SUGGERIMENTI e CAMBIA L'USCITA DELLA PAROLA. I primi quattro
+affrontare i filtri della classifica
+raggiunto con O/P e K/L sul layout di tastiera predefinito o con i pulsanti e
+D-pad sinistro/destro su un controller. Metti a fuoco una riga per ascoltarne la rilegatura corrente,
+quindi usa la normale azione COLPISCI/confirm del gioco per ricollegarlo. Le righe scorrono
+all'interno del pannello Controlli esistente. LEGGERE LE DESCRIZIONI può anche essere rimbalzato
+tastiera e controller. Il suo legame viene salvato dal mod e ripristinato su predefinito
+ripristina G e LT. READ SCORE può anche essere rimbalzato per tastiera e controller;
+Ripristina impostazioni predefinite ripristina T e la pressione della levetta sinistra. La rilegatura originale del gioco
+le righe e le quattro righe della classifica utilizzano lo stesso flusso di riassociazione dei controlli.
+TOGGLE SPEECH può essere rimbalzato per tastiera e controller. I suoi legami sono
+salvato dal mod e Ripristina impostazioni predefinite ripristina F8 e Seleziona. Se il legame
+viene modificato mentre la voce è disattivata, la mod annuncia i nuovi controlli di ripristino.
+I SUGGERIMENTI PARLARE possono anche essere rimbalzati. Le sue impostazioni predefinite sono H e premi la levetta destra.
+Pronuncia immediatamente il suggerimento della schermata corrente senza programmare un secondo
+primo suggerimento automatico. Le ripetizioni configurate possono ancora seguire. È silenzioso
+durante il gioco e i segnali di calibrazione audio temporizzati.
+CAMBIA USCITA DISCORSO può essere rimbalzato per tastiera e controller; Ripristina a
+L'impostazione predefinita ripristina F9 e il pulsante Fronte ovest. Se è già presente una nuova associazione
+assegnato a un altro gioco o azione mod, il menu Controlli rifiuta l'
+duplica e mantiene l'assegnazione precedente. RESET GYRO può essere rimbalzato
+la stessa procedura dei Comandi nativi delle altre azioni di gioco.
+Il ritorno dalla selezione del brano al menu principale ripristina anche i suggerimenti del menu principale
+quando un gestore di gioco memorizzato nella cache riporta ancora un vecchio stato di gioco. Suggerimento sul pulsante
+i timer e la selezione automatica del dispositivo di suggerimento seguono il gioco e la mod assegnati
+controlli; i tasti non utilizzati, come un tasto Control non assegnato, non li ripristinano.
+Questo aggiornamento impedisce alla riga Controlli obsoleta di annunciare "Riassociazione non riuscita"
+ripetutamente dopo la chiusura della scena. Leggi le descrizioni non più temporaneamente
+sovrascrive qualsiasi associazione di input del gioco.
+
+All'interno di Calibrazione audio, la mod legge i controlli Calibra, Indietro e COLPISCI,
+annuncia le istruzioni e le fasi di calibrazione, legge il conto alla rovescia del riscaldamento,
+e annuncia il risultato della latenza visualizzato. Non parla ogni battito durante
+l'esercizio di cronometraggio in modo che il ritmo rimanga udibile.
+
+La schermata di pausa annuncia In pausa, il pulsante Riprendi o Menu principale focalizzato,
+e il suo pulsante suggerisce. I cambiamenti di focus interrompono il discorso precedente del menu di pausa;
+riprendere o abbandonare il round cancella qualsiasi pausa rimanente prima del gioco
+oppure il menu principale continua. Un fallback protetto legge anche i controlli mirati
+e testo visibile su un pannello inaspettato rivolto al giocatore senza avere la priorità
+sui lettori dedicati sopra. Durante un round attivo, il mod lascia il
+solo i comandi verbali del gioco e il punteggio in corso. Muovendo il mouse su un
+l'elemento senza fornirlo Unity Il focus dell'interfaccia utente potrebbe non parlare.
+
+Installa
+-------
+1. Chiudi Bop It! se è in esecuzione.
+2. Estrai tutti i file in questo ZIP nella cartella del gioco Bop It!:
+   C:\Program Files (x86)\Steam\steamapps\common\Bop It!
+   Consenti a Windows di sostituire Mods\BopItAccess.dll e unire Mod e
+   cartelle di documentazione.
+3. Avvia lo screen reader, quindi avvia da Bop It! a Steam come al solito.
+
+MelonLoader deve essere già installato. Il CAP include Mods\BopItAccess.dll,
+documentation\BopItAccess-user-guide.html, tutte le sottocartelle della lingua tradotta,
+e i relativi documenti accompagnatori,
+Tolk.dll e nvdaControllerClient64.dll. La guida in-game carica l'HTML
+da quella cartella della documentazione ogni volta che si apre. Questa mod è stata creata per l'installato
+MelonLoader 0.7.3 Open-Beta e Bop It! (Unity 2022.3.50f1, x64).
+Le prime traduzioni non inglesi sono state effettuate con la traduzione automatica
+e necessitano di revisione da parte di parlanti fluenti. Si prega di segnalare diciture poco chiare o errate.
+I nomi di azione di gioco usano i termini tradotti del gioco. Shapes, Space, City,
+e Office rimangono Inglese come titoli fissi. Se la voce di sistema di SAPI fa
+non pronunciare bene la lingua, selezionare una voce installata adatta in Mod
+Impostazioni.
+
+Provare i menu e le schermate
+-------------------------
+Attendi l'annuncio nella schermata del titolo, se appare, quindi utilizza COLPISCI per aprire il
+menù principale. Il gioco potrebbe richiedere diversi secondi dopo il messaggio di pronto della mod
+accettare questo input.
+Al primo avvio, viene visualizzata la schermata di benvenuto prima del menu principale. Selezionalo
+messaggio per ascoltare di nuovo l'introduzione. Scegli Apri impostazioni mod, Leggi utente
+Guida o Continua al gioco. Speak Hints nomina la sua tastiera attuale e
+assegnazioni dei controller nel messaggio di benvenuto indipendentemente dal tipo di suggerimenti.
+Apri Play e spostati tra le quattro modalità. Scegline uno per raggiungere la selezione del brano.
+RUOTA per scorrere i temi e TIRA per attivare o disattivare la modalità Estrema. Il
+mod annuncia ogni modifica. Premi G o LT per ascoltare il livello attualmente selezionato
+descrizione. Premi H o premi la levetta destra per ascoltare il testo tutorial della modalità,
+controlli di azione attualmente assegnati e suggerimenti sui pulsanti. COLPISCI avvia la modalità scelta;
+Ritorni indietro. Durante un round, usa
+il controllo Menu del gioco per aprire Pausa, quindi spostarsi tra Riprendi e Menu principale.
+Alla fine di una partita, ascolta il punteggio o il vincitore uno contro uno prima del
+vengono annunciati i controlli della schermata dei risultati. Premi T o premi la levetta sinistra per ripetere l'azione
+risultato finale mentre è visibile la schermata di fine partita.
+Premi F8 o il controller Seleziona per attivare o disattivare la sintesi vocale da qualsiasi schermata.
+Premi F9 o il controller Ovest (X su un controller Xbox) per scorrere il discorso
+modalità di uscita. La stessa scelta è disponibile in Impostazioni > Impostazioni Mod > MODALITÀ DI USCITA.
+L'USCITA BRAILLE in Impostazioni > Impostazioni Mod è attivata per impostazione predefinita. Visualizzatore Braille di NVDA
+può visualizzare il braille e il suo equivalente testuale senza un display fisico.
+Per un confronto ON/OFF, utilizzare la modalità braille segui-cursore di NVDA con Mostra
+Messaggi abilitati; la sua modalità di visualizzazione-produzione vocale rispecchierebbe anche il parlato
+quando l'impostazione USCITA BRAILLE del mod è disattivata.
+In Impostazioni > Impostazioni Mod, usa i SUGGERIMENTI PULSANTE AUTO-SPEAK per abilitare o disabilitare
+istruzioni automatiche. Premi H o premi la levetta destra per ascoltare il suggerimento attuale
+su richiesta.
+TIPO SUGGERIMENTI sceglie Automatico, Tastiera, Controller o Entrambi per i suggerimenti.
+PULSANTE SUGGERIMENTI RITARDO sceglie se accompagnano il discorso focalizzato o seguono a
+periodo di inattività. SUGGERIMENTI PULSANTE RIPETI e INTERVALLO RIPETIZIONE controllano qualsiasi
+ulteriori promemoria.
+Apri le classifiche dal menu principale o dalla schermata dei risultati. Cambia un filtro in
+ascolta la sua nuova selezione e leggi i singoli punteggi con Pagina su e Pagina giù.
+Per impostazione predefinita, gli O/P si spostano tra i gruppi della classifica e i K/L si spostano tra le date
+intervalli. Gli ingressi del controller corrispondenti sono paraurti sinistro/destro e
+D-pad sinistra/destra. Le quattro nuove righe di controlli hanno lo scopo di riassegnarli.
+Apri Obiettivi e gira le pagine con Sinistra e Destra; utilizzare Su e Giù per ciascuno
+ingresso. Apri Crediti e usa Su e Giù per leggere le sue righe indipendentemente dal
+scorrimento visivo.
+
+Se manca la voce, controlla Mods\BopItAccess.log nella cartella del gioco. Registra
+rilevamento del pannello, oggetti dell'interfaccia utente selezionati e se Tolk ha accettato gli annunci.
+L'accettazione Tolk non prova di per sé che il discorso fosse udibile.
+
+Per disabilitare la mod, rimuovere Mods\BopItAccess.dll. MelonLoader può rimanere installato.
+
+File e avvisi di terze parti
+-----------------------------
+Tolk è una libreria di accessibilità open source di Christopher T. D. Kager. Questo
+il pacchetto include Tolk.dll e nvdaControllerClient64.dll da una build pubblica
+bundle, senza modificare i file binari. Tolk è concesso in licenza con la versione GNU LGPL
+3; sono presenti i testi di licenza GNU LGPL e GNU GPL di accompagnamento
+LICENZE DI TERZE PARTI. Tolk fonte e licenza: https://github.com/dkager/tolk
+
+La fonte mod Bop It Access si trova nello ZIP sorgente separato.
