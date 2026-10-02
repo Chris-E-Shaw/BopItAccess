@@ -35,6 +35,7 @@ public sealed partial class BopItAccessMod
     private int _guideTopicIndex;
     private int _guideLineIndex;
     private int _guideColumnIndex;
+    private int _guideLastLineDirection = 1;
     private int _guideLastTopicRowId;
     private string? _guideLastPageFocus;
     private int _guideMoveDirection;
@@ -267,6 +268,7 @@ public sealed partial class BopItAccessMod
         _guideTopicIndex = index;
         _guideLineIndex = 0;
         _guideColumnIndex = 0;
+        _guideLastLineDirection = 1;
         _guideTopicsPanel.lastSelectedButton = _guideTopicRows[index].gameObject;
         _guideTopicsPanel.Hide();
         _guidePageRoot.SetActive(true);
@@ -463,10 +465,13 @@ public sealed partial class BopItAccessMod
             move = FindHintAction("UI", "Navigate");
         Vector2 axis = move != null && move.enabled
             ? move.ReadValue<Vector2>() : Vector2.zero;
-        int direction = Mathf.Abs(axis.y) >= 0.5f
-            ? (axis.y > 0 ? 1 : 2)
-            : Mathf.Abs(axis.x) >= 0.5f
-                ? (axis.x > 0 ? 3 : 4) : 0;
+        float horizontal = Mathf.Abs(axis.x);
+        float vertical = Mathf.Abs(axis.y);
+        int direction = horizontal < 0.5f && vertical < 0.5f
+            ? 0
+            : vertical >= horizontal
+                ? (axis.y > 0 ? 1 : 2)
+                : (axis.x > 0 ? 4 : 3);
         if (direction == 0)
         {
             _guideMoveDirection = 0;
@@ -488,8 +493,17 @@ public sealed partial class BopItAccessMod
                 0, topic.Lines.Count - 1);
             if (next == _guideLineIndex)
                 return;
+            GuideLine oldLine = topic.Lines[_guideLineIndex];
+            GuideLine newLine = topic.Lines[next];
+            bool stayingInTable = oldLine.Cells != null &&
+                newLine.Cells != null &&
+                string.Equals(oldLine.TableCaption, newLine.TableCaption,
+                    StringComparison.Ordinal);
+            _guideLastLineDirection = direction == 1 ? -1 : 1;
             _guideLineIndex = next;
-            _guideColumnIndex = 0;
+            _guideColumnIndex = stayingInTable
+                ? Math.Clamp(_guideColumnIndex, 0, newLine.Cells!.Count - 1)
+                : 0;
         }
         else
         {
@@ -524,24 +538,28 @@ public sealed partial class BopItAccessMod
         if (topic.Lines.Count == 0)
             return "This topic has no readable text.";
         GuideLine line = topic.Lines[_guideLineIndex];
-        string text;
         if (line.Cells != null && line.Cells.Count > 0)
         {
             int column = Math.Clamp(_guideColumnIndex, 0, line.Cells.Count - 1);
             string heading = line.Headers != null && column < line.Headers.Count
                 ? line.Headers[column] : "Column " + (column + 1);
-            string rowName = line.Cells[0];
-            text = "Table " + line.TableCaption + ", row " + line.TableRow +
-                " of " + line.TableRows + ", " + rowName + ". Column " +
-                (column + 1) + " of " + line.Cells.Count + ", " + heading +
-                ": " + line.Cells[column];
+            string rowName = line.Cells[0].Length > 0
+                ? line.Cells[0] : "Row " + line.TableRow;
+            string rowLabel = rowName + (_indexingEnabled
+                ? ", " + line.TableRow + " of " + line.TableRows
+                : string.Empty);
+            return column == 0
+                ? rowLabel
+                : rowLabel + ". " + heading + ": " + line.Cells[column];
         }
-        else
-            text = line.Text;
+        string plainText = line.Text;
+        if (line.IsTableMarker)
+            return _guideLastLineDirection < 0
+                ? line.ReverseTableText : plainText;
         return _indexingEnabled
-            ? text + " Line " + (_guideLineIndex + 1) + " of " +
+            ? plainText + " Line " + (_guideLineIndex + 1) + " of " +
               topic.Lines.Count + "."
-            : text;
+            : plainText;
     }
 
     private void RepeatGuideLine()
@@ -575,7 +593,8 @@ public sealed partial class BopItAccessMod
 
     private sealed record GuideLine(string Text, List<string>? Cells = null,
         List<string>? Headers = null, string TableCaption = "",
-        int TableRow = 0, int TableRows = 0);
+        int TableRow = 0, int TableRows = 0, bool IsTableMarker = false,
+        string ReverseTableText = "");
 
     private sealed class GuideHtmlNode
     {
@@ -775,22 +794,37 @@ public sealed partial class BopItAccessMod
         GuideHtmlNode? captionNode = FindGuideNode(table,
             node => node.Name == "caption");
         string caption = captionNode == null ? "" : GuideText(captionNode);
-        if (caption.Length > 0)
-            lines.Add(new GuideLine("Table: " + caption));
         List<GuideHtmlNode> rows = GuideDescendants(table).Where(node =>
             node.Name == "tr").ToList();
         List<string>? headers = null;
-        for (int index = 0; index < rows.Count; index++)
+        var dataRows = new List<List<string>>();
+        foreach (GuideHtmlNode row in rows)
         {
-            List<string> cells = rows[index].Children.Where(node =>
-                node.Name is "th" or "td").Select(GuideText).ToList();
+            List<GuideHtmlNode> cellNodes = row.Children.Where(node =>
+                node.Name is "th" or "td").ToList();
+            List<string> cells = cellNodes.Select(GuideText).ToList();
             if (cells.Count == 0)
                 continue;
-            if (headers == null && rows[index].Children.Any(node =>
-                    node.Name == "th"))
+            if (headers == null && cellNodes.All(node => node.Name == "th"))
+            {
                 headers = cells;
-            lines.Add(new GuideLine("", cells, headers, caption,
-                index + 1, rows.Count));
+                continue;
+            }
+            dataRows.Add(cells);
         }
+        int columns = Math.Max(headers?.Count ?? 0,
+            dataRows.Count == 0 ? 0 : dataRows.Max(row => row.Count));
+        string name = caption.Length > 0 ? caption + " table" : "Table";
+        string rowCount = dataRows.Count + (dataRows.Count == 1 ? " row" : " rows");
+        string columnCount = columns + (columns == 1 ? " column" : " columns");
+        string entry = name + ". " + rowCount + ", " + columnCount + ".";
+        string exit = "End of " + name + ".";
+        lines.Add(new GuideLine(entry, TableCaption: caption,
+            IsTableMarker: true, ReverseTableText: exit));
+        for (int index = 0; index < dataRows.Count; index++)
+            lines.Add(new GuideLine("", dataRows[index], headers, caption,
+                index + 1, dataRows.Count));
+        lines.Add(new GuideLine(exit, TableCaption: caption,
+            IsTableMarker: true, ReverseTableText: entry));
     }
 }

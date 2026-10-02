@@ -43,7 +43,7 @@ If the SDK reports a missing .NET 6 targeting pack, install an SDK that includes
 
 The Bop It Access build command compiles only this mod; it does not build or download Tolk. If speech does not start, inspect `<game directory>\Mods\BopItAccess.log`. The log records whether Tolk initialized and accepted speech requests, though that alone cannot prove audio was heard.
 
-On a first run, the welcome screen appears after the game's main menu is ready. Its choices open Mod Settings, read the user's guide in-game, or continue to the game. Mod Settings also offers **Open User's Guide** and a confirmed **Reset Welcome Screen** action that shows the welcome screen on the next launch. In the guide, use Up/Down to choose topics or read lines, Left/Right to move between table columns, Confirm to open a topic, and Back to leave a topic or the guide.
+On a first run, the welcome screen appears after the game's main menu is ready. Its choices open Mod Settings, read the user's guide in-game, or continue to the game. Mod Settings also offers **Open User's Guide** and a confirmed **Reset Welcome Screen** action that shows the welcome screen on the next launch. In the guide, use Up/Down to choose topics or read lines and Confirm to open a topic. Within tables, Left moves one column left, Right moves one column right, and Up/Down keeps the current column while changing rows. Column headings label cells rather than appearing as data rows; the table is announced on entry and its end on exit. Back leaves a topic or the guide.
 
 ## Documentation
 

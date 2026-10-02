@@ -1,4 +1,4 @@
-Bop It Access 0.7.0 - Welcome Screen and In-Game User's Guide
+Bop It Access 0.7.1 - Improved In-Game Guide Tables
 
 What this does
 --------------
@@ -164,10 +164,13 @@ change the game's MUSIC, SFX, or VOICE OVER sliders, LIMIT FPS, or custom
 keyboard and controller bindings. Back returns to Settings.
 OPEN USER'S GUIDE reads documentation\BopItAccess-user-guide.html inside the
 game. Its topic list comes from the document's table of contents and reloads
-whenever opened. Confirm opens a topic. Up and Down read its lines, Left and
-Right move through table columns, and Back returns to topics or leaves the
-guide. While reading, the mod applies the game's menu-music Filter parameter
-and restores its previous value on exit. RESET WELCOME SCREEN asks for a
+whenever opened. Confirm opens a topic. Up and Down read its lines. In tables,
+Left moves one column left and Right moves one column right; Up and Down keep
+the current column when moving between rows. Column headings label cells
+instead of appearing as data rows. The table is announced once on entry, and
+its end is announced on exit. Back returns to topics or leaves the guide.
+While reading, the mod applies the game's menu-music Filter parameter and
+restores its previous value on exit. RESET WELCOME SCREEN asks for a
 second press within five seconds, then makes the welcome screen appear on the
 next game launch. Changing rows or waiting five seconds cancels confirmation.
 This update restores the game's native Settings row layout so up/down
