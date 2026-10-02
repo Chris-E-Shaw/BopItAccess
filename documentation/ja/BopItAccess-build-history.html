@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Bop It Access — 技術的なビルド履歴、v0.1.0–v0.8.0</title>
+<title>Bop It Access — 技術的なビルド履歴、v0.1.0–v0.8.1</title>
 <style>
     :root { color-scheme: light dark; --page: #f6f8fa; --card: #fff; --ink: #1f2328; --muted: #57606a; --line: #d0d7de; --link: #0969da; --accent: #8250df; --code: #eff1f3; }
     @media (prefers-color-scheme: dark) { :root { --page: #0d1117; --card: #161b22; --ink: #e6edf3; --muted: #9198a1; --line: #30363d; --link: #58a6ff; --accent: #bc8cff; --code: #21262d; } }
@@ -42,7 +42,7 @@
 <header>
 <div class="wrap">
 <h1>Bop It Access: 技術的なビルド履歴</h1>
-<p class="intro">v0.1.0 から v0.8.0 までの 45 ビルドの chronological レコード。 各エントリには、スコープ付きコミットの件名と実装の詳細があります。 パブリックGitHubリポジトリには、コンパイルされたダウンロードやGitHubリリースがまだ含まれていません。</p>
+<p class="intro">v0.1.0 から v0.8.1 までの 46 ビルドの chronological レコード。 各エントリには、スコープ付きコミットの件名と実装の詳細があります。 パブリックGitHubリポジトリには、コンパイルされたダウンロードやGitHubリリースがまだ含まれていません。</p>
 <p class="note"><strong>Git の出所:</strong> Git は v0.6.12 以降に導入されました。 37 個のソース コミットは、保存されたソース ZIP から再構築されました。 Git の日付は、元のビルド イベントではなく、インポートについて説明しています。 Christopher Shaw がコミットの作成者です。共同作成者のトレーラーには、対応するビルド作業の検証済みモデル レコードが反映されています。最初のビルドは GPT-6 Luna、残りの 36 は GPT-6 Sol です。ローカル インストール パッケージとバージョン タグは、最初の公開版 GitHub の一部ではありません。</p>
 <nav aria-label="ビルドシリーズ"><a href="#foundation">v0.1 ～ v0.4 基礎</a><a href="#series05">v0.5シリーズ</a><a href="#series06">v0.6シリーズ</a><a href="#series07">v0.7シリーズ</a><a href="#series08">v0.8 多言語</a></nav>
 </div>
@@ -105,8 +105,9 @@
 <article class="commit" id="v0-7-1"><div class="meta"><span class="version">v0.7.1</span><span class="kind">fix · docs</span></div><h3>修正(ガイド): 表の音声を簡素化し、列のナビゲーションを修正しました。</h3><ul><li>繰り返されるテーブル名、列とグローバルの行数、データ行として通知される HTML ヘッダーを示すゲーム内ログを診断します。すべての見出し行を列ラベルとして扱うため、メイン メニューの選択テーブルには 6 つのデータ行があり、項目ではなく再生で始まります。</li><li>各テーブルの名前とサイズを入場時にアナウンスし、上向きに読む場合も含めて終了時にテーブルの終わりをアナウンスします。テーブル内で、テーブル名やグローバル ガイドライン番号を繰り返さずに、行項目と選択した列のラベル付き値を読み取ります。データ行の位置を通知することで、保存されたインデックス設定を意味のあるものに保ちます。</li><li>左/右の逆の解釈を修正し、表の行を上/下に移動するときに選択した列を保持し、より強力なナビゲーション軸を使用して、スティックのドリフトが水平方向の意図をマスクする可能性を低くします。プレーヤーの説明を更新します。ソースは警告やエラーなしでコンパイルされました。プレイヤーにはゲーム内チェックが残ります。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/0293901987e3eb1dcc978cf82162375de39a527c">ソースコミット</a> · コンパイル済みの GitHub リリースはありません</p></article>
 </section>
 <section aria-labelledby="series08-heading" id="series08">
-<h2 id="series08-heading">多言語のスピーチと文書: v0.8.0</h2>
+<h2 id="series08-heading">多言語のスピーチと文書: v0.8.0–v0.8.1</h2>
 <article class="commit" id="v0-8-0"><div class="meta"><span class="version">v0.8.0</span><span class="kind">feat · docs</span></div><h3>feat(ローカライズ): スピーチとガイドのためのゲーム言語に従う</h3><ul><li>読む Unity ローカリゼーションのアクティブなロケールを使用して、起動時にゲームの保存言語を使用して、設定で行われた変更に従ってください。 共有出力境界とメニュー、制御、ヒント、チュートリアル、リーダーボード、スコア、達成、歓迎、および結果発表でスピーチをローカライズします。 スピーチ、ブレーユ、ゲーム内ガイドがゲームの言語選択に従うようになりました。</li><li>英語、フランス語、イタリア語、ドイツ語、スペイン語(スペイン)、スペイン語(ラテンアメリカ)、日本語、韓国語、簡体字中国語、ブラジルポルトガル語の10言語の音声カタログを埋め込む。 叩く、ねじる、引く、回すおよびはじくのためのゲームの自然な言葉を使用して下さい;4つの固定英語の段階のタイトルを保って下さい。 キーボードとコントローラーのバインディング名は、Spaceステージなどのゲーム条件と別々に保持し、コンパクトなCJKスピーチの自動スコア保護を拡張します。</li><li>翻訳されたHTMLユーザーガイド、ビルド履歴、READMEファイル、Gitワークフロー、および各非英語言語のサードパーティの通知を束ねます。 ガイドはマッチングファイルを開きます。 <code>documentation/&lt;language&gt;/</code>, フォールバックとして英語ファイル. トピックリンク、コントロールテーブル、コードブロック、インストールパスを保存します。 翻訳された prose は機械で主張され、まだ流暢なスピーカーのレビューを必要とします。</li><li>警告やエラーゼロで.NET 6の下でMODをコンパイルします。 ライブゲーム内言語の切り替えとスピーチの動作がプレーヤーの検証を待っています。マッチングインストールされたSAPIの音声は、クリアな非英語の出力に必要な場合があります。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/c1339a1813281ea5b9d0ac86d8da232025d50211">ソースコミット</a> · コンパイル済みの GitHub リリースはありません</p></article>
+<article class="commit" id="v0-8-1"><div class="meta"><span class="version">v0.8.1</span><span class="kind">fix · docs</span></div><h3>fix(ローカライズ): 日本語ガイドと日中韓のメニュー位置案内を改善</h3><ul><li>日本語ガイドはすでに翻訳・インストールされていましたが、直近のプレイログで開かれたのはスペイン語ガイドだけでした。README に日本語ガイドへの直接リンクを追加し、初めて使う人向けの説明とメニュー・ゲームモードの名称を整えました。</li><li>日本語と簡体字中国語のメニュー項目の位置を漢数字と自然な表現で読み上げます。韓国語ではスラッシュ区切りの件数表記をやめ、位置を明示します。ガイド内の行・列・文章の行数・表の概要にも同じ形式を適用し、スライダーの数値は従来のままにしました。</li><li>.NET 6 で警告・エラーともにゼロでコンパイルしました。ゲーム内での動作はプレイヤーによる確認待ちです。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9c388839b240e6fa78bf2c5331824d3289e43111">ソースコミット</a> · コンパイル済みの GitHub リリースはありません</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 のローカル ソース アーカイブは、パブリック ソースのコミットを再構築するために使用されました。インストール パッケージはローカルに残り、GitHub リリースではありません。 v0.5.4 の再バインド プレビューと v0.5.18 SAPI トリム実験は、履歴実装として記録されます。後のエントリには、それらがどのように変更されたかが記載されています。</p><p><a href="#history">ビルド履歴に戻る</a></p></div></footer>
