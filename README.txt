@@ -1,4 +1,4 @@
-Bop It Access 0.6.16 - Mod Settings Defaults and Restore
+Bop It Access 0.6.17 - Assigned Controls in Tutorials
 
 What this does
 --------------
@@ -176,7 +176,10 @@ Pull, Bop, and Back actions.
 This full introduction is repeated whenever a mode is selected and the song
 screen opens again, with the current theme and Extreme state.
 Press SPEAK HINTS (H or right stick press by default) on this screen to hear
-the current mode and difficulty's native tutorial text before starting. The
+the current mode and difficulty's native tutorial text before starting. Each
+named action in that reference includes its currently assigned keyboard or
+controller control, following HINTS TYPE. Reassigned controls are read from
+the active player's bindings; One on One names both players' Bop inputs. The
 timed tutorial overlay during active play stays silent so it cannot obscure
 the game's spoken commands. The hint announces this extra use of SPEAK HINTS.
 The READ DESCRIPTIONS control speaks a visual description of the selected
@@ -325,8 +328,9 @@ accept this input.
 Open Play and move among the four modes. Choose one to reach song selection.
 Twist to cycle through themes and Pull to switch Extreme mode on or off. The
 mod announces each change. Press G or LT to hear the currently selected stage
-description. Press H or right stick press to hear the mode's tutorial text and
-button hints. Bop starts the chosen mode; Back returns. During a round, use
+description. Press H or right stick press to hear the mode's tutorial text,
+current assigned action controls, and button hints. Bop starts the chosen mode;
+Back returns. During a round, use
 the game's Menu control to open Pause, then move between Resume and Main Menu.
 At the end of a game, listen for the score or One on One winner before the
 result-screen controls are announced. Press T or left stick press to repeat the

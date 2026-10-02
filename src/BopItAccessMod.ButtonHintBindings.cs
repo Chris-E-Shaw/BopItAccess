@@ -10,6 +10,21 @@ public sealed partial class BopItAccessMod
 {
     private InputAction? FindHintAction(string mapName, string actionName)
     {
+        if (string.Equals(mapName, "Gameplay", StringComparison.Ordinal))
+        {
+            // Mode and song selection run in a separate scene from Controls.
+            // Read the active player's action copy first: it contains the
+            // saved overrides currently used by the game, even when the
+            // main-menu rebinding manager has been destroyed.
+            GameUIManager? gameUi = _trackSelectUi;
+            Player? player = gameUi == null ? null : gameUi.gameManager?.Player;
+            InputAction? liveAction = player?.playerInput?.actions?
+                .FindActionMap(mapName, false)?.FindAction(actionName, false) ??
+                player?.gameplayActionMap?.FindAction(actionName, false);
+            if (liveAction != null)
+                return liveAction;
+        }
+
         InputRebindingManager? manager = _controlsRebindingManager;
         if (manager == null)
         {

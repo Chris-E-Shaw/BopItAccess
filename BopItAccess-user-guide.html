@@ -69,7 +69,7 @@
       <li><a href="#limitations">Notes and limitations</a></li>
       <li><a href="#buy">Buy the game and check your computer</a></li>
       <li><a href="#install">Get and install the mod</a></li>
-      <li><a href="#controls">Complete control reference</a></li>
+      <li><a href="#controls">Player control reference</a></li>
       <li><a href="#first-launch">Your first launch</a></li>
       <li><a href="#speech-options">Mod Settings menu</a></li>
       <li><a href="#menu-guide">Menu guide</a></li>
@@ -122,7 +122,7 @@
       <li>Focused buttons, sliders, toggles, names, values, and changed values are announced. Optional indexing, control-type labels, slider ranges, and capitalization filtering let you tune the detail.</li>
       <li>Score or winner speech at game over, followed by queued menu speech, plus a Read Score shortcut on the results screen only.</li>
       <li>Four stage descriptions, spoken on request from the song-selection screen before play begins.</li>
-      <li>The game's tutorial text for the current mode and difficulty, spoken on request from song selection before play begins.</li>
+      <li>The game's tutorial reference for the current mode and difficulty, spoken on request from song selection with each action's current assigned control. One-on-One includes both Bop inputs.</li>
       <li>Optional One-on-One colour and life-count announcements.</li>
       <li>Button hints for keyboard, controller, or both, with adjustable timing, repetitions, and an on-demand Speak Hints shortcut.</li>
       <li>Screen-reader output through Tolk, optional braille output, and configurable SAPI fallback.</li>
@@ -187,11 +187,11 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
   </section>
 
   <section id="controls">
-    <h2>Complete control reference</h2>
-    <p>These are the defaults found in the current game input map and mod source. <strong>Rebinding can change them</strong>, so your Controls menu is the final word for your own setup. The controller column describes the game's usual action or an Xbox-style example; physical motion and labels can vary with controller type. A dash means no default assignment was found for that device, not that the action is impossible to perform another way.</p>
+    <h2>Player control reference</h2>
+    <p>These are the default controls used for play and menu navigation. <strong>Rebinding can change them</strong>, so your Controls menu is the final word for your own setup. The controller column describes the game's usual action or an Xbox-style example; physical motion and labels can vary with controller type. A dash means no default assignment was found for that device, not that the action is impossible to perform another way.</p>
     <p><strong>Quick orientation:</strong> D-pad means the four-way directional pad. A bumper sits above a trigger. Left stick press and right stick press mean pushing the corresponding stick inward until it clicks. Select may be called Back or View on some controllers; Start may be called Menu.</p>
     <div class="table-scroll"><table>
-      <caption>Game and mod controls, including controls outside the remapping menu</caption>
+      <caption>Player controls, including controls outside the remapping menu</caption>
       <thead><tr><th scope="col">Action</th><th scope="col">What it does</th><th scope="col">Default keyboard</th><th scope="col">Default controller</th><th scope="col">Can you rebind it in Controls?</th></tr></thead>
       <tbody>
         <tr><th scope="row">Bop</th><td>Respond to “Bop!” in a round; open the main menu from the title screen and start a round from song selection.</td><td>Space</td><td>South face button (A on Xbox)</td><td>Yes</td></tr>
@@ -215,19 +215,11 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
         <tr><th scope="row">Read Descriptions</th><td>Speak the current stage's visual description on the song screen only.</td><td>G</td><td>Left trigger (LT)</td><td>Yes</td></tr>
         <tr><th scope="row">Read Score</th><td>Repeat the final score, or winner in One-on-One, on the results screen only.</td><td>T</td><td>Left stick press</td><td>Yes</td></tr>
         <tr><th scope="row">Toggle Speech</th><td>Turn all ordinary mod speech off or back on; the setting is saved.</td><td>F8</td><td>Select / Back / View</td><td>Yes</td></tr>
-        <tr><th scope="row">Speak Hints</th><td>Read the current screen's button hints when available. On song selection, also read the game's tutorial text for the current mode and difficulty before starting.</td><td>H</td><td>Right stick press</td><td>Yes</td></tr>
+        <tr><th scope="row">Speak Hints</th><td>Read the current screen's button hints when available. On song selection, also read the tutorial reference with each action's current assigned control for the selected mode and difficulty, including both Bop inputs in One-on-One.</td><td>H</td><td>Right stick press</td><td>Yes</td></tr>
         <tr><th scope="row">Change Speech Output</th><td>Cycle the same output choices as Mod Settings &gt; Output Mode.</td><td>F9</td><td>West face button (X on Xbox)</td><td>Yes</td></tr>
-        <tr><th scope="row">Invincible (native extra)</th><td>An assist or development action named in the game's input map; its player-facing effect has not been verified.</td><td>Shift+I</td><td>Right bumper + West face button</td><td>No separate row</td></tr>
-        <tr><th scope="row">AutoPlay (native extra)</th><td>An assist or development action named in the game's input map; its player-facing effect has not been verified.</td><td>Shift+A</td><td>Right bumper + right trigger</td><td>No separate row</td></tr>
-        <tr><th scope="row">Debug Menu (native extra)</th><td>A diagnostic action named in the game's input map; its player-facing effect has not been verified.</td><td>Shift+X</td><td>Right bumper + right stick press</td><td>No separate row</td></tr>
-        <tr><th scope="row">Mouse point / click / scroll</th><td>Use the visible pointer and mouse to interact with the game's UI where it accepts them. Hover alone may not move focus for speech.</td><td>Mouse movement, click, and wheel</td><td>—</td><td>No separate row</td></tr>
-        <tr><th scope="row">Mouse right / middle click</th><td>Extra native UI pointer actions; this guide has not confirmed a distinct game action for either click.</td><td>Right / middle mouse button</td><td>—</td><td>No separate row</td></tr>
-        <tr><th scope="row">Touch press / position</th><td>Native touch input actions for a device with a touch screen; they are not needed for normal keyboard or controller play.</td><td>Touch screen, if present</td><td>—</td><td>No separate row</td></tr>
-        <tr><th scope="row">Cancel (native UI)</th><td>Generic cancel action present in the input map. Its distinct default has not been confirmed; use the Back control for ordinary menus.</td><td>Not confirmed separately</td><td>Not confirmed separately</td><td>No separate row</td></tr>
       </tbody>
     </table></div>
-    <p class="note"><strong>About the native extras:</strong> Invincible, AutoPlay, and Debug Menu are listed for completeness, not recommended for ordinary play. Their effects have not been verified. Touch and extra pointer actions are also listed so you can tell them apart from the keyboard and controller controls used in this guide.</p>
-    <p>Use Settings &gt; Controls to change the rows marked “Yes.” The mod rejects duplicate assignments, so one input does not silently take two active actions. Reset to Default restores the defaults. The dedicated UI actions, page turning, score-row reading, mouse actions, and the extra native bindings do not currently have rows in that menu.</p>
+    <p>Use Settings &gt; Controls to change the rows marked “Yes.” The mod rejects duplicate assignments, so one input does not silently take two active actions. Reset to Default restores the defaults. The dedicated UI actions, page turning, and score-row reading do not currently have rows in that menu.</p>
   </section>
 
   <section id="first-launch">
@@ -319,7 +311,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 
   <section id="song-menu">
     <h3>Song and difficulty selection</h3>
-    <p>After choosing any mode, you choose one of four songs/stages and decide whether to use Extreme difficulty. The mod announces the current song and Extreme state every time this screen opens. Changing either one speaks its new value. Use <strong>Twist</strong> to change the song, <strong>Pull</strong> to change Classic/Extreme, <strong>Bop</strong> to begin, and <strong>Back</strong> to return. You may press <strong>G</strong> or <strong>left trigger</strong> to hear the selected stage's description. Press <strong>H</strong> or <strong>right stick press</strong> to hear button hints followed by the game's tutorial text for the current mode and difficulty. Read these before starting: the mod keeps the timed tutorial overlay quiet during active play so it does not cover a spoken game command. Starting play stops menu speech for the same reason.</p>
+    <p>After choosing any mode, you choose one of four songs/stages and decide whether to use Extreme difficulty. The mod announces the current song and Extreme state every time this screen opens. Changing either one speaks its new value. Use <strong>Twist</strong> to change the song, <strong>Pull</strong> to change Classic/Extreme, <strong>Bop</strong> to begin, and <strong>Back</strong> to return. You may press <strong>G</strong> or <strong>left trigger</strong> to hear the selected stage's description. Press <strong>H</strong> or <strong>right stick press</strong> to hear button hints followed by the tutorial reference for the current mode and difficulty. It names each action's current assigned control, including both Bop inputs in One-on-One. Read these before starting: the mod keeps the timed tutorial overlay quiet during active play so it does not cover a spoken game command. Starting play stops menu speech for the same reason.</p>
     <div class="table-scroll"><table>
       <caption>Song-selection choices and actions</caption>
       <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
@@ -386,7 +378,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
         <tr><th scope="row">Reset to Default</th><td>Restore the original default bindings for the exposed game and mod rows.</td></tr>
       </tbody>
     </table></div>
-    <p>Press the usual Back command to return to Settings; Back is not a separate selectable binding row here. For the exact starting keyboard and controller assignments, see the <a href="#controls">complete control reference</a>.</p>
+    <p>Press the usual Back command to return to Settings; Back is not a separate selectable binding row here. For the starting keyboard and controller assignments used in play, see the <a href="#controls">player control reference</a>.</p>
   </section>
 
   <section id="audio-latency-menu">
@@ -581,7 +573,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
   </section>
 </main>
 <footer>
-  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.6.16; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
+  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.6.17; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
 </footer>
 </body>
 </html>

@@ -1,5 +1,7 @@
 using Il2Cpp;
 using Il2CppTMPro;
+using UnityEngine;
+using UnityEngine.InputSystem;
 
 namespace BopItAccess;
 
@@ -31,9 +33,10 @@ public sealed partial class BopItAccessMod
         if (panel == null)
             return null;
 
-        var lines = new List<string>();
-        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        int characters = 0;
+        Player? player = game.Player;
+        if (player == null)
+            player = UnityEngine.Object.FindFirstObjectByType<Player>();
+        var nativeLines = new List<(string Text, string? Action)>();
         foreach (TMP_Text label in panel.GetComponentsInChildren<TMP_Text>(true))
         {
             if (label == null || !label.enabled)
@@ -57,15 +60,186 @@ public sealed partial class BopItAccessMod
             if (line == null)
                 continue;
             string normalized = line.TrimEnd('.', '!', '?').Trim();
-            if (normalized.Length == 0 || !seen.Add(normalized))
+            if (normalized.Length == 0)
                 continue;
-            lines.Add(normalized);
-            characters += normalized.Length;
+            // The prompt GameObject names are stable across the game's
+            // translations; the visible text is not. Keep the native words
+            // but identify their Gameplay actions from those prompt names.
+            string? action = TutorialGameplayAction(label.transform,
+                panel.transform) ?? TutorialGameplayAction(normalized);
+            nativeLines.Add((normalized, action));
+        }
+
+        // A prompt can contain more than one text label. Put its binding on
+        // the actual action label when we can recognize it in English; in
+        // other languages, use the first visible label for that prompt.
+        var bindingLine = new Dictionary<string, int>(StringComparer.Ordinal);
+        for (int index = 0; index < nativeLines.Count; index++)
+        {
+            var item = nativeLines[index];
+            if (item.Action == null)
+                continue;
+            if (!bindingLine.TryGetValue(item.Action, out int prior) ||
+                (TutorialGameplayAction(item.Text) == item.Action &&
+                 TutorialGameplayAction(nativeLines[prior].Text) != item.Action))
+                bindingLine[item.Action] = index;
+        }
+
+        bool hasSecondBop = bindingLine.ContainsKey("AltBop");
+        var lines = new List<string>();
+        var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        int characters = 0;
+        for (int index = 0; index < nativeLines.Count; index++)
+        {
+            var item = nativeLines[index];
+            // Keep distinct Bop and AltBop prompts even when their visible
+            // labels use the same words.
+            if (!seen.Add((item.Action ?? "") + "\u001f" + item.Text))
+                continue;
+            string spoken = item.Action != null &&
+                bindingLine[item.Action] == index
+                ? AddTutorialActionBinding(item.Text, player, item.Action,
+                    game.GameMode == GameMode.OneOnOne, hasSecondBop)
+                : item.Text;
+            lines.Add(spoken);
+            characters += spoken.Length;
             if (lines.Count >= 16 || characters >= 1200)
                 break;
         }
 
         return lines.Count == 0 ? null :
             "Tutorial reference. " + string.Join(". ", lines) + ".";
+    }
+
+    private string AddTutorialActionBinding(string line, Player? player,
+        string actionName, bool oneOnOne, bool hasSecondBop)
+    {
+        string binding = ReadTutorialGameplayBinding(player, actionName);
+        if (oneOnOne && actionName == "AltBop")
+            return $"{line}, Player 2: {binding}";
+        if (oneOnOne && actionName == "Bop")
+        {
+            if (hasSecondBop)
+                return $"{line}, Player 1: {binding}";
+            // Some layouts can hide the second prompt. Still identify both
+            // Bop controls when its own visible label is unavailable.
+            string second = ReadTutorialGameplayBinding(player, "AltBop");
+            return $"{line}, Player 1: {binding}; Player 2: {second}";
+        }
+
+        return $"{line}, {binding}";
+    }
+
+    private static string? TutorialGameplayAction(Transform label,
+        Transform panel)
+    {
+        for (Transform? node = label; node != null && node != panel;
+             node = node.parent)
+        {
+            switch (node.gameObject.name)
+            {
+                case "AltBopItTutorialPrompt": return "AltBop";
+                case "BopItTutorialPrompt": return "Bop";
+                case "PullItTutorialPrompt": return "Pull";
+                case "TwistTutorialPrompt": return "Twist";
+                case "FlickItPrompt": return "Flick";
+                case "SpinItTutorialPrompt": return "Spin";
+            }
+        }
+        return null;
+    }
+
+    private static string? TutorialGameplayAction(string line)
+    {
+        foreach (string action in new[] { "Pull", "Bop", "Twist", "Flick", "Spin" })
+        {
+            string phrase = action + " it";
+            int position = line.IndexOf(phrase, StringComparison.OrdinalIgnoreCase);
+            int end = position + phrase.Length;
+            if (line.Equals(action, StringComparison.OrdinalIgnoreCase) ||
+                (position >= 0 &&
+                 (position == 0 || !char.IsLetterOrDigit(line[position - 1])) &&
+                 (end == line.Length || !char.IsLetterOrDigit(line[end]))))
+                return action;
+        }
+        return null;
+    }
+
+    private string ReadTutorialGameplayBinding(Player? player,
+        string actionName)
+    {
+        // Use the actual player in this game scene. The main-menu Controls
+        // asset can disappear or lag behind its saved runtime overrides.
+        InputAction? action = player?.playerInput?.actions?
+            .FindActionMap("Gameplay", false)?.FindAction(actionName, false) ??
+            player?.gameplayActionMap?.FindAction(actionName, false) ??
+            FindHintAction("Gameplay", actionName);
+        if (action == null)
+            return "binding unavailable";
+
+        string? keyboard = ReadHintKeyboardBinding(action);
+        string? controller = ReadTutorialControllerBinding(action);
+        return EffectiveHintDevice switch
+        {
+            HintDevice.Keyboard => keyboard ?? "unassigned on keyboard",
+            HintDevice.Controller => controller ?? "unassigned on controller",
+            _ => TutorialDeviceBinding(keyboard, "keyboard") + " and " +
+                TutorialDeviceBinding(controller, "controller")
+        };
+    }
+
+    private static string TutorialDeviceBinding(string? binding, string device)
+    {
+        if (binding == null)
+            return "unassigned on " + device;
+        // A layout-specific fallback already identifies its controller.
+        if (device == "controller" &&
+            binding.Contains(" controller", StringComparison.OrdinalIgnoreCase))
+            return binding;
+        return binding + " on " + device;
+    }
+
+    private static string? ReadTutorialControllerBinding(InputAction action)
+    {
+        // The ordinary hint helper chooses the connected controller's
+        // effective binding. If no controller is connected and the game has
+        // different platform layouts, list their real assigned alternatives
+        // instead of falling back to a hard-coded default button.
+        var alternatives = new List<string>();
+        for (int index = 0; index < action.bindings.Count; index++)
+        {
+            InputBinding binding = action.bindings[index];
+            if (binding.isComposite)
+                continue;
+            string? layout = HintDeviceLayout(binding.effectivePath);
+            if (!IsHintControllerLayout(layout))
+                continue;
+            string? label = ReadHintBindingLabel(action, index);
+            if (label == null)
+                continue;
+            string alternative = label + " on " + TutorialControllerLayout(layout!);
+            if (!alternatives.Contains(alternative, StringComparer.OrdinalIgnoreCase))
+                alternatives.Add(alternative);
+        }
+        if (alternatives.Count == 0)
+            return null;
+        return ReadHintControllerBinding(action, null,
+            JoinHintChoices(alternatives));
+    }
+
+    private static string TutorialControllerLayout(string layout)
+    {
+        if (layout.Contains("DualSense", StringComparison.OrdinalIgnoreCase) ||
+            layout.Contains("DualShock", StringComparison.OrdinalIgnoreCase) ||
+            layout.Contains("PlayStation", StringComparison.OrdinalIgnoreCase))
+            return "PlayStation controller";
+        if (layout.Contains("Switch", StringComparison.OrdinalIgnoreCase) ||
+            layout.Contains("NPad", StringComparison.OrdinalIgnoreCase))
+            return "Switch controller";
+        if (layout.Contains("Xbox", StringComparison.OrdinalIgnoreCase) ||
+            layout.Contains("XInput", StringComparison.OrdinalIgnoreCase))
+            return "Xbox controller";
+        return layout.Equals("Gamepad", StringComparison.OrdinalIgnoreCase)
+            ? "controller" : layout + " controller";
     }
 }
