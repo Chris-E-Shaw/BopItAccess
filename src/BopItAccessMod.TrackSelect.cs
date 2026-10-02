@@ -190,7 +190,10 @@ public sealed partial class BopItAccessMod
             if (focusChanged && focusedLabel != null)
                 QueueFocusSpeech(changed);
             else
+            {
+                RecordButtonHintUiActivity(Environment.TickCount64);
                 QueueSpeech(changed);
+            }
         }
 
         return true;

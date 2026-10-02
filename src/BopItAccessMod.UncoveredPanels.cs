@@ -114,6 +114,7 @@ public sealed partial class BopItAccessMod
                  !string.Equals(value, _uncoveredControlValue, StringComparison.Ordinal))
         {
             _uncoveredControlValue = value;
+            RecordButtonHintUiActivity(Environment.TickCount64);
             QueueSpeech(value);
         }
 

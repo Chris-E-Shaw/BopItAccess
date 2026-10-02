@@ -1,4 +1,4 @@
-Bop It Access 0.6.14 - More Screen Coverage
+Bop It Access 0.6.15 - Hint Timer Focus Fix
 
 What this does
 --------------
@@ -87,7 +87,10 @@ menu navigation. There is no separate first hint announcement. With a timed
 delay, the first hint announcement follows that much inactivity. The 5-second option can
 interrupt speech already in progress; longer delays queue behind it. After
 the first hint announcement, another delay starts only when the player gives
-input, unless repeats are enabled.
+input, unless repeats are enabled. Moving to another focused item or changing
+a focused slider or toggle counts as input and restarts the delay, even if the
+game's input binding scan misses the key or controller action. An unused key
+that does not change the UI still does not restart it.
 HINTS TYPE is a saved slider with Automatic, Keyboard, Controller, and Both.
 Automatic is the default and follows the most recently used keyboard or
 controller input. Mouse use counts as keyboard. Keyboard and Controller speak
@@ -115,8 +118,9 @@ cycle: 2x means the first hint and one repeat; 3x means the first hint and
 two repeats. Off still allows the first automatic or manual hint.
 REPEAT INTERVAL sets the delay between repeats to 15, 30, 45, or
 60 seconds and defaults to 15 seconds. With BUTTON HINTS DELAY set to None,
-the repeat timer begins immediately after input. Input or a screen change
-restarts the hint cycle for the current screen. SPEAK HINTS replaces the
+the repeat timer begins immediately after input. Input, a focus or value
+change, or a screen change restarts the hint cycle for the current screen.
+SPEAK HINTS replaces the
 pending automatic hint for that cycle, then uses REPEAT INTERVAL for any
 configured repeats. This also works with AUTO-SPEAK BUTTON HINTS Off.
 Hints are suppressed during

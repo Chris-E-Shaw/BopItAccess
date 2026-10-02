@@ -262,7 +262,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
         <tr><th scope="row">One-on-One Feedback</th><td>On / Off; <strong>Off</strong></td><td>Speaks the active Green or Yellow colour and the remaining life count when a life is lost or gained in One-on-One.</td></tr>
         <tr><th scope="row">Hints Type</th><td>Automatic, Keyboard, Controller, Both; <strong>Automatic</strong></td><td>Chooses which device's controls the hints describe. Automatic follows the last used keyboard or controller input. Both names each device explicitly.</td></tr>
         <tr><th scope="row">Auto-Speak Button Hints</th><td>On / Off; <strong>On</strong></td><td>Controls automatic hints. The Speak Hints shortcut still works on demand when this is off.</td></tr>
-        <tr><th scope="row">Button Hints Delay</th><td>None, 5, 10, 15, 30, 60 seconds; <strong>None</strong></td><td>None puts the hint after the focused item's announcement, in one speech string. A timed choice waits for inactivity before the first separate hint. The 5-second choice may interrupt speech already in progress.</td></tr>
+        <tr><th scope="row">Button Hints Delay</th><td>None, 5, 10, 15, 30, 60 seconds; <strong>None</strong></td><td>None puts the hint after the focused item's announcement, in one speech string. A timed choice waits for inactivity before the first separate hint. Moving focus or changing a setting starts the wait again. The 5-second choice may interrupt speech already in progress.</td></tr>
         <tr><th scope="row">Repeat Button Hints</th><td>Off, 2x, 3x, 4x, 5x, Infinitely; <strong>Off</strong></td><td>Sets the total number of times to hear a hint in one cycle. “2x” means the first reading plus one repeat.</td></tr>
         <tr><th scope="row">Repeat Interval</th><td>15, 30, 45, 60 seconds; <strong>15 seconds</strong></td><td>Time between the repeat readings above. Speaking a hint on demand replaces the pending first automatic hint but still allows configured repeats.</td></tr>
         <tr><th scope="row">Output Mode</th><td>Auto, SAPI, JAWS, Window-Eyes, NVDA, System Access, ZoomText; <strong>Auto</strong></td><td>Auto uses a detected screen reader and falls back to SAPI. A named reader must be available; an unavailable choice falls back to SAPI. This is also controlled by Change Speech Output.</td></tr>
@@ -578,7 +578,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
   </section>
 </main>
 <footer>
-  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.6.14; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
+  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.6.15; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
 </footer>
 </body>
 </html>

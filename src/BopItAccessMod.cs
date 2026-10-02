@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.14", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.15", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -87,6 +87,20 @@ public sealed partial class BopItAccessMod : MelonMod
     }
 
     public override void OnLateUpdate()
+    {
+        try
+        {
+            ReadScreenFocus();
+        }
+        finally
+        {
+            // Focus can move after OnUpdate. Dispatch due hints only after
+            // the frame's focus and value announcements have reset the timer.
+            UpdateRepeatButtonHints();
+        }
+    }
+
+    private void ReadScreenFocus()
     {
         ObserveResultRank();
 
@@ -527,6 +541,7 @@ public sealed partial class BopItAccessMod : MelonMod
         if (value != null && !string.Equals(value, _lastSettingsValue, StringComparison.Ordinal))
         {
             _lastSettingsValue = value;
+            RecordButtonHintUiActivity(Environment.TickCount64);
             QueueSpeech(value);
         }
 

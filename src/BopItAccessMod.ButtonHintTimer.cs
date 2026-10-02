@@ -21,6 +21,7 @@ public sealed partial class BopItAccessMod
     private long _nextButtonHintErrorAt;
     private bool _manualButtonHintCycleActive;
     private bool _manualButtonHintInputLatched;
+    private int _lastButtonHintSelectedObjectId;
     private readonly List<InputControl> _assignedButtonHintControls = new();
     private long _nextAssignedButtonHintControlsRefreshAt;
     private long _nextAssignedButtonHintControlsErrorAt;
@@ -35,6 +36,10 @@ public sealed partial class BopItAccessMod
     // places the complete hint in the same speech string as the focused item.
     private void QueueFocusSpeech(string text, bool interrupt = true)
     {
+        // A newly spoken focus is evidence of real menu navigation even when
+        // Unity's binding-control scan misses the key or controller input.
+        // This also cancels a manual-hint repeat cycle after the player moves.
+        RecordButtonHintUiActivity(Environment.TickCount64);
         if (_readButtonHintsEnabled && _buttonHintsDelaySeconds == 0 &&
             _speechEnabled && !_speechSuppressedForBackground)
         {
@@ -94,7 +99,11 @@ public sealed partial class BopItAccessMod
         if (signature != _lastButtonHintSettingsSignature)
         {
             _lastButtonHintSettingsSignature = signature;
-            ResetButtonHintTimers(now);
+            // A changed hint setting or active input device starts a fresh
+            // cycle. Keep a just-requested manual cycle when the Speak Hints
+            // key itself changes Automatic's active input device.
+            if (!_manualButtonHintCycleActive)
+                RecordButtonHintUiActivity(now);
             _nextButtonHintContextProbeAt = 0;
         }
 
@@ -124,16 +133,7 @@ public sealed partial class BopItAccessMod
         }
         else if (inputDetected)
         {
-            _manualButtonHintCycleActive = false;
-            _lastButtonHintActivityAt = now;
-            _buttonHintInitialSent = false;
-            _buttonHintRepeatsSent = 0;
-            _buttonHintNoneRepeatArmed = _buttonHintsDelaySeconds == 0 &&
-                _repeatButtonHintsCount != 0;
-            _nextButtonHintDueAt = now +
-                (_buttonHintsDelaySeconds == 0
-                    ? _repeatButtonHintsIntervalSeconds
-                    : _buttonHintsDelaySeconds) * 1000L;
+            RecordButtonHintUiActivity(now);
         }
 
         if (now >= _nextButtonHintContextProbeAt)
@@ -168,6 +168,8 @@ public sealed partial class BopItAccessMod
             _manualButtonHintCycleActive = false;
             _manualButtonHintInputLatched = false;
             _buttonHintContextKey = context.Value.Key;
+            _lastButtonHintSelectedObjectId =
+                EventSystem.current?.currentSelectedGameObject?.GetInstanceID() ?? 0;
             _buttonHintInitialSent = false;
             _buttonHintRepeatsSent = 0;
             if (_buttonHintsDelaySeconds > 0)
@@ -188,6 +190,15 @@ public sealed partial class BopItAccessMod
             }
             return;
         }
+
+        // The Input System action-control list can omit a navigation path
+        // even while the EventSystem moves focus. Catch that change before
+        // dispatching a due hint in this update; QueueFocusSpeech covers a
+        // change made later in the frame.
+        int selectedId =
+            EventSystem.current?.currentSelectedGameObject?.GetInstanceID() ?? 0;
+        if (selectedId != 0 && selectedId != _lastButtonHintSelectedObjectId)
+            RecordButtonHintUiActivity(now);
 
         // AUTO-SPEAK controls the initial hint. A manual request can still
         // run the selected number of repeats while this setting is Off.
@@ -312,6 +323,8 @@ public sealed partial class BopItAccessMod
             _manualButtonHintInputLatched = true;
             _buttonHintContextKey = context.Value.Key;
             _cachedButtonHintContext = context;
+            _lastButtonHintSelectedObjectId =
+                EventSystem.current?.currentSelectedGameObject?.GetInstanceID() ?? 0;
             _nextButtonHintContextProbeAt = now + 250;
             _lastButtonHintActivityAt = now;
             _buttonHintInitialSent = true;
@@ -345,6 +358,28 @@ public sealed partial class BopItAccessMod
         _nextButtonHintDueAt = _buttonHintsDelaySeconds > 0
             ? now + _buttonHintsDelaySeconds * 1000L
             : long.MaxValue;
+    }
+
+    // Call only for an observed game UI change, not for every speech string:
+    // automatic result, score, and reminder speech must not count as input.
+    private void RecordButtonHintUiActivity(long now)
+    {
+        _manualButtonHintCycleActive = false;
+        _manualButtonHintInputLatched = false;
+        _lastButtonHintActivityAt = now;
+        _buttonHintInitialSent = false;
+        _buttonHintRepeatsSent = 0;
+        _buttonHintNoneRepeatArmed = _buttonHintsDelaySeconds == 0 &&
+            _repeatButtonHintsCount != 0;
+        _nextButtonHintDueAt = _buttonHintsDelaySeconds > 0
+            ? now + _buttonHintsDelaySeconds * 1000L
+            : _buttonHintNoneRepeatArmed
+                ? now + _repeatButtonHintsIntervalSeconds * 1000L
+                : long.MaxValue;
+        int selectedId =
+            EventSystem.current?.currentSelectedGameObject?.GetInstanceID() ?? 0;
+        if (selectedId != 0)
+            _lastButtonHintSelectedObjectId = selectedId;
     }
 
     private bool IsUserInputActive()

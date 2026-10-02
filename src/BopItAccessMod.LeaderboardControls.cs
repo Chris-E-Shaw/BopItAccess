@@ -54,7 +54,6 @@ public sealed partial class BopItAccessMod
         UpdateHintInputDevice();
         UpdateOneOnOneFeedback();
         UpdateSpeakHintsOnDemand();
-        UpdateRepeatButtonHints();
         if (_leaderboardControlsScroll != null)
             ScrollSelectedControlIntoView();
 

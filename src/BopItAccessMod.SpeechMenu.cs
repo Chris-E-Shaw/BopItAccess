@@ -1029,6 +1029,7 @@ public sealed partial class BopItAccessMod
             !string.Equals(value, _lastSpeechMenuValue, StringComparison.Ordinal))
         {
             _lastSpeechMenuValue = value;
+            RecordButtonHintUiActivity(Environment.TickCount64);
             if (focused.Row != _speechOutputToggle)
                 QueueSpeech(value);
         }
