@@ -1,4 +1,4 @@
-Bop It Access 0.8.1 - Japanese Guide and Index Localization
+Bop It Access 0.9.0 - Prism Speech and Braille
 
 What this does
 --------------
@@ -9,7 +9,7 @@ game language also changes mod announcements and the in-game user's guide.
 The initial translations are machine-generated drafts and need review
 by fluent speakers.
 Speech is on by default. When the mod loads with speech on, it announces
-"Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls." through Tolk. If the title screen appears, the mod announces the current Bop input for opening the main menu. It reads
+"Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls." through Prism. If the title screen appears, the mod announces the current Bop input for opening the main menu. It reads
 the focused main-menu button and the focused Settings row. Settings values are
 spoken with the row name on focus. Changing a value while focus stays on that
 row speaks only the new value. AUDIO LATENCY, CONTROLS, and GO ONLINE are action
@@ -38,17 +38,22 @@ announcing the first focused item on a newly opened Settings screen.
 Below Controls, Settings now has a MOD SETTINGS menu. SPEECH OUTPUT uses the same
 saved master switch as F8 or controller Select, including the spoken recovery
 instructions when speech is turned off. BRAILLE OUTPUT starts On and is saved
-between sessions. When Tolk uses a screen reader, the mod sends the same
-utterance to speech and braille; when BRAILLE OUTPUT is Off, it sends speech
-only. Direct NVDA and SAPI speech also send each utterance separately through
-Tolk's braille API when a braille-capable screen reader is available.
-OUTPUT MODE starts at Auto: the mod
-speaks through a detected screen reader, or uses SAPI when none is running.
-SAPI can be selected directly. The menu also lists JAWS, Window-Eyes, NVDA,
-System Access, and ZoomText. Direct NVDA output is available when NVDA is
-running. The other named readers are used when Tolk detects them as the active
-driver; if the chosen reader is unavailable, the mod announces a SAPI fallback.
-Tolk's 64-bit build does not support SuperNova, so it is not listed.
+between sessions. Prism sends announcements to a compatible screen reader's
+braille output when this setting is On. Turning it Off stops the mod's braille
+messages while leaving speech available.
+OUTPUT MODE starts at Auto: the mod uses a supported running screen reader
+through Prism, or SAPI when none is available. OneCore is a separate choice.
+The available output modes are:
+Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
+Individual readers and engines are available
+only when supported by the installed Prism build and the player's system. If a
+selected mode is unavailable, an available fallback is used and the
+mod announces the fallback once.
+Prism backends can queue noninterrupting speech differently; the order of
+score and credits announcements needs validation by players using each backend.
+Saved SAPI voice IDs are matched to Prism's voice display names. If installed
+voices share a display name, the first matching voice may be selected.
 MUTE SPEECH IN BACKGROUND is a saved toggle, Off by default. When enabled,
 the mod stops speaking as soon as the game loses window focus. Speech created
 while the game is in the background is discarded, and announcements resume
@@ -145,23 +150,8 @@ The MOD SETTINGS menu also has SAPI VOICE, SAPI VOLUME, SAPI RATE, and SAPI PITC
 controls. SAPI Voice lists the system default and installed 64-bit SAPI voices.
 Volume starts at 100%; Rate and Pitch start at 50. Volume ranges from 5% to 100%
 so SAPI recovery notices remain audible. Rate and Pitch range from 0 to 100.
-All three move in
-steps of five. They apply to SAPI mode and Auto's SAPI fallback.
-Direct SAPI output avoids repeated voice enumeration for numeric changes,
-uses plain text when pitch is neutral, and skips unnecessary screen-reader
-detection. The earlier trim-silence experiment remains hidden and inactive.
-The new SAPI log measurements located most of the measured dispatch delay in
-the Windows SAPI COM Speak call: individual calls took about 188 to 578 ms,
-while initial voice setup took about 375 to 609 ms. Separate braille dispatch
-was typically 0 to 16 ms. The mod now prepares Auto mode's SAPI fallback on
-the speech worker while the game loads and records queue timing to distinguish
-waiting for the worker from dispatch time. A first announcement after directly
-selecting SAPI may still include voice setup. These timings do not measure
-when sound becomes audible, which also depends on the installed voice and
-audio system.
-Separate braille output with SAPI now caches Tolk capability checks for one
-second. If SAPI dispatch itself is slow, the log records voice setup, Speak,
-and braille dispatch times.
+All three move in steps of five. They apply when Prism uses SAPI directly or as
+the automatic fallback. The earlier trim-silence experiment remains hidden and inactive.
 Mod Settings choices are remembered between sessions. RESTORE MOD DEFAULTS
 returns those choices to the defaults described above. Press it once to request
 confirmation, then press it again within five seconds to restore them. Moving
@@ -281,8 +271,10 @@ The mod exposes a native RESET GYRO row and adds a CHANGE SPEECH OUTPUT
 shortcut. Reset Gyro sits with the game's controls; the mod-specific rows
 remain together at the bottom of the menu, before Reset to Default. CHANGE
 SPEECH OUTPUT cycles through the same modes as Settings > Mod Settings > OUTPUT
-MODE: Auto, SAPI, JAWS, Window-Eyes, NVDA, System Access, and ZoomText. Its
-default inputs are F9 on keyboard and the West face button (X on an Xbox
+MODE. The mode order is:
+Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
+The shortcut's default inputs are F9 on keyboard and the West face button (X on an Xbox
 controller). The controller Start button is reserved by the game's native
 Menu action. The current choice is announced when the shortcut is used and
 is saved by the same Output Mode setting.
@@ -335,19 +327,16 @@ item without giving it Unity UI focus may not speak.
 
 Install
 -------
-1. Close Bop It! if it is running.
-2. Extract all files in this ZIP into the Bop It! game folder:
-   C:\Program Files (x86)\Steam\steamapps\common\Bop It!
-   Allow Windows to replace Mods\BopItAccess.dll and merge the Mods and
-   documentation folders.
-3. Start your screen reader, then start Bop It! through Steam as usual.
-
-MelonLoader must already be installed. The ZIP includes Mods\BopItAccess.dll,
-documentation\BopItAccess-user-guide.html, all translated language subfolders,
-and their companion documents,
-Tolk.dll, and nvdaControllerClient64.dll. The in-game guide loads the HTML
-from that documentation folder whenever it opens. This mod was built for the installed
-MelonLoader 0.7.3 Open-Beta and Bop It! (Unity 2022.3.50f1, x64).
+The source repository contains no compiled mod or Prism DLL. Build the mod by
+following README.md, then close the game and copy BopItAccess.dll into its Mods
+folder. Obtain the official Windows x64 Prism v0.18.3 prism.dll from
+https://github.com/ethindp/prism/releases and place it beside the game executable,
+not inside Mods. Copy the build's documentation folder into the game folder,
+including its translated language subfolders. Start your screen reader if you
+use one, then start Bop It! through Steam. Prism can use SAPI when a supported
+screen reader is not running. The in-game guide loads the HTML from the
+documentation folder whenever it opens. This mod was developed for MelonLoader
+0.7.3 Open-Beta and Bop It! (Unity 2022.3.50f1, x64).
 The first non-English translations were made with machine translation
 and need review by fluent speakers. Please report unclear or incorrect wording.
 Gameplay action names use the game's translated terms. Shapes, Space, City,
@@ -399,17 +388,15 @@ entry. Open Credits and use Up and Down to read its lines independently of the
 visual scroll.
 
 If speech is missing, check Mods\BopItAccess.log in the game folder. It records
-panel detection, selected UI objects, and whether Tolk accepted announcements.
-Tolk acceptance does not by itself prove that speech was audible.
+panel detection, selected UI objects, and Prism initialization and dispatch.
+Successful dispatch does not by itself prove that speech was audible.
 
 To disable the mod, remove Mods\BopItAccess.dll. MelonLoader can remain installed.
 
 Files and third-party notices
 -----------------------------
-Tolk is an open-source accessibility library by Christopher T. D. Kager. This
-package includes Tolk.dll and nvdaControllerClient64.dll from a public build
-bundle, without modifying those binaries. Tolk is licensed under GNU LGPL version
-3; the accompanying GNU LGPL and GNU GPL license texts are in
-THIRD-PARTY-LICENSES. Tolk source and license: https://github.com/dkager/tolk
-
-The Bop It Access mod source is in the separate source ZIP.
+Prism is an open-source accessibility library by Ethan Dupuy and contributors.
+It is licensed under the Mozilla Public License, version 2.0. This source
+repository does not include prism.dll. Source, releases, and license:
+https://github.com/ethindp/prism
+See THIRD-PARTY-NOTICES.txt for the current dependency notices.

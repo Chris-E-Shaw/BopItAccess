@@ -31,7 +31,8 @@ DESCRIPTION = re.compile(
 PLACEHOLDER = re.compile(r"\{\d+\}")
 PRODUCTS = re.compile(
     r"Bop It Access|Bop It!|Bop It|MelonLoader|Window-Eyes|System Access|"
-    r"ZoomText|Steam|SAPI|NVDA|JAWS|Tolk|(?<![A-Za-z])F8(?![A-Za-z])|"
+    r"ZoomText|Steam|SAPI|NVDA|JAWS|Tolk|Prism|OneCore|UI Automation|"
+    r"ZDSR|Boy PC Reader|PC Talker|Sense Reader|(?<![A-Za-z])F8(?![A-Za-z])|"
     r"(?<![A-Za-z])F9(?![A-Za-z])|(?<![A-Za-z])LT(?![A-Za-z])|"
     r"(?<![A-Za-z])RT(?![A-Za-z])"
 )
@@ -57,7 +58,9 @@ EXTRA_KEYS = {
     "Left Arrow", "Right Arrow", "Space", "Enter", "Escape", "Backspace",
     "Page Up", "Page Down", "Select", "Start", "Left Trigger",
     "Right Trigger", "Left Shoulder", "Right Shoulder", "F8", "F9",
-    "SAPI", "NVDA", "JAWS", "Window-Eyes", "System Access", "ZoomText",
+    "SAPI", "OneCore", "NVDA", "JAWS", "UI Automation", "ZDSR",
+    "ZoomText", "Boy PC Reader", "PC Talker", "Sense Reader",
+    "System Access", "Window-Eyes",
     "Bop It Access speech is off. ",
     "Speech off. ", "Speech is off. ", "Speech on.",
     "{0} on keyboard or {1} on controller, turn speech back on.",
@@ -644,8 +647,10 @@ def main() -> None:
             if result is None:
                 result = native_value(source, terms)
             if result is None:
-                if source in {"SAPI", "NVDA", "JAWS", "Window-Eyes",
-                              "System Access", "ZoomText", "F8", "F9",
+                if source in {"SAPI", "OneCore", "NVDA", "JAWS",
+                              "UI Automation", "ZDSR", "ZoomText",
+                              "Boy PC Reader", "PC Talker", "Sense Reader",
+                              "Window-Eyes", "System Access", "F8", "F9",
                               "LT", "RT"} or source in PUNCTUATION:
                     result = source
                 else:

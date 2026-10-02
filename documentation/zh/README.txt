@@ -1,4 +1,4 @@
-Bop It Access 0.8.1 - 多语言语音和文档
+Bop It Access 0.9.0 - Prism 语音和盲文
 
 这是做什么的
 --------------
@@ -9,7 +9,7 @@ Bop It Access 0.8.1 - 多语言语音和文档
 最初的翻译是机器生成的草稿，需要审核
 由流利的演讲者。
 默认情况下语音处于打开状态。当模组加载并开启语音时，它会宣布
-“Bop It Access语音已准备好。游戏仍在加载。请等待标题屏幕或主菜单公告，然后再使用控件。”到 Tolk。如果出现标题屏幕，模组会宣布当前用于打开主菜单的输入 拍打。上面写着
+“Bop It Access语音已准备好。游戏仍在加载。请等待标题屏幕或主菜单公告，然后再使用控件。”到 Prism。如果出现标题屏幕，模组会宣布当前用于打开主菜单的输入 拍打。上面写着
 聚焦的主菜单按钮和聚焦的设置行。设置值为
 说出焦点所在的行名称。改变一个值，同时焦点仍停留在该值上
 row 仅说明新值。音频延迟、控制和上网就是行动
@@ -38,17 +38,14 @@ row 仅说明新值。音频延迟、控制和上网就是行动
 在“控制”下方，“设置”现在有一个“MOD 设置”菜单。 SPEECH OUTPUT 使用相同的
 保存主开关为F8或控制器选择，包括语音恢复
 语音关闭时的说明。盲文输出开始并保存
-会话之间。当 Tolk 使用屏幕阅读器时，mod 会发送相同的内容
-言语表达和盲文；当 BRAILLE OUTPUT 关闭时，它会发送语音
-仅。直接NVDA和SAPI语音也分别通过
-当支持盲文的屏幕阅读器可用时，Tolk 的盲文 API。
-输出模式从 Auto: 模式开始
-通过检测到的屏幕阅读器说话，或者在没有运行时使用 SAPI。
-直接选择SAPI即可。菜单还列出了 JAWS、Window-Eyes、NVDA、
-系统访问和 ZoomText。 NVDA 时可直接输出 NVDA
-运行。当 Tolk 检测到其他指定读取器为活动读取器时，将使用它们
-司机；如果所选的阅读器不可用，mod 会宣布 SAPI 后备。
-Tolk 的 64 位版本不支持 SuperNova，因此未列出。
+会话之间。 Prism 将公告发送到兼容的屏幕阅读器
+当此设置为“开”时，盲文输出。将其关闭会停止 mod 的盲文
+消息，同时保留语音可用。
+OUTPUT MODE 默认为 Auto：模组通过 Prism 使用正在运行的兼容屏幕阅读器；如果没有，则使用 SAPI。OneCore 可单独选择。
+Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
+各屏幕阅读器和语音引擎只有在已安装的 Prism 版本及玩家系统支持时才能使用。如果所选模式不可用，模组会自动切换到可用输出，并通过语音提示一次。
+不同的 Prism 输出方式可能以不同顺序排队播放不中断当前语音的提示。如果分数或制作人员名单的朗读顺序不对，请反馈。已保存的 SAPI 语音 ID 会与 Prism 显示的语音名称匹配；如果多个语音同名，可能选中第一个匹配项。
 “后台静音”是一个已保存的切换，默认情况下处于关闭状态。启用后，
 一旦游戏失去窗口焦点，模组就会停止说话。已创建语音
 当游戏在后台时被丢弃，公告恢复
@@ -145,23 +142,8 @@ MOD SETTINGS 菜单还包含 SAPI VOICE、SAPI VOLUME、SAPI RATE 和 SAPI PITCH
 控制。 SAPI 语音列出了系统默认和已安装的 64 位 SAPI 语音。
 音量从 100% 开始；速率和音高从 50 开始。音量范围从 5% 到 100%
 因此 SAPI 恢复通知仍然可以听到。速率和音调范围从 0 到 100。
-三人均入住
-步骤五。它们适用于 SAPI 模式和自动模式 SAPI 后备。
-直接SAPI输出避免了数字变化的重复语音枚举，
-当音高为中性时使用纯文本，并跳过不必要的屏幕阅读器
-检测。早期的修剪沉默实验仍然隐藏且不活跃。
-新的 SAPI 日志测量将大部分测量的调度延迟定位在
-Windows SAPI COM Speak 呼叫：单个呼叫大约需要 188 到 578 毫秒，
-而初始语音设置大约需要 375 到 609 毫秒。单独的盲文发送
-通常为 0 到 16 毫秒。该模组现在准备自动模式的 SAPI 后备
-游戏加载时的语音工作者并记录队列计时以区分
-从调度时间开始等待工人。直接发布后的第一个公告
-选择 SAPI 仍可能包括语音设置。这些时间不测量
-当声音变得可听时，这也取决于安装的语音和
-音频系统。
-带有 SAPI 的单独盲文输出现在可缓存 Tolk 功能检查
-第二。如果SAPI调度本身很慢，日志记录语音设置，Speak，
-和盲文发送时间。
+三者均以五步移动。当 Prism 直接使用 SAPI 或作为
+自动回退。早期的修剪沉默实验仍然隐藏且不活跃。
 Mod 设置选项会在会话之间被记住。恢复模组默认值
 将这些选项恢复为上述默认值。按一次即可请求
 确认后，五秒内再次按下即可恢复。搬家
@@ -194,7 +176,7 @@ Left 向左移动一列，Right 向右移动一列；向上和向下保持
 
 在 Play 中，当专注时，模组会读取 Solo、Party、Pass It 和 One on One。
 在接下来的歌曲选择屏幕上，它会宣布当前主题
-（形状、空间、城市或办公室）以及极限模式是否打开。扭动至
+（Shapes、Space、City 或 Office）以及极限模式是否打开。扭动至
 改变歌曲只讲述新的主题。拉动改变难度说话
 只有新的极限状态。屏幕介绍还解释了扭转，
 拉动、拍打 和后退操作。
@@ -208,7 +190,7 @@ Left 向左移动一列，Right 向右移动一列；向上和向下保持
 活动游戏期间定时教程叠加保持静音，因此不会遮挡
 游戏的语音命令。该提示宣布了 SPEAK HINTS 的这种额外使用。
 阅读描述控件会说出所选内容的视觉描述
-形状、空间、城市或办公室舞台按需提供。在此屏幕上可用
+Shapes、Space、City 或 Office 按需舞台。在此屏幕上可用
 仅在游戏开始之前。它的默认输入是键盘上的 G 和 LT
 （左扳机）在控制器上。 R被替换，因为它是游戏的Reset
 陀螺仪快捷方式。屏幕介绍宣布当前绑定。
@@ -281,8 +263,10 @@ READ SCORE 仅在游戏结束结果时按需重复最终结果
 捷径。重置陀螺仪位于游戏的控件中；特定于 mod 的行
 在重置为默认值之前，它们仍位于菜单底部。改变
 语音输出在与“设置”>“调制设置”>“输出”相同的模式之间循环
-模式：自动、SAPI、JAWS、Window-Eyes、NVDA、系统访问和 ZoomText。其
-默认输入是键盘上的 F9 和 West Face 按钮（Xbox 上的 X）
+模式。模式顺序为：
+Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
+该快捷方式的默认输入是键盘上的 F9 和 West Face 按钮（Xbox 上的 X）
 控制器）。控制器开始按钮是游戏原生保留的
 菜单操作。使用快捷方式时会宣布当前选择，并且
 由相同的输出模式设置保存。
@@ -335,22 +319,19 @@ item 不给它 Unity UI 焦点可能不会说话。
 
 安装
 -------
-1. 如果 Bop It! 正在运行，请关闭它。
-2. 将此 ZIP 中的所有文件解压到 Bop It! 游戏文件夹中：
-   C:\Program Files (x86)\Steam\steamapps\common\Bop It!
-   允许 Windows 替换 Mods\BopItAccess.dll 并合并 Mods 和
-   文档文件夹。
-3. 启动屏幕阅读器，然后照常启动 Bop It! 到 Steam。
-
-MelonLoader 必须已安装。邮政编码包括 Mods\BopItAccess.dll，
-documentation\BopItAccess-user-guide.html，所有翻译语言子文件夹，
-及其配套文件，
-Tolk.dll 和 nvdaControllerClient64.dll。游戏内指南加载 HTML
-每当该文档文件夹打开时，都会从该文件夹中获取该文件夹。这个mod是为安装而构建的
-MelonLoader 0.7.3 公开测试版和 Bop It!（Unity 2022.3.50f1，x64）。
+源存储库不包含已编译的 mod 或 Prism DLL。构建模组
+跟随README.md，然后关闭游戏并将BopItAccess.dll复制到其Mods中
+文件夹。获取官方 Windows x64 Prism v0.18.3 prism.dll
+https://github.com/ethindp/prism/releases 并将其放在游戏可执行文件旁边，
+不在模组内。将构建的文档文件夹复制到游戏文件夹中，
+包括其翻译的语言子文件夹。启动屏幕阅读器，如果您
+使用一个，然后从 Steam 开始。当受支持时，Prism 可以使用 SAPI
+屏幕阅读器未运行。游戏内指南从以下位置加载 HTML
+文档文件夹每当打开时。该模组是为MelonLoader开发的
+0.7.3 开放测试版和 Bop It!（Unity 2022.3.50f1，x64）。
 第一个非英语翻译是通过机器翻译完成的
 并需要由流利的演讲者进行审查。请报告不清楚或不正确的措辞。
-游戏动作名称使用游戏的翻译术语。形状、空间、城市、
+游戏动作名称使用游戏的翻译术语。 Shapes, Space, City,
 和 Office 仍保留英语作为固定舞台名称。如果SAPI的系统声音
 你的语言发音不太好，在 Mod 中选择合适的安装语音
 设置。
@@ -399,17 +380,15 @@ BUTTON HINTS DELAY（按钮提示延迟）选择它们是伴随焦点语音还�
 视觉滚动。
 
 如果语音缺失，请检查游戏文件夹中的 Mods\BopItAccess.log。它记录了
-面板检测、选定的 UI 对象以及 Tolk 是否接受公告。
-Tolk 接受本身并不能证明语音是可听见的。
+面板检测、选定的 UI 对象以及 Prism 初始化和调度。
+成功的调度本身并不能证明语音是可听见的。
 
 要禁用该mod，请删除 Mods\BopItAccess.dll. MelonLoader 可以保留安装。
 
 文件和第三方通知
 -----------------------------
-Tolk 是 Christopher T. D. Kager 的开源辅助功能库。这个
-软件包包括来自公共版本的 Tolk.dll 和 nvdaControllerClient64.dll
-捆绑，而不修改这些二进制文件。 Tolk 已获得 GNU LGPL 版本许可
-3；随附的 GNU LGPL 和 GNU GPL 许可证文本位于
-第三方许可证。 Tolk 来源和许可证： https://github.com/dkager/tolk
-
-Bop It Access mod 源位于单独的源 ZIP 中。
+Prism 是 Ethan Dupuy 和贡献者的开源辅助功能库。
+它已获得 Mozilla 公共许可证版本 2.0 的许可。此来源
+存储库不包括 prism.dll。来源、版本和许可证：
+https://github.com/ethindp/prism
+有关当前依赖项通知，请参阅 THIRD-PARTY-NOTICES.txt。

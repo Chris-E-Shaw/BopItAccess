@@ -12,7 +12,7 @@ namespace BopItAccess;
 
 public sealed partial class BopItAccessMod
 {
-    // The game owns the language choice. Keep a managed snapshot so the Tolk
+    // The game owns the language choice. Keep a managed snapshot so the Prism
     // worker and other static speech helpers never touch Unity objects.
     private static string _gameLocale = "en";
     private static readonly ConcurrentDictionary<string, IReadOnlyDictionary<string, string>>

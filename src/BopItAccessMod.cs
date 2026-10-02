@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.8.1", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.0", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -19,7 +19,7 @@ public sealed partial class BopItAccessMod : MelonMod
     private readonly ManualResetEventSlim _shutdownRequested = new(false);
     private readonly AutoResetEvent _speechRequested = new(false);
     private readonly object _speechLock = new();
-    private Thread? _tolkThread;
+    private Thread? _speechThread;
     private string? _pendingSpeech;
     private long _pendingSpeechQueuedAt;
     private string? _pendingPrioritySpeech;
@@ -70,22 +70,22 @@ public sealed partial class BopItAccessMod : MelonMod
     public override void OnInitializeMelon()
     {
         PrepareFirstRunNativeAudioDefaults();
-        WriteStatus("Mod loaded; starting the Tolk background thread.");
-        MelonLogger.Msg("Starting Tolk screen-reader support on a background thread...");
-        _tolkThread = new Thread(InitializeTolkAndAnnounce)
+        WriteStatus("Mod loaded; starting the Prism speech thread.");
+        MelonLogger.Msg("Starting Prism speech and braille support on a background thread...");
+        _speechThread = new Thread(InitializePrismAndAnnounce)
         {
             IsBackground = true,
-            Name = "Bop It Access Tolk"
+            Name = "Bop It Access Prism"
         };
 
         try
         {
-            _tolkThread.SetApartmentState(ApartmentState.STA);
-            _tolkThread.Start();
+            _speechThread.SetApartmentState(ApartmentState.STA);
+            _speechThread.Start();
         }
         catch (Exception ex)
         {
-            MelonLogger.Error($"Could not start the Tolk background thread: {ex}");
+            MelonLogger.Error($"Could not start the Prism speech thread: {ex}");
         }
     }
 
@@ -915,7 +915,7 @@ public sealed partial class BopItAccessMod : MelonMod
                 _pendingSpeechIsDescription = false;
             }
 
-            // Tolk is used only by its worker thread. Silence a description
+            // Prism is used only by its worker thread. Silence a description
             // that has already reached the screen reader, while preserving a
             // later score or menu announcement if one has been dispatched.
             if (_descriptionSpeechMayBeActive)
@@ -985,7 +985,7 @@ public sealed partial class BopItAccessMod : MelonMod
             if (!_speechEnabled || _speechSuppressedForBackground)
                 return;
             // The score has its own slot, so a focus change cannot replace it
-            // before the Tolk worker picks up the request.
+            // before the Prism worker picks up the request.
             _pendingPrioritySpeech = score;
             _pendingPriorityFollowUpSpeech = menu;
             _pendingSpeech = null;
@@ -999,32 +999,11 @@ public sealed partial class BopItAccessMod : MelonMod
         _speechRequested.Set();
     }
 
-    private void InitializeTolkAndAnnounce()
+    private void InitializePrismAndAnnounce()
     {
-        bool tolkLoaded = false;
         try
         {
-            // Direct SAPI is used for the fallback so its voice, volume,
-            // rate and pitch can be configured independently of Tolk.
-            WriteStatus("Calling Tolk_TrySAPI(false).");
-            TolkNative.Tolk_TrySAPI(false);
-            WriteStatus("Tolk_TrySAPI returned; calling Tolk_Load.");
-            TolkNative.Tolk_Load();
-            tolkLoaded = TolkNative.Tolk_IsLoaded();
-
-            if (!tolkLoaded)
-            {
-                WriteStatus("Tolk_IsLoaded returned false; direct SAPI fallback will be attempted.");
-                MelonLogger.Warning("Tolk did not initialize; trying SAPI for speech output.");
-            }
-
-            string? reader = tolkLoaded
-                ? Marshal.PtrToStringUni(TolkNative.Tolk_DetectScreenReader()) : null;
-            WriteStatus($"Tolk initialized; active output driver: {reader ?? "none detected"}.");
-            if (tolkLoaded)
-                WriteStatus("Tolk braille-capable driver: " +
-                    (TolkNative.Tolk_HasBraille() ? "available" : "unavailable") + ".");
-            MelonLogger.Msg($"Tolk initialized. Active output driver: {reader ?? "none detected"}.");
+            InitializePrismOnWorker();
 
             // PlayerPrefs and Input Actions must be read on Unity's thread.
             // Wait for the first Update so the persisted OFF state and its
@@ -1054,21 +1033,17 @@ public sealed partial class BopItAccessMod : MelonMod
                 bool queued = OutputSpeechOnWorker(startupAnnouncement, true);
                 if (queued)
                 {
-                    WriteStatus($"Tolk accepted the startup announcement '{startupAnnouncement}'.");
-                    MelonLogger.Msg("Tolk accepted the startup announcement.");
+                    WriteStatus($"Prism accepted the startup announcement '{startupAnnouncement}'.");
+                    MelonLogger.Msg("Prism accepted the startup announcement.");
                 }
                 else
                 {
-                    WriteStatus("Tolk returned false for the startup announcement.");
-                    MelonLogger.Warning("Tolk initialized, but it could not send the startup announcement.");
+                    WriteStatus("Prism could not dispatch the startup announcement.");
+                    MelonLogger.Warning("Prism could not dispatch the startup announcement.");
                 }
             }
 
-            // Auto mode normally speaks through an active screen reader. Prepare
-            // its SAPI fallback while the game is still loading, on this same
-            // STA worker, so a later switch to SAPI does not pay voice setup
-            // cost on the first focused item.
-            PrewarmSapiFallbackOnWorker();
+            PreparePrismBackendOnWorker();
 
             WaitHandle[] signals = { _shutdownRequested.WaitHandle, _speechRequested };
             while (WaitHandle.WaitAny(signals) != 0)
@@ -1163,7 +1138,7 @@ public sealed partial class BopItAccessMod : MelonMod
                         long dispatchStartedAt = Environment.TickCount64;
                         bool accepted = OutputSpeechOnWorker(announcement, followUpInterrupt);
                         if (accepted)
-                            LogSapiQueueDelayOnWorker(announcementQueuedAt, dispatchStartedAt);
+                            LogPrismQueueDelayOnWorker(announcementQueuedAt, dispatchStartedAt);
                         WriteStatus($"Speech announcement '{announcement}' (interrupt {followUpInterrupt}) {(accepted ? "accepted" : "rejected")} by output backend.");
                     }
                     else if (description)
@@ -1188,25 +1163,13 @@ public sealed partial class BopItAccessMod : MelonMod
         }
         catch (Exception ex)
         {
-            WriteStatus($"Tolk startup failed: {ex}");
-            MelonLogger.Error($"Tolk startup failed: {ex}");
+            WriteStatus($"Prism speech worker failed: {ex}");
+            MelonLogger.Error($"Prism speech worker failed: {ex}");
         }
         finally
         {
+            ShutdownPrismOnWorker();
             ReleaseSapiOnWorker();
-            if (tolkLoaded)
-            {
-                try
-                {
-                    TolkNative.Tolk_Unload();
-                    WriteStatus("Tolk unloaded.");
-                }
-                catch (Exception ex)
-                {
-                    WriteStatus($"Tolk shutdown reported an error: {ex.Message}");
-                    MelonLogger.Warning($"Tolk shutdown reported an error: {ex.Message}");
-                }
-            }
         }
     }
 
@@ -1234,44 +1197,4 @@ public sealed partial class BopItAccessMod : MelonMod
         }
     }
 
-    private static class TolkNative
-    {
-        private const string LibraryName = "Tolk.dll";
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern void Tolk_Load();
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.I1)]
-        internal static extern bool Tolk_IsLoaded();
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern void Tolk_Unload();
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern void Tolk_TrySAPI([MarshalAs(UnmanagedType.I1)] bool trySapi);
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        internal static extern IntPtr Tolk_DetectScreenReader();
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Unicode)]
-        [return: MarshalAs(UnmanagedType.I1)]
-        internal static extern bool Tolk_Output([MarshalAs(UnmanagedType.LPWStr)] string text, [MarshalAs(UnmanagedType.I1)] bool interrupt);
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Unicode)]
-        [return: MarshalAs(UnmanagedType.I1)]
-        internal static extern bool Tolk_Speak([MarshalAs(UnmanagedType.LPWStr)] string text, [MarshalAs(UnmanagedType.I1)] bool interrupt);
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true, CharSet = CharSet.Unicode)]
-        [return: MarshalAs(UnmanagedType.I1)]
-        internal static extern bool Tolk_Braille([MarshalAs(UnmanagedType.LPWStr)] string text);
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.I1)]
-        internal static extern bool Tolk_HasBraille();
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.Cdecl, ExactSpelling = true)]
-        [return: MarshalAs(UnmanagedType.I1)]
-        internal static extern bool Tolk_Silence();
-    }
 }

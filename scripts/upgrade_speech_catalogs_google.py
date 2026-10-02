@@ -23,8 +23,10 @@ from translate_documents import google_translate, regionalize
 
 ROOT = Path(__file__).resolve().parents[1]
 TOKEN_LEAK = re.compile(r"(?:98765432\d+|88888888\d+|9999999999|XYZZY)")
-KEEP_LITERAL = {"SAPI", "NVDA", "JAWS", "Window-Eyes", "System Access",
-                "ZoomText", "F8", "F9", "LT", "RT", "Bop It Access"}
+KEEP_LITERAL = {"SAPI", "OneCore", "NVDA", "JAWS", "UI Automation",
+                "ZDSR", "ZoomText", "Boy PC Reader", "PC Talker",
+                "Sense Reader", "Window-Eyes", "System Access",
+                "F8", "F9", "LT", "RT", "Bop It Access"}
 
 
 def translate_batch(sources: list[str], locale: str) -> list[str | None]:

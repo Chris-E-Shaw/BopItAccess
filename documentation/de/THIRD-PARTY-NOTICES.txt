@@ -1,30 +1,26 @@
-Bop It Access verwendet diese Laufzeitbibliotheken von Drittanbietern:
+Bop It Access 0.9.0 verwendet diese Laufzeitbibliotheken von Drittanbietern:
 
 0Harmony.dll - Harmony Patching-Bibliothek, die separat installiert wird
 MelonLoader. Bop It Access verwendet es, um zu beobachten, wann die Spieleinstellungen abgeschlossen sind
 Laden beim ersten Mod-Lauf. Bei den Quell- und lokalen Installationspaketen ist dies nicht der Fall
 Fügen Sie diese DLL ein. Beachten Sie die Hinweise, die der Nummer MelonLoader beiliegen.
 
-Tolk.dll – Tolk Screenreader-Abstraktionsbibliothek von Davy Kager und Mitwirkenden.
-Projekt und Quelle: https://github.com/dkager/tolk
-Lizenz: GNU Lesser General Public License, Version 3.
-Lizenztext: https://github.com/dkager/tolk/blob/master/LICENSE.txt
+prism.dll — Prism Screenreader- und Text-to-Speech-Abstraktionsbibliothek von
+Ethan Dupuy und Mitwirkende. Der aktuelle Windows x64-Mod verwendet Prism für
+Sprach- und Brailleausgabe.
+Projekt und Quelle: https://github.com/ethindp/prism
+Lizenz: Mozilla Public License, Version 2.0.
+Lizenztext: https://github.com/ethindp/prism/blob/master/LICENSE
 
-nvdaControllerClient64.dll – NVDA Controller-Client-Bibliothek, verwendet mit Tolk.
-Projekt und Quelle: https://github.com/nvaccess/nvda/tree/master/extras/controllerClient
-Tolks x64-Kopie: https://github.com/dkager/tolk/tree/master/libs/x64
-Lizenz: GNU Lesser General Public License, Version 2.1.
-Lizenztext: https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt
-
-Dieses Quellrepository enthält keine nativen DLL-Dateien.
+Dieses Quell-Repository enthält keine native Prism-DLL.
 Es enthält auch keine kompilierte Bop It Access DLL.
-Builder müssen separat kompatible native x64-DLLs erhalten oder erstellen.
-Bop It Access lädt sie dynamisch zur Laufzeit.
-Ein kompatibles Tolk.dll kann ersetzt werden, ohne den Mod neu zu erstellen.
+Bauherren müssen separat ein kompatibles Windows x64 prism.dll erwerben oder bauen.
+Bop It Access lädt Prism dynamisch zur Laufzeit.
 
-Zuvor vorbereitete lokale Installationspakete enthielten diese DLLs und wurden mitgeliefert
-die jeweils gültigen Lizenztexte. Diese Pakete sind keine GitHub-Releases und sind es
-nicht Teil dieses Quell-Repositorys.
+Frühere Mod-Versionen verwendeten Tolk.dll und nvdaControllerClient64.dll. Zuvor
+Vorbereitete lokale Installationspakete enthielten diese DLLs und deren Anwendbarkeit
+Lizenztexte. Diese Pakete sind keine GitHub-Releases und nicht Teil davon
+Quell-Repository. Der aktuelle Mod benötigt diese DLLs nicht mehr.
 
 Tools zur Übersetzungserstellung (nicht erforderlich oder zur Laufzeit des Spiels gebündelt):
 

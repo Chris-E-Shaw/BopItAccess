@@ -1,30 +1,26 @@
-Bop It Access utilizza queste librerie runtime di terze parti:
+Bop It Access 0.9.0 utilizza queste librerie runtime di terze parti:
 
 0Harmony.dll - Harmony libreria di patch fornita dal software installato separatamente
 MelonLoader. Bop It Access lo usa per osservare quando le impostazioni del gioco finiscono
 caricamento alla prima esecuzione della mod. I pacchetti di installazione sorgente e locale no
 includere questa DLL; consultare gli avvisi forniti con MelonLoader.
 
-Tolk.dll — Tolk libreria di astrazione per screen reader di Davy Kager e collaboratori.
-Progetto e fonte: https://github.com/dkager/tolk
-Licenza: GNU Lesser General Public License, versione 3.
-Testo della licenza: https://github.com/dkager/tolk/blob/master/LICENSE.txt
+prism.dll — Prism lettore di schermo e libreria di astrazione da testo a voce di
+Ethan Dupuy e collaboratori. L'attuale mod Windows x64 utilizza Prism per
+output vocale e braille.
+Progetto e fonte: https://github.com/ethindp/prism
+Licenza: Licenza pubblica Mozilla, versione 2.0.
+Testo della licenza: https://github.com/ethindp/prism/blob/master/LICENSE
 
-nvdaControllerClient64.dll — NVDA Libreria client controller, utilizzata con Tolk.
-Progetto e fonte: https://github.com/nvaccess/nvda/tree/master/extras/controllerClient
-Copia x64 di Tolk: https://github.com/dkager/tolk/tree/master/libs/x64
-Licenza: GNU Lesser General Public License, versione 2.1.
-Testo della licenza: https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt
+Questo repository di origine non include alcuna DLL nativa Prism.
+Inoltre non include alcuna DLL Bop It Access compilata.
+I costruttori devono ottenere o creare separatamente un Windows x64 prism.dll compatibile.
+Bop It Access carica Prism dinamicamente in fase di esecuzione.
 
-Questo repository sorgente non include file DLL nativi.
-Esso comprende anche non compilato Bop It Access DLL.
-I costruttori devono ottenere o costruire separatamente le DLL native x64 compatibili.
-Bop It Access li carica dinamicamente a runtime.
-Un Tolk.dll compatibile può essere sostituito senza ricostruire il mod.
-
-I pacchetti di installazione locale precedentemente preparati contenevano queste DLL e includevano
-i testi di licenza applicabili. Questi pacchetti non sono versioni GitHub e lo sono
-non fa parte di questo repository di origine.
+Le versioni mod precedenti utilizzavano Tolk.dll e nvdaControllerClient64.dll.
+i pacchetti di installazione locale preparati contenevano tali DLL e i relativi file applicabili
+testi di licenza. Questi pacchetti non sono versioni GitHub e non ne fanno parte
+archivio delle fonti. La mod attuale non richiede più quelle DLL.
 
 Strumenti di creazione della traduzione (non necessari o inclusi in fase di esecuzione del gioco):
 

@@ -218,7 +218,7 @@ public sealed partial class BopItAccessMod
         }
 
         // Handle a manual repeat after focus updates, so a focus change in
-        // the same frame cannot replace the requested result before Tolk
+        // the same frame cannot replace the requested result before Prism
         // receives it. Later focus changes may interrupt it normally.
         if (WasReadScorePressed(readScoreAvailable))
             AnnounceFinalResultOnDemand(soloVisible ? solo : null,
@@ -264,7 +264,7 @@ public sealed partial class BopItAccessMod
 
     private void ProtectGameOverScoreSpeech(string score)
     {
-        // NVDA does not expose speech completion through Tolk. Estimate the
+        // Prism does not expose completion for every backend. Estimate the
         // time needed for the short score sentence before speaking the menu.
         long now = Environment.TickCount64;
         Volatile.Write(ref _gameOverScoreSpeechProtectedUntil,

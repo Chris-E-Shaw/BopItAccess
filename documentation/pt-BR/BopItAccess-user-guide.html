@@ -102,12 +102,12 @@
 <section id="game">
 <h2>O que é Bop It!?</h2>
 <p><em>Bop It! The Video Game</em> traz o jogo de ritmo e reação Bop It para um computador. Uma voz chama os comandos e você dá a entrada correspondente antes que o tempo acabe. Na dificuldade Clássica os comandos principais são <strong>BATER</strong>, <strong>GIRAR</strong>e <strong>PUXAR</strong>. Dificuldade extrema também adiciona <strong>RODAR</strong> e <strong>PETELECO</strong>. Os comandos ficam mais rápidos, então ouvir e cronometrar são mais importantes à medida que a rodada avança. O jogo oferece jogo Solo, Party, Pass It e One-on-One, com quatro fases visuais e musicais: Shapes, Space, City e Office. O <a href="https://store.steampowered.com/app/3214360/">página oficial Steam</a> apresenta o jogo e o <a href="https://bopitthevideogame.com/bop-it-the-video-game-press-release">descrição oficial do jogo</a> explica seus modos.</p>
-<p>Ao ouvir um comando, use o controle atribuído. Por exemplo, no teclado padrão, BATER é Espaço. Você pode encontrar todos os padrões no <a href="#controls">referência de controle</a>. Você não precisa memorizar tudo antes de começar: o mod pode falar dicas de botões nos menus e você pode solicitar dicas sob demanda.</p>
+<p>Ao ouvir um comando, use o controle atribuído. Por exemplo, no teclado padrão, BATER é Space. Você pode encontrar todos os padrões no <a href="#controls">referência de controle</a>. Você não precisa memorizar tudo antes de começar: o mod pode falar dicas de botões nos menus e você pode solicitar dicas sob demanda.</p>
 </section>
 <section id="mod">
 <h2>O que é Bop It Access?</h2>
 <p>Bop It Access é um mod não oficial e independente para o <strong>Versão Windowsx64 Steam</strong> do jogo. Um mod é uma adição opcional que altera o comportamento do jogo. Este adiciona suporte de fala e braille para menus e resultados, descrições sob demanda dos quatro estágios, controles extras e configurações úteis, como limite de taxa de quadros. O objetivo é tornar o jogo mais fácil de navegar, ao mesmo tempo que deixa intactas as dicas de jogo faladas e o tempo.</p>
-<p>O mod usa MelonLoader para carregar no jogo. Ele usa Tolk para se comunicar com leitores de tela suportados e pode usar a fala Windows SAPI como substituto. Ele não substitui o jogo e você ainda precisa de sua própria cópia do Bop It!.</p>
+<p>O mod usa MelonLoader para carregar no jogo. Ele usa <a href="https://github.com/ethindp/prism">Prism</a> para saída de voz e braille por meio de leitores de tela e mecanismos de fala compatíveis, incluindo Windows SAPI quando um leitor de tela não estiver disponível. Ele não substitui o jogo e você ainda precisa de sua própria cópia do Bop It!.</p>
 <p>O mod segue a configuração de idioma do jogo para seus menus e anúncios. Inclui inglês, francês, italiano, alemão, espanhol (Espanha), espanhol (América Latina), japonês, coreano, chinês simplificado e português brasileiro.</p>
 </section>
 <section class="panel" id="transparency">
@@ -124,7 +124,7 @@
 <li>A referência do tutorial do jogo para o modo e dificuldade atuais, falada mediante solicitação na seleção da música com o controle atribuído atualmente a cada ação. One-on-One inclui ambas as entradas BATER.</li>
 <li>Anúncios opcionais de cores e contagem de vidas individuais.</li>
 <li>Dicas de botões para teclado, controlador ou ambos, com tempo ajustável, repetições e um atalho Speak Hints sob demanda.</li>
-<li>Saída de leitor de tela através de Tolk, saída braille opcional e fallback configurável SAPI.</li>
+<li>Leitor de tela e saída de mecanismo de fala por meio de Prism, saída braille opcional e fallback SAPI configurável.</li>
 <li>Remapeamento de teclado e controlador para vários controles nativos e mod, incluindo filtros de placar e atalhos de fala.</li>
 <li>Um interruptor mestre de fala salvo com instruções faladas para reativar a fala.</li>
 <li>Fala e um guia do usuário do jogo em todos os idiomas oferecidos pela configuração de idioma do jogo.</li>
@@ -144,11 +144,11 @@
 <h2>Notas e limitações</h2>
 <ul>
 <li><strong>As descrições são solicitadas antes da rodada.</strong> O mod intencionalmente não narra o cenário durante o jogo ativo. O jogador deve ouvir e reagir aos comandos verbais do jogo; narração extra poderia cobrir um comando e encerrar a rodada.</li>
-<li><strong>SAPI é um mecanismo de fala de backup.</strong> Ele está disponível quando você preferir ou quando nenhum leitor de tela compatível estiver em execução, mas sua capacidade de resposta ainda está abaixo da meta deste projeto. A voz e o sistema instalados podem afetar o atraso. Para fala diferente do inglês, escolha uma voz SAPI instalada que suporte o idioma do jogo selecionado; o mod não instala vozes adicionais.</li>
+<li><strong>SAPI é um mecanismo de fala disponível.</strong> Você pode selecioná-lo ou permitir que o Auto use-o quando nenhum leitor de tela compatível estiver em execução. A voz e o sistema instalados podem afetar o tempo de resposta. Para fala diferente do inglês, escolha uma voz SAPI instalada que suporte o idioma do jogo selecionado; o mod não instala vozes adicionais.</li><li data-prism-note="true"><strong>A ordem dos avisos pode variar.</strong> Os mecanismos do Prism podem enfileirar de modo diferente avisos que não interrompem a fala. Informe se pontuações ou créditos forem lidos fora de ordem. As vozes SAPI salvas são localizadas pelo nome exibido no Prism; se várias tiverem o mesmo nome, a primeira poderá ser escolhida.</li>
 <li><strong>Alguns controles nativos ainda estão corrigidos.</strong> O mod expande bastante o menu de controles do jogo, mas não torna todas as entradas do jogo remapeáveis.</li>
 <li><strong>A taxa de quadros afeta a pesquisa de entrada.</strong> O limitador FPS pode reduzir drasticamente a carga do sistema. Ele não retarda deliberadamente as animações nem altera o tempo do jogo, mas o jogo verifica a entrada baseada em quadros com menos frequência em FPS mais baixos. Uma configuração mais alta pode fornecer um tempo de entrada mais preciso, especialmente em rodadas rápidas.</li>
 <li><strong>O suporte de fala é mais forte em menus e resultados.</strong> Em um painel inesperado, o mod pode ler texto visível e um controle focado quando encontrar um. Ao passar o mouse, você não pode falar até que o item realmente receba o foco do jogo.</li>
-<li><strong>Windows x64 é a plataforma mod atual.</strong> O jogo pode ser vendido para outros sistemas, mas o carregamento atual e as dependências de fala deste mod são para Windows x64.</li>
+<li><strong>Windows x64 é a plataforma mod atual.</strong> Prism oferece suporte a outras plataformas, o que pode ajudar no desenvolvimento futuro. A integração do jogo, as referências de construção e as etapas de instalação desta versão são para Windows x64.</li>
 <li><strong>As traduções precisam de revisão.</strong> O texto e os guias iniciais do mod em idioma diferente do inglês foram traduzidos automaticamente. Algumas palavras, termos do jogo e nomes de entrada podem precisar de correção por falantes fluentes. Por favor, relate qualquer coisa pouco clara ou imprecisa.</li>
 </ul>
 </section>
@@ -172,8 +172,8 @@
 dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</code></pre>
 <ol start="4">
 <li>Com o jogo fechado, copie o arquivo construído <code>src\bin\Release\net6.0\BopItAccess.dll</code> dentro do jogo <code>Mods</code> pasta. Crie essa pasta, se necessário. Copie o build <code>src\bin\Release\net6.0\documentation</code> pasta na pasta do jogo também. Ele contém este guia e os documentos complementares de que seus links precisam.</li>
-<li>Obtenha 64 bits compatível <code>Tolk.dll</code> e <code>nvdaControllerClient64.dll</code> de suas fontes a montante, conforme descrito no <a href="README.md#install-your-build">instruções de instalação do repositório</a>. Coloque ambos ao lado do executável do jogo, na pasta principal do jogo, <strong>não</strong> dentro <code>Mods</code>.</li>
-<li>Inicie seu leitor de tela, se você usar um, e inicie o jogo por meio de Steam. Se não houver um leitor de tela em execução compatível, o mod pode usar a fala SAPI.</li>
+<li>Obtenha a versão oficial do Prism v0.18.3 para Windows x64 (<code>prism.dll</code>) na <a href="https://github.com/ethindp/prism/releases">página de lançamentos do Prism</a>, ou compile a mesma versão a partir do código-fonte. Coloque <code>prism.dll</code> ao lado do executável do jogo, na pasta principal do jogo, <strong>não na pasta <code>Mods</code></strong>.</li>
+<li>Se você usa um leitor de tela, inicie-o antes do jogo. Depois, abra o jogo pelo Steam. Se não houver um leitor de tela compatível em execução, o Prism poderá usar a voz SAPI.</li>
 </ol>
 <p>Um local comum Steam é <code>C:\Program Files (x86)\Steam\steamapps\common\Bop It!</code>. Sua localização pode ser diferente se você escolher uma biblioteca Steam diferente. Se você tiver um ZIP de instalação do projeto fornecido localmente, feche o jogo e extraia seu conteúdo para a pasta do jogo, permitindo que o <code>Mods</code> pasta para mesclar. Esses pacotes locais são separados do repositório GitHub somente de origem.</p>
 <h3>Passo a passo do instalador futuro (planejado)</h3>
@@ -220,10 +220,10 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <section id="first-launch">
 <h2>Seu primeiro lançamento</h2>
 <ol>
-<li>Inicie seu leitor de tela, se você usar um. Inicie Bop It! a Steam após instalar MelonLoader, o mod DLL e os arquivos de tempo de execução Tolk necessários.</li>
+<li>Se você usa um leitor de tela, inicie-o primeiro. Instale MelonLoader, a DLL do mod e <code>prism.dll</code>; depois, abra Bop It! pelo Steam.</li>
 <li>No primeiro uso do mod, os volumes de música, SFX e narração do jogo começam em 30. Se você estiver atualizando, os níveis de áudio do jogo salvos permanecerão como estavam.</li>
 <li>Aguarde o anúncio: <q>Bop It Access o discurso está pronto. O jogo ainda está carregando. Aguarde a tela de título ou o anúncio do menu principal antes de usar os controles.</q> O mod fica pronto antes que o jogo termine de carregar.</li>
-<li>Aguarde mais alguns segundos pelo anúncio da tela de título. As entradas não podem fazer nada durante o carregamento. Pressione BATER (espaço por padrão ou o botão de confirmação do controlador) para sair da tela de título. Na sua primeira inicialização com o recurso de boas-vindas, a tela de boas-vindas ganha destaque antes do menu principal. Mova com Cima/Baixo e confirme com Enter, Espaço ou confirmação do controlador.</li>
+<li>Aguarde mais alguns segundos pelo anúncio da tela de título. As entradas não podem fazer nada durante o carregamento. Pressione BATER (Space por padrão ou o botão de confirmação do seu controlador) para sair da tela de título. Na sua primeira inicialização com o recurso de boas-vindas, a tela de boas-vindas ganha destaque antes do menu principal. Mova com Up/Down e confirme com Enter, Space ou confirmação do controlador.</li>
 <li>Se você desativou a fala anteriormente, a configuração salva permanecerá desativada. O mod fornece uma mensagem de recuperação falada na inicialização com o teclado atual e a ligação do controlador para Toggle Speech. Por padrão, pressione F8 ou selecione o controlador para ligá-lo novamente.</li>
 <li>Escolha <strong>abra as configurações do mod, recomendado</strong> na tela de boas-vindas para configurar primeiro a fala, o braille e as dicas. Escolha <strong>Leia o guia do usuário</strong> para ler este documento no jogo, ou <strong>Continuar para o jogo</strong> para chegar ao menu principal.</li>
 </ol>
@@ -238,7 +238,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <p>No jogo <strong>Configurações &gt; Idioma</strong> linha, escolha o idioma desejado. O mod segue essa escolha para o texto do menu falado, dicas, avisos e outros anúncios. Você pode alterá-lo durante uma sessão. O texto e o áudio originais do jogo permanecem sob o controle do próprio jogo.</p>
 <p>Cada idioma possui uma cópia separada deste guia HTML em <code>documentation\&lt;language&gt;\BopItAccess-user-guide.html</code>. Abrir o guia no jogo carrega a cópia para o idioma atualmente selecionado em Configurações. Se essa cópia estiver faltando ou não puder ser lida, o guia em inglês será aberto. Os demais documentos do projeto também possuem cópias traduzidas nas pastas do mesmo idioma.</p>
 <p>Os idiomas incluídos são inglês, francês, italiano, alemão, espanhol (Espanha), espanhol (América Latina), japonês, coreano, chinês simplificado e português brasileiro. As primeiras traduções para outros idiomas diferentes do inglês são rascunhos gerados por máquina e correções bem-vindas de falantes fluentes.</p>
-<p>Nomes de ação Gameplay seguem as próprias traduções do jogo para que os cinco comandos falados permaneçam distintos. Os quatro títulos de palco — Shapes, Space, City e Office — permanecem em inglês porque são exibidos como nomes fixos no jogo. O mod envia texto traduzido para o seu resultado de voz selecionado; esse resultado também precisa de uma voz para o seu idioma. Se você usar SAPI, selecione uma voz instalada em Mod Settings quando a voz padrão do sistema não pronunciar bem o texto traduzido.</p>
+<p>Os nomes das ações de jogo seguem as próprias traduções do jogo para que os cinco comandos falados permaneçam distintos. Os quatro títulos de fase – Shapes, Space, City e Office – permanecem em inglês porque são exibidos como nomes fixos no jogo. O mod envia texto traduzido para a saída de fala selecionada; essa saída também precisa de uma voz para o seu idioma. Se você usar SAPI, selecione uma voz instalada nas configurações do Mod quando a voz padrão do sistema não pronunciar bem o texto traduzido.</p>
 </section>
 <section id="in-game-guide">
 <h2>Leia o guia no jogo</h2>
@@ -265,7 +265,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <tr><th scope="row">Atraso nas dicas dos botões</th><td>Nenhum, 5, 10, 15, 30, 60 segundos; <strong>10 segundos</strong></td><td>Nenhum coloca a dica após o anúncio do item em foco, em uma sequência de fala. Uma escolha cronometrada aguarda a inatividade antes da primeira dica separada. Mover o foco ou alterar uma configuração inicia a espera novamente. A escolha de 5 segundos pode interromper a fala já em andamento.</td></tr>
 <tr><th scope="row">Repetir dicas de botão</th><td>Desligado, 2x, 3x, 4x, 5x, Infinitamente; <strong>Infinitamente</strong></td><td>Define o número total de vezes que uma dica será ouvida em um ciclo. “2x” significa a primeira leitura mais uma repetição.</td></tr>
 <tr><th scope="row">Intervalo de repetição</th><td>15, 30, 45, 60 segundos; <strong>30 segundos</strong></td><td>Tempo entre as leituras repetidas acima. Falar uma dica sob demanda substitui a primeira dica automática pendente, mas ainda permite repetições configuradas.</td></tr>
-<tr><th scope="row">Modo de saída</th><td>Automático, SAPI, JAWS, Window-Eyes, NVDA, Acesso ao Sistema, ZoomText; <strong>Automático</strong></td><td>Auto usa um leitor de tela detectado e volta para SAPI. Um leitor nomeado deve estar disponível; uma escolha indisponível volta para SAPI. Isso também é controlado por Alterar saída de fala.</td></tr>
+<tr><th scope="row">Modo de saída</th><td><code>Auto</code>, <code>SAPI</code>, <code>OneCore</code>, <code>NVDA</code>, <code>JAWS</code>, <code>UI Automation</code>, <code>ZDSR</code>, <code>ZoomText</code>, <code>Boy PC Reader</code>, <code>PC Talker</code>, <code>Sense Reader</code>, <code>System Access</code>, <code>Window-Eyes</code>; <strong><code>Auto</code></strong></td><td><code>Auto</code> usa, pelo Prism, um leitor de tela compatível em execução; se não houver nenhum, usa SAPI. <code>OneCore</code> pode ser escolhido separadamente. Se a saída selecionada não estiver disponível, o mod muda automaticamente para outra disponível e avisa por voz uma única vez. O atalho Alterar saída de voz percorre as mesmas opções.</td></tr>
 <tr><th scope="row">SAPI Voz</th><td>Padrão do sistema ou vozes SAPI de 64 bits instaladas; <strong>Padrão do sistema</strong></td><td>Escolhe a voz Windows usada para SAPI direto ou substituto SAPI do Auto.</td></tr>
 <tr><th scope="row">SAPIVolume</th><td>5%–100% em etapas de 5; <strong>100%</strong></td><td>Ajusta o volume da fala SAPI. O mínimo permanece acima de zero para que as mensagens de recuperação permaneçam audíveis.</td></tr>
 <tr><th scope="row">SAPI Taxa</th><td>0–100 em passos de 5; <strong>50</strong></td><td>Ajusta a velocidade de fala de SAPI.</td></tr>
@@ -518,7 +518,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 </section>
 <section id="roadmap">
 <h2>O que pode vir a seguir</h2>
-<p>Este projeto ainda é jovem. O trabalho potencial inclui um instalador adequado, suporte mais forte para as telas restantes do jogo e melhorias contínuas na capacidade de resposta à fala. Podemos explorar a mudança do tratamento de fala de Tolk para <a href="https://github.com/ethindp/prism">Prisma</a> se for um ajuste melhor. Essa é uma ideia para pesquisa, <strong>não é uma dependência atual ou uma mudança prometida</strong>.</p>
+<p>Este projeto ainda é jovem. O trabalho potencial inclui um instalador com atualização automática, revisões adicionais e correções de bugs, refinamento de código e melhorias contínuas na capacidade de resposta de fala. Prism cria um caminho possível para outras plataformas no futuro, mas este mod atualmente suporta Windows x64.</p>
 <p>As sugestões e relatórios dos jogadores ajudarão a moldar melhorias futuras. Christopher pretende manter o mod ao longo do tempo, com atualizações guiadas por jogo real e revisão humana cuidadosa. O <a href="https://github.com/Chris-E-Shaw/BopItAccess">repositório de projetos</a> é o lugar para acompanhar sua fonte e documentação à medida que se desenvolvem.</p>
 </section>
 <section id="project-credits">
@@ -540,8 +540,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <tbody>
 <tr><th scope="row"><a href="https://github.com/LavaGang/MelonLoader">MelonLoader</a></th><td>Carrega o mod no jogo Unity.</td><td><a href="https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md">Licença Apache 2.0</a>; distribuído separadamente deste repositório de origem.</td></tr>
 <tr><th scope="row">Harmony (<code>0Harmony.dll</code>)</th><td>Permite que o mod detecte quando as configurações salvas do jogo terminam de carregar, para que os níveis de áudio do primeiro uso sejam aplicados posteriormente.</td><td>Fornecido com o MelonLoader instalado separadamente; consulte os avisos que o acompanham. Não incluído neste repositório de origem ou no pacote mod local.</td></tr>
-<tr><th scope="row"><a href="https://github.com/dkager/tolk">Tolk</a></th><td>Conecta o mod a leitores de tela e APIs braille.</td><td><a href="https://github.com/dkager/tolk/blob/master/LICENSE.txt">GNU LGPL versão 3</a>; crédito aos colaboradores Tolk.</td></tr>
-<tr><th scope="row"><a href="https://github.com/nvaccess/nvda/tree/master/extras/controllerClient">NVDA Cliente Controlador</a></th><td>O <code>nvdaControllerClient64.dll</code> biblioteca nativa usada com Tolk.</td><td><a href="https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt">GNU LGPL versão 2.1</a>; crédito para NV Access e contribuidores.</td></tr>
+<tr><th scope="row"><a href="https://github.com/ethindp/prism">Prism</a></th><td>Conecta o mod a leitores de tela, mecanismos de fala e saída braille.</td><td><a href="https://github.com/ethindp/prism/blob/master/LICENSE">Licença Pública Mozilla versão 2.0</a>; crédito a Ethan Dupuy e colaboradores.</td></tr>
 <tr><th scope="row"><a href="https://dotnet.microsoft.com/">.NET6</a></th><td>O mod tem como alvo a estrutura .NET 6 e precisa do pacote de segmentação correspondente para ser construído.</td><td><a href="https://github.com/dotnet/core/blob/main/license-information.md">Informações de licença .NET da Microsoft</a> distingue a fonte licenciada pelo MIT das distribuições de tempo de execução Windows sob a licença de biblioteca .NET.</td></tr>
 <tr><th scope="row">Windows SAPI</th><td>Fornece fala do sistema de backup quando selecionado ou quando nenhum leitor de tela compatível é detectado.</td><td>Um componente Windows; não empacotado como uma biblioteca separada neste repositório de origem.</td></tr>
 <tr><th scope="row">Referências de compilação de jogos e carregadores</th><td>O mod compila contra MelonLoader, Il2CppInterop.Runtime, os arquivos Assembly-CSharp e Il2Cppmscorlib do jogo, Unity Engine/UI/Input System/TextMeshPro módulos e os módulos do jogo FMODUnity e montagens DOTween.</td><td>Eles vêm do jogo e do carregador instalados separadamente, sob seus próprios termos aplicáveis. O repositório de origem não redistribui esses assemblies.</td></tr>
@@ -549,11 +548,11 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <tr><th scope="row"><a href="https://www.crummy.com/software/BeautifulSoup/">Sopa Linda</a></th><td>Ferramenta de autoria usada para preservar a estrutura HTML durante a tradução dos guias. Não é necessário durante o jogo.</td><td>Licença MIT; o pacote Python não vem com o mod.</td></tr>
 </tbody>
 </table></div>
-<p>Veja o projeto <a href="THIRD-PARTY-NOTICES.txt">avisos de terceiros</a> para os arquivos nativos usados pelos pacotes de instalação local. O repositório GitHub atual faz <strong>não</strong> inclua o mod DLL compilado, Tolk DLL ou NVDA Controller Client DLL. O Prism é mencionado apenas no roteiro; atualmente não é usado pelo mod.</p>
+<p>Consulte os <a href="THIRD-PARTY-NOTICES.txt">avisos sobre componentes de terceiros</a> para saber quais arquivos são necessários durante a execução. O repositório atual do GitHub <strong>não inclui</strong> a DLL compilada do mod nem <code>prism.dll</code>.</p>
 </section>
 <section id="legal">
 <h2>Notas legais</h2>
-<p>Bop It Access é um projeto não oficial feito por um fã. Não é feito, aprovado ou endossado pela Hasbro, desenvolvedora/editora do jogo Alliance, Valve, Microsoft, Unity, MelonLoader, Tolk, NV Access ou qualquer fabricante de leitor de tela. <strong>Bop It!</strong> e personagens, obras de arte, sons e marcas relacionados pertencem à Hasbro e seus respectivos detentores de direitos. Steam pertence à Valve. Outros nomes de produtos, marcas registradas e software permanecem propriedade de seus respectivos proprietários.</p>
+<p>Bop It Access é um projeto não oficial feito por um fã. Ele não é feito, aprovado ou endossado pela Hasbro, pela desenvolvedora/editora do jogo Alliance, Valve, Microsoft, Unity, MelonLoader, Prism ou qualquer fabricante de leitor de tela. <strong>Bop It!</strong> e personagens, obras de arte, sons e marcas relacionados pertencem à Hasbro e seus respectivos detentores de direitos. Steam pertence à Valve. Outros nomes de produtos, marcas registradas e software permanecem propriedade de seus respectivos proprietários.</p>
 <p>Você deve obter sua própria cópia legal do jogo. Este guia e repositório de fontes não concedem direitos ao jogo ou seus ativos e não os incluem. Cada uma das dependências do mod mantém suas próprias licenças, vinculadas acima; usar ou distribuir um instalador futuro precisará respeitar essas licenças. Para o jogo original e informações sobre seus direitos, consulte o <a href="https://bopitthevideogame.com/">site oficial do jogo Bop It!</a> e <a href="https://store.steampowered.com/app/3214360/">Listagem Steam</a>.</p>
 </section>
 <section class="panel" id="thanks">
@@ -563,7 +562,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 </section>
 </main>
 <footer>
-<p class="small">Bop It Access guia do usuário. Os recursos atuais refletem a fonte na versão 0.8.1; os itens planejados estão claramente marcados. <a href="#contents">Voltar ao conteúdo</a>.</p>
+<p class="small">Bop It Access guia do usuário. Os recursos atuais refletem a fonte na versão 0.9.0; os itens planejados estão claramente marcados. <a href="#contents">Voltar ao conteúdo</a>.</p>
 </footer>
 </body>
 </html>

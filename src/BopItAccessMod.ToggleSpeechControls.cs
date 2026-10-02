@@ -107,7 +107,7 @@ public sealed partial class BopItAccessMod
 
     private string ReadToggleSpeechFallbackRecoveryInstruction()
     {
-        // Tolk can initialize before the main thread has created our action.
+        // Prism can initialize before the main thread has created our action.
         // Read the persisted paths directly so the OFF announcement still
         // identifies both current recovery controls.
         string keyboard = ReadToggleSpeechSavedBindingLabel(

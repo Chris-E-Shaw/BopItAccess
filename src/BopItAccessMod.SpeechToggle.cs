@@ -17,7 +17,7 @@ public sealed partial class BopItAccessMod
     private bool _backgroundSpeechFocusKnown;
     private bool _backgroundRecoveryNoticeNeeded;
 
-    // Called from OnUpdate on Unity's main thread. The Tolk worker waits for
+    // Called from OnUpdate on Unity's main thread. The Prism worker waits for
     // this before its first announcement so an OFF preference never produces
     // the ordinary Ready announcement.
     private void InitializeSpeechToggleOnMainThread()

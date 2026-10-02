@@ -109,7 +109,7 @@
   <section id="mod">
     <h2>What is Bop It Access?</h2>
     <p>Bop It Access is an unofficial, independent mod for the <strong>Windows x64 Steam version</strong> of the game. A mod is an optional addition that changes how a game behaves. This one adds speech and braille support for menus and results, on-demand descriptions of the four stages, extra controls, and useful settings such as a frame-rate limit. It aims to make the game easier to navigate while leaving its spoken gameplay cues and timing intact.</p>
-    <p>The mod uses MelonLoader to load into the game. It uses Tolk to communicate with supported screen readers and can use Windows SAPI speech as a fallback. It does not replace the game, and you still need your own copy of Bop It!.</p>
+    <p>The mod uses MelonLoader to load into the game. It uses <a href="https://github.com/ethindp/prism">Prism</a> for speech and braille output through supported screen readers and speech engines, including Windows SAPI when a screen reader is unavailable. It does not replace the game, and you still need your own copy of Bop It!.</p>
     <p>The mod follows the game's Language setting for its menus and announcements. It includes English, French, Italian, German, Spanish (Spain), Spanish (Latin America), Japanese, Korean, Simplified Chinese, and Brazilian Portuguese.</p>
   </section>
 
@@ -128,7 +128,7 @@
       <li>The game's tutorial reference for the current mode and difficulty, spoken on request from song selection with each action's current assigned control. One-on-One includes both Bop inputs.</li>
       <li>Optional One-on-One colour and life-count announcements.</li>
       <li>Button hints for keyboard, controller, or both, with adjustable timing, repetitions, and an on-demand Speak Hints shortcut.</li>
-      <li>Screen-reader output through Tolk, optional braille output, and configurable SAPI fallback.</li>
+      <li>Screen-reader and speech-engine output through Prism, optional braille output, and configurable SAPI fallback.</li>
       <li>Keyboard and controller remapping for several native and mod controls, including leaderboard filters and speech shortcuts.</li>
       <li>A saved master speech switch with spoken instructions for turning speech back on.</li>
       <li>Speech and an in-game user's guide in every language offered by the game's Language setting.</li>
@@ -150,11 +150,12 @@
     <h2>Notes and limitations</h2>
     <ul>
       <li><strong>Descriptions are requested before the round.</strong> The mod intentionally does not narrate scenery during active gameplay. A player must hear and react to the game's verbal commands; extra narration could cover a command and end the round.</li>
-      <li><strong>SAPI is a backup speech engine.</strong> It is available when you prefer it or when no supported screen reader is running, but its responsiveness is still below the goal for this project. Your installed voice and system can affect the delay. For non-English speech, choose an installed SAPI voice that supports your selected game language; the mod does not install additional voices.</li>
+      <li><strong>SAPI is one available speech engine.</strong> You can select it or let Auto use it when no supported screen reader is running. Your installed voice and system can affect its response time. For non-English speech, choose an installed SAPI voice that supports your selected game language; the mod does not install additional voices.</li>
+      <li><strong>Speech timing may vary by output.</strong> Prism backends can queue noninterrupting announcements differently. Please report score or credits announcements that arrive out of order. If installed SAPI voices share a display name, a saved voice choice may use the first matching voice.</li>
       <li><strong>Some native controls are still fixed.</strong> The mod greatly expands the game's Controls menu, but it does not make every game input remappable.</li>
       <li><strong>Frame rate affects input polling.</strong> The FPS limiter can sharply reduce system load. It does not deliberately slow animations or change game timing, but the game checks frame-based input less often at lower FPS. A higher setting can give more accurate input timing, especially in fast rounds.</li>
       <li><strong>Speech support is strongest in menus and results.</strong> On an unexpected panel, the mod can read visible text and a focused control when it finds one. A mouse hover may not speak until that item actually receives game focus.</li>
-      <li><strong>Windows x64 is the current mod platform.</strong> The game may be sold for other systems, but this mod's current loading and speech dependencies are for Windows x64.</li>
+      <li><strong>Windows x64 is the current mod platform.</strong> Prism supports other platforms, which may help future development. This release's game integration, build references, and installation steps are for Windows x64.</li>
       <li><strong>Translations need review.</strong> The initial non-English mod text and guides were machine translated. Some wording, game terms, and input names may need correction from fluent speakers. Please report anything unclear or inaccurate.</li>
     </ul>
   </section>
@@ -180,8 +181,8 @@
 dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</code></pre>
     <ol start="4">
       <li>With the game closed, copy the built file <code>src\bin\Release\net6.0\BopItAccess.dll</code> into the game's <code>Mods</code> folder. Create that folder if needed. Copy the build's <code>src\bin\Release\net6.0\documentation</code> folder into the game folder too. It contains this guide and the companion documents its links need.</li>
-      <li>Obtain compatible 64-bit <code>Tolk.dll</code> and <code>nvdaControllerClient64.dll</code> from their upstream sources as described in the <a href="README.md#install-your-build">repository's installation instructions</a>. Place both beside the game's executable, in the main game folder, <strong>not</strong> inside <code>Mods</code>.</li>
-      <li>Start your screen reader if you use one, then launch the game through Steam. If there is no compatible running screen reader, the mod can use SAPI speech.</li>
+      <li>Obtain the official Windows x64 Prism v0.18.3 <code>prism.dll</code> from the <a href="https://github.com/ethindp/prism/releases">Prism releases</a>, or build the matching version from source. Place it beside the game's executable, in the main game folder, <strong>not</strong> inside <code>Mods</code>.</li>
+      <li>Start your screen reader if you use one, then launch the game through Steam. If there is no compatible running screen reader, Prism can use SAPI speech.</li>
     </ol>
     <p>One common Steam location is <code>C:\Program Files (x86)\Steam\steamapps\common\Bop It!</code>. Your location may differ if you chose a different Steam library. If you have a locally supplied install ZIP from the project, close the game and extract its contents into the game folder, allowing the <code>Mods</code> folder to merge. Those local packages are separate from the source-only GitHub repository.</p>
     <h3>Future installer walkthrough (planned)</h3>
@@ -230,7 +231,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
   <section id="first-launch">
     <h2>Your first launch</h2>
     <ol>
-      <li>Start your screen reader if you use one. Launch Bop It! through Steam after installing MelonLoader, the mod DLL, and the required Tolk runtime files.</li>
+      <li>Start your screen reader if you use one. Launch Bop It! through Steam after installing MelonLoader, the mod DLL, and <code>prism.dll</code>.</li>
       <li>On your first-ever use of the mod, the game's Music, SFX, and Voice Over volumes start at 30. If you are upgrading, your saved game audio levels stay as they were.</li>
       <li>Wait for the announcement: <q>Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls.</q> The mod becomes ready before the game finishes loading.</li>
       <li>Wait several more seconds for the title screen announcement. Inputs may do nothing during loading. Press Bop (Space by default, or your controller's confirm button) to move on from the title screen. On your first launch with the welcome feature, the welcome screen takes focus before the main menu. Move with Up/Down and confirm with Enter, Space, or controller confirm.</li>
@@ -278,7 +279,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
         <tr><th scope="row">Button Hints Delay</th><td>None, 5, 10, 15, 30, 60 seconds; <strong>10 seconds</strong></td><td>None puts the hint after the focused item's announcement, in one speech string. A timed choice waits for inactivity before the first separate hint. Moving focus or changing a setting starts the wait again. The 5-second choice may interrupt speech already in progress.</td></tr>
         <tr><th scope="row">Repeat Button Hints</th><td>Off, 2x, 3x, 4x, 5x, Infinitely; <strong>Infinitely</strong></td><td>Sets the total number of times to hear a hint in one cycle. “2x” means the first reading plus one repeat.</td></tr>
         <tr><th scope="row">Repeat Interval</th><td>15, 30, 45, 60 seconds; <strong>30 seconds</strong></td><td>Time between the repeat readings above. Speaking a hint on demand replaces the pending first automatic hint but still allows configured repeats.</td></tr>
-        <tr><th scope="row">Output Mode</th><td>Auto, SAPI, JAWS, Window-Eyes, NVDA, System Access, ZoomText; <strong>Auto</strong></td><td>Auto uses a detected screen reader and falls back to SAPI. A named reader must be available; an unavailable choice falls back to SAPI. This is also controlled by Change Speech Output.</td></tr>
+        <tr><th scope="row">Output Mode</th><td><code>Auto</code>, <code>SAPI</code>, <code>OneCore</code>, <code>NVDA</code>, <code>JAWS</code>, <code>UI Automation</code>, <code>ZDSR</code>, <code>ZoomText</code>, <code>Boy PC Reader</code>, <code>PC Talker</code>, <code>Sense Reader</code>, <code>System Access</code>, <code>Window-Eyes</code>; <strong><code>Auto</code></strong></td><td><code>Auto</code> uses a supported running screen reader through Prism, then SAPI when none is available. <code>OneCore</code> is a separate choice. An unavailable selection uses a working fallback with a spoken notice. This is also controlled by Change Speech Output.</td></tr>
         <tr><th scope="row">SAPI Voice</th><td>System default or installed 64-bit SAPI voices; <strong>System default</strong></td><td>Chooses the Windows voice used for direct SAPI or Auto's SAPI fallback.</td></tr>
         <tr><th scope="row">SAPI Volume</th><td>5%–100% in steps of 5; <strong>100%</strong></td><td>Adjusts SAPI speech loudness. The minimum stays above zero so recovery messages remain audible.</td></tr>
         <tr><th scope="row">SAPI Rate</th><td>0–100 in steps of 5; <strong>50</strong></td><td>Adjusts SAPI speaking speed.</td></tr>
@@ -549,7 +550,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 
   <section id="roadmap">
     <h2>What may come next</h2>
-    <p>This project is still young. Potential work includes a proper installer, stronger support for the remaining game screens, and continued improvements to speech responsiveness. We may explore switching speech handling from Tolk to <a href="https://github.com/ethindp/prism">Prism</a> if it proves to be a better fit. That is an idea for research, <strong>not a current dependency or a promised switch</strong>.</p>
+    <p>This project is still young. Potential work includes a self-updating installer, further review and bug fixes, code refinement, and continued improvements to speech responsiveness. Prism creates a possible path to other platforms in the future, but this mod currently supports Windows x64.</p>
     <p>Player suggestions and reports will help shape future improvements. Christopher intends to maintain the mod over time, with updates guided by real play and careful human review. The <a href="https://github.com/Chris-E-Shaw/BopItAccess">project repository</a> is the place to follow its source and documentation as they develop.</p>
   </section>
 
@@ -572,8 +573,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
       <tbody>
         <tr><th scope="row"><a href="https://github.com/LavaGang/MelonLoader">MelonLoader</a></th><td>Loads the mod into the Unity game.</td><td><a href="https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md">Apache License 2.0</a>; distributed separately from this source repository.</td></tr>
         <tr><th scope="row">Harmony (<code>0Harmony.dll</code>)</th><td>Lets the mod detect when the game's saved settings finish loading, so first-use audio levels are applied afterward.</td><td>Supplied with the separately installed MelonLoader; consult its accompanying notices. Not included in this source repository or the local mod package.</td></tr>
-        <tr><th scope="row"><a href="https://github.com/dkager/tolk">Tolk</a></th><td>Connects the mod to screen readers and braille APIs.</td><td><a href="https://github.com/dkager/tolk/blob/master/LICENSE.txt">GNU LGPL version 3</a>; credit to the Tolk contributors.</td></tr>
-        <tr><th scope="row"><a href="https://github.com/nvaccess/nvda/tree/master/extras/controllerClient">NVDA Controller Client</a></th><td>The <code>nvdaControllerClient64.dll</code> native library used with Tolk.</td><td><a href="https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt">GNU LGPL version 2.1</a>; credit to NV Access and contributors.</td></tr>
+        <tr><th scope="row"><a href="https://github.com/ethindp/prism">Prism</a></th><td>Connects the mod to screen readers, speech engines, and braille output.</td><td><a href="https://github.com/ethindp/prism/blob/master/LICENSE">Mozilla Public License version 2.0</a>; credit to Ethan Dupuy and contributors.</td></tr>
         <tr><th scope="row"><a href="https://dotnet.microsoft.com/">.NET 6</a></th><td>The mod targets the .NET 6 framework and needs the matching targeting pack to build.</td><td><a href="https://github.com/dotnet/core/blob/main/license-information.md">Microsoft's .NET license information</a> distinguishes MIT-licensed source from Windows runtime distributions under the .NET Library License.</td></tr>
         <tr><th scope="row">Windows SAPI</th><td>Provides backup system speech when selected or when no supported screen reader is detected.</td><td>A Windows component; not bundled as a separate library in this source repository.</td></tr>
         <tr><th scope="row">Game and loader build references</th><td>The mod compiles against MelonLoader, Il2CppInterop.Runtime, the game's Assembly-CSharp and Il2Cppmscorlib files, Unity Engine/UI/Input System/TextMeshPro modules, and the game's FMODUnity and DOTween assemblies.</td><td>These come from the separately installed game and loader, under their own applicable terms. The source repository does not redistribute those assemblies.</td></tr>
@@ -581,12 +581,12 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
         <tr><th scope="row"><a href="https://www.crummy.com/software/BeautifulSoup/">Beautiful Soup</a></th><td>Authoring tool used to preserve HTML structure while translating the guides. It is not needed while playing.</td><td>MIT License; the Python package is not bundled with the mod.</td></tr>
       </tbody>
     </table></div>
-    <p>See the project's <a href="THIRD-PARTY-NOTICES.txt">third-party notices</a> for the native files used by local install packages. The current GitHub repository does <strong>not</strong> include the compiled mod DLL, Tolk DLL, or NVDA Controller Client DLL. Prism is mentioned in the roadmap only; it is not currently used by the mod.</p>
+    <p>See the project's <a href="THIRD-PARTY-NOTICES.txt">third-party notices</a> for runtime details. The current GitHub repository does <strong>not</strong> include the compiled mod DLL or <code>prism.dll</code>.</p>
   </section>
 
   <section id="legal">
     <h2>Legal notes</h2>
-    <p>Bop It Access is an unofficial fan-made project. It is not made, approved, or endorsed by Hasbro, the game's developer/publisher Alliance, Valve, Microsoft, Unity, MelonLoader, Tolk, NV Access, or any screen-reader maker. <strong>Bop It!</strong> and related characters, artwork, sound, and marks belong to Hasbro and their respective rights holders. Steam belongs to Valve. Other product names, trademarks, and software remain the property of their respective owners.</p>
+    <p>Bop It Access is an unofficial fan-made project. It is not made, approved, or endorsed by Hasbro, the game's developer/publisher Alliance, Valve, Microsoft, Unity, MelonLoader, Prism, or any screen-reader maker. <strong>Bop It!</strong> and related characters, artwork, sound, and marks belong to Hasbro and their respective rights holders. Steam belongs to Valve. Other product names, trademarks, and software remain the property of their respective owners.</p>
     <p>You must obtain your own legal copy of the game. This guide and source repository do not grant rights to the game or its assets and do not include them. The mod's dependencies each retain their own licenses, linked above; using or distributing a future installer will need to respect those licenses. For the original game and its rights information, see the <a href="https://bopitthevideogame.com/">official Bop It! game site</a> and <a href="https://store.steampowered.com/app/3214360/">Steam listing</a>.</p>
   </section>
 
@@ -597,7 +597,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
   </section>
 </main>
 <footer>
-  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.8.1; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
+  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.9.0; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
 </footer>
 </body>
 </html>

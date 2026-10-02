@@ -29,7 +29,9 @@ public sealed partial class BopItAccessMod
     private static readonly bool TrimSilenceExperimentAvailable = false;
     private static readonly string[] OutputModes =
     {
-        "Auto", "SAPI", "JAWS", "Window-Eyes", "NVDA", "System Access", "ZoomText"
+        "Auto", "SAPI", "OneCore", "NVDA", "JAWS", "UI Automation", "ZDSR",
+        "ZoomText", "Boy PC Reader", "PC Talker", "Sense Reader",
+        "System Access", "Window-Eyes"
     };
 
     private string _outputMode = "Auto";
@@ -63,20 +65,11 @@ public sealed partial class BopItAccessMod
     private string _sapiCaptureAppliedVoiceId = string.Empty;
     private OutputBackend _lastOutputBackend;
     private string? _lastFallbackNoticeMode;
-    // Tolk's active-reader lookup is only needed periodically in Auto mode.
-    // Keep the worker responsive during rapid menu navigation while still
-    // noticing screen readers started or stopped after game launch.
-    private string? _detectedScreenReaderOnWorker;
-    private long _nextScreenReaderDetectionAt;
     private long _nextSapiErrorLogAt;
     private long _nextSlowSapiTimingLogAt;
-    private long _nextSlowSapiQueueLogAt;
-    private bool? _lastSeparateBrailleDispatchAccepted;
-    private bool _separateBrailleAvailable;
-    private long _nextSeparateBrailleCapabilityCheckAt;
 
     private sealed record SpeechVoiceOption(string Id, string Name);
-    private enum OutputBackend { None, Tolk, Sapi, Nvda }
+    private enum OutputBackend { None, Sapi }
 
     private void InitializeSpeechBackendPreferencesOnMainThread()
     {
@@ -358,216 +351,30 @@ public sealed partial class BopItAccessMod
     private bool OutputSpeechOnWorker(string text, bool interrupt,
         bool protectedCapture = false)
     {
-        // One output boundary covers ordinary focus, startup/recovery notices,
-        // protected results, hints, descriptions, and braille text.
+        // The existing queue owns interruption and score ordering. Prism is
+        // the single active output boundary for speech and braille.
+        _ = protectedCapture;
         text = LocalizeSpeechText(text);
-        string mode;
-        lock (_speechLock)
-        {
-            if (_speechSuppressedForBackground)
-                return false;
-            mode = _outputMode;
-        }
-
+        if (_speechSuppressedForBackground)
+            return false;
         if (_filterCapitalisationEnabled)
             text = FilterSpeechCapitalisation(text);
-
-        // Explicit SAPI output has no reason to query Tolk before every
-        // utterance. Query it only if SAPI fails and a fallback is needed.
-        string? detected = string.Equals(mode, "SAPI", StringComparison.OrdinalIgnoreCase)
-            ? null : DetectScreenReaderOnWorker();
-        if (string.Equals(mode, "Auto", StringComparison.OrdinalIgnoreCase))
-        {
-            if (detected != null && OutputTolkOnWorker(text, interrupt))
-            {
-                _lastOutputBackend = OutputBackend.Tolk;
-                return true;
-            }
-            return SpeakSapiOnWorker(text, interrupt, protectedCapture) ||
-                TryTolkAsLastResort(text, interrupt);
-        }
-
-        if (string.Equals(mode, "SAPI", StringComparison.OrdinalIgnoreCase))
-        {
-            if (SpeakSapiOnWorker(text, interrupt, protectedCapture))
-            {
-                _lastFallbackNoticeMode = null;
-                return true;
-            }
-            detected = DetectScreenReaderOnWorker(force: true);
-            if (detected == null)
-                return false;
-            string notice = _lastFallbackNoticeMode == "SAPI" ? text :
-                LF("SAPI is unavailable. Using {0}. {1}",
-                    detected, text);
-            if (!TryTolkAsLastResort(notice, interrupt))
-                return false;
-            _lastFallbackNoticeMode = "SAPI";
-            return true;
-        }
-
-        if (string.Equals(mode, "NVDA", StringComparison.OrdinalIgnoreCase))
-        {
-            try
-            {
-                if (NvdaNative.nvdaController_testIfRunning() == 0)
-                {
-                    if (interrupt)
-                        NvdaNative.nvdaController_cancelSpeech();
-                    if (NvdaNative.nvdaController_speakText(text) == 0)
-                    {
-                        _lastOutputBackend = OutputBackend.Nvda;
-                        _lastFallbackNoticeMode = null;
-                        SendBrailleForSeparateSpeechOnWorker(text);
-                        return true;
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                LogSapiError("NVDA direct output failed", ex);
-            }
-        }
-
-        if (string.Equals(mode, detected, StringComparison.OrdinalIgnoreCase))
-        {
-            if (OutputTolkOnWorker(text, interrupt))
-            {
-                _lastOutputBackend = OutputBackend.Tolk;
-                _lastFallbackNoticeMode = null;
-                return true;
-            }
-        }
-
-        bool announceFallback = _lastFallbackNoticeMode != mode;
-        string sapiText = announceFallback
-            ? LF("{0} is unavailable. Using SAPI. {1}",
-                L(mode), text) : text;
-        if (SpeakSapiOnWorker(sapiText, interrupt, protectedCapture))
-        {
-            _lastFallbackNoticeMode = mode;
-            return true;
-        }
-        if (detected == null)
-            return false;
-        string readerText = announceFallback
-            ? LF("{0} and SAPI are unavailable. Using {1}. {2}",
-                L(mode), detected, text) : text;
-        if (!TryTolkAsLastResort(readerText, interrupt))
-            return false;
-        _lastFallbackNoticeMode = mode;
-        return true;
-    }
-
-    private string? DetectScreenReaderOnWorker(bool force = false)
-    {
-        long now = Environment.TickCount64;
-        if (!force && now < _nextScreenReaderDetectionAt)
-            return _detectedScreenReaderOnWorker;
-        _detectedScreenReaderOnWorker =
-            Marshal.PtrToStringUni(TolkNative.Tolk_DetectScreenReader());
-        _nextScreenReaderDetectionAt = now + 1000;
-        return _detectedScreenReaderOnWorker;
-    }
-
-    private bool TryTolkAsLastResort(string text, bool interrupt)
-    {
-        if (!OutputTolkOnWorker(text, interrupt))
-            return false;
-        _lastOutputBackend = OutputBackend.Tolk;
-        return true;
-    }
-
-    private bool OutputTolkOnWorker(string text, bool interrupt) =>
-        _brailleOutputEnabled
-            ? TolkNative.Tolk_Output(text, interrupt)
-            : TolkNative.Tolk_Speak(text, interrupt);
-
-    // Tolk_Output already routes text to both speech and braille. Direct SAPI
-    // and NVDA speech bypass that API, so these paths need one braille call.
-    private void SendBrailleForSeparateSpeechOnWorker(string text)
-    {
-        if (!_brailleOutputEnabled || _speechSuppressedForBackground)
-            return;
         try
         {
-            long now = Environment.TickCount64;
-            if (now >= _nextSeparateBrailleCapabilityCheckAt)
-            {
-                _separateBrailleAvailable = TolkNative.Tolk_IsLoaded() &&
-                    TolkNative.Tolk_HasBraille();
-                // A display connected or disconnected later is still picked
-                // up promptly, without two capability calls per utterance.
-                _nextSeparateBrailleCapabilityCheckAt = now + 1000;
-            }
-            if (!_separateBrailleAvailable)
-            {
-                if (_lastSeparateBrailleDispatchAccepted != false)
-                    WriteStatus("Tolk braille driver is unavailable for separate speech output.");
-                _lastSeparateBrailleDispatchAccepted = false;
-                return;
-            }
-            bool accepted = TolkNative.Tolk_Braille(text);
-            if (!accepted)
-                _nextSeparateBrailleCapabilityCheckAt = 0;
-            if (_lastSeparateBrailleDispatchAccepted != accepted)
-                WriteStatus("Tolk braille dispatch for separate speech output " +
-                    (accepted ? "accepted" : "rejected") + ".");
-            _lastSeparateBrailleDispatchAccepted = accepted;
+            return OutputPrismOnWorker(text, interrupt);
         }
         catch (Exception ex)
         {
-            _separateBrailleAvailable = false;
-            _nextSeparateBrailleCapabilityCheckAt = 0;
-            if (_lastSeparateBrailleDispatchAccepted != false)
-                WriteStatus("Tolk braille dispatch failed: " + ex.Message);
-            _lastSeparateBrailleDispatchAccepted = false;
+            LogPrismErrorOnWorker("Prism speech dispatch failed: " + ex);
+            ReleasePrismBrailleBackendOnWorker();
+            ReleasePrismSpeechBackendOnWorker();
+            return false;
         }
     }
 
-    private void PrewarmSapiFallbackOnWorker()
-    {
-        // Startup preferences are available now, but the main menu has not
-        // appeared yet. This worker already owns the STA used for SAPI.
-        string mode;
-        bool speechEnabled;
-        lock (_speechLock)
-        {
-            mode = _outputMode;
-            speechEnabled = _speechEnabled;
-        }
-        if (_shutdownRequested.IsSet || !speechEnabled ||
-            !string.Equals(mode, "Auto", StringComparison.OrdinalIgnoreCase) ||
-            _lastOutputBackend == OutputBackend.Sapi)
-            return;
-
-        try
-        {
-            long startedAt = Environment.TickCount64;
-            if (EnsureSapiOnWorker())
-                WriteStatus("Prepared SAPI fallback during game loading in " +
-                    (Environment.TickCount64 - startedAt) + " ms.");
-        }
-        catch (Exception ex)
-        {
-            // Auto can continue using its detected screen reader. A later
-            // explicit SAPI request may try initialization again.
-            WriteStatus("Could not prepare SAPI fallback: " + ex.Message);
-            ReleaseSapiOnWorker();
-        }
-    }
-
-    private void LogSapiQueueDelayOnWorker(long queuedAt, long dispatchStartedAt)
-    {
-        if (_lastOutputBackend != OutputBackend.Sapi || queuedAt <= 0)
-            return;
-        long queuedFor = dispatchStartedAt - queuedAt;
-        if (queuedFor < 150 || dispatchStartedAt < _nextSlowSapiQueueLogAt)
-            return;
-        WriteStatus($"Slow SAPI queue: announcement waited {queuedFor} ms before dispatch.");
-        _nextSlowSapiQueueLogAt = Environment.TickCount64 + 3000;
-    }
-
+    // Kept for the dormant SAPI capture experiment. All live output uses Prism.
+    private void SendBrailleForSeparateSpeechOnWorker(string text) =>
+        SendPrismBrailleOnWorker(text);
     private bool SpeakSapiOnWorker(string text, bool interrupt,
         bool protectedCapture)
     {
@@ -1050,25 +857,7 @@ public sealed partial class BopItAccessMod
 
     private bool SilenceOutputOnWorker()
     {
-        try
-        {
-            if (_lastOutputBackend == OutputBackend.Sapi && _sapiComVoice != null)
-            {
-                dynamic voice = _sapiComVoice;
-                voice.Speak(string.Empty, 3); // asynchronous, purge previous speech
-                ReleaseCompletedSapiPlaybackStreamsOnWorker();
-                return true;
-            }
-            if (_lastOutputBackend == OutputBackend.Tolk)
-                return TolkNative.Tolk_Silence();
-            if (_lastOutputBackend == OutputBackend.Nvda)
-                return NvdaNative.nvdaController_cancelSpeech() == 0;
-        }
-        catch (Exception ex)
-        {
-            LogSapiError("Could not silence speech", ex);
-        }
-        return false;
+        return SilencePrismOnWorker();
     }
 
     private void ReleaseSapiOnWorker()
@@ -1109,21 +898,4 @@ public sealed partial class BopItAccessMod
         MelonLoader.MelonLogger.Warning(message + ": " + ex.Message);
     }
 
-    private static class NvdaNative
-    {
-        private const string LibraryName = "nvdaControllerClient64.dll";
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.StdCall,
-            ExactSpelling = true)]
-        internal static extern int nvdaController_testIfRunning();
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.StdCall,
-            ExactSpelling = true, CharSet = CharSet.Unicode)]
-        internal static extern int nvdaController_speakText(
-            [MarshalAs(UnmanagedType.LPWStr)] string text);
-
-        [DllImport(LibraryName, CallingConvention = CallingConvention.StdCall,
-            ExactSpelling = true)]
-        internal static extern int nvdaController_cancelSpeech();
-    }
 }

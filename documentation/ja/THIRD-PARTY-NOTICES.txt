@@ -1,30 +1,26 @@
-Bop It Access は、次のサードパーティのランタイム ライブラリを使用します。
+Bop It Access 0.9.0 は、次のサードパーティのランタイム ライブラリを使用します。
 
 0Harmony.dll - Harmony 別途インストールされたパッチ適用ライブラリ
 MelonLoader. Bop It Access は、ゲームの設定がいつ終了するかを観察するために使用します
 最初の MOD 実行時にロードされます。ソースおよびローカル インストール パッケージは、
 この DLL を含めます。 MelonLoader に付属の通知を参照してください。
 
-Tolk.dll — Tolk Davy Kager および寄稿者によるスクリーン リーダー抽象化ライブラリ。
-プロジェクトとソース: https://github.com/dkager/tolk
-ライセンス: GNU Lesser General Public License、バージョン 3。
-ライセンステキスト: https://github.com/dkager/tolk/blob/master/LICENSE.txt
+prism.dll — Prism によるスクリーン リーダーおよびテキスト読み上げ抽象化ライブラリ
+イーサン・デュピュイとその貢献者たち。現在の Windows x64 MOD は Prism を使用します。
+音声と点字の出力。
+プロジェクトとソース: https://github.com/ethindp/prism
+ライセンス: Mozilla Public License、バージョン 2.0。
+ライセンステキスト: https://github.com/ethindp/prism/blob/master/LICENSE
 
-nvdaControllerClient64.dll — NVDA コントローラー クライアント ライブラリ。Tolk とともに使用されます。
-プロジェクトとソース: https://github.com/nvaccess/nvda/tree/master/extras/controllerClient
-Tolk の x64 コピー: https://github.com/dkager/tolk/tree/master/libs/x64
-ライセンス: GNU Lesser General Public License、バージョン 2.1。
-ライセンステキスト: https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt
+このソース リポジトリには、ネイティブ Prism DLL は含まれません。
+また、コンパイルされた Bop It Access DLL も含まれません。
+ビルダーは、互換性のある Windows x64 prism.dll を別途入手またはビルドする必要があります。
+Bop It Access は実行時に Prism を動的にロードします。
 
-このソースリポジトリには、ネイティブのDLLファイルはありません。
-また、コンパイルされたBop It Access DLLは含まれていません。
-ビルダーは、別々に互換性のあるx64ネイティブDLLを入手またはビルドする必要があります。
-Bop It Access は実行時に動的に読み込みます。
-互換性のあるTolk.dllは、MODを再構築することなく交換することができます。
-
-事前に準備されたローカル インストール パッケージには、これらの DLL が含まれており、
-該当するライセンステキスト。これらのパッケージは GitHub リリースではなく、
-このソース リポジトリの一部ではありません。
+以前の MOD バージョンでは Tolk.dll および nvdaControllerClient64.dll が使用されていました。
+準備されたローカル インストール パッケージには、これらの DLL とその適用可能なものが含まれていました
+ライセンステキスト。これらのパッケージは GitHub リリースではなく、このリリースの一部ではありません。
+ソースリポジトリ。現在の MOD ではこれらの DLL は必要なくなりました。
 
 翻訳オーサリング ツール (ゲーム実行時に不要またはバンドルされません):
 

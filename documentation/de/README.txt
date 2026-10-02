@@ -1,4 +1,4 @@
-Bop It Access 0.8.1 – Mehrsprachige Sprache und Dokumentation
+Bop It Access 0.9.0 - Prism Sprache und Blindenschrift
 
 Was das bewirkt
 --------------
@@ -9,7 +9,7 @@ Die Spielsprache ändert auch Mod-Ankündigungen und das Benutzerhandbuch im Spi
 Die ersten Übersetzungen sind maschinell erstellte Entwürfe und müssen überprüft werden
 von fließenden Sprechern.
 Die Sprachausgabe ist standardmäßig aktiviert. Wenn der Mod mit eingeschalteter Sprache geladen wird, wird eine Ankündigung angezeigt
-„Bop It Access Rede ist bereit. Das Spiel wird noch geladen. Warten Sie auf den Titelbildschirm oder die Ankündigung des Hauptmenüs, bevor Sie die Steuerelemente verwenden.“ bis Tolk. Wenn der Titelbildschirm erscheint, kündigt der Mod die aktuelle Eingabe KLOPFEN zum Öffnen des Hauptmenüs an. Es liest
+„Bop It Access Rede ist bereit. Das Spiel wird noch geladen. Warten Sie auf den Titelbildschirm oder die Ankündigung des Hauptmenüs, bevor Sie die Steuerelemente verwenden.“ bis Prism. Wenn der Titelbildschirm erscheint, kündigt der Mod die aktuelle Eingabe KLOPFEN zum Öffnen des Hauptmenüs an. Es liest
 die fokussierte Hauptmenüschaltfläche und die fokussierte Einstellungszeile. Einstellungswerte sind
 gesprochen, wobei der Zeilenname im Fokus steht. Einen Wert ändern, während der Fokus darauf bleibt
 Zeile spricht nur den neuen Wert. AUDIO-LATENZ, STEUERUNG und ONLINE GEHEN sind Action
@@ -38,17 +38,14 @@ Ankündigung des ersten fokussierten Elements auf einem neu geöffneten Einstell
 Unter „Steuerelemente“ gibt es in „Einstellungen“ jetzt ein Menü „MOD-EINSTELLUNGEN“. SPEECH OUTPUT nutzt dasselbe
 Gespeicherter Hauptschalter als F8 oder Controller-Auswahl, einschließlich der gesprochenen Wiederherstellung
 Anweisungen, wenn die Sprachausgabe ausgeschaltet ist. Die BRAILLE-AUSGABE startet und wird gespeichert
-zwischen den Sitzungen. Wenn Tolk einen Bildschirmleser verwendet, sendet der Mod dasselbe
-Äußerung in Sprache und Blindenschrift; Wenn die BRAILLE-AUSGABE ausgeschaltet ist, wird Sprache gesendet
-nur. Direkte NVDA- und SAPI-Sprache senden außerdem jede Äußerung separat durch
-Tolks Braille-API, wenn ein Braille-fähiger Bildschirmleser verfügbar ist.
-Der Ausgabemodus beginnt bei Auto: der Mod
-spricht über einen erkannten Bildschirmleser oder verwendet SAPI, wenn keiner ausgeführt wird.
-SAPI kann direkt ausgewählt werden. Das Menü listet auch JAWS, Window-Eyes, NVDA,
-Systemzugriff und ZoomText. Direkte NVDA-Ausgabe ist verfügbar, wenn NVDA verfügbar ist
-laufen. Die anderen benannten Leser werden verwendet, wenn Tolk sie als aktiv erkennt
-Fahrer; Wenn der ausgewählte Reader nicht verfügbar ist, kündigt der Mod einen SAPI-Fallback an.
-Der 64-Bit-Build von Tolk unterstützt SuperNova nicht und ist daher nicht aufgeführt.
+zwischen den Sitzungen. Prism sendet Ankündigungen an einen kompatiblen Bildschirmleser
+Brailleausgabe, wenn diese Einstellung aktiviert ist. Durch Ausschalten wird die Blindenschrift des Mods gestoppt
+Nachrichten, während die Sprache verfügbar bleibt.
+OUTPUT MODE beginnt mit Auto: Über Prism wird ein laufender unterstützter Screenreader verwendet; ist keiner verfügbar, wird SAPI verwendet. OneCore kann separat gewählt werden.
+Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
+Die einzelnen Screenreader und Sprach-Engines sind nur verfügbar, wenn die installierte Prism-Version und das System sie unterstützen. Ist der gewählte Modus nicht verfügbar, wechselt der Mod automatisch zu einer verfügbaren Ausgabe und sagt dies einmal an.
+Prism-Backends können nicht unterbrechende Ansagen unterschiedlich einreihen. Bitte melden Sie Punktestände oder Credits, die in falscher Reihenfolge gesprochen werden. Gespeicherte SAPI-Stimmkennungen werden mit den Anzeigenamen in Prism abgeglichen; bei gleichen Namen kann die erste passende Stimme gewählt werden.
 „SPRACHE IM HINTERGRUND STUMMSCHALTEN“ ist ein gespeicherter Schalter, standardmäßig deaktiviert. Wenn aktiviert,
 Der Mod hört auf zu sprechen, sobald das Spiel den Fensterfokus verliert. Rede geschaffen
 während das Spiel im Hintergrund läuft, wird verworfen und die Ankündigungen werden fortgesetzt
@@ -111,7 +108,7 @@ nur die Hinweise zu diesem Gerät; Beide geben beide Eingabesätze mit explizite
 Namen. Die Speech-Off-Wiederherstellung umfasst immer beide Geräte
 Der Spieler kann die Steuerung finden, die die Sprache wieder einschaltet.
 
-Schaltflächenhinweise stellen die Eingabe vor ihre Aktion: „Eingabetaste oder Leertaste, Element aktivieren.“
+Schaltflächenhinweise stellen die Eingabe vor ihre Aktion: „Enter oder Space, Element aktivieren.“
 Bei Hinweisen zu einzelnen Geräten wird der Gerätename weggelassen. Controller-Stick-Namen werden gesprochen
 vollständig, wie zum Beispiel „Linker Stick nach oben und unten“. Beide Modi identifizieren die Tastatur
 und Controller-Eingänge. Der Mod liest die aktuellen Bindungen des Spiels also nativ
@@ -145,23 +142,8 @@ Das MOD SETTINGS-Menü verfügt außerdem über SAPI VOICE, SAPI VOLUME, SAPI RA
 Kontrollen. SAPI Voice listet die Systemstandard- und installierten 64-Bit-SAPI-Stimmen auf.
 Die Lautstärke beginnt bei 100 %; Rate und Pitch beginnen bei 50. Die Lautstärke reicht von 5 % bis 100 %.
 Daher bleiben SAPI Wiederherstellungsbenachrichtigungen hörbar. Rate und Pitch reichen von 0 bis 100.
-Alle drei ziehen ein
-Fünferschritte. Sie gelten für den Modus SAPI und den Fallback SAPI von Auto.
-Durch die direkte Ausgabe von SAPI wird eine wiederholte Sprachaufzählung bei numerischen Änderungen vermieden.
-Verwendet Klartext, wenn die Tonhöhe neutral ist, und überspringt unnötige Screenreader
-Erkennung. Das frühere Trim-Silence-Experiment bleibt verborgen und inaktiv.
-Die neuen Protokollmessungen SAPI lokalisierten den größten Teil der gemessenen Versandverzögerung in
-der Windows SAPI COM Speak-Anruf: Einzelanrufe dauerten etwa 188 bis 578 ms,
-während die anfängliche Spracheinrichtung etwa 375 bis 609 ms dauerte. Separater Braille-Versand
-betrug typischerweise 0 bis 16 ms. Der Mod bereitet nun den SAPI-Fallback des Auto-Modus vor
-Der Spracharbeiter, während das Spiel geladen wird, zeichnet das Warteschlangen-Timing auf, um es unterscheiden zu können
-Warten auf den Arbeiter ab der Versandzeit. Eine erste Ankündigung direkt im Anschluss
-Die Auswahl von SAPI umfasst möglicherweise weiterhin die Spracheinrichtung. Diese Zeitangaben messen nicht
-wann Ton hörbar wird, was auch von der installierten Stimme abhängt und
-Audiosystem.
-Separate Braille-Ausgabe mit SAPI speichert jetzt Tolk-Fähigkeitsprüfungen für eine im Cache
-zweitens. Wenn der Versand von SAPI selbst langsam ist, werden im Protokoll Spracheinstellungen, Sprechen,
-und Braille-Versandzeiten.
+Alle drei bewegen sich in Fünferschritten. Sie gelten, wenn Prism SAPI direkt oder als verwendet
+der automatische Fallback. Das frühere Trim-Silence-Experiment bleibt verborgen und inaktiv.
 Die Auswahl der Mod-Einstellungen wird zwischen den Sitzungen gespeichert. MOD-STANDARDS WIEDERHERSTELLEN
 setzt diese Auswahl auf die oben beschriebenen Standardwerte zurück. Drücken Sie einmal darauf, um eine Anfrage zu stellen
 Bestätigung, und drücken Sie dann innerhalb von fünf Sekunden erneut darauf, um sie wiederherzustellen. Umzug
@@ -194,7 +176,7 @@ freigegeben, bevor eine erneute Bindungsanfrage angenommen wird.
 
 In Play liest der Mod „Solo“, „Party“, „Pass It“ und „One on One“, wenn er fokussiert ist.
 Auf dem folgenden Songauswahlbildschirm wird das aktuelle Thema angekündigt
-(Formen, Raum, Stadt oder Büro) und ob der Extremmodus aktiviert ist. Verdrehen zu
+(Shapes, Space, City oder Office) und ob der Extremmodus aktiviert ist. Verdrehen zu
 Wenn Sie das Lied ändern, wird nur das neue Thema gesprochen. Ziehen, um den Schwierigkeitsgrad zu ändern, spricht
 nur der neue Extremzustand. Die Bildschirmeinführung erklärt auch die DREHEN,
 ZIEHEN, KLOPFEN und Zurück-Aktionen.
@@ -208,7 +190,7 @@ die Bindungen des aktiven Spielers; One on One benennt die KLOPFEN Eingaben beid
 Die zeitgesteuerte Einblendung des Tutorials während des aktiven Spiels bleibt stumm, sodass sie nicht verdeckt wird
 die gesprochenen Befehle des Spiels. Der Hinweis kündigt diese zusätzliche Verwendung von SPEAK HINTS an.
 Das Steuerelement BESCHREIBUNGEN LESEN gibt eine visuelle Beschreibung des ausgewählten Elements aus
-Formen, Raum, Stadt oder Bürobühne auf Anfrage. Es ist auf diesem Bildschirm verfügbar
+Shapes, Space, City oder Office Bühne auf Anfrage. Es ist auf diesem Bildschirm verfügbar
 nur, bevor das Spiel beginnt. Die Standardeingaben sind G auf der Tastatur und LT
 (linker Auslöser) am Controller. R wurde ersetzt, da es sich um den Reset des Spiels handelt
 Gyro-Abkürzung. Die Bildschirmeinleitung kündigt die aktuelle Bindung an.
@@ -281,8 +263,10 @@ Der Mod stellt eine native RESET GYRO-Zeile bereit und fügt eine CHANGE SPEECH 
 Verknüpfung. Reset Gyro übernimmt die Steuerung des Spiels; die modspezifischen Zeilen
 bleiben am unteren Rand des Menüs zusammen, bevor sie auf die Standardeinstellungen zurückgesetzt werden. VERÄNDERUNG
 SPEECH OUTPUT durchläuft dieselben Modi wie Settings > Mod Settings > OUTPUT
-MODUS: Auto, SAPI, JAWS, Window-Eyes, NVDA, Systemzugriff und ZoomText. Es ist
-Standardeingaben sind F9 auf der Tastatur und die Westface-Taste (X auf einer Xbox).
+MODUS. Die Modusreihenfolge ist:
+Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
+Die Standardeingaben der Verknüpfung sind F9 auf der Tastatur und die West-Face-Taste (X auf einer Xbox).
 Controller). Die Starttaste des Controllers ist dem nativen Controller des Spiels vorbehalten
 Menüaktion. Die aktuelle Auswahl wird bekannt gegeben, wenn die Tastenkombination verwendet wird und
 wird durch die gleiche Ausgabemodus-Einstellung gespeichert.
@@ -335,24 +319,21 @@ Artikel ohne Angabe von Unity UI-Fokus spricht möglicherweise nicht.
 
 Installieren
 -------
-1. Schließen Sie Bop It!, wenn es ausgeführt wird.
-2. Extrahieren Sie alle Dateien in dieser ZIP-Datei in den Spielordner Bop It!:
-   C:\Program Files (x86)\Steam\steamapps\common\Bop It!
-   Erlauben Sie Windows, Mods\BopItAccess.dll zu ersetzen und die Mods und zusammenzuführen
-   Dokumentationsordner.
-3. Starten Sie Ihren Bildschirmleser und starten Sie dann wie gewohnt Bop It! bis Steam.
-
-MelonLoader muss bereits installiert sein. Die Postleitzahl umfasst Mods\BopItAccess.dll,
-documentation\BopItAccess-user-guide.html, alle Unterordner der übersetzten Sprache,
-und ihre Begleitdokumente,
-Tolk.dll und nvdaControllerClient64.dll. Der In-Game-Guide lädt den HTML-Code
-aus diesem Dokumentationsordner, wann immer er geöffnet wird. Dieser Mod wurde für die Installation erstellt
-MelonLoader 0.7.3 Open-Beta und Bop It! (Unity 2022.3.50f1, x64).
+Das Quell-Repository enthält keinen kompilierten Mod oder Prism DLL. Baue den Mod nach
+Folgen Sie README.md, schließen Sie dann das Spiel und kopieren Sie BopItAccess.dll in seine Mods
+Ordner. Beziehen Sie das offizielle Windows x64 Prism v0.18.3 prism.dll von
+https://github.com/ethindp/prism/releases und platzieren Sie es neben der ausführbaren Datei des Spiels.
+nicht innerhalb von Mods. Kopieren Sie den Dokumentationsordner des Builds in den Spielordner.
+einschließlich der Unterordner für die übersetzte Sprache. Starten Sie ggf. Ihren Screenreader
+Verwenden Sie eine und starten Sie dann Bop It! bis Steam. Prism kann SAPI verwenden, wenn eine unterstützt wird
+Der Bildschirmleser läuft nicht. Der In-Game-Guide lädt den HTML-Code aus dem
+Dokumentationsordner, wann immer er geöffnet wird. Dieser Mod wurde für MelonLoader entwickelt
+0.7.3 Open-Beta und Bop It! (Unity 2022.3.50f1, x64).
 Die ersten nicht-englischen Übersetzungen wurden mit maschineller Übersetzung erstellt
 und benötigen eine Überprüfung durch fließende Redner. Bitte melden Sie unklare oder fehlerhafte Formulierungen.
-Gameplay-Aktionsnamen verwenden die übersetzten Begriffe des Spiels. Shapes, Shapes, Space, City, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98765431003, 98761431003, 98761431003, 98761431003, 98761431003, 98761431003, 98761431003, 98761431003, 98761431003, 98761431003, 9876143
-Office bleiben Englisch als feste Bühnentitel. Wenn SAPI System Stimme tut
-nicht sprechen Sie Ihre Sprache gut, wählen Sie eine geeignete installierte Stimme in Mod
+Namen von Gameplay-Aktionen verwenden die übersetzten Begriffe des Spiels. Shapes, Space, City,
+und Office bleiben als feste Bühnentitel englisch. Wenn die Systemstimme von SAPI dies tut
+Wenn Sie Ihre Sprache nicht gut aussprechen, wählen Sie in Mod eine geeignete installierte Stimme aus
 Einstellungen.
 
 Probieren Sie die Menüs und Bildschirme aus
@@ -399,17 +380,15 @@ Eintrag. Öffnen Sie den Abspann und verwenden Sie „Auf“ und „Ab“, um di
 visuelle Schriftrolle.
 
 Wenn die Sprache fehlt, überprüfen Sie Mods\BopItAccess.log im Spielordner. Es zeichnet auf
-Panel-Erkennung, ausgewählte UI-Objekte und ob Tolk Ankündigungen akzeptiert hat.
-Tolk Die Akzeptanz allein beweist nicht, dass Sprache hörbar war.
+Panel-Erkennung, ausgewählte UI-Objekte sowie Prism Initialisierung und Versand.
+Ein erfolgreicher Versand allein beweist nicht, dass Sprache hörbar war.
 
 Um den Mod zu deaktivieren, entfernen Sie Mods\BopItAccess.dll.. MelonLoader kann installiert bleiben.
 
 Dateien und Hinweise Dritter
 -----------------------------
-Tolk ist eine Open-Source-Barrierefreiheitsbibliothek von Christopher T. D. Kager. Dies
-Das Paket enthält Tolk.dll und nvdaControllerClient64.dll aus einem öffentlichen Build
-Bundle, ohne diese Binärdateien zu ändern. Tolk ist unter der GNU LGPL-Version lizenziert
-3; Die begleitenden GNU LGPL- und GNU GPL-Lizenztexte liegen vor
-LIZENZEN VON DRITTANBIETERN. Tolk Quelle und Lizenz: https://github.com/dkager/tolk
-
-Die Mod-Quelle Bop It Access befindet sich in der separaten Quell-ZIP-Datei.
+Prism ist eine Open-Source-Barrierefreiheitsbibliothek von Ethan Dupuy und Mitwirkenden.
+Es ist unter der Mozilla Public License, Version 2.0, lizenziert. Diese Quelle
+Das Repository enthält nicht prism.dll. Quelle, Veröffentlichungen und Lizenz:
+https://github.com/ethindp/prism
+Die aktuellen Abhängigkeitshinweise finden Sie unter THIRD-PARTY-NOTICES.txt.

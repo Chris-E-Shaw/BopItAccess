@@ -1,30 +1,26 @@
-Bop It Access uses these third-party runtime libraries:
+Bop It Access 0.9.0 uses these third-party runtime libraries:
 
 0Harmony.dll - Harmony patching library supplied by the separately installed
 MelonLoader. Bop It Access uses it to observe when the game's settings finish
 loading on the first mod run. The source and local install packages do not
 include this DLL; consult the notices supplied with MelonLoader.
 
-Tolk.dll — Tolk screen-reader abstraction library by Davy Kager and contributors.
-Project and source: https://github.com/dkager/tolk
-License: GNU Lesser General Public License, version 3.
-License text: https://github.com/dkager/tolk/blob/master/LICENSE.txt
+prism.dll — Prism screen-reader and text-to-speech abstraction library by
+Ethan Dupuy and contributors. The current Windows x64 mod uses Prism for
+speech and braille output.
+Project and source: https://github.com/ethindp/prism
+License: Mozilla Public License, version 2.0.
+License text: https://github.com/ethindp/prism/blob/master/LICENSE
 
-nvdaControllerClient64.dll — NVDA Controller Client library, used with Tolk.
-Project and source: https://github.com/nvaccess/nvda/tree/master/extras/controllerClient
-Tolk's x64 copy: https://github.com/dkager/tolk/tree/master/libs/x64
-License: GNU Lesser General Public License, version 2.1.
-License text: https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt
-
-This source repository includes no native DLL files.
+This source repository includes no native Prism DLL.
 It also includes no compiled Bop It Access DLL.
-Builders must separately obtain or build compatible x64 native DLLs.
-Bop It Access loads them dynamically at runtime.
-A compatible Tolk.dll can be replaced without rebuilding the mod.
+Builders must separately obtain or build a compatible Windows x64 prism.dll.
+Bop It Access loads Prism dynamically at runtime.
 
-Previously prepared local install packages contained these DLLs and included
-their applicable license texts. Those packages are not GitHub releases and are
-not part of this source repository.
+Earlier mod versions used Tolk.dll and nvdaControllerClient64.dll. Previously
+prepared local install packages contained those DLLs and their applicable
+license texts. Those packages are not GitHub releases and are not part of this
+source repository. The current mod no longer requires those DLLs.
 
 Translation authoring tools (not needed or bundled at game runtime):
 

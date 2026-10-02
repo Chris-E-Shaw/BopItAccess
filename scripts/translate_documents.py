@@ -61,7 +61,10 @@ VERSION = re.compile(r"(?<![\w])[vV]?\d+(?:\.\d+){1,3}(?:f\d+)?\b")
 PROTECTED_TERMS = (
     "Bop It Access", "Bop It! The Video Game", "Bop It!", "Bop It",
     "MelonLoader",
-    "Tolk", "NVDA", "SAPI", "Harmony", "Codex", "GPT-6 Luna",
+    "Tolk", "Prism", "NVDA", "JAWS", "SAPI", "OneCore",
+    "UI Automation", "ZDSR", "ZoomText", "Boy PC Reader",
+    "PC Talker", "Sense Reader", "System Access", "Window-Eyes",
+    "Harmony", "Codex", "GPT-6 Luna",
     "GPT-6 Sol", "GitHub", "Steam", "Windows", "PowerShell", ".NET",
     "Unity", "FMOD", "Il2Cpp", "OpenAI",
 )
@@ -69,6 +72,10 @@ PROTECTED_PATTERN = re.compile(
     "|".join(re.escape(term) for term in sorted(PROTECTED_TERMS,
         key=len, reverse=True))
 )
+OUTPUT_MODE_LIST_LINES = {
+    "Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,",
+    "Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.",
+}
 ACTION_CUES = re.compile(r"(?<![A-Za-z])(?:Bop|Twist|Pull|Spin|Flick)(?![A-Za-z])",
     re.IGNORECASE)
 STAGE_TITLES = re.compile(
@@ -259,7 +266,8 @@ class Translator:
         leading = source[: len(source) - len(source.lstrip())]
         trailing = source[len(source.rstrip()) :]
         body = source.strip()
-        if not body or body in {"Bop It Access", "Bop It!"}:
+        if not body or body in {"Bop It Access", "Bop It!", "Prism"} or \
+                body in OUTPUT_MODE_LIST_LINES:
             return source
         if self.locale in CURATED_TOPICS and body in ENGLISH_TOPICS:
             position = ENGLISH_TOPICS.index(body)

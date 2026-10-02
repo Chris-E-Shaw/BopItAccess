@@ -1,10 +1,10 @@
 # Bop It Access
 
-Bop It Access 是 **Bop It!** 的 Windows Steam 版本的非官方辅助功能模组。它使用 MelonLoader 和 Tolk 向菜单和游戏屏幕添加语音和盲文反馈。目前的功能包括首次运行的欢迎屏幕、游戏内用户指南、语音标题和暂停屏幕、设置和控制、歌曲选择、最终分数和排行榜、成就、积分、按钮提示、带有回合前当前控制分配的点播教程文本以及四个阶段的描述。版本 0.8.1 遵循游戏选择的语言，并包含游戏提供的每种语言的指南。
+Bop It Access 是 **Bop It!** 的 Windows Steam 版本的非官方辅助功能模组。它使用 MelonLoader 和 [Prism](https://github.com/ethindp/prism) 将语音和盲文反馈添加到菜单和游戏屏幕。目前的功能包括首次运行的欢迎屏幕、游戏内用户指南、语音标题和暂停屏幕、设置和控制、歌曲选择、最终分数和排行榜、成就、积分、按钮提示、带有回合前当前控制分配的点播教程文本以及四个阶段的描述。版本 0.9.0 使用 Prism 进行语音和盲文输出。该模组遵循游戏选择的语言，并包含游戏提供的每种语言的指南。
 
 ## 项目状况
 
-该项目正处于早期开发阶段。该存储库包含源代码和技术文档。 **这里还没有编译的版本或 GitHub 版本。** 要使用此存储库中的 mod，请从源代码构建它并提供下面描述的 Tolk 运行时文件。
+该项目正处于早期开发阶段。该存储库包含源代码和技术文档。 **这里还没有编译的版本或 GitHub 版本。** 要使用此存储库中的 mod，请从源代码构建它并提供下面描述的 Prism 运行时。
 
 提交历史记录包括 37 个早期版本的重构源快照。当这些档案导入 Git 时，就会创建提交；他们的日期不是最初的构建日期。的 [技术构建历史](BopItAccess-build-history.html) 描述每个快照背后的工作。
 
@@ -13,7 +13,7 @@ Bop It Access 是 **Bop It!** 的 Windows Steam 版本的非官方辅助功能�
 - Windows x64 和您自己安装的 Bop It! 用于 Steam。
 - MelonLoader安装在游戏目录中。开发使用了 MelonLoader **0.7.3 Open-Beta** 和 x64 Unity **2022.3.50f1** 游戏版本。其他组合尚未得到验证。
 - 带有 **.NET 6 目标包** 的 .NET SDK，因为 mod 目标 `net6.0`.
-- 安装时，兼容64位 `Tolk.dll` 和 `nvdaControllerClient64.dll` 运行时文件。这些第三方二进制文件不在此存储库中。
+- 安装时，官方 Windows x64 Prism v0.18.3 `prism.dll`。此第三方二进制文件不在此存储库中。
 
 该mod引用了游戏目录下MelonLoader生成或安装的DLL。它不包含或重新分发游戏程序集。
 
@@ -39,21 +39,22 @@ Bop It Access 是 **Bop It!** 的 Windows Steam 版本的非官方辅助功能�
 ## 安装你的版本
 
 1. 关闭游戏。复制构建的 `BopItAccess.dll` 进入 `<game directory>\Mods\`。创建 `Mods` 目录（如果 MelonLoader 尚未创建）。
-2. 获取兼容的 64 位 `Tolk.dll` 来自可信来源或 [从上游 Tolk 源构建它](https://github.com/dkager/tolk#compiling)。获取匹配的 `nvdaControllerClient64.dll` 来自 [Tolk的x64库目录](https://github.com/dkager/tolk/tree/master/libs/x64) 或您的 Tolk 版本。将 **两个 DLL 放入游戏目录**，放在游戏可执行文件旁边，而不是放在里面 `Mods`.
+2. 从 [Prism 发布页面](https://github.com/ethindp/prism/releases)获取适用于 Windows x64 的官方 Prism v0.18.3 `prism.dll`，或从源代码构建相同版本。将 `prism.dll` 放在游戏主文件夹中，与游戏可执行文件放在一起，不要放进 `Mods` 文件夹。
 3. 复制整个构建 `src\bin\Release\net6.0\documentation\` 文件夹放入游戏目录。它包含其根部的英文指南和翻译后的指南 `fr`, `it`, `de`, `es`, `es-MX`, `ja`, `ko`, `zh`, 和 `pt-BR`。保留这些子文件夹和配套文档。游戏内指南每次打开时都会读取当前游戏语言的 HTML，因此替换指南会更新其内容，而无需重建 DLL。
-4. 如果您使用屏幕阅读器，请启动屏幕阅读器，然后启动 Bop It! 到 Steam。当没有支持的屏幕阅读器运行时，该 mod 可以使用 SAPI 语音。
+4. 如果使用屏幕阅读器，请先启动它，再通过 Steam 启动游戏。如果没有运行兼容的屏幕阅读器，Prism 可以使用 SAPI 语音。
 
-Bop It Access build命令仅编译此mod；它不会构建或下载 Tolk。如果语音未开始，请检查 `<game directory>\Mods\BopItAccess.log`。该日志记录了 Tolk 是否初始化并接受了语音请求，尽管仅凭这一点并不能证明听到了音频。
+Bop It Access build命令仅编译此mod；它不会构建或下载 Prism。如果语音未开始，请检查 `<game directory>\Mods\BopItAccess.log`。日志记录了 Prism 初始化和语音调度，但仅成功调度并不能证明听到了音频。
 
 首次运行时，游戏主菜单准备就绪后会出现欢迎屏幕。它的选择是打开模组设置、阅读游戏中的用户指南或继续游戏。 Mod 设置还提供 **打开用户指南** 和确认的 **重置欢迎屏幕** 操作，该操作会在下次启动时显示欢迎屏幕。在指南中，使用向上/向下选择主题或阅读行，然后使用确认打开主题。在表中，“左”向左移动一列，“右”向右移动一列，“向上/向下”在更改行时保留当前列。列标题标记单元格而不是显示为数据行；该表在进入时宣布，并在退出时结束。后面留下一个主题或指南。
 
 在游戏的 **设置 > 语言** 行中选择一种语言。 Mod 语音遵循该选择。游戏内指南使用匹配的翻译 HTML 文档，如果所选副本丢失或不可读，则使用英语作为后备。捆绑的非英语文本是机器翻译的第一遍；欢迎能说流利的人指正。
 
-mod使用游戏翻译的名字进行游戏游戏动作. Shapes,Space,City,Office作为固定舞台标题保留英语. 选中的语音输出需要您语言的声音 。 对于SAPI的输出,如果系统默认语音发出错误的声音,则选择适合您语言的安装语音.
+该模组使用游戏的翻译名称来执行游戏操作。 Shapes、Space、City 和 Office 保留英文作为固定舞台标题。所选语音输出需要适合您的语言的语音。对于 SAPI 输出，如果系统默认语音听起来不正确，请选择适合您语言的已安装语音。
 
 ## 文档
 
-- [游戏和模组用户指南](BopItAccess-user-guide.html) — 适合初学者的控制、设置、菜单和播放模式的演练。
+- [游戏和模组用户指南（英文）](BopItAccess-user-guide.html) — 适合初学者的控制、设置、菜单和播放模式的演练。
+- [日语用户指南（日本语）](../ja/BopItAccess-user-guide.html)。其他翻译的指南可在以下语言文件夹中找到 [`documentation/`](../).
 - [详细的功能和控制指南](README.txt)。它的安装部分描述了本地准备的安装 ZIP；此 GitHub 存储库仅提供源代码。
 - [技术构建历史](BopItAccess-build-history.html).
 - [此项目的 Git 工作流程](GIT-WORKFLOW.md).
@@ -67,4 +68,4 @@ Christopher Shaw 指导该项目并评估其在游戏中的可访问性。 OpenA
 
 ## 许可
 
-尚未选择 Bop It Access 源的许可证。 Tolk和NVDA控制器客户端有自己的许可证；看到 [第三方通知](THIRD-PARTY-NOTICES.txt)。 Bop It! 及其资产属于其各自所有者，不包含在此。
+尚未选择 Bop It Access 源的许可证。 Prism 有自己的许可证；看到 [第三方通知](THIRD-PARTY-NOTICES.txt)。 Bop It! 及其资产属于其各自所有者，不包含在此。

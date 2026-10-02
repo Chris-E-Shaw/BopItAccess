@@ -1,4 +1,4 @@
-Bop It Access 0.8.1 - Habla y documentación multilingüe
+Bop It Access 0.9.0 - Prism Habla y Braille
 
 ¿Qué hace esto?
 --------------
@@ -9,7 +9,7 @@ El idioma del juego también cambia los anuncios de modificaciones y la guía de
 Las traducciones iniciales son borradores generados automáticamente y necesitan revisión.
 por hablantes fluidos.
 La voz está activada de forma predeterminada. Cuando el mod se carga con la voz activada, anuncia
-"Bop It Access discurso está listo. El juego aún se está cargando. Espere a que aparezca la pantalla de título o el anuncio del menú principal antes de usar los controles". hasta Tolk. Si aparece la pantalla de título, el mod anuncia la entrada GOLPEAR actual para abrir el menú principal. se lee
+"Bop It Access discurso está listo. El juego aún se está cargando. Espere a que aparezca la pantalla de título o el anuncio del menú principal antes de usar los controles". hasta Prism. Si aparece la pantalla de título, el mod anuncia la entrada GOLPEAR actual para abrir el menú principal. se lee
 el botón del menú principal enfocado y la fila Configuración enfocada. Los valores de configuración son
 hablado con el nombre de la fila enfocado. Cambiar un valor mientras el foco permanece en eso
 La fila solo dice el nuevo valor. LATENCIA DE AUDIO, CONTROLES y CONECTARSE son acciones
@@ -38,17 +38,14 @@ anunciando el primer elemento enfocado en una pantalla de Configuración recién
 Debajo de Controles, Configuración ahora tiene un menú de CONFIGURACIÓN DE MOD. SALIDA DE VOZ utiliza el mismo
 interruptor maestro guardado como F8 o selección de controlador, incluida la recuperación hablada
 instrucciones cuando el habla está apagada. La SALIDA BRAILLE se activa y se guarda.
-entre sesiones. Cuando Tolk usa un lector de pantalla, el mod envía lo mismo
-expresión al habla y braille; cuando la SALIDA BRAILLE está desactivada, envía voz
-solamente. El discurso directo NVDA y SAPI también envía cada expresión por separado a través de
-API braille de Tolk cuando hay disponible un lector de pantalla compatible con braille.
-El MODO DE SALIDA comienza en Auto: el mod
-habla a través de un lector de pantalla detectado o usa SAPI cuando no hay ninguno en ejecución.
-SAPI se puede seleccionar directamente. El menú también incluye JAWS, Window-Eyes, NVDA,
-Acceso al sistema y ZoomText. La salida directa NVDA está disponible cuando NVDA está
-corriendo. Los otros lectores nombrados se utilizan cuando Tolk los detecta como activos
-conductor; Si el lector elegido no está disponible, el mod anuncia un respaldo SAPI.
-La compilación de 64 bits de Tolk no es compatible con SuperNova, por lo que no aparece en la lista.
+entre sesiones. Prism envía anuncios a un lector de pantalla compatible
+salida braille cuando esta configuración está activada. Al apagarlo se detiene el braille del mod.
+mensajes mientras deja la voz disponible.
+OUTPUT MODE comienza en Auto: utiliza a través de Prism un lector de pantalla compatible en ejecución y, si no hay ninguno, SAPI. OneCore se puede elegir por separado.
+Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
+Cada lector de pantalla y motor de voz solo estará disponible si lo admiten la versión de Prism instalada y el sistema del jugador. Si el modo elegido no está disponible, el mod cambia a una salida disponible y lo anuncia una sola vez.
+Los motores de Prism pueden poner en cola de forma diferente los avisos que no interrumpen la voz. Informe si los resultados o créditos se anuncian fuera de orden. Las voces SAPI guardadas se buscan por el nombre que muestra Prism; si varias comparten nombre, puede elegirse la primera.
 SILENCIAR LA VOZ EN FONDO es una opción guardada, desactivada de forma predeterminada. Cuando está habilitado,
 el mod deja de hablar tan pronto como el juego pierde el foco de la ventana. Discurso creado
 mientras el juego está en segundo plano se descarta y se reanudan los anuncios
@@ -111,7 +108,7 @@ sólo las sugerencias de ese dispositivo; Ambos proporcionan ambos conjuntos de 
 nombres. La recuperación de voz en off siempre incluye ambos dispositivos para que el
 El jugador puede encontrar el control que vuelve a activar la voz.
 
-Las sugerencias de botones colocan la entrada antes de su acción: "Entrar o Espacio, activar elemento".
+Las sugerencias de botones colocan la entrada antes de su acción: "Ingresar o Space, activar elemento".
 Las sugerencias para un solo dispositivo omiten el nombre del dispositivo. Se pronuncian los nombres de los sticks del controlador.
 en su totalidad, como "Stick izquierdo arriba y abajo". Ambos modos identifican el teclado
 y entradas del controlador. El mod lee los enlaces actuales del juego de forma nativa.
@@ -145,23 +142,8 @@ El menú MOD SETTINGS también tiene SAPI VOZ, SAPI VOLUMEN, SAPI VELOCIDAD y SA
 controles. SAPI Voice enumera las voces SAPI de 64 bits predeterminadas e instaladas del sistema.
 El volumen comienza en 100%; La velocidad y el tono comienzan en 50. El volumen oscila entre el 5 % y el 100 %.
 por lo que los avisos de recuperación SAPI siguen siendo audibles. La velocidad y el tono varían de 0 a 100.
-Los tres se mudan
-pasos de cinco. Se aplican al modo SAPI y al respaldo SAPI de Auto.
-La salida directa SAPI evita la enumeración de voz repetida para cambios numéricos,
-usa texto sin formato cuando el tono es neutral y omite lectores de pantalla innecesarios
-detección. El experimento anterior de silencio y ajuste permanece oculto e inactivo.
-Las nuevas mediciones de registro SAPI ubicaron la mayor parte del retraso de envío medido en
-el Windows SAPI COM Llamada hablada: las llamadas individuales tardaron entre 188 y 578 ms,
-mientras que la configuración de voz inicial tardó entre 375 y 609 ms. Envío separado en braille
-normalmente era de 0 a 16 ms. El mod ahora prepara el modo alternativo SAPI en
-el trabajador del habla mientras el juego se carga y registra el tiempo de la cola para distinguir
-esperando al trabajador desde la hora de despacho. Un primer anuncio después directamente
-Al seleccionar SAPI aún se puede incluir la configuración de voz. Estos tiempos no miden
-cuando el sonido se vuelve audible, lo que también depende de la voz instalada y
-sistema de audio.
-La salida braille separada con SAPI ahora almacena en caché las comprobaciones de capacidad Tolk para uno
-segundo. Si el envío SAPI es lento, el registro registra la configuración de voz, hablar,
-y tiempos de envío en braille.
+Los tres se mueven en pasos de cinco. Se aplican cuando Prism utiliza SAPI directamente o como
+el retroceso automático. El experimento anterior de silencio y ajuste permanece oculto e inactivo.
 Las opciones de configuración de mod se recuerdan entre sesiones. RESTAURAR LOS VALORES PREDETERMINADOS DEL MOD
 devuelve esas opciones a los valores predeterminados descritos anteriormente. Presiónelo una vez para solicitar
 confirmación, luego presiónelo nuevamente dentro de cinco segundos para restaurarlos. mudanza
@@ -194,7 +176,7 @@ liberado antes de aceptar una solicitud de nueva vinculación.
 
 Dentro de Play, el mod lee Solo, Party, Pass It y One on One cuando está enfocado.
 En la siguiente pantalla de selección de canción, anuncia el tema actual.
-(Formas, Espacio, Ciudad u Oficina) y si el modo Extremo está activado. Girando hacia
+(Shapes, Space, City o Office) y si el modo Extremo está activado. Girando hacia
 cambiar la cancion habla solo el nuevo tema. Tirar para cambiar la dificultad habla.
 sólo el nuevo estado Extremo. La introducción de la pantalla también explica el RETORCER,
 TIRAR, GOLPEAR y acciones Atrás.
@@ -208,7 +190,7 @@ las ataduras del jugador activo; Uno a uno nombra las GOLPEAR entradas de ambos 
 La superposición del tutorial cronometrado durante el juego activo permanece silenciosa para que no pueda ocultarse.
 los comandos hablados del juego. La pista anuncia este uso adicional de SPEAK HINTS.
 El control LEER DESCRIPCIONES pronuncia una descripción visual del elemento seleccionado.
-Escenario de Formas, Espacio, Ciudad u Oficina bajo demanda. Está disponible en esta pantalla.
+Shapes, Space, City o Office etapa bajo demanda. Está disponible en esta pantalla.
 solamente, antes de que comience el juego. Sus entradas predeterminadas son G en el teclado y LT.
 (gatillo izquierdo) en el controlador. R fue reemplazada porque es el reinicio del juego.
 Atajo giroscópico. La introducción de la pantalla anuncia el enlace actual.
@@ -281,8 +263,10 @@ El mod expone una fila RESET GYRO nativa y agrega una SALIDA DE VOZ DE CAMBIO
 atajo. Reset Gyro se encuentra con los controles del juego; las filas específicas del mod
 permanecen juntos en la parte inferior del menú, antes de Restablecer los valores predeterminados. CAMBIAR
 SALIDA DE VOZ recorre los mismos modos que Configuración > Configuración de Mod > SALIDA
-MODO: Automático, SAPI, JAWS, Window-Eyes, NVDA, Acceso al sistema y ZoomText. su
-Las entradas predeterminadas son F9 en el teclado y el botón de la cara oeste (X en una Xbox
+MODO. El orden de los modos es:
+Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
+Las entradas predeterminadas del atajo son F9 en el teclado y el botón de la cara oeste (X en una Xbox
 controlador). El botón Inicio del controlador está reservado para el nativo del juego.
 Acción del menú. La elección actual se anuncia cuando se utiliza el acceso directo y
 se guarda con la misma configuración del Modo de salida.
@@ -335,25 +319,22 @@ elemento sin darle Unity Es posible que el enfoque de la interfaz de usuario no 
 
 Instalar
 -------
-1. Cierre Bop It! si se está ejecutando.
-2. Extraiga todos los archivos de este ZIP en la carpeta del juego Bop It!:
-   C:\Program Files (x86)\Steam\steamapps\common\Bop It!
-   Permita que Windows reemplace Mods\BopItAccess.dll y fusione los Mods y
-   carpetas de documentación.
-3. Inicie su lector de pantalla, luego inicie Bop It! a Steam como de costumbre.
-
-MelonLoader ya debe estar instalado. El ZIP incluye Mods\BopItAccess.dll,
-documentation\BopItAccess-user-guide.html, todas las subcarpetas de idiomas traducidas,
-y sus documentos complementarios,
-Tolk.dll y nvdaControllerClient64.dll. La guía del juego carga el HTML
-desde esa carpeta de documentación cada vez que se abre. Este mod fue creado para los instalados.
-MelonLoader 0.7.3 Open-Beta y Bop It! (Unity 2022.3.50f1, x64).
+El repositorio de origen no contiene ningún mod compilado ni DLL Prism. Construye el mod por
+siguiendo README.md, luego cierra el juego y copia BopItAccess.dll en sus Mods
+carpeta. Obtenga el oficial Windows x64 Prism v0.18.3 prism.dll de
+https://github.com/ethindp/prism/releases y colóquelo al lado del ejecutable del juego,
+no dentro de Mods. Copie la carpeta de documentación de la compilación en la carpeta del juego,
+incluidas sus subcarpetas de idioma traducido. Inicie su lector de pantalla si
+use uno, luego inicie Bop It! a Steam. Prism puede usar SAPI cuando sea compatible
+El lector de pantalla no se está ejecutando. La guía del juego carga el HTML desde el
+carpeta de documentación cada vez que se abre. Este mod fue desarrollado para MelonLoader
+0.7.3 Open-Beta y Bop It! (Unity 2022.3.50f1, x64).
 Las primeras traducciones no inglesas se realizaron con traducción automática.
 y necesita revisión por parte de hablantes fluidos. Por favor informe redacción poco clara o incorrecta.
-Los nombres de acción Gameplay usan los términos traducidos del juego. Shapes, Space, City,
-y Office restantes Inglés como títulos de escenario fijo. Si la voz del sistema SAPI lo hace
+Los nombres de las acciones del juego utilizan los términos traducidos del juego. Shapes, Space, City,
+y Office siguen siendo en inglés como títulos escénicos fijos. Si la voz del sistema SAPI no
 no pronuncia bien su idioma, seleccione una voz instalada adecuada en Mod
-Ajustes.
+Configuración.
 
 Prueba los menús y pantallas.
 -------------------------
@@ -399,17 +380,15 @@ entrada. Abra Créditos y use Arriba y Abajo para leer sus líneas independiente
 desplazamiento visual.
 
 Si falta la voz, marca Mods\BopItAccess.log en la carpeta del juego. Se graba
-detección del panel, objetos de la interfaz de usuario seleccionados y si Tolk aceptó anuncios.
-Tolk la aceptación no prueba por sí sola que el habla fuera audible.
+detección de panel, objetos de interfaz de usuario seleccionados e inicialización y envío de Prism.
+El envío exitoso no prueba por sí solo que el habla fuera audible.
 
 Para deshabilitar el mod, elimine Mods\BopItAccess.dll. y MelonLoader puede permanecer instalado.
 
 Archivos y avisos de terceros
 -----------------------------
-Tolk es una biblioteca de accesibilidad de código abierto de Christopher T. D. Kager. esto
-El paquete incluye Tolk.dll y nvdaControllerClient64.dll de una compilación pública.
-paquete, sin modificar esos binarios. Tolk tiene licencia bajo la versión GNU LGPL
-3; Los textos adjuntos de las licencias GNU LGPL y GNU GPL están en
-LICENCIAS DE TERCEROS. Tolk fuente y licencia: https://github.com/dkager/tolk
-
-La fuente del mod Bop It Access se encuentra en el archivo ZIP de fuente independiente.
+Prism es una biblioteca de accesibilidad de código abierto creada por Ethan Dupuy y sus colaboradores.
+Tiene la licencia pública de Mozilla, versión 2.0. Esta fuente
+El repositorio no incluye prism.dll. Fuente, versiones y licencia:
+https://github.com/ethindp/prism
+Ver THIRD-PARTY-NOTICES.txt para conocer los avisos de dependencia vigentes.
