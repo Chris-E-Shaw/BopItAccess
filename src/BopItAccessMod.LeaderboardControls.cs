@@ -35,6 +35,7 @@ public sealed partial class BopItAccessMod
 
     public override void OnUpdate()
     {
+        UpdateFirstRunNativeAudioDefaults();
         UpdateBackgroundAudio();
         UpdateFpsLimitSetting();
         InitializeSpeechToggleOnMainThread();

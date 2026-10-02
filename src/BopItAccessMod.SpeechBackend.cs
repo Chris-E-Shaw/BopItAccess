@@ -42,10 +42,10 @@ public sealed partial class BopItAccessMod
     private bool _muteSpeechInBackground;
     // Zero includes hints in ordinary menu announcements. Timed hints use
     // one of the positive delay options instead.
-    private int _buttonHintsDelaySeconds;
+    private int _buttonHintsDelaySeconds = 10;
     // Zero means no repeats; -1 repeats indefinitely.
-    private int _repeatButtonHintsCount;
-    private int _repeatButtonHintsIntervalSeconds = 15;
+    private int _repeatButtonHintsCount = -1;
+    private int _repeatButtonHintsIntervalSeconds = 30;
     private List<SpeechVoiceOption> _sapiVoices = new();
     private int _sapiSettingsVersion;
     // Incremented by the main thread when an interrupting request supersedes
@@ -95,16 +95,16 @@ public sealed partial class BopItAccessMod
             // Preserve the delay existing users selected in version 0.6.2.
             // A new delay preference takes priority after they change it.
             int savedHintsDelay = PlayerPrefs.HasKey(ButtonHintsDelayPreferenceKey)
-                ? PlayerPrefs.GetInt(ButtonHintsDelayPreferenceKey, 0)
-                : PlayerPrefs.GetInt(LegacyRepeatButtonHintsPreferenceKey, 0);
+                ? PlayerPrefs.GetInt(ButtonHintsDelayPreferenceKey, 10)
+                : PlayerPrefs.GetInt(LegacyRepeatButtonHintsPreferenceKey, 10);
             _buttonHintsDelaySeconds = savedHintsDelay is 0 or 5 or 10 or 15 or 30 or 60
-                ? savedHintsDelay : 0;
-            int savedRepeatCount = PlayerPrefs.GetInt(RepeatButtonHintsCountPreferenceKey, 0);
+                ? savedHintsDelay : 10;
+            int savedRepeatCount = PlayerPrefs.GetInt(RepeatButtonHintsCountPreferenceKey, -1);
             _repeatButtonHintsCount = savedRepeatCount is 0 or 2 or 3 or 4 or 5 or -1
-                ? savedRepeatCount : 0;
-            int savedRepeatInterval = PlayerPrefs.GetInt(RepeatButtonHintsIntervalPreferenceKey, 15);
+                ? savedRepeatCount : -1;
+            int savedRepeatInterval = PlayerPrefs.GetInt(RepeatButtonHintsIntervalPreferenceKey, 30);
             _repeatButtonHintsIntervalSeconds = savedRepeatInterval is 15 or 30 or 45 or 60
-                ? savedRepeatInterval : 15;
+                ? savedRepeatInterval : 30;
             int savedTrimSilence = PlayerPrefs.GetInt(SapiTrimSilencePreferenceKey, 0);
             _trimSilence = TrimSilenceExperimentAvailable && savedTrimSilence != 0;
             if (!TrimSilenceExperimentAvailable && savedTrimSilence != 0)

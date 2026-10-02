@@ -5,18 +5,18 @@ namespace BopItAccess;
 public sealed partial class BopItAccessMod
 {
     private const string ReadControlTypesPreferenceKey = "BopItAccess.ReadControlTypes";
-    private bool _readControlTypesEnabled;
+    private bool _readControlTypesEnabled = true;
 
     private void InitializeReadControlTypesPreferenceOnMainThread()
     {
         try
         {
             _readControlTypesEnabled =
-                PlayerPrefs.GetInt(ReadControlTypesPreferenceKey, 0) != 0;
+                PlayerPrefs.GetInt(ReadControlTypesPreferenceKey, 1) != 0;
         }
         catch (Exception ex)
         {
-            _readControlTypesEnabled = false;
+            _readControlTypesEnabled = true;
             WriteStatus("Could not read the control-type preference: " + ex.Message);
         }
     }

@@ -5,17 +5,17 @@ namespace BopItAccess;
 public sealed partial class BopItAccessMod
 {
     private const string IndexingPreferenceKey = "BopItAccess.Indexing";
-    private bool _indexingEnabled;
+    private bool _indexingEnabled = true;
 
     private void InitializeIndexingPreferenceOnMainThread()
     {
         try
         {
-            _indexingEnabled = PlayerPrefs.GetInt(IndexingPreferenceKey, 0) != 0;
+            _indexingEnabled = PlayerPrefs.GetInt(IndexingPreferenceKey, 1) != 0;
         }
         catch (Exception ex)
         {
-            _indexingEnabled = false;
+            _indexingEnabled = true;
             WriteStatus("Could not read the indexing preference: " + ex.Message);
         }
     }

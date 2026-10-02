@@ -71,7 +71,7 @@
       <li><a href="#install">Get and install the mod</a></li>
       <li><a href="#controls">Complete control reference</a></li>
       <li><a href="#first-launch">Your first launch</a></li>
-      <li><a href="#speech-options">Speech menu settings</a></li>
+      <li><a href="#speech-options">Mod Settings menu</a></li>
       <li><a href="#menu-guide">Menu guide</a></li>
       <li><a href="#main-menu">Main menu</a></li>
       <li><a href="#play-menu">Play menu</a></li>
@@ -118,7 +118,7 @@
   <section id="features">
     <h2>Accessibility features</h2>
     <ul>
-      <li>Speech for the title screen, main menu, Play and song selection, Settings and Controls, speech settings, audio calibration, leaderboards, the in-game achievements book, credits, pause menu, and result screens.</li>
+      <li>Speech for the title screen, main menu, Play and song selection, Settings and Controls, Mod Settings, audio calibration, leaderboards, the in-game achievements book, credits, pause menu, and result screens.</li>
       <li>Focused buttons, sliders, toggles, names, values, and changed values are announced. Optional indexing, control-type labels, slider ranges, and capitalization filtering let you tune the detail.</li>
       <li>Score or winner speech at game over, followed by queued menu speech, plus a Read Score shortcut on the results screen only.</li>
       <li>Four stage descriptions, spoken on request from the song-selection screen before play begins.</li>
@@ -136,7 +136,7 @@
     <ul>
       <li>A saved Limit FPS setting with 30, 60, 120, 240, and Unlimited options. The default is 60.</li>
       <li>Separate options to mute game audio or mod speech when the game window is in the background.</li>
-      <li>A Change Speech Output shortcut that cycles through the same modes as the Speech menu.</li>
+      <li>A Change Speech Output shortcut that cycles through the same modes as the Mod Settings menu.</li>
       <li>Saved preferences across game sessions, including speech output, braille, hints, and the frame-rate cap.</li>
       <li>More controls available for remapping in the game's own Controls menu, with duplicate assignments rejected.</li>
     </ul>
@@ -216,7 +216,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
         <tr><th scope="row">Read Score</th><td>Repeat the final score, or winner in One-on-One, on the results screen only.</td><td>T</td><td>Left stick press</td><td>Yes</td></tr>
         <tr><th scope="row">Toggle Speech</th><td>Turn all ordinary mod speech off or back on; the setting is saved.</td><td>F8</td><td>Select / Back / View</td><td>Yes</td></tr>
         <tr><th scope="row">Speak Hints</th><td>Read the current screen's button hints when available. On song selection, also read the game's tutorial text for the current mode and difficulty before starting.</td><td>H</td><td>Right stick press</td><td>Yes</td></tr>
-        <tr><th scope="row">Change Speech Output</th><td>Cycle the same output choices as Speech &gt; Output Mode.</td><td>F9</td><td>West face button (X on Xbox)</td><td>Yes</td></tr>
+        <tr><th scope="row">Change Speech Output</th><td>Cycle the same output choices as Mod Settings &gt; Output Mode.</td><td>F9</td><td>West face button (X on Xbox)</td><td>Yes</td></tr>
         <tr><th scope="row">Invincible (native extra)</th><td>An assist or development action named in the game's input map; its player-facing effect has not been verified.</td><td>Shift+I</td><td>Right bumper + West face button</td><td>No separate row</td></tr>
         <tr><th scope="row">AutoPlay (native extra)</th><td>An assist or development action named in the game's input map; its player-facing effect has not been verified.</td><td>Shift+A</td><td>Right bumper + right trigger</td><td>No separate row</td></tr>
         <tr><th scope="row">Debug Menu (native extra)</th><td>A diagnostic action named in the game's input map; its player-facing effect has not been verified.</td><td>Shift+X</td><td>Right bumper + right stick press</td><td>No separate row</td></tr>
@@ -234,10 +234,11 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
     <h2>Your first launch</h2>
     <ol>
       <li>Start your screen reader if you use one. Launch Bop It! through Steam after installing MelonLoader, the mod DLL, and the required Tolk runtime files.</li>
+      <li>On your first-ever use of the mod, the game's Music, SFX, and Voice Over volumes start at 30. If you are upgrading, your saved game audio levels stay as they were.</li>
       <li>Wait for the announcement: <q>Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls.</q> The mod becomes ready before the game finishes loading.</li>
       <li>Wait several more seconds for the title screen or main menu announcement. Inputs may do nothing during loading. If you hear the title screen prompt, press Bop (Space by default, or your controller's confirm button) to open the main menu. Once a menu item such as Play is read, move with Up/Down and confirm with Enter, Space, or controller confirm.</li>
       <li>If you previously turned speech off, the saved setting stays off. The mod gives a spoken recovery message at startup with the current keyboard and controller binding for Toggle Speech. By default, press F8 or controller Select to turn it on again.</li>
-      <li>For a comfortable first visit, open Settings &gt; Speech and choose your speech, braille, and hint preferences. You can press H or right stick press for available button hints on a supported menu.</li>
+      <li>For a comfortable first visit, open Settings &gt; Mod Settings and choose your speech, braille, and hint preferences. You can press H or right stick press for available button hints on a supported menu.</li>
     </ol>
     <div class="planned">
       <h3>First-time welcome dialogue (planned, not yet in the game)</h3>
@@ -246,30 +247,31 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
   </section>
 
   <section id="speech-options">
-    <h2>Speech menu settings</h2>
-    <p>Open <strong>Settings &gt; Speech</strong>. Move through the rows with your menu Up/Down control. Confirm a toggle or button; use Left/Right to change a slider. The defaults below are for a new setup. Changes are remembered between sessions. If speech is off, Toggle Speech still works, and the Speech Output row uses that same master switch.</p>
+    <h2>Mod Settings menu</h2>
+    <p>Open <strong>Settings &gt; Mod Settings</strong>. Move through the rows with your menu Up/Down control. Confirm a toggle or button; use Left/Right to change a slider. The defaults below are for a new setup. Changes are remembered between sessions. If speech is off, Toggle Speech still works, and the Speech Output row uses that same master switch.</p>
     <div class="table-scroll"><table>
-      <caption>Every current Speech menu row, in menu order</caption>
+      <caption>Every current Mod Settings row, in menu order</caption>
       <thead><tr><th scope="col">Setting</th><th scope="col">Choices / default</th><th scope="col">What it does</th></tr></thead>
       <tbody>
         <tr><th scope="row">Speech Output</th><td>On / Off; <strong>On</strong></td><td>Master switch for mod speech. Turning it off gives a final spoken recovery instruction with both current device bindings. Turning it back on announces that speech is on.</td></tr>
         <tr><th scope="row">Braille Output</th><td>On / Off; <strong>On</strong></td><td>Sends the same announcements to a compatible screen reader's braille output. A connected braille display or NVDA's Braille Viewer can show them.</td></tr>
         <tr><th scope="row">Mute Speech in Background</th><td>On / Off; <strong>Off</strong></td><td>When on, stops and discards mod speech while another window has focus.</td></tr>
-        <tr><th scope="row">Indexing</th><td>On / Off; <strong>Off</strong></td><td>Adds an item's position, such as “Play, 1 of 6,” across supported menus.</td></tr>
+        <tr><th scope="row">Indexing</th><td>On / Off; <strong>On</strong></td><td>Adds an item's position, such as “Play, 1 of 6,” across supported menus.</td></tr>
         <tr><th scope="row">Filter Capitalisation</th><td>On / Off; <strong>On</strong></td><td>Changes all-capitals text to natural sentence case for speech and braille only. The game's visible lettering stays as designed.</td></tr>
-        <tr><th scope="row">Read Control Types</th><td>On / Off; <strong>Off</strong></td><td>Adds labels such as “button,” “toggle,” or “slider” to focused controls.</td></tr>
+        <tr><th scope="row">Read Control Types</th><td>On / Off; <strong>On</strong></td><td>Adds labels such as “button,” “toggle,” or “slider” to focused controls.</td></tr>
         <tr><th scope="row">Slider Ranges</th><td>On / Off; <strong>Off</strong></td><td>Reads a focused slider's available endpoints, such as “range 0 to 100.” Changing it still reads just the new value.</td></tr>
-        <tr><th scope="row">One-on-One Feedback</th><td>On / Off; <strong>Off</strong></td><td>Speaks the active Green or Yellow colour and the remaining life count when a life is lost or gained in One-on-One.</td></tr>
+        <tr><th scope="row">One-on-One Feedback</th><td>On / Off; <strong>On</strong></td><td>Speaks the active Green or Yellow colour and the remaining life count when a life is lost or gained in One-on-One.</td></tr>
         <tr><th scope="row">Hints Type</th><td>Automatic, Keyboard, Controller, Both; <strong>Automatic</strong></td><td>Chooses which device's controls the hints describe. Automatic follows the last used keyboard or controller input. Both names each device explicitly.</td></tr>
         <tr><th scope="row">Auto-Speak Button Hints</th><td>On / Off; <strong>On</strong></td><td>Controls automatic hints. The Speak Hints shortcut still works on demand when this is off.</td></tr>
-        <tr><th scope="row">Button Hints Delay</th><td>None, 5, 10, 15, 30, 60 seconds; <strong>None</strong></td><td>None puts the hint after the focused item's announcement, in one speech string. A timed choice waits for inactivity before the first separate hint. Moving focus or changing a setting starts the wait again. The 5-second choice may interrupt speech already in progress.</td></tr>
-        <tr><th scope="row">Repeat Button Hints</th><td>Off, 2x, 3x, 4x, 5x, Infinitely; <strong>Off</strong></td><td>Sets the total number of times to hear a hint in one cycle. “2x” means the first reading plus one repeat.</td></tr>
-        <tr><th scope="row">Repeat Interval</th><td>15, 30, 45, 60 seconds; <strong>15 seconds</strong></td><td>Time between the repeat readings above. Speaking a hint on demand replaces the pending first automatic hint but still allows configured repeats.</td></tr>
+        <tr><th scope="row">Button Hints Delay</th><td>None, 5, 10, 15, 30, 60 seconds; <strong>10 seconds</strong></td><td>None puts the hint after the focused item's announcement, in one speech string. A timed choice waits for inactivity before the first separate hint. Moving focus or changing a setting starts the wait again. The 5-second choice may interrupt speech already in progress.</td></tr>
+        <tr><th scope="row">Repeat Button Hints</th><td>Off, 2x, 3x, 4x, 5x, Infinitely; <strong>Infinitely</strong></td><td>Sets the total number of times to hear a hint in one cycle. “2x” means the first reading plus one repeat.</td></tr>
+        <tr><th scope="row">Repeat Interval</th><td>15, 30, 45, 60 seconds; <strong>30 seconds</strong></td><td>Time between the repeat readings above. Speaking a hint on demand replaces the pending first automatic hint but still allows configured repeats.</td></tr>
         <tr><th scope="row">Output Mode</th><td>Auto, SAPI, JAWS, Window-Eyes, NVDA, System Access, ZoomText; <strong>Auto</strong></td><td>Auto uses a detected screen reader and falls back to SAPI. A named reader must be available; an unavailable choice falls back to SAPI. This is also controlled by Change Speech Output.</td></tr>
         <tr><th scope="row">SAPI Voice</th><td>System default or installed 64-bit SAPI voices; <strong>System default</strong></td><td>Chooses the Windows voice used for direct SAPI or Auto's SAPI fallback.</td></tr>
-        <tr><th scope="row">SAPI Volume</th><td>5–100 in steps of 5; <strong>100</strong></td><td>Adjusts SAPI speech loudness. The minimum stays above zero so recovery messages remain audible.</td></tr>
+        <tr><th scope="row">SAPI Volume</th><td>5%–100% in steps of 5; <strong>100%</strong></td><td>Adjusts SAPI speech loudness. The minimum stays above zero so recovery messages remain audible.</td></tr>
         <tr><th scope="row">SAPI Rate</th><td>0–100 in steps of 5; <strong>50</strong></td><td>Adjusts SAPI speaking speed.</td></tr>
         <tr><th scope="row">SAPI Pitch</th><td>0–100 in steps of 5; <strong>50</strong></td><td>Adjusts SAPI voice pitch.</td></tr>
+        <tr><th scope="row">Restore Mod Defaults</th><td>Button</td><td>Press once to request confirmation, then press again within five seconds to restore the Mod Settings defaults above. Moving to another row or waiting five seconds cancels the request. It does not change the game's Music, SFX, or Voice Over volumes, Limit FPS, or custom keyboard and controller bindings.</td></tr>
         <tr><th scope="row">Back</th><td>Button</td><td>Return to Settings.</td></tr>
       </tbody>
     </table></div>
@@ -340,9 +342,9 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
       <caption>Settings rows in their current menu order</caption>
       <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
       <tbody>
-        <tr><th scope="row">Music</th><td>Adjust the game's music volume.</td></tr>
-        <tr><th scope="row">SFX</th><td>Adjust sound-effect volume.</td></tr>
-        <tr><th scope="row">Voice Over</th><td>Adjust the game's spoken command voice volume. Be careful not to make this too quiet for play.</td></tr>
+        <tr><th scope="row">Music</th><td>Adjust the game's music volume. Starts at 30 on first-ever mod use.</td></tr>
+        <tr><th scope="row">SFX</th><td>Adjust sound-effect volume. Starts at 30 on first-ever mod use.</td></tr>
+        <tr><th scope="row">Voice Over</th><td>Adjust the game's spoken command voice volume. Starts at 30 on first-ever mod use; keep it audible for play.</td></tr>
         <tr><th scope="row">Mute Audio in Background</th><td>When on, silence game audio while another window has focus; restore it when you return. Off by default.</td></tr>
         <tr><th scope="row">Language</th><td>Choose an available game language.</td></tr>
         <tr><th scope="row">Vibration</th><td>Turn compatible controller vibration on or off.</td></tr>
@@ -351,7 +353,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
         <tr><th scope="row">Limit FPS</th><td>Cap frame rate at 30, 60, 120, or 240, or choose Unlimited. Default: 60. See the <a href="#limitations">timing note</a>.</td></tr>
         <tr><th scope="row">Audio Latency</th><td>Open the calibration screen to align the game's timing with what you hear.</td></tr>
         <tr><th scope="row">Controls</th><td>Review and reassign the game's exposed controls and added mod controls.</td></tr>
-        <tr><th scope="row">Speech</th><td>Open the mod's speech, braille, and hint preferences, listed in full <a href="#speech-options">above</a>.</td></tr>
+        <tr><th scope="row">Mod Settings</th><td>Open the mod's speech, braille, and hint preferences, listed in full <a href="#speech-options">above</a>.</td></tr>
         <tr><th scope="row">Go Online, when available</th><td>Connect to the game's online features when this option is shown.</td></tr>
         <tr><th scope="row">Back</th><td>Return to the main menu.</td></tr>
       </tbody>
@@ -525,7 +527,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 
     <section id="one-on-one-mode">
       <h3>One-on-One</h3>
-      <p>One-on-One puts two players, <strong>Yellow</strong> and <strong>Green</strong>, into the same round. Each begins with <strong>three lives</strong>. Yellow responds to Twist and Pull; Green responds to Spin and Flick. Bop is a shared race: both players should be ready, and the first to hit Bop gains a life, up to the game's three-life limit. The game provides subtle sounds for some changes. If you turn on Settings &gt; Speech &gt; One-on-One Feedback, the mod announces the starting or changing active colour and the number of lives after a loss or gain.</p>
+      <p>One-on-One puts two players, <strong>Yellow</strong> and <strong>Green</strong>, into the same round. Each begins with <strong>three lives</strong>. Yellow responds to Twist and Pull; Green responds to Spin and Flick. Bop is a shared race: both players should be ready, and the first to hit Bop gains a life, up to the game's three-life limit. The game provides subtle sounds for some changes. With Settings &gt; Mod Settings &gt; One-on-One Feedback on (the default), the mod announces the starting or changing active colour and the number of lives after a loss or gain.</p>
       <p><strong>How a round ends:</strong> Missing a required command costs the responsible player a life. The first player whose lives reach zero loses, and the other colour wins. Unlike Solo, Party, and Pass It, the result is a <strong>winner, not a numeric final score</strong>. The mod announces the winning colour at game over; Read Score repeats that result while the result screen is visible. The optional life announcements are for this mode only.</p>
       <p><strong>Getting ready together:</strong> Agree which person is Yellow and which is Green before starting. Check the current Controls screen, especially the second Bop assignment, if you will share one input device. One-on-One is fast, so a practice round can help both players learn their controls.</p>
     </section>
@@ -555,6 +557,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
       <thead><tr><th scope="col">Component</th><th scope="col">Why it matters</th><th scope="col">License / notice</th></tr></thead>
       <tbody>
         <tr><th scope="row"><a href="https://github.com/LavaGang/MelonLoader">MelonLoader</a></th><td>Loads the mod into the Unity game.</td><td><a href="https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md">Apache License 2.0</a>; distributed separately from this source repository.</td></tr>
+        <tr><th scope="row">Harmony (<code>0Harmony.dll</code>)</th><td>Lets the mod detect when the game's saved settings finish loading, so first-use audio levels are applied afterward.</td><td>Supplied with the separately installed MelonLoader; consult its accompanying notices. Not included in this source repository or the local mod package.</td></tr>
         <tr><th scope="row"><a href="https://github.com/dkager/tolk">Tolk</a></th><td>Connects the mod to screen readers and braille APIs.</td><td><a href="https://github.com/dkager/tolk/blob/master/LICENSE.txt">GNU LGPL version 3</a>; credit to the Tolk contributors.</td></tr>
         <tr><th scope="row"><a href="https://github.com/nvaccess/nvda/tree/master/extras/controllerClient">NVDA Controller Client</a></th><td>The <code>nvdaControllerClient64.dll</code> native library used with Tolk.</td><td><a href="https://github.com/nvaccess/nvda/blob/master/extras/controllerClient/license.txt">GNU LGPL version 2.1</a>; credit to NV Access and contributors.</td></tr>
         <tr><th scope="row"><a href="https://dotnet.microsoft.com/">.NET 6</a></th><td>The mod targets the .NET 6 framework and needs the matching targeting pack to build.</td><td><a href="https://github.com/dotnet/core/blob/main/license-information.md">Microsoft's .NET license information</a> distinguishes MIT-licensed source from Windows runtime distributions under the .NET Library License.</td></tr>
@@ -578,7 +581,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
   </section>
 </main>
 <footer>
-  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.6.15; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
+  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.6.16; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
 </footer>
 </body>
 </html>

@@ -1,5 +1,10 @@
 Bop It Access uses these third-party runtime libraries:
 
+0Harmony.dll - Harmony patching library supplied by the separately installed
+MelonLoader. Bop It Access uses it to observe when the game's settings finish
+loading on the first mod run. The source and local install packages do not
+include this DLL; consult the notices supplied with MelonLoader.
+
 Tolk.dll — Tolk screen-reader abstraction library by Davy Kager and contributors.
 Project and source: https://github.com/dkager/tolk
 License: GNU Lesser General Public License, version 3.

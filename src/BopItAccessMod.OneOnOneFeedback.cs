@@ -10,7 +10,7 @@ public sealed partial class BopItAccessMod
 
     private enum OneOnOneColour { Yellow, Green }
 
-    private bool _oneOnOneFeedbackEnabled;
+    private bool _oneOnOneFeedbackEnabled = true;
     private GameManager? _oneOnOneFeedbackGame;
     private GameUIManager? _oneOnOneFeedbackUi;
     private int _oneOnOneFeedbackGameId;
@@ -27,11 +27,11 @@ public sealed partial class BopItAccessMod
         try
         {
             _oneOnOneFeedbackEnabled =
-                PlayerPrefs.GetInt(OneOnOneFeedbackPreferenceKey, 0) != 0;
+                PlayerPrefs.GetInt(OneOnOneFeedbackPreferenceKey, 1) != 0;
         }
         catch (Exception ex)
         {
-            _oneOnOneFeedbackEnabled = false;
+            _oneOnOneFeedbackEnabled = true;
             WriteStatus("Could not read one-on-one feedback preference: " + ex.Message);
         }
 

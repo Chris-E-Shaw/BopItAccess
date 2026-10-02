@@ -41,6 +41,7 @@ public sealed partial class BopItAccessMod
     private SettingsSlider? _speechVolumeSlider;
     private SettingsSlider? _speechRateSlider;
     private SettingsSlider? _speechPitchSlider;
+    private SettingsButton? _restoreModDefaultsButton;
     private UnityAction? _speechOutputSubmitListener;
     private UnityAction? _brailleOutputSubmitListener;
     private UnityAction? _muteSpeechInBackgroundSubmitListener;
@@ -52,6 +53,7 @@ public sealed partial class BopItAccessMod
     private UnityAction? _readButtonHintsSubmitListener;
     private UnityAction? _trimSilenceSubmitListener;
     private UnityAction? _speechBackSubmitListener;
+    private UnityAction? _restoreModDefaultsSubmitListener;
     private UnityAction<int>? _speechModeMoveListener;
     private UnityAction<int>? _hintsTypeMoveListener;
     private UnityAction<int>? _buttonHintsDelayMoveListener;
@@ -68,6 +70,10 @@ public sealed partial class BopItAccessMod
     private bool _speechMenuInputReady;
     private int _lastSpeechMenuRowId;
     private string? _lastSpeechMenuValue;
+    private long _restoreModDefaultsConfirmUntil;
+    private int _restoreModDefaultsFirstFrame;
+    private int _restoreModDefaultsLastActivationFrame = -1;
+    private bool _restoreModDefaultsInputReleased;
     private static readonly int[] ButtonHintsDelayOptions = { 0, 5, 10, 15, 30, 60 };
     private static readonly int[] RepeatButtonHintsOptions = { 0, 2, 3, 4, 5, -1 };
     private static readonly int[] RepeatButtonHintsIntervalOptions = { 15, 30, 45, 60 };
@@ -93,9 +99,10 @@ public sealed partial class BopItAccessMod
                 _mainMenu.panels.Peek().GetInstanceID() != _speechMenuPanel.GetInstanceID())
             {
                 if (Environment.TickCount64 - _speechMenuOpenedAt < 500)
-                    WriteStatus("Speech settings menu left the panel stack immediately after opening.");
+                    WriteStatus("Mod Settings menu left the panel stack immediately after opening.");
                 _speechMenuOpen = false;
                 _speechMenuInputReady = false;
+                CancelRestoreModDefaultsConfirmation();
                 ResetSpeechMenuFocus();
             }
             else
@@ -108,6 +115,14 @@ public sealed partial class BopItAccessMod
                     if (_speechOutputToggle != null &&
                         (selected == null || !selected.transform.IsChildOf(_speechMenuRoot.transform)))
                         EventSystem.current?.SetSelectedGameObject(_speechOutputToggle.gameObject);
+                }
+                if (_restoreModDefaultsConfirmUntil != 0)
+                {
+                    if (Environment.TickCount64 >= _restoreModDefaultsConfirmUntil ||
+                        !IsRestoreModDefaultsFocused())
+                        CancelRestoreModDefaultsConfirmation();
+                    else if (!IsUiSubmitHeld())
+                        _restoreModDefaultsInputReleased = true;
                 }
                 if (_speechOutputToggle != null && _speechOutputToggle.IsOn != _speechEnabled)
                     SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
@@ -169,7 +184,7 @@ public sealed partial class BopItAccessMod
         {
             if (now >= _nextSpeechSettingsErrorAt)
             {
-                WriteStatus("SPEECH settings row could not be added: " + ex);
+                WriteStatus("MOD SETTINGS row could not be added: " + ex);
                 _nextSpeechSettingsErrorAt = now + 5000;
             }
         }
@@ -186,13 +201,13 @@ public sealed partial class BopItAccessMod
         clone.SetActive(false);
         try
         {
-            clone.name = "BopItAccess Speech Settings";
+            clone.name = "BopItAccess Mod Settings";
             clone.transform.SetSiblingIndex(template.transform.GetSiblingIndex() + 1);
             SettingsButton? button = clone.GetComponent<SettingsButton>();
             if (button == null)
                 throw new InvalidOperationException("The cloned Controls row lost SettingsButton.");
 
-            SetSpeechRowLabel(button, "SPEECH");
+            SetSpeechRowLabel(button, "MOD SETTINGS");
             button.Submitted = new UnityEvent();
             button.SliderMoved = new UnityEvent<int>();
             button.SetValue(string.Empty);
@@ -206,7 +221,7 @@ public sealed partial class BopItAccessMod
                 LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
             if (_settingsWasVisible)
                 _settingsOptions = CreateSettingsOptions(settings);
-            WriteStatus("Added SPEECH menu below Controls in Settings.");
+            WriteStatus("Added MOD SETTINGS menu below Controls in Settings.");
         }
         catch
         {
@@ -260,12 +275,13 @@ public sealed partial class BopItAccessMod
             _speechMenuOpen = true;
             _speechMenuIntroductionPending = true;
             _speechMenuOpenedAt = Environment.TickCount64;
+            CancelRestoreModDefaultsConfirmation();
             ResetSpeechMenuFocus();
-            WriteStatus("Opened Speech settings menu.");
+            WriteStatus("Opened Mod Settings menu.");
         }
         catch (Exception ex)
         {
-            WriteStatus("Speech settings menu could not be opened: " + ex);
+            WriteStatus("Mod Settings menu could not be opened: " + ex);
             if (pushed && main.panels.Count > 0 && _speechMenuPanel != null &&
                 main.panels.Peek().GetInstanceID() == _speechMenuPanel.GetInstanceID())
                 main.panels.Pop();
@@ -275,11 +291,14 @@ public sealed partial class BopItAccessMod
                 settings.Show();
             _speechMenuOpen = false;
             _speechMenuInputReady = false;
+            CancelRestoreModDefaultsConfirmation();
         }
     }
 
     private bool IsUiSubmitHeld()
     {
+        if (Mouse.current?.leftButton.isPressed == true)
+            return true;
         InputSystemUIInputModule? module =
             EventSystem.current?.GetComponent<InputSystemUIInputModule>();
         InputAction? submit = module?.submit?.action;
@@ -306,7 +325,7 @@ public sealed partial class BopItAccessMod
             controls.transform.parent == null)
             throw new InvalidOperationException("The native Controls panel layout is unavailable.");
 
-        GameObject root = new("BopItAccess Speech Menu",
+        GameObject root = new("BopItAccess Mod Settings Menu",
             new Il2CppSystem.Type[] { Il2CppType.Of<RectTransform>() });
         root.SetActive(false);
         try
@@ -338,7 +357,7 @@ public sealed partial class BopItAccessMod
             TMP_Text? title = table?.Find("Title")?.GetComponent<TMP_Text>();
             if (table == null || content == null || title == null)
                 throw new InvalidOperationException("The cloned Controls table is incomplete.");
-            SetClonedLabel(title, "SPEECH");
+            SetClonedLabel(title, "MOD SETTINGS");
 
             // Only visual pieces of the Controls panel are cloned. Its native
             // rebinding manager stays on the original panel, and its copied
@@ -416,8 +435,12 @@ public sealed partial class BopItAccessMod
                 "SAPI RATE");
             _speechPitchSlider = AddSpeechSlider(settings.resolution, content,
                 "SAPI PITCH");
+            _restoreModDefaultsButton = AddSpeechButton(settings.controls, content,
+                "RESTORE MOD DEFAULTS",
+                _restoreModDefaultsSubmitListener ??=
+                    (UnityAction)OnRestoreModDefaultsSubmitted);
             SettingsButton back = AddSpeechButton(settings.controls, content,
-                "BACK");
+                "BACK", _speechBackSubmitListener ??= (UnityAction)OnSpeechBackSubmitted);
 
             _speechUiOptions.Add(new("SPEECH OUTPUT", "toggle", _speechOutputToggle,
                 () => _speechEnabled ? "On" : "Off"));
@@ -466,6 +489,10 @@ public sealed partial class BopItAccessMod
                 () => _sapiRate.ToString()));
             _speechUiOptions.Add(new("SAPI PITCH", "slider", _speechPitchSlider,
                 () => _sapiPitch.ToString()));
+            _speechUiOptions.Add(new("RESTORE MOD DEFAULTS", "button",
+                _restoreModDefaultsButton,
+                () => _restoreModDefaultsConfirmUntil != 0
+                    ? "Press again to confirm" : null));
             _speechUiOptions.Add(new("BACK", "button", back, () => null));
 
             speechPanel.firstSelectedButton = _speechOutputToggle.gameObject;
@@ -485,7 +512,7 @@ public sealed partial class BopItAccessMod
 
             _speechMenuRoot = root;
             _speechMenuPanel = speechPanel;
-            WriteStatus($"Built Speech settings submenu with {_speechUiOptions.Count} native-style rows.");
+            WriteStatus($"Built Mod Settings submenu with {_speechUiOptions.Count} native-style rows.");
         }
         catch
         {
@@ -510,6 +537,7 @@ public sealed partial class BopItAccessMod
             _speechVolumeSlider = null;
             _speechRateSlider = null;
             _speechPitchSlider = null;
+            _restoreModDefaultsButton = null;
             _speechMenuScroll = null;
             throw;
         }
@@ -572,7 +600,7 @@ public sealed partial class BopItAccessMod
     }
 
     private SettingsButton AddSpeechButton(SettingsButton? source, Transform parent,
-        string label)
+        string label, UnityAction listener)
     {
         if (source == null)
             throw new InvalidOperationException("The native button row is unavailable.");
@@ -586,8 +614,7 @@ public sealed partial class BopItAccessMod
         row.Submitted = new UnityEvent();
         row.SliderMoved = new UnityEvent<int>();
         row.SetValue(string.Empty);
-        _speechBackSubmitListener ??= (UnityAction)OnSpeechBackSubmitted;
-        row.Submitted.AddListener(_speechBackSubmitListener);
+        row.Submitted.AddListener(listener);
         clone.SetActive(true);
         return row;
     }
@@ -952,10 +979,98 @@ public sealed partial class BopItAccessMod
             return;
         if (!_speechMenuInputReady)
         {
-            WriteStatus("Ignored a BACK submit from the input that opened SPEECH.");
+            WriteStatus("Ignored a BACK submit from the input that opened MOD SETTINGS.");
             return;
         }
+        CancelRestoreModDefaultsConfirmation();
         _mainMenu?.GoBack();
+    }
+
+    private bool IsRestoreModDefaultsFocused()
+    {
+        if (_restoreModDefaultsButton == null)
+            return false;
+        GameObject? selected = EventSystem.current?.currentSelectedGameObject;
+        SettingsRow? selectedRow = selected?.GetComponentInParent<SettingsRow>();
+        return selectedRow != null &&
+            selectedRow.GetInstanceID() == _restoreModDefaultsButton.GetInstanceID();
+    }
+
+    private void CancelRestoreModDefaultsConfirmation()
+    {
+        if (_restoreModDefaultsConfirmUntil == 0)
+            return;
+        _restoreModDefaultsConfirmUntil = 0;
+        _restoreModDefaultsFirstFrame = 0;
+        _restoreModDefaultsInputReleased = false;
+        _restoreModDefaultsButton?.SetValue(string.Empty);
+        WriteStatus("Restore mod defaults confirmation cancelled.");
+    }
+
+    private void OnRestoreModDefaultsSubmitted()
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady ||
+            !IsRestoreModDefaultsFocused())
+            return;
+        if (Time.frameCount == _restoreModDefaultsLastActivationFrame)
+            return;
+        _restoreModDefaultsLastActivationFrame = Time.frameCount;
+
+        long now = Environment.TickCount64;
+        if (_restoreModDefaultsConfirmUntil != 0 &&
+            now < _restoreModDefaultsConfirmUntil)
+        {
+            // The opening submit must be released before another activation
+            // can confirm. This also guards duplicated UI submit callbacks.
+            if (!_restoreModDefaultsInputReleased ||
+                Time.frameCount <= _restoreModDefaultsFirstFrame)
+                return;
+            CancelRestoreModDefaultsConfirmation();
+            RestoreModDefaults();
+            return;
+        }
+
+        CancelRestoreModDefaultsConfirmation();
+        _restoreModDefaultsConfirmUntil = now + 5000;
+        _restoreModDefaultsFirstFrame = Time.frameCount;
+        _restoreModDefaultsInputReleased = false;
+        _restoreModDefaultsButton?.SetValue("Press again to confirm");
+        _lastSpeechMenuRowId = _restoreModDefaultsButton!.GetInstanceID();
+        _lastSpeechMenuValue = "Press again to confirm";
+        QueueSpeech("Are you sure? Press again to confirm.");
+        WriteStatus("Restore mod defaults confirmation requested.");
+    }
+
+    private void RestoreModDefaults()
+    {
+        bool speechWasOff = !_speechEnabled;
+        // These are the settings shown in Mod Settings. Native game audio,
+        // the FPS limiter, and control bindings have their own ownership.
+        SetOutputModeFromMenu("Auto");
+        SetBrailleOutputFromMenu(true);
+        SetMuteSpeechInBackgroundFromMenu(false);
+        SetIndexingFromMenu(true);
+        SetFilterCapitalisationFromMenu(true);
+        SetReadControlTypesFromMenu(true);
+        SetSliderRangesFromMenu(false);
+        SetOneOnOneFeedbackFromMenu(true);
+        SetHintsTypeFromMenu("Automatic");
+        SetReadButtonHintsFromMenu(true);
+        SetButtonHintsDelayFromMenu(10);
+        SetRepeatButtonHintsFromMenu(-1);
+        SetRepeatButtonHintsIntervalFromMenu(30);
+        SetSapiVoiceFromMenu(string.Empty);
+        SetSapiVolumeFromMenu(100);
+        SetSapiRateFromMenu(50);
+        SetSapiPitchFromMenu(50);
+        SetSpeechEnabledFromMenu(true);
+        UpdateSpeechMenuValues();
+        _lastSpeechMenuValue = null;
+        if (speechWasOff)
+            QueueSequentialSpeech("Mod defaults restored.");
+        else
+            QueueSpeech("Mod defaults restored.");
+        WriteStatus("Restored all Mod Settings values to defaults.");
     }
 
     private bool ReadSpeechMenuFocus()
@@ -969,9 +1084,10 @@ public sealed partial class BopItAccessMod
             _mainMenu.panels.Peek().GetInstanceID() != _speechMenuPanel.GetInstanceID())
         {
             if (Environment.TickCount64 - _speechMenuOpenedAt < 500)
-                WriteStatus("Speech settings menu lost focus immediately after opening.");
+                WriteStatus("Mod Settings menu lost focus immediately after opening.");
             _speechMenuOpen = false;
             _speechMenuInputReady = false;
+            CancelRestoreModDefaultsConfirmation();
             ResetSpeechMenuFocus();
             return false;
         }
@@ -987,7 +1103,7 @@ public sealed partial class BopItAccessMod
                 Environment.TickCount64 - _speechMenuOpenedAt > 800)
             {
                 _speechMenuIntroductionPending = false;
-                QueueSpeech("Speech menu.");
+                QueueSpeech("Mod settings menu.");
             }
             return true;
         }
@@ -1007,6 +1123,10 @@ public sealed partial class BopItAccessMod
         if (focused == null)
             return true;
 
+        if (_restoreModDefaultsConfirmUntil != 0 &&
+            focused.Row.GetInstanceID() != _restoreModDefaultsButton?.GetInstanceID())
+            CancelRestoreModDefaultsConfirmation();
+
         string? value = focused.ReadValue();
         int id = focused.Row.GetInstanceID();
         if (id != _lastSpeechMenuRowId)
@@ -1020,7 +1140,7 @@ public sealed partial class BopItAccessMod
                 _speechUiOptions.Count);
             if (_speechMenuIntroductionPending)
             {
-                message = "Speech. " + message;
+                message = "Mod settings. " + message;
                 _speechMenuIntroductionPending = false;
             }
             QueueFocusSpeech(message);

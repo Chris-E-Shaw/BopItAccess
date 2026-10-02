@@ -1,4 +1,4 @@
-Bop It Access 0.6.15 - Hint Timer Focus Fix
+Bop It Access 0.6.16 - Mod Settings Defaults and Restore
 
 What this does
 --------------
@@ -19,10 +19,12 @@ The MUTE AUDIO IN BACKGROUND toggle appears directly below VOICE OVER in
 Settings. When enabled, it mutes game audio while the game window is not
 focused, then restores the previous game audio state when focus returns.
 It starts Off and is saved between sessions.
-Settings indexing now waits for the mod's audio, FPS, and SPEECH rows before
+On the first-ever use of the mod, the game's native MUSIC, SFX, and VOICE OVER
+sliders start at 30. Upgrading keeps previously saved game audio settings.
+Settings indexing now waits for the mod's audio, FPS, and MOD SETTINGS rows before
 announcing the first focused item on a newly opened Settings screen.
 
-Below Controls, Settings now has a SPEECH menu. SPEECH OUTPUT uses the same
+Below Controls, Settings now has a MOD SETTINGS menu. SPEECH OUTPUT uses the same
 saved master switch as F8 or controller Select, including the spoken recovery
 instructions when speech is turned off. BRAILLE OUTPUT starts On and is saved
 between sessions. When Tolk uses a screen reader, the mod sends the same
@@ -43,14 +45,14 @@ with new activity after focus returns. If speech itself is Off when the game
 regains focus, the mod gives the current keyboard and controller recovery
 instructions once.
 
-The SPEECH menu also has INDEXING, off by default and saved between sessions.
+The MOD SETTINGS menu also has INDEXING, On by default and saved between sessions.
 When enabled, a focused menu item includes its position, such as "PLAY, 1 of 6".
-This applies across the main and Settings menus, Controls, play modes, speech
-settings, game-over choices, leaderboards, achievements, credits, and other
+This applies across the main and Settings menus, Controls, play modes, Mod
+Settings, game-over choices, leaderboards, achievements, credits, and other
 supported screens. The count follows the currently available choices. Changing
 a slider or toggle while it remains focused still announces only the new value.
 
-FILTER CAPITALISATION is a saved Speech toggle, On by default. It changes only
+FILTER CAPITALISATION is a saved Mod Settings toggle, On by default. It changes only
 the text sent to speech and braille, leaving the game's visible GUI untouched.
 All-capital menu words are spoken in sentence case: "PASS IT" becomes "Pass it"
 and "ONE ON ONE" becomes "One-on-one". The first word after a full stop is
@@ -58,7 +60,7 @@ capitalised again. Existing mixed-case words and common abbreviations such as
 SAPI, NVDA, SFX, and FPS are preserved. Turning the toggle Off sends the
 original speech text.
 
-READ CONTROL TYPES is another saved SPEECH toggle, off by default. When enabled,
+READ CONTROL TYPES is another saved MOD SETTINGS toggle, On by default. When enabled,
 the focused item's type follows its name and precedes its value and index:
 "MUSIC slider, 30, 1 of 12", "VIBRATION toggle, On, 6 of 12", or
 "PLAY button, 1 of 6". Menus also identify tabs, text fields, and readable
@@ -67,7 +69,7 @@ SLIDER RANGES is a saved toggle, Off by default. When enabled, focused sliders
 also report their available endpoints after the current value, such as
 "MUSIC slider, 30, range 0 to 100, 1 of 12" when indexing and control types
 are enabled. Moving a slider still speaks only the new value.
-ONE-ON-ONE FEEDBACK is a saved toggle, Off by default. When enabled, it
+ONE-ON-ONE FEEDBACK is a saved toggle, On by default. When enabled, it
 announces the active colour at the start of a One on One round and when that
 colour changes. A lost life announces the remaining count, such as "2 lives"
 or "1 life". A gained life announces the new count in the same way, up to
@@ -75,12 +77,12 @@ the game's three-life limit. If both players' life counts change together,
 both counts are identified by colour. The feature runs only during One on One
 play.
 
-HINTS TYPE now appears above AUTO-SPEAK BUTTON HINTS in the Speech menu.
+HINTS TYPE now appears above AUTO-SPEAK BUTTON HINTS in the Mod Settings menu.
 AUTO-SPEAK BUTTON HINTS is a saved toggle and is On by default. Turning it
 Off suppresses automatic hints, while SPEAK HINTS remains available on demand.
 BUTTON HINTS DELAY has None, 5 seconds
 (May interrupt speech), 10 seconds, 15 seconds, 30 seconds, and 60 seconds.
-It defaults to None. With None, the valid inputs for the current screen and
+It defaults to 10 seconds. With None, the valid inputs for the current screen and
 their actions are included in the focused item's ordinary speech string,
 after a full stop. The action for the focused control is spoken before general
 menu navigation. There is no separate first hint announcement. With a timed
@@ -113,11 +115,11 @@ Both are looked up centrally, so future global controls can join the same
 hint list without changing every screen separately.
 
 REPEAT BUTTON HINTS is a separate saved slider: Off, 2x, 3x, 4x, 5x, or
-Infinitely. It defaults to Off. The number is the total readings in one
+Infinitely. The default is Infinitely. The number is the total readings in one
 cycle: 2x means the first hint and one repeat; 3x means the first hint and
 two repeats. Off still allows the first automatic or manual hint.
 REPEAT INTERVAL sets the delay between repeats to 15, 30, 45, or
-60 seconds and defaults to 15 seconds. With BUTTON HINTS DELAY set to None,
+60 seconds and defaults to 30 seconds. With BUTTON HINTS DELAY set to None,
 the repeat timer begins immediately after input. Input, a focus or value
 change, or a screen change restarts the hint cycle for the current screen.
 SPEAK HINTS replaces the
@@ -128,9 +130,9 @@ active gameplay and the beat-timing phases of Audio Calibration, where extra
 speech could mask a cue. An existing saved 15-, 30-, or 60-second reminder
 delay from version 0.6.2 becomes the new BUTTON HINTS DELAY value.
 
-The SPEECH menu also has SAPI VOICE, SAPI VOLUME, SAPI RATE, and SAPI PITCH
+The MOD SETTINGS menu also has SAPI VOICE, SAPI VOLUME, SAPI RATE, and SAPI PITCH
 controls. SAPI Voice lists the system default and installed 64-bit SAPI voices.
-Volume starts at 100; Rate and Pitch start at 50. Volume ranges from 5 to 100
+Volume starts at 100%; Rate and Pitch start at 50. Volume ranges from 5% to 100%
 so SAPI recovery notices remain audible. Rate and Pitch range from 0 to 100.
 All three move in
 steps of five. They apply to SAPI mode and Auto's SAPI fallback.
@@ -149,13 +151,18 @@ audio system.
 Separate braille output with SAPI now caches Tolk capability checks for one
 second. If SAPI dispatch itself is slow, the log records voice setup, Speak,
 and braille dispatch times.
-Speech settings are remembered between sessions. Back returns to Settings.
+Mod Settings choices are remembered between sessions. RESTORE MOD DEFAULTS
+returns those choices to the defaults described above. Press it once to request
+confirmation, then press it again within five seconds to restore them. Moving
+to another row or letting five seconds pass cancels the request. This does not
+change the game's MUSIC, SFX, or VOICE OVER sliders, LIMIT FPS, or custom
+keyboard and controller bindings. Back returns to Settings.
 This update restores the game's native Settings row layout so up/down
-navigation remains on Settings rows after SPEECH is added.
-It also starts the SPEECH submenu on SPEECH OUTPUT each time it opens,
+navigation remains on Settings rows after MOD SETTINGS is added.
+It also starts the MOD SETTINGS submenu on SPEECH OUTPUT each time it opens,
 preventing a previously selected BACK row from closing the menu immediately
 when Enter is used to reopen it.
-The input that opens SPEECH is now ignored by its rows until that input is
+The input that opens MOD SETTINGS is now ignored by its rows until that input is
 released, so reopening the menu cannot also toggle speech off. The mod's
 added Controls binding rows likewise wait for the opening input to be
 released before accepting a rebinding request.
@@ -201,7 +208,7 @@ default because the game already binds it to Reset Gyro and Auto Play.
 Requested repeats speak immediately and can be interrupted by result-menu
 navigation. Only the automatic result announcement delays the initial menu
 speech so the score is heard first.
-ONE-ON-ONE FEEDBACK can be enabled in Settings > Speech for spoken active
+ONE-ON-ONE FEEDBACK is On by default in Settings > Mod Settings for spoken active
 colour and remaining lives during that mode. Shared Bop cues do not by
 themselves identify one colour, so the mod retains the last definite colour.
 
@@ -245,7 +252,7 @@ binding, it reports that the bindings were reset.
 The mod exposes a native RESET GYRO row and adds a CHANGE SPEECH OUTPUT
 shortcut. Reset Gyro sits with the game's controls; the mod-specific rows
 remain together at the bottom of the menu, before Reset to Default. CHANGE
-SPEECH OUTPUT cycles through the same modes as Settings > Speech > OUTPUT
+SPEECH OUTPUT cycles through the same modes as Settings > Mod Settings > OUTPUT
 MODE: Auto, SAPI, JAWS, Window-Eyes, NVDA, System Access, and ZoomText. Its
 default inputs are F9 on keyboard and the West face button (X on an Xbox
 controller). The controller Start button is reserved by the game's native
@@ -326,13 +333,13 @@ result-screen controls are announced. Press T or left stick press to repeat the
 final result while the game-over screen is visible.
 Press F8 or controller Select to turn mod speech off or on from any screen.
 Press F9 or controller West (X on an Xbox controller) to cycle the speech
-output mode. The same choice is available in Settings > Speech > OUTPUT MODE.
-BRAILLE OUTPUT in Settings > Speech is On by default. NVDA's Braille Viewer
+output mode. The same choice is available in Settings > Mod Settings > OUTPUT MODE.
+BRAILLE OUTPUT in Settings > Mod Settings is On by default. NVDA's Braille Viewer
 can display the braille and its text equivalent without a physical display.
 For an ON/OFF comparison, use NVDA's follow-cursors braille mode with Show
 Messages enabled; its display-speech-output mode would mirror speech even
 when the mod's BRAILLE OUTPUT setting is Off.
-In Settings > Speech, use AUTO-SPEAK BUTTON HINTS to enable or disable
+In Settings > Mod Settings, use AUTO-SPEAK BUTTON HINTS to enable or disable
 automatic instructions. Press H or right stick press to hear the current hint
 on demand.
 HINTS TYPE chooses Automatic, Keyboard, Controller, or Both for those hints.

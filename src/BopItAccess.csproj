@@ -14,6 +14,10 @@
       <HintPath>$(BopItGameDir)\MelonLoader\net6\MelonLoader.dll</HintPath>
       <Private>false</Private>
     </Reference>
+    <Reference Include="0Harmony">
+      <HintPath>$(BopItGameDir)\MelonLoader\net6\0Harmony.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
     <Reference Include="Il2CppInterop.Runtime">
       <HintPath>$(BopItGameDir)\MelonLoader\net6\Il2CppInterop.Runtime.dll</HintPath>
       <Private>false</Private>

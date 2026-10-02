@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.15", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.16", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -67,6 +67,7 @@ public sealed partial class BopItAccessMod : MelonMod
 
     public override void OnInitializeMelon()
     {
+        PrepareFirstRunNativeAudioDefaults();
         WriteStatus("Mod loaded; starting the Tolk background thread.");
         MelonLogger.Msg("Starting Tolk screen-reader support on a background thread...");
         _tolkThread = new Thread(InitializeTolkAndAnnounce)
@@ -136,7 +137,7 @@ public sealed partial class BopItAccessMod : MelonMod
         }
         catch (Exception ex)
         {
-            WriteStatus("Speech settings focus check failed: " + ex);
+            WriteStatus("Mod Settings focus check failed: " + ex);
             ResetSpeechMenuFocus();
         }
         if (speechMenuVisible)
@@ -619,7 +620,7 @@ public sealed partial class BopItAccessMod : MelonMod
             SliderOption("LIMIT FPS", _fpsSettingsSlider),
             ActionOption("AUDIO LATENCY", panel.audioLatency),
             ActionOption("CONTROLS", panel.controls),
-            ActionOption("SPEECH", _speechSettingsButton),
+            ActionOption("MOD SETTINGS", _speechSettingsButton),
             ActionOption("GO ONLINE", goOnline)
         };
     }
