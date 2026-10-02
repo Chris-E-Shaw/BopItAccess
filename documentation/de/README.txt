@@ -1,4 +1,4 @@
-Bop It Access 0.8.0 – Mehrsprachige Sprache und Dokumentation
+Bop It Access 0.8.1 – Mehrsprachige Sprache und Dokumentation
 
 Was das bewirkt
 --------------

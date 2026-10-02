@@ -1,6 +1,6 @@
 # Bop It Access
 
-Bop It Access ist ein inoffizieller Barrierefreiheits-Mod für die Windows Steam-Version von **Bop It!**. Es verwendet MelonLoader und Tolk, um Menüs und Spielbildschirmen Sprach- und Braille-Feedback hinzuzufügen. Zu den aktuellen Funktionen gehören ein Begrüßungsbildschirm für den ersten Start, ein Benutzerhandbuch im Spiel, gesprochene Titel- und Pausenbildschirme, Einstellungen und Steuerungen, Songauswahl, Endergebnisse und Bestenlisten, Erfolge, Credits, Schaltflächenhinweise, On-Demand-Tutorialtext mit aktuellen Steuerungszuweisungen vor einer Runde und Beschreibungen der vier Phasen. Version 0.8.0 folgt der ausgewählten Sprache des Spiels und enthält eine Anleitung für jede Sprache, die das Spiel anbietet.
+Bop It Access ist ein inoffizieller Barrierefreiheits-Mod für die Windows Steam-Version von **Bop It!**. Es verwendet MelonLoader und Tolk, um Menüs und Spielbildschirmen Sprach- und Braille-Feedback hinzuzufügen. Zu den aktuellen Funktionen gehören ein Begrüßungsbildschirm für den ersten Start, ein Benutzerhandbuch im Spiel, gesprochene Titel- und Pausenbildschirme, Einstellungen und Steuerungen, Songauswahl, Endergebnisse und Bestenlisten, Erfolge, Credits, Schaltflächenhinweise, On-Demand-Tutorialtext mit aktuellen Steuerungszuweisungen vor einer Runde und Beschreibungen der vier Phasen. Version 0.8.1 folgt der ausgewählten Sprache des Spiels und enthält eine Anleitung für jede Sprache, die das Spiel anbietet.
 
 ## Projektstatus
 

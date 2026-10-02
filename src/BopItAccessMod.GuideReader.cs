@@ -581,13 +581,17 @@ public sealed partial class BopItAccessMod
             int column = Math.Clamp(_guideColumnIndex, 0, line.Cells.Count - 1);
             string heading = line.Headers != null && column < line.Headers.Count
                 ? line.Headers[column] : string.Format(
-                    CultureInfo.CurrentCulture, L("Column {0}"), column + 1);
+                    CultureInfo.CurrentCulture, L("Column {0}"),
+                    LocalizedIndexNumber(column + 1));
             string rowName = line.Cells[0].Length > 0
                 ? line.Cells[0] : string.Format(
-                    CultureInfo.CurrentCulture, L("Row {0}"), line.TableRow);
+                    CultureInfo.CurrentCulture, L("Row {0}"),
+                    LocalizedIndexNumber(line.TableRow));
             string rowLabel = _indexingEnabled
                 ? string.Format(CultureInfo.CurrentCulture,
-                    L("{0}, {1} of {2}"), rowName, line.TableRow, line.TableRows)
+                    L("{0}, {1} of {2}"), rowName,
+                    LocalizedIndexNumber(line.TableRow),
+                    LocalizedIndexNumber(line.TableRows))
                 : rowName;
             return column == 0
                 ? rowLabel
@@ -602,7 +606,8 @@ public sealed partial class BopItAccessMod
         return _indexingEnabled
             ? string.Format(CultureInfo.CurrentCulture,
                 L("{0} Line {1} of {2}."), plainText,
-                _guideLineIndex + 1, topic.Lines.Count)
+                LocalizedIndexNumber(_guideLineIndex + 1),
+                LocalizedIndexNumber(topic.Lines.Count))
             : plainText;
     }
 
@@ -897,10 +902,12 @@ public sealed partial class BopItAccessMod
         string entry = caption.Length > 0
             ? string.Format(CultureInfo.CurrentCulture,
                 L("Table: {0}. Rows: {1}. Columns: {2}."),
-                caption, dataRows.Count, columns)
+                caption, LocalizedIndexNumber(dataRows.Count),
+                LocalizedIndexNumber(columns))
             : string.Format(CultureInfo.CurrentCulture,
                 L("Table. Rows: {0}. Columns: {1}."),
-                dataRows.Count, columns);
+                LocalizedIndexNumber(dataRows.Count),
+                LocalizedIndexNumber(columns));
         string exit = caption.Length > 0
             ? string.Format(CultureInfo.CurrentCulture,
                 L("End of table: {0}."), caption)

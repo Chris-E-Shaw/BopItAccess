@@ -1,4 +1,4 @@
-Bop It Access 0.8.0 - Parole et documentation multilingues
+Bop It Access 0.8.1 - Parole et documentation multilingues
 
 Qu'est-ce que cela fait
 --------------

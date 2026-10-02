@@ -457,6 +457,53 @@ def translate_markdown(source: str, translator: Translator) -> str:
     return "".join(output)
 
 
+def polish_japanese_guide(html: str) -> str:
+    """Keep reviewed menu names and the first-use explanation in sync with the game."""
+    soup = BeautifulSoup(html, "html.parser")
+    welcome = soup.find("section", id="welcome")
+    if welcome:
+        paragraphs = welcome.find_all("p", recursive=False)
+        if len(paragraphs) > 1:
+            paragraphs[1].replace_with(BeautifulSoup(
+                '<p><strong>キーボード</strong>はコンピューターのキーをまとめたものです。'
+                '<strong>コントローラー</strong>は手に持って使うゲームパッドです。'
+                'このガイドの Xbox ボタン名は一例で、ほかのコントローラーでは同じ位置の'
+                'ボタンに別の名前が付いている場合があります。<strong>メニュー項目</strong>は'
+                '「プレイ」や「設定」などの選択肢です。現在選ばれている項目に'
+                '<strong>フォーカス</strong>があり、決定ボタンを押すとその項目が実行されます。</p>',
+                "html.parser").p)
+    row_names = {
+        "main-menu": {"遊ぶ": "プレイ", "業績": "実績", "やめる": "終了"},
+        "play-menu": {"パスイット": "バトンタッチ"},
+    }
+    for section_id, names in row_names.items():
+        section = soup.find("section", id=section_id)
+        if section:
+            for heading in section.find_all("th", attrs={"scope": "row"}):
+                text = heading.get_text(strip=True)
+                if text in names:
+                    heading.string = names[text]
+    pass_it = soup.find("section", id="pass-it-mode")
+    if pass_it:
+        heading = pass_it.find("h3")
+        if heading:
+            heading.string = "バトンタッチ"
+        paragraph = pass_it.find("p")
+        if paragraph:
+            paragraph.replace_with(BeautifulSoup(
+                '<p>バトンタッチは、みんなで一つの記録に挑戦するモードです。'
+                'ゲームが<q>バトンタッチ！</q>と指示するまで、まず一人がコマンドに応えます。'
+                'その指示が聞こえたら、すみやかに次の人へコントローラーを渡してください。'
+                '次のプレイヤーは<em>同じ</em>連続記録を引き継ぎます。'
+                '以後もゲームの指示に従ってコントローラーを渡し、コマンドに応え続けます。'
+                '誰に渡すかを先に決め、安全に受け渡せる場所で遊びましょう。</p>',
+                "html.parser").p)
+    for node in list(soup.find_all(string=True)):
+        if "パスイット" in node:
+            node.replace_with(str(node).replace("パスイット", "バトンタッチ"))
+    return str(soup).rstrip("\n") + "\n"
+
+
 def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("locale", choices=MODEL_CODE)
@@ -485,9 +532,11 @@ def main() -> None:
             if filename.endswith(".html")
             else translate_markdown(source, translator)
         )
+        if locale == "ja" and filename == "BopItAccess-user-guide.html":
+            translated = polish_japanese_guide(translated)
         if filename == "README.md":
             # From a language folder, the parent is documentation/.
-            translated = translated.replace("(documentation/)", "(../)")
+            translated = translated.replace("(documentation/", "(../")
             # The HTML guide links into these sections. Markdown heading
             # slugs change when their text is translated, so give every
             # localized README stable, language-independent targets.

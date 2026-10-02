@@ -1,4 +1,4 @@
-Bop It Access 0.8.0 - Multilingual Speech and Documentation
+Bop It Access 0.8.1 - Japanese Guide and Index Localization
 
 What this does
 --------------

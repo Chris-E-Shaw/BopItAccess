@@ -1,6 +1,6 @@
 # Bop It Access
 
-Bop It Access is an unofficial accessibility mod for the Windows Steam version of **Bop It!**. It uses MelonLoader and Tolk to add speech and braille feedback to menus and game screens. Current features include a first-run welcome screen, an in-game user's guide, spoken title and pause screens, settings and controls, song selection, final scores and leaderboards, achievements, credits, button hints, on-demand tutorial text with current control assignments before a round, and descriptions of the four stages. Version 0.8.0 follows the game's selected language and includes a guide for every language the game offers.
+Bop It Access is an unofficial accessibility mod for the Windows Steam version of **Bop It!**. It uses MelonLoader and Tolk to add speech and braille feedback to menus and game screens. Current features include a first-run welcome screen, an in-game user's guide, spoken title and pause screens, settings and controls, song selection, final scores and leaderboards, achievements, credits, button hints, on-demand tutorial text with current control assignments before a round, and descriptions of the four stages. Version 0.8.1 follows the game's selected language and includes a guide for every language the game offers.
 
 ## Project status
 
@@ -51,7 +51,8 @@ The mod uses the game's translated names for gameplay actions. Shapes, Space, Ci
 
 ## Documentation
 
-- [Game and mod user's guide](BopItAccess-user-guide.html) — a beginner-friendly walkthrough of controls, settings, menus, and play modes.
+- [Game and mod user's guide (English)](BopItAccess-user-guide.html) — a beginner-friendly walkthrough of controls, settings, menus, and play modes.
+- [Japanese user's guide (日本語)](documentation/ja/BopItAccess-user-guide.html). Other translated guides are available in the language folders under [`documentation/`](documentation/).
 - [Detailed feature and control guide](README.txt). Its installation section describes the locally prepared install ZIPs; this GitHub repository provides source only.
 - [Technical build history](BopItAccess-build-history.html).
 - [Git workflow for this project](GIT-WORKFLOW.md).
