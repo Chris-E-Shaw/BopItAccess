@@ -25,6 +25,8 @@ The installer searches Steam libraries across available drives, and its **Browse
 
 Installed files are recorded in an ownership manifest so updates preserve pre-existing files and an aborted installation can reverse its own changes. **Uninstall** and Windows **Installed Apps** use the same uninstall code. The supplied `installer/uninstall.ps1` launches an accessible uninstall window from Installed Apps, then removes the uninstall launcher and manifest after successful removal. Existing unrelated mods and their shared MelonLoader files are preserved.
 
+For an older hand-installed copy that has no ownership manifest, uninstall removes identifiable Bop It Access files and leaves shared files whose origin cannot be proved. Mod preferences are removed from the Windows account running the uninstaller. If Windows elevation uses a different administrator account, the player's original per-user mod preferences may remain; the installer does not erase another account's settings without that account's authorization.
+
 To build the installer executable from source on a Windows development machine with the .NET 10 SDK, run:
 
 ```powershell

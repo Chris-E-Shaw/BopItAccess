@@ -221,6 +221,7 @@ internal sealed class InstallerForm : Form
         }
         catch (Exception ex)
         {
+            _service.SetGamePath(string.Empty);
             ShowError("Could not use that game folder", ex);
         }
     }
