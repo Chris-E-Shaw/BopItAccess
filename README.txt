@@ -1,4 +1,4 @@
-Bop It Access 0.6.17 - Assigned Controls in Tutorials
+Bop It Access 0.7.0 - Welcome Screen and In-Game User's Guide
 
 What this does
 --------------
@@ -21,6 +21,11 @@ focused, then restores the previous game audio state when focus returns.
 It starts Off and is saved between sessions.
 On the first-ever use of the mod, the game's native MUSIC, SFX, and VOICE OVER
 sliders start at 30. Upgrading keeps previously saved game audio settings.
+Once the game reaches its main menu for the first time, a welcome screen takes
+focus. Its message can be focused again with Up, and its choices open Mod
+Settings, open the user's guide inside the game, or continue to the main menu.
+The welcome screen is marked complete only after a choice successfully leaves
+it. Closing the game while it is open leaves it ready for the next launch.
 Settings indexing now waits for the mod's audio, FPS, and MOD SETTINGS rows before
 announcing the first focused item on a newly opened Settings screen.
 
@@ -157,6 +162,14 @@ confirmation, then press it again within five seconds to restore them. Moving
 to another row or letting five seconds pass cancels the request. This does not
 change the game's MUSIC, SFX, or VOICE OVER sliders, LIMIT FPS, or custom
 keyboard and controller bindings. Back returns to Settings.
+OPEN USER'S GUIDE reads documentation\BopItAccess-user-guide.html inside the
+game. Its topic list comes from the document's table of contents and reloads
+whenever opened. Confirm opens a topic. Up and Down read its lines, Left and
+Right move through table columns, and Back returns to topics or leaves the
+guide. While reading, the mod applies the game's menu-music Filter parameter
+and restores its previous value on exit. RESET WELCOME SCREEN asks for a
+second press within five seconds, then makes the welcome screen appear on the
+next game launch. Changing rows or waiting five seconds cancels confirmation.
 This update restores the game's native Settings row layout so up/down
 navigation remains on Settings rows after MOD SETTINGS is added.
 It also starts the MOD SETTINGS submenu on SPEECH OUTPUT each time it opens,
@@ -313,11 +326,14 @@ Install
 1. Close Bop It! if it is running.
 2. Extract all files in this ZIP into the Bop It! game folder:
    C:\Program Files (x86)\Steam\steamapps\common\Bop It!
-   Allow Windows to replace Mods\BopItAccess.dll and merge the Mods folder.
+   Allow Windows to replace Mods\BopItAccess.dll and merge the Mods and
+   documentation folders.
 3. Start your screen reader, then start Bop It! through Steam as usual.
 
 MelonLoader must already be installed. The ZIP includes Mods\BopItAccess.dll,
-Tolk.dll, and nvdaControllerClient64.dll. This mod was built for the installed
+documentation\BopItAccess-user-guide.html and its companion documents,
+Tolk.dll, and nvdaControllerClient64.dll. The in-game guide loads the HTML
+from that documentation folder whenever it opens. This mod was built for the installed
 MelonLoader 0.7.3 Open-Beta and Bop It! (Unity 2022.3.50f1, x64).
 
 Try the menus and screens
@@ -325,6 +341,10 @@ Try the menus and screens
 Wait for the title-screen announcement if it appears, then use Bop to open the
 main menu. The game may take several seconds after the mod's ready message to
 accept this input.
+On a first run, the welcome screen appears before the main menu. Select its
+message to hear the introduction again. Choose Open Mod Settings, Read User's
+Guide, or Continue to Game. Speak Hints names its current keyboard and
+controller assignments in the welcome message regardless of Hints Type.
 Open Play and move among the four modes. Choose one to reach song selection.
 Twist to cycle through themes and Pull to switch Extreme mode on or off. The
 mod announces each change. Press G or LT to hear the currently selected stage

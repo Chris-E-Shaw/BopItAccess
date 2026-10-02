@@ -1,6 +1,6 @@
 # Bop It Access
 
-Bop It Access is an unofficial accessibility mod for the Windows Steam version of **Bop It!**. It uses MelonLoader and Tolk to add speech and braille feedback to menus and game screens. Current features include spoken title and pause screens, settings and controls, song selection, final scores and leaderboards, achievements, credits, button hints, on-demand tutorial text with current control assignments before a round, and descriptions of the four stages.
+Bop It Access is an unofficial accessibility mod for the Windows Steam version of **Bop It!**. It uses MelonLoader and Tolk to add speech and braille feedback to menus and game screens. Current features include a first-run welcome screen, an in-game user's guide, spoken title and pause screens, settings and controls, song selection, final scores and leaderboards, achievements, credits, button hints, on-demand tutorial text with current control assignments before a round, and descriptions of the four stages.
 
 ## Project status
 
@@ -38,9 +38,12 @@ If the SDK reports a missing .NET 6 targeting pack, install an SDK that includes
 
 1. Close the game. Copy the built `BopItAccess.dll` into `<game directory>\Mods\`. Create the `Mods` directory if MelonLoader has not created it.
 2. Obtain a compatible 64-bit `Tolk.dll` from a trusted source or [build it from the upstream Tolk source](https://github.com/dkager/tolk#compiling). Obtain the matching `nvdaControllerClient64.dll` from [Tolk's x64 library directory](https://github.com/dkager/tolk/tree/master/libs/x64) or your Tolk build. Put **both DLLs in the game directory**, beside the game executable, rather than inside `Mods`.
-3. Start your screen reader if you use one, then launch Bop It! through Steam. The mod can use SAPI speech when no supported screen reader is running.
+3. Copy the build's `src\bin\Release\net6.0\documentation\` folder into the game directory. It contains `BopItAccess-user-guide.html` and its companion documents. The in-game guide reads this HTML file each time it opens, so replacing the file updates its content without rebuilding the DLL.
+4. Start your screen reader if you use one, then launch Bop It! through Steam. The mod can use SAPI speech when no supported screen reader is running.
 
 The Bop It Access build command compiles only this mod; it does not build or download Tolk. If speech does not start, inspect `<game directory>\Mods\BopItAccess.log`. The log records whether Tolk initialized and accepted speech requests, though that alone cannot prove audio was heard.
+
+On a first run, the welcome screen appears after the game's main menu is ready. Its choices open Mod Settings, read the user's guide in-game, or continue to the game. Mod Settings also offers **Open User's Guide** and a confirmed **Reset Welcome Screen** action that shows the welcome screen on the next launch. In the guide, use Up/Down to choose topics or read lines, Left/Right to move between table columns, Confirm to open a topic, and Back to leave a topic or the guide.
 
 ## Documentation
 

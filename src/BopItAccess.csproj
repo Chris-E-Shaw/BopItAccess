@@ -10,6 +10,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Keep the guide with every local build; the game reads this HTML from
+         its documentation folder and does not require a rebuilt DLL when the
+         guide text changes. -->
+    <None Include="..\BopItAccess-user-guide.html" Link="documentation\BopItAccess-user-guide.html" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\BopItAccess-build-history.html" Link="documentation\BopItAccess-build-history.html" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\README.md" Link="documentation\README.md" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\README.txt" Link="documentation\README.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\GIT-WORKFLOW.md" Link="documentation\GIT-WORKFLOW.md" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\THIRD-PARTY-NOTICES.txt" Link="documentation\THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="MelonLoader">
       <HintPath>$(BopItGameDir)\MelonLoader\net6\MelonLoader.dll</HintPath>
       <Private>false</Private>

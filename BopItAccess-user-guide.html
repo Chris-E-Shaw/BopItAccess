@@ -71,6 +71,7 @@
       <li><a href="#install">Get and install the mod</a></li>
       <li><a href="#controls">Player control reference</a></li>
       <li><a href="#first-launch">Your first launch</a></li>
+      <li><a href="#in-game-guide">Read the guide in game</a></li>
       <li><a href="#speech-options">Mod Settings menu</a></li>
       <li><a href="#menu-guide">Menu guide</a></li>
       <li><a href="#main-menu">Main menu</a></li>
@@ -174,7 +175,7 @@
     <pre><code>$gameDir = 'C:\Program Files (x86)\Steam\steamapps\common\Bop It!'
 dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</code></pre>
     <ol start="4">
-      <li>With the game closed, copy the built file <code>src\bin\Release\net6.0\BopItAccess.dll</code> into the game's <code>Mods</code> folder. Create that folder if needed.</li>
+      <li>With the game closed, copy the built file <code>src\bin\Release\net6.0\BopItAccess.dll</code> into the game's <code>Mods</code> folder. Create that folder if needed. Copy the build's <code>src\bin\Release\net6.0\documentation</code> folder into the game folder too. It contains this guide and the companion documents its links need.</li>
       <li>Obtain compatible 64-bit <code>Tolk.dll</code> and <code>nvdaControllerClient64.dll</code> from their upstream sources as described in the <a href="README.md#install-your-build">repository's installation instructions</a>. Place both beside the game's executable, in the main game folder, <strong>not</strong> inside <code>Mods</code>.</li>
       <li>Start your screen reader if you use one, then launch the game through Steam. If there is no compatible running screen reader, the mod can use SAPI speech.</li>
     </ol>
@@ -228,14 +229,21 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
       <li>Start your screen reader if you use one. Launch Bop It! through Steam after installing MelonLoader, the mod DLL, and the required Tolk runtime files.</li>
       <li>On your first-ever use of the mod, the game's Music, SFX, and Voice Over volumes start at 30. If you are upgrading, your saved game audio levels stay as they were.</li>
       <li>Wait for the announcement: <q>Bop It Access speech is ready. The game is still loading. Wait for the title screen or main menu announcement before using the controls.</q> The mod becomes ready before the game finishes loading.</li>
-      <li>Wait several more seconds for the title screen or main menu announcement. Inputs may do nothing during loading. If you hear the title screen prompt, press Bop (Space by default, or your controller's confirm button) to open the main menu. Once a menu item such as Play is read, move with Up/Down and confirm with Enter, Space, or controller confirm.</li>
+      <li>Wait several more seconds for the title screen announcement. Inputs may do nothing during loading. Press Bop (Space by default, or your controller's confirm button) to move on from the title screen. On your first launch with the welcome feature, the welcome screen takes focus before the main menu. Move with Up/Down and confirm with Enter, Space, or controller confirm.</li>
       <li>If you previously turned speech off, the saved setting stays off. The mod gives a spoken recovery message at startup with the current keyboard and controller binding for Toggle Speech. By default, press F8 or controller Select to turn it on again.</li>
-      <li>For a comfortable first visit, open Settings &gt; Mod Settings and choose your speech, braille, and hint preferences. You can press H or right stick press for available button hints on a supported menu.</li>
+      <li>Choose <strong>open mod settings, recommended</strong> on the welcome screen to configure speech, braille, and hints first. Choose <strong>Read user's guide</strong> to read this document in the game, or <strong>Continue to game</strong> to reach the main menu.</li>
     </ol>
-    <div class="planned">
-      <h3>First-time welcome dialogue (planned, not yet in the game)</h3>
-      <p>A future build is intended to welcome first-time players and ask whether they want to configure mod settings first, which would be recommended, or skip straight to the game. <strong>This dialogue is not implemented today.</strong> When the title screen appears, press Bop to enter the normal main menu. You can open Settings yourself.</p>
+    <div class="current">
+      <h3>Welcome screen</h3>
+      <p>The introductory message is itself a focusable item above the three choices. Move back up to hear the whole message again. It names both of your current Speak Hints bindings, even if Hints Type is set to show just one device. By default, press <kbd>H</kbd> on the keyboard or press the controller's right stick inward to request the current screen's hints.</p>
+      <p>The welcome screen is marked complete only after one of its choices opens the selected destination. If the game closes while you are still on the welcome screen, it appears again next launch. To see it again after completing it, use <strong>Settings &gt; Mod Settings &gt; Reset Welcome Screen</strong>; the reset takes effect on the next launch.</p>
     </div>
+  </section>
+
+  <section id="in-game-guide">
+    <h2>Read the guide in game</h2>
+    <p>Choose <strong>Read user's guide</strong> on the welcome screen or <strong>Open User's Guide</strong> in Mod Settings. The guide opens inside Bop It!, using the HTML file in the game's <code>documentation</code> folder. Its topic list follows this document's table of contents, so updating the installed document updates the in-game topics and their text.</p>
+    <p>On the topic list, use the game's Up/Down menu controls to choose a topic and Confirm to open it. In a topic, use Up/Down to move through the text one line at a time. In a table, Left/Right moves between columns of the current row. Confirm repeats the current line. Back returns from a topic to the topic list; Back again leaves the guide. The music uses the game's reading-friendly audio filter while the guide is open.</p>
   </section>
 
   <section id="speech-options">
@@ -263,6 +271,8 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
         <tr><th scope="row">SAPI Volume</th><td>5%–100% in steps of 5; <strong>100%</strong></td><td>Adjusts SAPI speech loudness. The minimum stays above zero so recovery messages remain audible.</td></tr>
         <tr><th scope="row">SAPI Rate</th><td>0–100 in steps of 5; <strong>50</strong></td><td>Adjusts SAPI speaking speed.</td></tr>
         <tr><th scope="row">SAPI Pitch</th><td>0–100 in steps of 5; <strong>50</strong></td><td>Adjusts SAPI voice pitch.</td></tr>
+        <tr><th scope="row">Open User's Guide</th><td>Button</td><td>Opens this document in the game. Choose a topic from its table of contents, then read it line by line.</td></tr>
+        <tr><th scope="row">Reset Welcome Screen</th><td>Button</td><td>Press once to request confirmation, then press again within five seconds. Moving to another row or waiting five seconds cancels the request. A successful reset is announced, and the welcome screen appears the next time the game launches.</td></tr>
         <tr><th scope="row">Restore Mod Defaults</th><td>Button</td><td>Press once to request confirmation, then press again within five seconds to restore the Mod Settings defaults above. Moving to another row or waiting five seconds cancels the request. It does not change the game's Music, SFX, or Voice Over volumes, Limit FPS, or custom keyboard and controller bindings.</td></tr>
         <tr><th scope="row">Back</th><td>Button</td><td>Return to Settings.</td></tr>
       </tbody>
@@ -527,7 +537,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 
   <section id="roadmap">
     <h2>What may come next</h2>
-    <p>This project is still young. Potential work includes a proper installer and first-time welcome dialogue, stronger support for the remaining game screens, and continued improvements to speech responsiveness. We may explore switching speech handling from Tolk to <a href="https://github.com/ethindp/prism">Prism</a> if it proves to be a better fit. That is an idea for research, <strong>not a current dependency or a promised switch</strong>.</p>
+    <p>This project is still young. Potential work includes a proper installer, stronger support for the remaining game screens, and continued improvements to speech responsiveness. We may explore switching speech handling from Tolk to <a href="https://github.com/ethindp/prism">Prism</a> if it proves to be a better fit. That is an idea for research, <strong>not a current dependency or a promised switch</strong>.</p>
     <p>Player suggestions and reports will help shape future improvements. Christopher intends to maintain the mod over time, with updates guided by real play and careful human review. The <a href="https://github.com/Chris-E-Shaw/BopItAccess">project repository</a> is the place to follow its source and documentation as they develop.</p>
   </section>
 
@@ -573,7 +583,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
   </section>
 </main>
 <footer>
-  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.6.17; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
+  <p class="small">Bop It Access user's guide. Current features reflect the source at version 0.7.0; planned items are clearly marked. <a href="#contents">Back to contents</a>.</p>
 </footer>
 </body>
 </html>

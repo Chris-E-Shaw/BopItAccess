@@ -35,6 +35,9 @@ public sealed partial class BopItAccessMod
 
     public override void OnUpdate()
     {
+        UpdateWelcomeScreen();
+        UpdateGuideUi();
+        UpdateGuideMusicFilter();
         UpdateFirstRunNativeAudioDefaults();
         UpdateBackgroundAudio();
         UpdateFpsLimitSetting();

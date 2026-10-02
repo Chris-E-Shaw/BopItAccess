@@ -41,6 +41,8 @@ public sealed partial class BopItAccessMod
     private SettingsSlider? _speechVolumeSlider;
     private SettingsSlider? _speechRateSlider;
     private SettingsSlider? _speechPitchSlider;
+    private SettingsButton? _openUserGuideButton;
+    private SettingsButton? _resetWelcomeScreenButton;
     private SettingsButton? _restoreModDefaultsButton;
     private UnityAction? _speechOutputSubmitListener;
     private UnityAction? _brailleOutputSubmitListener;
@@ -54,6 +56,8 @@ public sealed partial class BopItAccessMod
     private UnityAction? _trimSilenceSubmitListener;
     private UnityAction? _speechBackSubmitListener;
     private UnityAction? _restoreModDefaultsSubmitListener;
+    private UnityAction? _openUserGuideSubmitListener;
+    private UnityAction? _resetWelcomeScreenSubmitListener;
     private UnityAction<int>? _speechModeMoveListener;
     private UnityAction<int>? _hintsTypeMoveListener;
     private UnityAction<int>? _buttonHintsDelayMoveListener;
@@ -74,6 +78,10 @@ public sealed partial class BopItAccessMod
     private int _restoreModDefaultsFirstFrame;
     private int _restoreModDefaultsLastActivationFrame = -1;
     private bool _restoreModDefaultsInputReleased;
+    private long _resetWelcomeScreenConfirmUntil;
+    private int _resetWelcomeScreenFirstFrame;
+    private int _resetWelcomeScreenLastActivationFrame = -1;
+    private bool _resetWelcomeScreenInputReleased;
     private static readonly int[] ButtonHintsDelayOptions = { 0, 5, 10, 15, 30, 60 };
     private static readonly int[] RepeatButtonHintsOptions = { 0, 2, 3, 4, 5, -1 };
     private static readonly int[] RepeatButtonHintsIntervalOptions = { 15, 30, 45, 60 };
@@ -91,6 +99,10 @@ public sealed partial class BopItAccessMod
     };
     private void UpdateSpeechMenuUi()
     {
+        // The guide can temporarily sit above Mod Settings in the native
+        // panel stack. Keep this menu's state so Back returns to its row.
+        if (_guideOpen)
+            return;
         if (_speechMenuOpen)
         {
             if (_speechMenuRoot == null || _speechMenuPanel == null ||
@@ -103,6 +115,7 @@ public sealed partial class BopItAccessMod
                 _speechMenuOpen = false;
                 _speechMenuInputReady = false;
                 CancelRestoreModDefaultsConfirmation();
+                CancelResetWelcomeScreenConfirmation();
                 ResetSpeechMenuFocus();
             }
             else
@@ -123,6 +136,14 @@ public sealed partial class BopItAccessMod
                         CancelRestoreModDefaultsConfirmation();
                     else if (!IsUiSubmitHeld())
                         _restoreModDefaultsInputReleased = true;
+                }
+                if (_resetWelcomeScreenConfirmUntil != 0)
+                {
+                    if (Environment.TickCount64 >= _resetWelcomeScreenConfirmUntil ||
+                        !IsResetWelcomeScreenFocused())
+                        CancelResetWelcomeScreenConfirmation();
+                    else if (!IsUiSubmitHeld())
+                        _resetWelcomeScreenInputReleased = true;
                 }
                 if (_speechOutputToggle != null && _speechOutputToggle.IsOn != _speechEnabled)
                     SetSpeechToggleDisplay(_speechOutputToggle, _speechEnabled);
@@ -276,6 +297,7 @@ public sealed partial class BopItAccessMod
             _speechMenuIntroductionPending = true;
             _speechMenuOpenedAt = Environment.TickCount64;
             CancelRestoreModDefaultsConfirmation();
+            CancelResetWelcomeScreenConfirmation();
             ResetSpeechMenuFocus();
             WriteStatus("Opened Mod Settings menu.");
         }
@@ -292,6 +314,7 @@ public sealed partial class BopItAccessMod
             _speechMenuOpen = false;
             _speechMenuInputReady = false;
             CancelRestoreModDefaultsConfirmation();
+            CancelResetWelcomeScreenConfirmation();
         }
     }
 
@@ -435,6 +458,14 @@ public sealed partial class BopItAccessMod
                 "SAPI RATE");
             _speechPitchSlider = AddSpeechSlider(settings.resolution, content,
                 "SAPI PITCH");
+            _openUserGuideButton = AddSpeechButton(settings.controls, content,
+                "OPEN USER'S GUIDE",
+                _openUserGuideSubmitListener ??=
+                    (UnityAction)OnOpenUserGuideSubmitted);
+            _resetWelcomeScreenButton = AddSpeechButton(settings.controls, content,
+                "RESET WELCOME SCREEN",
+                _resetWelcomeScreenSubmitListener ??=
+                    (UnityAction)OnResetWelcomeScreenSubmitted);
             _restoreModDefaultsButton = AddSpeechButton(settings.controls, content,
                 "RESTORE MOD DEFAULTS",
                 _restoreModDefaultsSubmitListener ??=
@@ -489,6 +520,12 @@ public sealed partial class BopItAccessMod
                 () => _sapiRate.ToString()));
             _speechUiOptions.Add(new("SAPI PITCH", "slider", _speechPitchSlider,
                 () => _sapiPitch.ToString()));
+            _speechUiOptions.Add(new("OPEN USER'S GUIDE", "button",
+                _openUserGuideButton, () => null));
+            _speechUiOptions.Add(new("RESET WELCOME SCREEN", "button",
+                _resetWelcomeScreenButton,
+                () => _resetWelcomeScreenConfirmUntil != 0
+                    ? "Press again to confirm" : null));
             _speechUiOptions.Add(new("RESTORE MOD DEFAULTS", "button",
                 _restoreModDefaultsButton,
                 () => _restoreModDefaultsConfirmUntil != 0
@@ -537,6 +574,8 @@ public sealed partial class BopItAccessMod
             _speechVolumeSlider = null;
             _speechRateSlider = null;
             _speechPitchSlider = null;
+            _openUserGuideButton = null;
+            _resetWelcomeScreenButton = null;
             _restoreModDefaultsButton = null;
             _speechMenuScroll = null;
             throw;
@@ -983,7 +1022,80 @@ public sealed partial class BopItAccessMod
             return;
         }
         CancelRestoreModDefaultsConfirmation();
+        CancelResetWelcomeScreenConfirmation();
         _mainMenu?.GoBack();
+    }
+
+    private void OnOpenUserGuideSubmitted()
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady ||
+            _openUserGuideButton == null ||
+            EventSystem.current?.currentSelectedGameObject?
+                .GetComponentInParent<SettingsRow>()?.GetInstanceID() !=
+                _openUserGuideButton.GetInstanceID())
+            return;
+        CancelResetWelcomeScreenConfirmation();
+        CancelRestoreModDefaultsConfirmation();
+        if (!OpenGuide())
+            QueueSpeech("User's guide could not be opened.");
+        else
+            ResetSpeechMenuFocus();
+    }
+
+    private bool IsResetWelcomeScreenFocused()
+    {
+        if (_resetWelcomeScreenButton == null)
+            return false;
+        SettingsRow? selectedRow = EventSystem.current?
+            .currentSelectedGameObject?.GetComponentInParent<SettingsRow>();
+        return selectedRow != null && selectedRow.GetInstanceID() ==
+            _resetWelcomeScreenButton.GetInstanceID();
+    }
+
+    private void CancelResetWelcomeScreenConfirmation()
+    {
+        if (_resetWelcomeScreenConfirmUntil == 0)
+            return;
+        _resetWelcomeScreenConfirmUntil = 0;
+        _resetWelcomeScreenFirstFrame = 0;
+        _resetWelcomeScreenInputReleased = false;
+        _resetWelcomeScreenButton?.SetValue(string.Empty);
+        WriteStatus("Reset welcome screen confirmation cancelled.");
+    }
+
+    private void OnResetWelcomeScreenSubmitted()
+    {
+        if (!_speechMenuOpen || !_speechMenuInputReady ||
+            !IsResetWelcomeScreenFocused() ||
+            Time.frameCount == _resetWelcomeScreenLastActivationFrame)
+            return;
+        _resetWelcomeScreenLastActivationFrame = Time.frameCount;
+
+        long now = Environment.TickCount64;
+        if (_resetWelcomeScreenConfirmUntil != 0 &&
+            now < _resetWelcomeScreenConfirmUntil)
+        {
+            if (!_resetWelcomeScreenInputReleased ||
+                Time.frameCount <= _resetWelcomeScreenFirstFrame)
+                return;
+            CancelResetWelcomeScreenConfirmation();
+            if (ResetWelcomeScreenForNextLaunch())
+                QueueSpeech("Welcome screen reset. It will appear the next time the game launches.");
+            else
+                QueueSpeech("Welcome screen could not be reset.");
+            return;
+        }
+
+        CancelRestoreModDefaultsConfirmation();
+        CancelResetWelcomeScreenConfirmation();
+        _resetWelcomeScreenConfirmUntil = now + 5000;
+        _resetWelcomeScreenFirstFrame = Time.frameCount;
+        _resetWelcomeScreenInputReleased = false;
+        _resetWelcomeScreenButton?.SetValue("Press again to confirm");
+        _lastSpeechMenuRowId = _resetWelcomeScreenButton!.GetInstanceID();
+        _lastSpeechMenuValue = "Press again to confirm";
+        QueueSpeech("Are you sure? Press again to confirm.");
+        WriteStatus("Reset welcome screen confirmation requested.");
     }
 
     private bool IsRestoreModDefaultsFocused()
@@ -1126,6 +1238,9 @@ public sealed partial class BopItAccessMod
         if (_restoreModDefaultsConfirmUntil != 0 &&
             focused.Row.GetInstanceID() != _restoreModDefaultsButton?.GetInstanceID())
             CancelRestoreModDefaultsConfirmation();
+        if (_resetWelcomeScreenConfirmUntil != 0 &&
+            focused.Row.GetInstanceID() != _resetWelcomeScreenButton?.GetInstanceID())
+            CancelResetWelcomeScreenConfirmation();
 
         string? value = focused.ReadValue();
         int id = focused.Row.GetInstanceID();

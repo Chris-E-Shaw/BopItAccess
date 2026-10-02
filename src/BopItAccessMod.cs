@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.6.17", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.7.0", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -104,6 +104,23 @@ public sealed partial class BopItAccessMod : MelonMod
     private void ReadScreenFocus()
     {
         ObserveResultRank();
+
+        // These mod panels sit above the native main menu and must own
+        // focus before any underlying game panel can announce itself.
+        try
+        {
+            if (ReadGuideFocus() || ReadWelcomeScreenFocus())
+            {
+                ResetUncoveredPanelFocus();
+                ResetSettingsFocus();
+                ResetMenuFocus();
+                return;
+            }
+        }
+        catch (Exception ex)
+        {
+            WriteStatus("Guide or welcome focus check failed: " + ex);
+        }
 
         bool titleVisible = false;
         try
@@ -1149,6 +1166,7 @@ public sealed partial class BopItAccessMod : MelonMod
     public override void OnDeinitializeMelon()
     {
         WriteStatus("Mod shutdown requested.");
+        SetGuideMusicFilter(false);
         StopBackgroundAudio();
         _shutdownRequested.Set();
     }
