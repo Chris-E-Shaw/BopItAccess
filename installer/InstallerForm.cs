@@ -187,7 +187,8 @@ internal sealed class InstallerForm : Form
             if (_startUninstall)
             {
                 await UninstallRequestedAsync();
-                Close();
+                if (_service.LastUninstallWarningCount == 0)
+                    Close();
             }
         }
         catch (Exception ex)
@@ -259,8 +260,13 @@ internal sealed class InstallerForm : Form
             if (!_abortRequested && !_operationCancellation.IsCancellationRequested)
             {
                 succeeded = true;
-                MessageBox.Show(this, successMessage, "Bop It Access Installer",
-                    MessageBoxButtons.OK, MessageBoxIcon.Information);
+                var message = uninstall && _service.LastUninstallWarningCount > 0
+                    ? $"Bop It Access files were removed, but preference cleanup reported {_service.LastUninstallWarningCount} warning(s). Some Windows profiles may still contain mod settings. Review the status log now. You can run Uninstall again to retry cleanup."
+                    : successMessage;
+                var icon = uninstall && _service.LastUninstallWarningCount > 0
+                    ? MessageBoxIcon.Warning : MessageBoxIcon.Information;
+                MessageBox.Show(this, message, "Bop It Access Installer",
+                    MessageBoxButtons.OK, icon);
                 if (uninstall && _startUninstall)
                     Environment.ExitCode = 0;
             }
@@ -280,7 +286,7 @@ internal sealed class InstallerForm : Form
             _abortRequested = false;
             _allowAbort = false;
             UpdateActions();
-            if (uninstall && succeeded && !_startUninstall)
+            if (uninstall && succeeded && !_startUninstall && _service.LastUninstallWarningCount == 0)
                 Close();
         }
     }
@@ -333,7 +339,8 @@ internal sealed class InstallerForm : Form
         _installAlpha.Enabled = !busy && _state.ValidGamePath;
         _update.Enabled = !busy && _state.ValidGamePath &&
             _state.Installed && _state.UpdateAvailable;
-        _uninstall.Enabled = !busy && _state.ValidGamePath && _state.Installed;
+        _uninstall.Enabled = !busy && _state.ValidGamePath &&
+            (_state.Installed || _service.LastUninstallWarningCount > 0);
         _abort.Enabled = busy && _allowAbort && _operationCancellation != null && !_abortRequested;
         if (!busy && _progress.Style == ProgressBarStyle.Marquee)
             _progress.Style = ProgressBarStyle.Blocks;

@@ -20,6 +20,7 @@ internal sealed class InstallerService
     private GitHubRelease? _release;
     private bool _busy;
     private CancellationTokenSource? _abort;
+    internal int LastUninstallWarningCount { get; private set; }
 
     internal async Task InitializeAsync()
     {
@@ -72,13 +73,17 @@ internal sealed class InstallerService
     internal async Task UninstallAsync(CancellationToken cancellation)
     {
         var game = RequireGame();
+        LastUninstallWarningCount = 0;
         await RunBusyAsync(async ct =>
         {
             var manifestPath = Path.Combine(_stateDirectory, "install-manifest.json");
             if (!File.Exists(manifestPath))
             {
                 Log("This mod installation predates the installer. Removing only known mod-owned files.");
-                await UninstallManager.UninstallLegacyAsync(game, Log, ct);
+                var legacyResult = await UninstallManager.UninstallLegacyAsync(game, Log, ct);
+                LastUninstallWarningCount = legacyResult.PreferenceWarnings.Count;
+                if (LastUninstallWarningCount > 0)
+                    Log($"Preference cleanup reported {LastUninstallWarningCount} warning(s). Review the status log.");
                 PublishState();
                 return;
             }
@@ -86,6 +91,9 @@ internal sealed class InstallerService
             var result = await UninstallManager.UninstallAsync(manifestPath, Log, ct);
             if (!result.Success)
                 throw new InvalidOperationException("Uninstall stopped because installed files or backups were changed. Review the conflicts in the status log; no files were removed.");
+            LastUninstallWarningCount = result.PreferenceWarnings.Count;
+            if (LastUninstallWarningCount > 0)
+                Log($"Preference cleanup reported {LastUninstallWarningCount} warning(s). Review the status log.");
             Log("Uninstall completed. The .NET SDK remains installed, as requested.");
             ScheduleStandaloneCleanup();
             PublishState();

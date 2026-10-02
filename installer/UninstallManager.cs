@@ -9,6 +9,7 @@ public sealed class UninstallResult
     public bool RequiresSelfCleanup { get; set; }
     public List<string> Conflicts { get; } = new();
     public List<string> PreservedSharedFiles { get; } = new();
+    public List<string> PreferenceWarnings { get; } = new();
 }
 
 /// <summary>
@@ -121,7 +122,7 @@ public static class UninstallManager
         }
         if (manifest.MelonLoaderInstalledByInstaller && !sharedLoader)
             RemoveOwnedMelonLoaderTree(game, log);
-        RemoveModPreferences(log);
+        result.PreferenceWarnings.AddRange(ModPreferenceCleaner.RemoveAcrossProfiles(log));
 
         foreach (string directory in manifest.CreatedDirectories.OrderByDescending(path => path.Length))
         {
@@ -187,10 +188,11 @@ public static class UninstallManager
             }
             if (!Directory.EnumerateFileSystemEntries(docs).Any()) Directory.Delete(docs);
         }
-        RemoveModPreferences(log);
+        var result = new UninstallResult { Success = true, RequiresSelfCleanup = false };
+        result.PreferenceWarnings.AddRange(ModPreferenceCleaner.RemoveAcrossProfiles(log));
         RemoveUninstallRegistration(log);
         log("Removed identifiable legacy mod files. Pre-existing MelonLoader and unverified shared files were preserved.");
-        return new UninstallResult { Success = true, RequiresSelfCleanup = false };
+        return result;
     }
 
     internal static bool IsLegacyDocumentationName(string name) =>
@@ -278,22 +280,6 @@ public static class UninstallManager
             else File.Delete(entry);
         }
         Directory.Delete(directory);
-    }
-
-    private static void RemoveModPreferences(Action<string> log)
-    {
-        // Unity's Windows PlayerPrefs values keep their original key prefix,
-        // followed by a Unity hash suffix. Only BopItAccess.* values are ours.
-        // Bop It!'s Windows PlayerPrefs key is Alliance/Bop It!; leave the
-        // game's own preferences and audio/settings values untouched.
-        using RegistryKey? key = Registry.CurrentUser.OpenSubKey(@"Software\Alliance\Bop It!", writable: true);
-        if (key is null) return;
-        foreach (string valueName in key.GetValueNames())
-        {
-            if (!valueName.StartsWith("BopItAccess.", StringComparison.OrdinalIgnoreCase)) continue;
-            key.DeleteValue(valueName, throwOnMissingValue: false);
-            log($"Removed mod preference: {valueName}");
-        }
     }
 
     private static void RemoveUninstallRegistration(Action<string> log)
