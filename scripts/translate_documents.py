@@ -57,7 +57,7 @@ WINDOWS_PATH = re.compile(r"[A-Za-z]:\\[^\r\n]+")
 RELATIVE_PATH = re.compile(r"(?<!\w)(?:[\w!.-]+\\)+[\w!.-]+")
 FILE_NAME = re.compile(r"\b[\w-]+\.(?:dll|html|md|txt|csproj|json|exe|zip)\b",
     re.IGNORECASE)
-VERSION = re.compile(r"\b\d+(?:\.\d+){1,3}(?:f\d+)?\b")
+VERSION = re.compile(r"(?<![\w])[vV]?\d+(?:\.\d+){1,3}(?:f\d+)?\b")
 PROTECTED_TERMS = (
     "Bop It Access", "Bop It! The Video Game", "Bop It!", "Bop It",
     "MelonLoader",
@@ -382,6 +382,12 @@ def translate_html(source: str, translator: Translator) -> str:
             (Comment, Declaration, Doctype, ProcessingInstruction)):
             continue
         if node.parent and node.parent.name in SKIP_HTML:
+            continue
+        if node.parent and node.parent.name == "span" and any(
+                kind in node.parent.get("class", [])
+                for kind in ("version", "kind")):
+            # Git-style metadata and exact version identifiers are technical
+            # tokens, not prose for translation.
             continue
         translated = None
         if node.parent and node.parent.name in {"td", "th"}:
