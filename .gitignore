@@ -9,6 +9,8 @@
 *.pyc
 /src/bin/
 /src/obj/
+/installer/bin/
+/installer/obj/
 
 # Release archives and installed backups are preserved outside Git history.
 /*.zip
