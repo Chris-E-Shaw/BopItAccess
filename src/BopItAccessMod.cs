@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.0", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.1", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -98,6 +98,7 @@ public sealed partial class BopItAccessMod : MelonMod
         }
         finally
         {
+            FinishMenuInputDiagnosticFrame();
             // Focus can move after OnUpdate. Dispatch due hints only after
             // the frame's focus and value announcements have reset the timer.
             UpdateRepeatButtonHints();

@@ -36,6 +36,7 @@ public sealed partial class BopItAccessMod
 
     public override void OnUpdate()
     {
+        BeginMenuInputDiagnosticFrame();
         UpdateGameLocale();
         RefreshLocalizedControlRows();
         UpdateWelcomeScreen();
