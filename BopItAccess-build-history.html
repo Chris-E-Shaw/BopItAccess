@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Bop It Access — Technical Build History, v0.1.0–v0.9.0</title>
+  <title>Bop It Access — Technical Build History, v0.1.0–v0.9.1</title>
   <style>
     :root { color-scheme: light dark; --page: #f6f8fa; --card: #fff; --ink: #1f2328; --muted: #57606a; --line: #d0d7de; --link: #0969da; --accent: #8250df; --code: #eff1f3; }
     @media (prefers-color-scheme: dark) { :root { --page: #0d1117; --card: #161b22; --ink: #e6edf3; --muted: #9198a1; --line: #30363d; --link: #58a6ff; --accent: #bc8cff; --code: #21262d; } }
@@ -41,7 +41,7 @@
   <header>
     <div class="wrap">
       <h1>Bop It Access: technical build history</h1>
-      <p class="intro">A chronological record of 47 mod builds, from v0.1.0 through v0.9.0, plus standalone installer previews. Each entry has a scoped change summary and implementation details. The public GitHub repository contains source code, with no GitHub Releases yet.</p>
+      <p class="intro">A chronological record of 48 mod builds, from v0.1.0 through v0.9.1, plus standalone installer previews. Each entry has a scoped change summary and implementation details. The public GitHub repository contains source code, with no GitHub Releases yet.</p>
       <p class="note"><strong>Git provenance:</strong> Git was introduced after v0.6.12. The 37 source commits were reconstructed from preserved source ZIPs; their Git dates describe the import, not the original build events. Christopher Shaw is the commit author. The co-author trailers reflect verified model records for the corresponding build work: GPT-6 Luna for the first build and GPT-6 Sol for the remaining 36. Local install packages and version tags are not part of the initial GitHub publication.</p>
       <nav aria-label="Build series"><a href="#foundation">v0.1–v0.4 Foundation</a><a href="#series05">v0.5 Series</a><a href="#series06">v0.6 Series</a><a href="#series07">v0.7 Series</a><a href="#series08">v0.8 Multilingual</a><a href="#series09">v0.9 Prism</a><a href="#installer-preview">Installer preview</a></nav>
     </div>
@@ -114,8 +114,9 @@
     </section>
 
     <section id="series09" aria-labelledby="series09-heading">
-      <h2 id="series09-heading">Prism speech and braille: v0.9.0</h2>
+      <h2 id="series09-heading">Prism speech and braille: v0.9.0–v0.9.1</h2>
       <article class="commit" id="v0-9-0"><div class="meta"><span class="version">v0.9.0</span><span class="kind">feat · docs</span></div><h3>feat(speech): route speech and braille through Prism</h3><ul><li>Use the Prism v0.18.3 native API for mod announcements and braille, replacing the Tolk and direct NVDA speech paths. Keep the speech worker's focus interruption, sequential reading, protected result announcements, speech-off recovery, and background mute behavior.</li><li>Expand Output Mode to Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText, Boy PC Reader, PC Talker, Sense Reader, System Access, and Window-Eyes. Auto chooses a running screen reader, then SAPI; unavailable explicit choices announce an available fallback. Preserve existing saved mode choices and the Change Speech Output shortcut.</li><li>Retain SAPI voice, volume, rate, and pitch controls through Prism. Update the Windows x64 build and installation guidance for <code>prism.dll</code> and its license. Prism provides a foundation for future platform work; this version remains a Windows x64 mod.</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/f1e46cd3e4bdd5c213abe47d4eab3e2d5d0005cf">Source commit</a> · No compiled GitHub release</p></article>
+      <article class="commit" id="v0-9-1"><div class="meta"><span class="version">v0.9.1</span><span class="kind">diagnostics</span></div><h3>diagnostics(input): trace menu navigation inputs</h3><ul><li>Record controller D-pad and keyboard navigation action edges, the selected menu item, and whether focus changes within two frames. Correlate those events with speech logs to investigate reported missed Up and Down presses.</li><li>Keep navigation behavior and speech output unchanged. The new trace provides evidence for a targeted fix if missed presses recur during testing.</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/4cee5a6392abf2f7ad5c3ba15d3a4a9547e97937">Source commit</a> · No compiled GitHub release</p></article>
     </section>
     <section id="installer-preview" aria-labelledby="installer-preview-heading">
       <h2 id="installer-preview-heading">Standalone Windows installer preview</h2>
