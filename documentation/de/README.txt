@@ -41,8 +41,8 @@ Anweisungen, wenn die Sprachausgabe ausgeschaltet ist. Die BRAILLE-AUSGABE start
 zwischen den Sitzungen. Prism sendet Ankündigungen an einen kompatiblen Bildschirmleser
 Brailleausgabe, wenn diese Einstellung aktiviert ist. Durch Ausschalten wird die Blindenschrift des Mods gestoppt
 Nachrichten, während die Sprache verfügbar bleibt.
-OUTPUT MODE beginnt mit Auto: Über Prism wird ein laufender unterstützter Screenreader verwendet; ist keiner verfügbar, wird SAPI verwendet. OneCore kann separat gewählt werden.
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+OUTPUT MODE: Auto verwendet einen laufenden unterstützten Screenreader, danach OneCore und zuletzt SAPI.
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 Die einzelnen Screenreader und Sprach-Engines sind nur verfügbar, wenn die installierte Prism-Version und das System sie unterstützen. Ist der gewählte Modus nicht verfügbar, wechselt der Mod automatisch zu einer verfügbaren Ausgabe und sagt dies einmal an.
 Prism-Backends können nicht unterbrechende Ansagen unterschiedlich einreihen. Bitte melden Sie Punktestände oder Credits, die in falscher Reihenfolge gesprochen werden. Gespeicherte SAPI-Stimmkennungen werden mit den Anzeigenamen in Prism abgeglichen; bei gleichen Namen kann die erste passende Stimme gewählt werden.
@@ -138,12 +138,7 @@ Aktives Gameplay und die Beat-Timing-Phasen der Audiokalibrierung, wo extra
 Sprache könnte einen Hinweis maskieren. Eine bereits gespeicherte 15-, 30- oder 60-Sekunden-Erinnerung
 Verzögerung ab Version 0.6.2 wird zum neuen BUTTON HINTS DELAY-Wert.
 
-Das MOD SETTINGS-Menü verfügt außerdem über SAPI VOICE, SAPI VOLUME, SAPI RATE und SAPI PITCH
-Kontrollen. SAPI Voice listet die Systemstandard- und installierten 64-Bit-SAPI-Stimmen auf.
-Die Lautstärke beginnt bei 100 %; Rate und Pitch beginnen bei 50. Die Lautstärke reicht von 5 % bis 100 %.
-Daher bleiben SAPI Wiederherstellungsbenachrichtigungen hörbar. Rate und Pitch reichen von 0 bis 100.
-Alle drei bewegen sich in Fünferschritten. Sie gelten, wenn Prism SAPI direkt oder als verwendet
-der automatische Fallback. Das frühere Trim-Silence-Experiment bleibt verborgen und inaktiv.
+MOD SETTINGS: Die vier Stimmregler tragen den Namen der tatsächlich verwendeten Engine, OneCore oder SAPI, auch im Auto-Modus. Nur unterstützte Regler sind sichtbar; bei anderen Ausgaben werden sie ausgeblendet. Beide Engines speichern Stimme, Lautstärke, Geschwindigkeit und Tonhöhe getrennt. Lautstärke: 5 % bis 100 % in Fünferschritten, standardmäßig 100 %. Geschwindigkeit und Tonhöhe: 0 bis 100 in Fünferschritten, standardmäßig 50. Die Mindestlautstärke hält Wiederherstellungshinweise hörbar.
 Die Auswahl der Mod-Einstellungen wird zwischen den Sitzungen gespeichert. MOD-STANDARDS WIEDERHERSTELLEN
 setzt diese Auswahl auf die oben beschriebenen Standardwerte zurück. Drücken Sie einmal darauf, um eine Anfrage zu stellen
 Bestätigung, und drücken Sie dann innerhalb von fünf Sekunden erneut darauf, um sie wiederherzustellen. Umzug
@@ -264,7 +259,7 @@ Verknüpfung. Reset Gyro übernimmt die Steuerung des Spiels; die modspezifische
 bleiben am unteren Rand des Menüs zusammen, bevor sie auf die Standardeinstellungen zurückgesetzt werden. VERÄNDERUNG
 SPEECH OUTPUT durchläuft dieselben Modi wie Settings > Mod Settings > OUTPUT
 MODUS. Die Modusreihenfolge ist:
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 Die Standardeingaben der Verknüpfung sind F9 auf der Tastatur und die West-Face-Taste (X auf einer Xbox).
 Controller). Die Starttaste des Controllers ist dem nativen Controller des Spiels vorbehalten

@@ -86,10 +86,18 @@ public sealed partial class BopItAccessMod
                 return _sapiVoices.Count == 0 ? null :
                     FormatSpeechRange(L(_sapiVoices[0].Name),
                         L(_sapiVoices[^1].Name));
+            case "ONECORE VOICE":
+                return _oneCoreVoices.Count == 0 ? null :
+                    FormatSpeechRange(L(_oneCoreVoices[0].Name),
+                        _oneCoreVoices[^1].Id.Length == 0
+                            ? L(_oneCoreVoices[^1].Name) : _oneCoreVoices[^1].Name);
             case "SAPI VOLUME":
+            case "ONECORE VOLUME":
                 return FormatSpeechRange("5%", "100%");
             case "SAPI RATE":
             case "SAPI PITCH":
+            case "ONECORE RATE":
+            case "ONECORE PITCH":
                 return FormatSpeechRange("0", "100");
             default:
                 return null;

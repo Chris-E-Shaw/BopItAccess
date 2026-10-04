@@ -41,8 +41,8 @@ Off로 시작되며 세션 사이에 저장됩니다.
 세션 사이. Prism은 호환되는 스크린 리더에 공지 사항을 보냅니다.
 이 설정이 On일 때 점자를 출력합니다. 끄면 모드의 점자가 중지됩니다.
 음성을 사용 가능한 상태로 두는 동안 메시지.
-OUTPUT MODE의 기본값은 Auto입니다. Prism을 통해 실행 중인 호환 스크린 리더를 사용하고, 없으면 SAPI를 사용합니다. OneCore는 별도로 선택할 수 있습니다.
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+OUTPUT MODE: Auto는 실행 중인 호환 스크린 리더, OneCore, SAPI 순으로 사용합니다.
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 각 스크린 리더와 음성 엔진은 설치된 Prism 빌드와 플레이어의 시스템이 지원할 때만 사용할 수 있습니다. 선택한 방식을 사용할 수 없으면 사용 가능한 방식으로 자동 전환하고 한 번 음성으로 알립니다.
 Prism 출력 방식마다 다른 음성을 끊지 않는 안내의 대기 순서가 다를 수 있습니다. 점수나 크레딧이 잘못된 순서로 읽히면 알려 주세요. 저장된 SAPI 음성 ID는 Prism에 표시되는 이름과 대조합니다. 같은 이름의 음성이 여러 개면 처음 일치하는 음성이 선택될 수 있습니다.
@@ -138,12 +138,7 @@ SPEAK HINTS는
 말은 단서를 가릴 수 있습니다. 기존에 저장된 15초, 30초 또는 60초 알림
 버전 0.6.2의 지연은 새로운 BUTTON HINTS DELAY 값이 됩니다.
 
-MOD SETTINGS 메뉴에는 SAPI VOICE, SAPI VOLUME, SAPI RATE 및 SAPI PITCH도 있습니다.
-제어합니다. SAPI Voice에는 시스템 기본 및 설치된 64비트 SAPI 음성이 나열됩니다.
-볼륨은 100%에서 시작됩니다. 속도와 피치는 50에서 시작합니다. 볼륨 범위는 5%에서 100%까지입니다.
-따라서 SAPI 복구 알림은 계속 들립니다. 속도 및 피치 범위는 0에서 100까지입니다.
-3개 모두 5단계로 이동합니다. Prism이 SAPI를 직접 또는 다음과 같이 사용할 때 적용됩니다.
-자동 대체. 이전의 트림-무음 실험은 숨겨져 있고 비활성 상태로 유지됩니다.
+MOD SETTINGS: 네 가지 음성 설정은 Auto 모드에서도 실제로 사용 중인 OneCore 또는 SAPI의 이름을 표시합니다. 지원되는 설정만 나타나며 다른 출력 방식에서는 숨겨집니다. 두 엔진의 음성, 볼륨, 속도, 음높이는 따로 저장됩니다. 볼륨은 5%에서 100%까지 5씩 조정하며 기본값은 100%입니다. 속도와 음높이는 0에서 100까지 5씩 조정하며 기본값은 50입니다. 최소 볼륨에서도 복구 안내를 들을 수 있습니다.
 Mod 설정 선택 사항은 세션 간에 기억됩니다. 모드 기본값 복원
 해당 선택 사항을 위에서 설명한 기본값으로 되돌립니다. 요청하려면 한 번 누르세요.
 확인하고 5초 이내에 다시 누르면 복원됩니다. 이사
@@ -264,7 +259,7 @@ Page Down은 필터에 포커스가 있는 경우에도 개별 점수 행을 읽
 기본값으로 재설정하기 전에 메뉴 하단에 함께 남아 있습니다. 변경
 음성 출력은 설정 > 모드 설정 > 출력과 동일한 모드를 순환합니다.
 모드. 모드 순서는 다음과 같습니다.
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 단축키의 기본 입력은 키보드의 F9와 서쪽 버튼(Xbox의 경우 X)입니다.
 컨트롤러). 컨트롤러 시작 버튼은 게임의 기본 버튼으로 예약되어 있습니다.

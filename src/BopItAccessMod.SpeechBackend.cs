@@ -12,6 +12,10 @@ public sealed partial class BopItAccessMod
     private const string SapiVolumePreferenceKey = "BopItAccess.SapiVolume";
     private const string SapiRatePreferenceKey = "BopItAccess.SapiRate";
     private const string SapiPitchPreferenceKey = "BopItAccess.SapiPitch";
+    private const string OneCoreVoicePreferenceKey = "BopItAccess.OneCoreVoice";
+    private const string OneCoreVolumePreferenceKey = "BopItAccess.OneCoreVolume";
+    private const string OneCoreRatePreferenceKey = "BopItAccess.OneCoreRate";
+    private const string OneCorePitchPreferenceKey = "BopItAccess.OneCorePitch";
     private const string SapiTrimSilencePreferenceKey = "BopItAccess.SapiTrimSilence";
     private const string LegacyRepeatButtonHintsPreferenceKey =
         "BopItAccess.RepeatButtonHintsSeconds";
@@ -29,7 +33,7 @@ public sealed partial class BopItAccessMod
     private static readonly bool TrimSilenceExperimentAvailable = false;
     private static readonly string[] OutputModes =
     {
-        "Auto", "SAPI", "OneCore", "NVDA", "JAWS", "UI Automation", "ZDSR",
+        "Auto", "OneCore", "SAPI", "NVDA", "JAWS", "UI Automation", "ZDSR",
         "ZoomText", "Boy PC Reader", "PC Talker", "Sense Reader",
         "System Access", "Window-Eyes"
     };
@@ -39,6 +43,13 @@ public sealed partial class BopItAccessMod
     private int _sapiVolume = 100;
     private int _sapiRate = 50;
     private int _sapiPitch = 50;
+    private string _oneCoreVoiceId = string.Empty;
+    private int _oneCoreVolume = 100;
+    private int _oneCoreRate = 50;
+    private int _oneCorePitch = 50;
+    private List<SpeechVoiceOption> _oneCoreVoices = new()
+        { new(string.Empty, "System default") };
+    private int _oneCoreSettingsVersion;
     private bool _trimSilence;
     private bool _readButtonHintsEnabled = true;
     private bool _muteSpeechInBackground;
@@ -82,6 +93,10 @@ public sealed partial class BopItAccessMod
             _sapiVolume = Math.Clamp(PlayerPrefs.GetInt(SapiVolumePreferenceKey, 100), 5, 100);
             _sapiRate = Math.Clamp(PlayerPrefs.GetInt(SapiRatePreferenceKey, 50), 0, 100);
             _sapiPitch = Math.Clamp(PlayerPrefs.GetInt(SapiPitchPreferenceKey, 50), 0, 100);
+            _oneCoreVoiceId = PlayerPrefs.GetString(OneCoreVoicePreferenceKey, string.Empty);
+            _oneCoreVolume = Math.Clamp(PlayerPrefs.GetInt(OneCoreVolumePreferenceKey, 100), 5, 100);
+            _oneCoreRate = Math.Clamp(PlayerPrefs.GetInt(OneCoreRatePreferenceKey, 50), 0, 100);
+            _oneCorePitch = Math.Clamp(PlayerPrefs.GetInt(OneCorePitchPreferenceKey, 50), 0, 100);
             _readButtonHintsEnabled = PlayerPrefs.GetInt(ReadButtonHintsPreferenceKey, 1) != 0;
             _muteSpeechInBackground =
                 PlayerPrefs.GetInt(MuteSpeechInBackgroundPreferenceKey, 0) != 0;
@@ -124,6 +139,9 @@ public sealed partial class BopItAccessMod
             (TrimSilenceExperimentAvailable
                 ? $" Trim silence {(_trimSilence ? "on" : "off")}."
                 : string.Empty));
+        WriteStatus("OneCore voice: " +
+            (string.IsNullOrEmpty(_oneCoreVoiceId) ? "system default" : _oneCoreVoiceId) +
+            $"; volume {_oneCoreVolume}, rate {_oneCoreRate}, pitch {_oneCorePitch}.");
     }
 
     private void RefreshSapiVoices()
@@ -227,6 +245,31 @@ public sealed partial class BopItAccessMod
 
     private void SetSapiPitchFromMenu(int value) => SetSapiNumberFromMenu(
         SapiPitchPreferenceKey, ref _sapiPitch, value, "pitch");
+
+    private void SetOneCoreVoiceFromMenu(string voiceId)
+    {
+        if (!_oneCoreVoices.Any(voice => string.Equals(voice.Id, voiceId,
+                StringComparison.OrdinalIgnoreCase)) ||
+            string.Equals(_oneCoreVoiceId, voiceId, StringComparison.OrdinalIgnoreCase))
+            return;
+        lock (_speechLock)
+        {
+            _oneCoreVoiceId = voiceId;
+            _oneCoreSettingsVersion++;
+        }
+        SaveSpeechPreference(OneCoreVoicePreferenceKey, voiceId);
+        WriteStatus("OneCore voice changed to " +
+            (voiceId.Length == 0 ? "system default" : voiceId) + ".");
+    }
+
+    private void SetOneCoreVolumeFromMenu(int value) => SetOneCoreNumberFromMenu(
+        OneCoreVolumePreferenceKey, ref _oneCoreVolume, Math.Clamp(value, 5, 100), "volume");
+
+    private void SetOneCoreRateFromMenu(int value) => SetOneCoreNumberFromMenu(
+        OneCoreRatePreferenceKey, ref _oneCoreRate, value, "rate");
+
+    private void SetOneCorePitchFromMenu(int value) => SetOneCoreNumberFromMenu(
+        OneCorePitchPreferenceKey, ref _oneCorePitch, value, "pitch");
 
     private void SetTrimSilenceFromMenu(bool enabled)
     {
@@ -333,6 +376,21 @@ public sealed partial class BopItAccessMod
             WriteStatus($"Could not save SAPI {name}: {ex.Message}");
         }
         WriteStatus($"SAPI {name} changed to {value}.");
+    }
+
+    private void SetOneCoreNumberFromMenu(string key, ref int field, int value,
+        string name)
+    {
+        value = Math.Clamp(value, 0, 100);
+        if (field == value)
+            return;
+        lock (_speechLock)
+        {
+            field = value;
+            _oneCoreSettingsVersion++;
+        }
+        SaveButtonHintsPreference(key, value);
+        WriteStatus($"OneCore {name} changed to {value}.");
     }
 
     private static void SaveSpeechPreference(string key, string value)

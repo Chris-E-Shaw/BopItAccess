@@ -41,8 +41,8 @@ instruções quando a fala está desligada. BRAILLE OUTPUT começa ligado e é s
 entre as sessões. Prism envia anúncios para um leitor de tela compatível
 saída braille quando esta configuração está ativada. Desligá-lo interrompe o braille do mod
 mensagens enquanto deixa a fala disponível.
-OUTPUT MODE começa em Auto: pelo Prism, o mod usa um leitor de tela compatível em execução ou SAPI se nenhum estiver disponível. OneCore pode ser escolhido separadamente.
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+OUTPUT MODE: Auto usa um leitor de tela compatível em execução, depois OneCore e, por último, SAPI.
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 Cada leitor de tela e mecanismo de voz só está disponível se for compatível com a versão do Prism instalada e com o sistema do jogador. Se o modo escolhido não estiver disponível, o mod muda para uma saída disponível e avisa por voz uma única vez.
 Os mecanismos do Prism podem enfileirar de modo diferente avisos que não interrompem a fala. Informe se pontuações ou créditos forem lidos fora de ordem. As vozes SAPI salvas são localizadas pelo nome exibido no Prism; se várias tiverem o mesmo nome, a primeira poderá ser escolhida.
@@ -138,12 +138,7 @@ jogabilidade ativa e as fases de tempo de batida da calibração de áudio, onde
 a fala pode mascarar uma deixa. Um lembrete existente salvo de 15, 30 ou 60 segundos
 atraso da versão 0.6.2 torna-se o novo valor BUTTON HINTS DELAY.
 
-O menu MOD SETTINGS também possui SAPI VOZ, SAPI VOLUME, SAPI RATE e SAPI PITCH
-controles. SAPI Voice lista o padrão do sistema e instalou vozes SAPI de 64 bits.
-O volume começa em 100%; Taxa e pitch começam em 50. O volume varia de 5% a 100%
-portanto, SAPI avisos de recuperação permanecem audíveis. Taxa e pitch variam de 0 a 100.
-Todos os três se movem em passos de cinco. Eles se aplicam quando Prism usa SAPI diretamente ou como
-o substituto automático. O experimento anterior de trim-silence permanece oculto e inativo.
+MOD SETTINGS: Os quatro controles de voz mostram o nome do mecanismo ativo, OneCore ou SAPI, mesmo no modo Auto. Só aparecem os controles compatíveis; com outras saídas, eles são ocultados. Cada mecanismo guarda separadamente voz, volume, velocidade e tom. Volume: de 5% a 100% em passos de 5, inicialmente 100%. Velocidade e tom: de 0 a 100 em passos de 5, inicialmente 50. O volume mínimo mantém audíveis os avisos de recuperação.
 As opções de configurações do mod são lembradas entre as sessões. RESTAURAR PADRÕES DO MOD
 retorna essas opções aos padrões descritos acima. Pressione uma vez para solicitar
 confirmação e pressione-o novamente dentro de cinco segundos para restaurá-los. Movendo-se
@@ -264,7 +259,7 @@ atalho. Reset Gyro fica com os controles do jogo; as linhas específicas do mod
 permanecem juntos na parte inferior do menu, antes de Redefinir para o padrão. MUDAR
 SPEECH OUTPUT percorre os mesmos modos de Configurações > Configurações de Mod > SAÍDA
 MODO. A ordem dos modos é:
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 As entradas padrão do atalho são F9 no teclado e o botão oeste (X em um Xbox
 controlador). O botão Iniciar do controlador é reservado pelo nativo do jogo

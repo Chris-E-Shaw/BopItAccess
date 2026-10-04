@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.1", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.2", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -1092,6 +1092,16 @@ public sealed partial class BopItAccessMod : MelonMod
                     bool silenced = SilenceOutputOnWorker();
                     WriteStatus($"Stopped screen-reader speech: {silenced}.");
                 }
+
+                // An output-mode change must refresh the effective backend
+                // even when speech is disabled or background-muted. The menu
+                // reads this worker-published capability snapshot.
+                string requestedOutputMode;
+                lock (_speechLock)
+                    requestedOutputMode = _outputMode;
+                if (!string.Equals(_prismSelectedMode, requestedOutputMode,
+                        StringComparison.OrdinalIgnoreCase))
+                    ResolvePrismSpeechBackendOnWorker(requestedOutputMode, force: true);
 
                 if (toggleNotice != null &&
                     generation == Interlocked.Read(ref _speechGeneration))

@@ -41,8 +41,8 @@ row 仅说明新值。音频延迟、控制和上网就是行动
 会话之间。 Prism 将公告发送到兼容的屏幕阅读器
 当此设置为“开”时，盲文输出。将其关闭会停止 mod 的盲文
 消息，同时保留语音可用。
-OUTPUT MODE 默认为 Auto：模组通过 Prism 使用正在运行的兼容屏幕阅读器；如果没有，则使用 SAPI。OneCore 可单独选择。
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+OUTPUT MODE: 自动模式优先使用正在运行的兼容屏幕阅读器，其次使用 OneCore，最后使用 SAPI。
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 各屏幕阅读器和语音引擎只有在已安装的 Prism 版本及玩家系统支持时才能使用。如果所选模式不可用，模组会自动切换到可用输出，并通过语音提示一次。
 不同的 Prism 输出方式可能以不同顺序排队播放不中断当前语音的提示。如果分数或制作人员名单的朗读顺序不对，请反馈。已保存的 SAPI 语音 ID 会与 Prism 显示的语音名称匹配；如果多个语音同名，可能选中第一个匹配项。
@@ -138,12 +138,7 @@ SPEAK HINTS 取代了
 言语可能掩盖线索。现有已保存的 15 秒、30 秒或 60 秒提醒
 版本 0.6.2 中的延迟成为新的按钮提示延迟值。
 
-MOD SETTINGS 菜单还包含 SAPI VOICE、SAPI VOLUME、SAPI RATE 和 SAPI PITCH
-控制。 SAPI 语音列出了系统默认和已安装的 64 位 SAPI 语音。
-音量从 100% 开始；速率和音高从 50 开始。音量范围从 5% 到 100%
-因此 SAPI 恢复通知仍然可以听到。速率和音调范围从 0 到 100。
-三者均以五步移动。当 Prism 直接使用 SAPI 或作为
-自动回退。早期的修剪沉默实验仍然隐藏且不活跃。
+MOD SETTINGS: 四项语音设置会显示当前实际使用的 OneCore 或 SAPI 名称，包括自动模式。仅显示当前引擎支持的设置；其他输出方式会隐藏这些设置。两个引擎分别保存语音、音量、语速和音高。 音量范围为 5% 至 100%，每次调整 5%，默认值为 100%。语速和音高范围为 0 至 100，每次调整 5，默认值为 50。最低音量仍可听到恢复提示。
 Mod 设置选项会在会话之间被记住。恢复模组默认值
 将这些选项恢复为上述默认值。按一次即可请求
 确认后，五秒内再次按下即可恢复。搬家
@@ -264,7 +259,7 @@ READ SCORE 仅在游戏结束结果时按需重复最终结果
 在重置为默认值之前，它们仍位于菜单底部。改变
 语音输出在与“设置”>“调制设置”>“输出”相同的模式之间循环
 模式。模式顺序为：
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 该快捷方式的默认输入是键盘上的 F9 和 West Face 按钮（Xbox 上的 X）
 控制器）。控制器开始按钮是游戏原生保留的

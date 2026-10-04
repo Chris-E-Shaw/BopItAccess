@@ -42,9 +42,10 @@ between sessions. Prism sends announcements to a compatible screen reader's
 braille output when this setting is On. Turning it Off stops the mod's braille
 messages while leaving speech available.
 OUTPUT MODE starts at Auto: the mod uses a supported running screen reader
-through Prism, or SAPI when none is available. OneCore is a separate choice.
+through Prism, then OneCore when none is available, and SAPI if OneCore is unavailable.
+OneCore and SAPI remain separate manual choices.
 The available output modes are:
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 Individual readers and engines are available
 only when supported by the installed Prism build and the player's system. If a
@@ -146,12 +147,15 @@ active gameplay and the beat-timing phases of Audio Calibration, where extra
 speech could mask a cue. An existing saved 15-, 30-, or 60-second reminder
 delay from version 0.6.2 becomes the new BUTTON HINTS DELAY value.
 
-The MOD SETTINGS menu also has SAPI VOICE, SAPI VOLUME, SAPI RATE, and SAPI PITCH
-controls. SAPI Voice lists the system default and installed 64-bit SAPI voices.
-Volume starts at 100%; Rate and Pitch start at 50. Volume ranges from 5% to 100%
-so SAPI recovery notices remain audible. Rate and Pitch range from 0 to 100.
-All three move in steps of five. They apply when Prism uses SAPI directly or as
-the automatic fallback. The earlier trim-silence experiment remains hidden and inactive.
+The MOD SETTINGS menu has four engine-specific controls: VOICE, VOLUME, RATE,
+and PITCH. They are labelled ONECORE or SAPI to match the speech engine
+actually in use, including when OUTPUT MODE is Auto. Only controls supported
+by the active engine appear; other speech outputs hide them. Each engine keeps
+its own voice and adjustment values. Voice lists the system default and the
+voices available to that engine. Volume starts at 100%; Rate and Pitch start
+at 50. Volume ranges from 5% to 100% so recovery notices remain audible.
+Rate and Pitch range from 0 to 100. All three move in steps of five.
+The earlier trim-silence experiment remains hidden and inactive.
 Mod Settings choices are remembered between sessions. RESTORE MOD DEFAULTS
 returns those choices to the defaults described above. Press it once to request
 confirmation, then press it again within five seconds to restore them. Moving
@@ -272,7 +276,7 @@ shortcut. Reset Gyro sits with the game's controls; the mod-specific rows
 remain together at the bottom of the menu, before Reset to Default. CHANGE
 SPEECH OUTPUT cycles through the same modes as Settings > Mod Settings > OUTPUT
 MODE. The mode order is:
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 The shortcut's default inputs are F9 on keyboard and the West face button (X on an Xbox
 controller). The controller Start button is reserved by the game's native
@@ -333,14 +337,15 @@ folder. Obtain the official Windows x64 Prism v0.18.3 prism.dll from
 https://github.com/ethindp/prism/releases and place it beside the game executable,
 not inside Mods. Copy the build's documentation folder into the game folder,
 including its translated language subfolders. Start your screen reader if you
-use one, then start Bop It! through Steam. Prism can use SAPI when a supported
-screen reader is not running. The in-game guide loads the HTML from the
+use one, then start Bop It! through Steam. Without a supported running screen
+reader, Prism prefers OneCore speech, then SAPI if OneCore is unavailable.
+The in-game guide loads the HTML from the
 documentation folder whenever it opens. This mod was developed for MelonLoader
 0.7.3 Open-Beta and Bop It! (Unity 2022.3.50f1, x64).
 The first non-English translations were made with machine translation
 and need review by fluent speakers. Please report unclear or incorrect wording.
 Gameplay action names use the game's translated terms. Shapes, Space, City,
-and Office remain English as fixed stage titles. If SAPI's system voice does
+and Office remain English as fixed stage titles. If OneCore's or SAPI's system voice does
 not pronounce your language well, select a suitable installed voice in Mod
 Settings.
 

@@ -107,7 +107,7 @@
 <section id="mod">
 <h2>Bop It Access란?</h2>
 <p>Bop It Access는 Steam에서 판매하는 <strong>Windows x64 버전 Bop It!</strong>용 비공식 모드입니다. 이 모드는 메뉴와 결과 화면의 음성 및 점자 출력, 네 가지 스테이지의 설명, 추가 조작 방법, 프레임 제한 등의 설정을 제공합니다. 게임의 음성 명령과 진행 시간을 유지하면서 더 쉽게 탐색할 수 있도록 돕습니다.</p>
-<p>모드는 MelonLoader을 사용하여 게임을 로드합니다. 그것은 사용한다 <a href="https://github.com/ethindp/prism">Prism</a> 화면 판독기를 사용할 수 없는 경우 Windows SAPI를 포함하여 지원되는 화면 판독기와 음성 엔진을 통한 음성 및 점자 출력. 이는 게임을 대체하지 않으며 여전히 Bop It!의 복사본이 필요합니다.</p>
+<p>이 모드는 MelonLoader로 로드되고 <a href="https://github.com/ethindp/prism">Prism</a>을 통해 음성과 점자를 출력합니다. 게임은 별도로 소유해야 합니다. Auto는 실행 중인 호환 스크린 리더, OneCore, SAPI 순으로 사용합니다.</p>
 <p>모드는 메뉴와 공지사항에 대한 게임의 언어 설정을 따릅니다. 여기에는 영어, 프랑스어, 이탈리아어, 독일어, 스페인어(스페인), 스페인어(라틴 아메리카), 일본어, 한국어, 중국어 간체 및 브라질 포르투갈어가 포함됩니다.</p>
 </section>
 <section class="panel" id="transparency">
@@ -124,7 +124,7 @@
 <li>현재 모드 및 난이도에 대한 게임 튜토리얼 참조로, 각 작업에 현재 할당된 컨트롤을 사용하여 노래 선택 요청 시 음성으로 제공됩니다. 일대일에는 치기 입력이 모두 포함됩니다.</li>
 <li>선택적인 일대일 색상 및 생명수 발표.</li>
 <li>조정 가능한 타이밍, 반복 및 주문형 힌트 말하기 바로 가기를 갖춘 키보드, 컨트롤러 또는 둘 다에 대한 버튼 힌트입니다.</li>
-<li>Prism을 통한 화면 판독기 및 음성 엔진 출력, 선택적 점자 출력 및 구성 가능한 SAPI 대체.</li>
+<li>Prism은 스크린 리더, OneCore, SAPI의 음성 출력과 호환 스크린 리더의 선택적 점자 출력을 지원합니다.</li>
 <li>리더보드 필터 및 음성 단축키를 포함한 여러 기본 및 모드 컨트롤에 대한 키보드 및 컨트롤러 재매핑.</li>
 <li>음성을 다시 켜기 위한 음성 지침이 포함된 저장된 마스터 음성 스위치입니다.</li>
 <li>게임의 언어 설정에서 제공되는 모든 언어로 된 음성 및 게임 내 사용자 가이드입니다.</li>
@@ -144,7 +144,7 @@
 <h2>참고 사항과 제한 사항</h2>
 <ul>
 <li><strong>라운드 전에 설명이 요청됩니다.</strong> 이 모드는 의도적으로 게임 플레이 중에 풍경을 설명하지 않습니다. 플레이어는 게임의 구두 명령을 듣고 반응해야 합니다. 추가 내레이션으로 명령을 다루고 라운드를 끝낼 수 있습니다.</li>
-<li><strong>SAPI은 사용 가능한 음성 엔진 중 하나입니다.</strong> 지원되는 스크린 리더가 실행되고 있지 않을 때 이를 선택하거나 자동으로 사용하도록 할 수 있습니다. 설치된 음성 및 시스템이 응답 시간에 영향을 미칠 수 있습니다. 영어가 아닌 언어의 경우 선택한 게임 언어를 지원하는 설치된 SAPI 음성을 선택하십시오. 모드는 추가 음성을 설치하지 않습니다.</li><li data-prism-note="true"><strong>안내 순서는 출력 방식에 따라 다를 수 있습니다.</strong> Prism 출력 방식마다 다른 음성을 끊지 않는 안내의 대기 순서가 다를 수 있습니다. 점수나 크레딧이 잘못된 순서로 읽히면 알려 주세요. 저장된 SAPI 음성 ID는 Prism에 표시되는 이름과 대조합니다. 같은 이름의 음성이 여러 개면 처음 일치하는 음성이 선택될 수 있습니다.</li>
+<li>Auto는 실행 중인 스크린 리더, OneCore, SAPI 순으로 선택합니다. 설치된 음성과 시스템에 따라 반응 속도가 달라질 수 있습니다. 모드는 추가 음성을 설치하지 않습니다.</li><li data-prism-note="true"><strong>안내 순서는 출력 방식에 따라 다를 수 있습니다.</strong> Prism 출력 방식마다 다른 음성을 끊지 않는 안내의 대기 순서가 다를 수 있습니다. 점수나 크레딧이 잘못된 순서로 읽히면 알려 주세요. 저장된 SAPI 음성 ID는 Prism에 표시되는 이름과 대조합니다. 같은 이름의 음성이 여러 개면 처음 일치하는 음성이 선택될 수 있습니다.</li>
 <li><strong>일부 기본 컨트롤은 여전히 수정되었습니다.</strong> 이 모드는 게임의 컨트롤 메뉴를 크게 확장하지만 모든 게임 입력을 다시 매핑할 수 있게 만드는 것은 아닙니다.</li>
 <li><strong>프레임 속도는 입력 폴링에 영향을 미칩니다.</strong> FPS 리미터는 시스템 부하를 크게 줄일 수 있습니다. 의도적으로 애니메이션을 느리게 하거나 게임 타이밍을 변경하지는 않지만 게임은 낮은 FPS에서 프레임 기반 입력을 덜 자주 확인합니다. 설정이 높을수록 특히 빠른 라운드에서 입력 타이밍이 더 정확해집니다.</li>
 <li><strong>메뉴와 결과에서 음성 지원이 가장 강력합니다.</strong> 예상치 못한 패널에서 모드는 눈에 보이는 텍스트와 집중된 컨트롤을 발견하면 이를 읽을 수 있습니다. 마우스를 올리면 해당 항목이 실제로 게임 포커스를 받을 때까지 말을 할 수 없습니다.</li>
@@ -173,7 +173,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <ol start="4">
 <li>게임을 종료한 상태에서 빌드된 파일을 복사합니다. <code>src\bin\Release\net6.0\BopItAccess.dll</code> 게임 속으로 <code>Mods</code> 폴더. 필요한 경우 해당 폴더를 만듭니다. 빌드를 복사하세요. <code>src\bin\Release\net6.0\documentation</code> 폴더도 게임 폴더에 넣습니다. 여기에는 이 가이드와 해당 링크에 필요한 동반 문서가 포함되어 있습니다.</li>
 <li><a href="https://github.com/ethindp/prism/releases">Prism 릴리스 페이지</a>에서 Windows x64용 공식 Prism v0.18.3 <code>prism.dll</code>을 받거나 같은 버전을 소스에서 빌드합니다. <code>prism.dll</code>은 게임 실행 파일이 있는 기본 게임 폴더에 놓으세요. <strong><code>Mods</code> 폴더 안에는 넣지 마세요</strong>.</li>
-<li>스크린 리더를 사용한다면 먼저 실행한 뒤 Steam에서 게임을 시작하세요. 호환되는 스크린 리더가 실행 중이지 않으면 Prism이 SAPI 음성을 사용할 수 있습니다.</li>
+<li>스크린 리더를 사용한다면 게임보다 먼저 실행하세요. 호환 스크린 리더가 실행 중이지 않으면 Prism은 OneCore를 우선 사용하고, 사용할 수 없으면 SAPI를 사용합니다.</li>
 </ol>
 <p>하나의 일반적인 Steam 위치는 다음과 같습니다. <code>C:\Program Files (x86)\Steam\steamapps\common\Bop It!</code>. 다른 Steam 라이브러리를 선택한 경우 위치가 다를 수 있습니다. 프로젝트에서 로컬로 제공된 설치 ZIP이 있는 경우 게임을 닫고 해당 콘텐츠를 게임 폴더에 추출하여 다음을 허용합니다. <code>Mods</code> 병합할 폴더입니다. 해당 로컬 패키지는 소스 전용 GitHub 저장소와 별개입니다.</p>
 <h3>향후 설치 프로그램 연습(예정)</h3>
@@ -238,7 +238,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <p>게임에서는 <strong>설정 &gt; 언어</strong> 행에서 원하는 언어를 선택하세요. 모드는 음성 메뉴 텍스트, 힌트, 프롬프트 및 기타 공지 사항에 대해 해당 선택을 따릅니다. 세션 중에 변경할 수 있습니다. 게임의 원본 텍스트와 오디오는 게임 자체적으로 관리됩니다.</p>
 <p>각 언어에는 이 HTML 가이드의 별도 사본이 있습니다. <code>documentation\&lt;language&gt;\BopItAccess-user-guide.html</code>. 게임에서 가이드를 열면 현재 설정에서 선택한 언어의 사본이 로드됩니다. 해당 사본이 없거나 읽을 수 없는 경우 영어 가이드가 대신 열립니다. 다른 프로젝트 문서에도 동일한 언어 폴더로 번역된 사본이 있습니다.</p>
 <p>포함된 언어는 영어, 프랑스어, 이탈리아어, 독일어, 스페인어(스페인), 스페인어(라틴 아메리카), 일본어, 한국어, 중국어 간체 및 브라질 포르투갈어입니다. 첫 번째 비영어 번역은 기계로 생성된 초안이며 유창한 사용자의 수정을 환영합니다.</p>
-<p>게임플레이 액션 이름은 게임 자체의 번역을 따르므로 5개의 음성 명령이 구별됩니다. 4개의 스테이지 제목(Shapes, Space, City, Office)은 게임에서 고정된 이름으로 표시되므로 영어로 남아 있습니다. 모드는 번역된 텍스트를 선택한 음성 출력으로 보냅니다. 해당 출력에는 귀하의 언어에 대한 음성도 필요합니다. SAPI을 사용하는 경우 시스템 기본 음성이 번역된 텍스트를 잘 발음하지 못할 경우 Mod 설정에서 설치된 음성을 선택하세요.</p>
+<p>게임 동작 이름에는 게임 자체의 번역을 사용합니다. Shapes, Space, City, Office는 고정된 스테이지 이름이므로 영어로 유지됩니다. OneCore 또는 SAPI의 기본 음성이 게임 언어를 잘 읽지 못하면 모드 설정에서 알맞은 설치된 음성을 선택하세요.</p>
 </section>
 <section id="in-game-guide">
 <h2>게임 안에서 가이드 읽기</h2>
@@ -248,6 +248,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <section id="speech-options">
 <h2>모드 설정 메뉴</h2>
 <p>열기 <strong>설정 &gt; 모드 설정</strong>. 메뉴 위/아래 컨트롤을 사용하여 행 사이를 이동합니다. 토글이나 버튼을 확인하세요. 슬라이더를 변경하려면 왼쪽/오른쪽을 사용하세요. 아래 기본값은 새 설정에 대한 것입니다. 변경 사항은 세션 간에 기억됩니다. 음성이 꺼진 경우에도 음성 전환은 계속 작동하며 음성 출력 행은 동일한 마스터 스위치를 사용합니다.</p>
+<p>네 가지 음성 설정은 Auto 모드에서도 실제로 사용 중인 OneCore 또는 SAPI의 이름을 표시합니다. 지원되는 설정만 나타나며 다른 출력 방식에서는 숨겨집니다. 두 엔진의 음성, 볼륨, 속도, 음높이는 따로 저장됩니다. 볼륨은 5%에서 100%까지 5씩 조정하며 기본값은 100%입니다. 속도와 음높이는 0에서 100까지 5씩 조정하며 기본값은 50입니다. 최소 볼륨에서도 복구 안내를 들을 수 있습니다.</p>
 <div class="table-scroll"><table>
 <caption>메뉴 순서대로 모든 현재 Mod 설정 행</caption>
 <thead><tr><th scope="col">설정</th><th scope="col">선택사항 / 기본값</th><th scope="col">기능</th></tr></thead>
@@ -265,11 +266,11 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <tr><th scope="row">버튼 힌트 지연</th><td>없음, 5, 10, 15, 30, 60초; <strong>10초</strong></td><td>None은 초점이 맞춰진 항목의 발표 뒤에 힌트를 하나의 음성 문자열에 넣습니다. 시간 초과 선택은 첫 번째 별도 힌트 이전에 비활성 상태를 기다립니다. 초점을 이동하거나 설정을 변경하면 대기가 다시 시작됩니다. 5초 선택으로 인해 이미 진행 중인 음성이 중단될 수 있습니다.</td></tr>
 <tr><th scope="row">반복 버튼 힌트</th><td>꺼짐, 2배, 3배, 4배, 5배, 무한; <strong>무한히</strong></td><td>한 주기에 힌트를 듣는 총 횟수를 설정합니다. "2x"는 첫 번째 판독값에 1회 반복을 의미합니다.</td></tr>
 <tr><th scope="row">반복 간격</th><td>15, 30, 45, 60초; <strong>30초</strong></td><td>위의 반복 판독값 사이의 시간입니다. 요청 시 힌트를 말하면 보류 중인 첫 번째 자동 힌트가 대체되지만 구성된 반복은 여전히 ​​허용됩니다.</td></tr>
-<tr><th scope="row">출력 모드</th><td><code>Auto</code>, <code>SAPI</code>, <code>OneCore</code>, <code>NVDA</code>, <code>JAWS</code>, <code>UI Automation</code>, <code>ZDSR</code>, <code>ZoomText</code>, <code>Boy PC Reader</code>, <code>PC Talker</code>, <code>Sense Reader</code>, <code>System Access</code>, <code>Window-Eyes</code>; <strong><code>Auto</code></strong></td><td><code>Auto</code>는 Prism을 통해 실행 중인 호환 스크린 리더를 사용하고, 없으면 SAPI를 사용합니다. <code>OneCore</code>는 별도로 선택할 수 있습니다. 선택한 출력 방식을 사용할 수 없으면 사용 가능한 방식으로 자동 전환하고 한 번 음성으로 알립니다. 음성 출력 변경 단축키도 같은 설정을 순환합니다.</td></tr>
-<tr><th scope="row">SAPI 음성</th><td>시스템 기본 또는 설치된 64비트 SAPI 음성; <strong>시스템 기본값</strong></td><td>직접 SAPI 또는 Auto의 SAPI 대체에 사용되는 Windows 음성을 선택합니다.</td></tr>
-<tr><th scope="row">SAPI 볼륨</th><td>5단계로 5%~100%; <strong>100%</strong></td><td>SAPI 음성 음량을 조정합니다. 최소값은 0보다 높게 유지되므로 복구 메시지가 계속 들립니다.</td></tr>
-<tr><th scope="row">SAPI 비율</th><td>5단계로 0~100; <strong>50</strong></td><td>SAPI 말하기 속도를 조정합니다.</td></tr>
-<tr><th scope="row">SAPI 피치</th><td>5단계로 0~100; <strong>50</strong></td><td>SAPI 음성 피치를 조정합니다.</td></tr>
+<tr><th scope="row">출력 모드</th><td><code>Auto</code>, <code>OneCore</code>, <code>SAPI</code>, <code>NVDA</code>, <code>JAWS</code>, <code>UI Automation</code>, <code>ZDSR</code>, <code>ZoomText</code>, <code>Boy PC Reader</code>, <code>PC Talker</code>, <code>Sense Reader</code>, <code>System Access</code>, <code>Window-Eyes</code>; <strong><code>Auto</code></strong></td><td>Auto는 실행 중인 호환 스크린 리더, OneCore, SAPI 순으로 사용합니다.</td></tr>
+<tr><th scope="row">OneCore 음성 / SAPI 음성</th><td>시스템 기본 음성 또는 현재 엔진에 설치된 음성; <strong>시스템 기본</strong></td><td>현재 엔진의 음성을 선택합니다.</td></tr>
+<tr><th scope="row">OneCore 볼륨 / SAPI 볼륨</th><td>5%–100%; <strong>100%</strong></td><td>현재 엔진의 볼륨을 조정합니다.</td></tr>
+<tr><th scope="row">OneCore 말하기 속도 / SAPI 말하기 속도</th><td>0–100; <strong>50</strong></td><td>현재 엔진의 말하기 속도를 조정합니다.</td></tr>
+<tr><th scope="row">OneCore 음높이 / SAPI 음높이</th><td>0–100; <strong>50</strong></td><td>현재 엔진의 음높이를 조정합니다.</td></tr>
 <tr><th scope="row">사용자 가이드 열기</th><td>버튼</td><td>게임에서 이 문서를 엽니다. 목차에서 주제를 선택한 다음 한 줄씩 읽어보세요.</td></tr>
 <tr><th scope="row">시작 화면 재설정</th><td>버튼</td><td>한 번 눌러 확인을 요청한 후 5초 이내에 다시 누르세요. 다른 행으로 이동하거나 5초 동안 기다리면 요청이 취소됩니다. 성공적인 재설정이 발표되고 다음에 게임을 시작할 때 시작 화면이 나타납니다.</td></tr>
 <tr><th scope="row">모드 기본값 복원</th><td>버튼</td><td>한 번 눌러 확인을 요청한 다음 5초 이내에 다시 눌러 위의 모드 설정 기본값을 복원하세요. 다른 행으로 이동하거나 5초 동안 기다리면 요청이 취소됩니다. 게임의 음악, SFX, 음성 해설 볼륨, FPS 제한, 사용자 정의 키보드 및 컨트롤러 바인딩은 변경되지 않습니다.</td></tr>
@@ -542,7 +543,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <tr><th scope="row">Harmony (<code>0Harmony.dll</code>)</th><td>모드가 게임의 저장된 설정 로드가 완료되는 시점을 감지하여 처음 사용하는 오디오 레벨이 나중에 적용되도록 합니다.</td><td>별도로 설치된 MelonLoader과 함께 제공됩니다. 첨부된 공지를 참조하세요. 이 소스 저장소 또는 로컬 모드 패키지에는 포함되지 않습니다.</td></tr>
 <tr><th scope="row"><a href="https://github.com/ethindp/prism">Prism</a></th><td>모드를 화면 판독기, 음성 엔진 및 점자 출력에 연결합니다.</td><td><a href="https://github.com/ethindp/prism/blob/master/LICENSE">Mozilla 공용 라이센스 버전 2.0</a>; Ethan Dupuy와 기여자들에게 감사드립니다.</td></tr>
 <tr><th scope="row"><a href="https://dotnet.microsoft.com/">.NET 6</a></th><td>모드는 .NET 6 프레임워크를 대상으로 하며 빌드하려면 일치하는 대상 팩이 필요합니다.</td><td><a href="https://github.com/dotnet/core/blob/main/license-information.md">Microsoft의 .NET 라이센스 정보</a> MIT 라이선스 소스를 .NET 라이브러리 라이선스에 따른 Windows 런타임 배포판과 구별합니다.</td></tr>
-<tr><th scope="row">Windows SAPI</th><td>선택하거나 지원되는 화면 판독기가 감지되지 않는 경우 백업 시스템 음성을 제공합니다.</td><td>Windows 구성 요소; 이 소스 저장소에 별도의 라이브러리로 번들로 제공되지 않습니다.</td></tr>
+<tr><th scope="row">Windows OneCore와 SAPI</th><td>시스템 음성 출력입니다. Auto는 호환 스크린 리더가 없으면 SAPI보다 OneCore를 우선 사용합니다.</td><td>Windows 구성 요소이며 이 소스 저장소에 별도 라이브러리로 포함되지 않습니다.</td></tr>
 <tr><th scope="row">게임 및 로더 빌드 참조</th><td>모드는 MelonLoader, Il2CppInterop.Runtime, 게임의 Assembly-CSharp 및 Il2Cppmscorlib 파일, Unity 엔진/UI/입력 시스템/TextMeshPro 모듈 및 게임의 FMODUnity 및 DOTween 어셈블리.</td><td>이는 해당 조항에 따라 별도로 설치된 게임 및 로더에서 제공됩니다. 소스 리포지토리는 해당 어셈블리를 재배포하지 않습니다.</td></tr>
 <tr><th scope="row"><a href="https://github.com/argosopentech/argos-translate">아르고스 번역</a></th><td>최초의 비영어 모드 및 문서 텍스트를 준비하는 데 사용되는 오프라인 저작 도구입니다. 플레이 중에는 필요하지 않습니다.</td><td><a href="https://github.com/argosopentech/argos-translate/blob/master/LICENSE">MIT 라이센스</a> 또는 CC0; 모델과 Python 패키지는 모드와 함께 번들로 제공되지 않습니다.</td></tr>
 <tr><th scope="row"><a href="https://www.crummy.com/software/BeautifulSoup/">아름다운 수프</a></th><td>가이드를 번역하는 동안 HTML 구조를 유지하는 데 사용되는 저작 도구입니다. 플레이 중에는 필요하지 않습니다.</td><td>MIT 라이센스; Python 패키지는 모드와 함께 번들로 제공되지 않습니다.</td></tr>

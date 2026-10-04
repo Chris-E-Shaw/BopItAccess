@@ -41,8 +41,8 @@ instrucciones cuando el habla está apagada. La SALIDA BRAILLE se activa y se gu
 entre sesiones. Prism envía anuncios a un lector de pantalla compatible
 salida braille cuando esta configuración está activada. Al apagarlo se detiene el braille del mod.
 mensajes mientras deja la voz disponible.
-OUTPUT MODE comienza en Auto: utiliza a través de Prism un lector de pantalla compatible en ejecución y, si no hay ninguno, SAPI. OneCore se puede elegir por separado.
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+OUTPUT MODE: Auto usa un lector de pantalla compatible en ejecución, después OneCore y, por último, SAPI.
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 Cada lector de pantalla y motor de voz solo estará disponible si lo admiten la versión de Prism instalada y el sistema del jugador. Si el modo elegido no está disponible, el mod cambia a una salida disponible y lo anuncia una sola vez.
 Los motores de Prism pueden poner en cola de forma diferente los avisos que no interrumpen la voz. Informe si los resultados o créditos se anuncian fuera de orden. Las voces SAPI guardadas se buscan por el nombre que muestra Prism; si varias comparten nombre, puede elegirse la primera.
@@ -138,12 +138,7 @@ juego activo y las fases de sincronización de audio de calibración, donde se
 el habla podría enmascarar una señal. Un recordatorio existente guardado de 15, 30 o 60 segundos
 El retraso de la versión 0.6.2 se convierte en el nuevo valor de RETARDO DE SUGERENCIAS DE BOTÓN.
 
-El menú MOD SETTINGS también tiene SAPI VOZ, SAPI VOLUMEN, SAPI VELOCIDAD y SAPI PITCH.
-controles. SAPI Voice enumera las voces SAPI de 64 bits predeterminadas e instaladas del sistema.
-El volumen comienza en 100%; La velocidad y el tono comienzan en 50. El volumen oscila entre el 5 % y el 100 %.
-por lo que los avisos de recuperación SAPI siguen siendo audibles. La velocidad y el tono varían de 0 a 100.
-Los tres se mueven en pasos de cinco. Se aplican cuando Prism utiliza SAPI directamente o como
-el retroceso automático. El experimento anterior de silencio y ajuste permanece oculto e inactivo.
+MOD SETTINGS: Los cuatro controles de voz muestran el nombre del motor activo, OneCore o SAPI, incluso en el modo Auto. Solo aparecen los controles compatibles; con otras salidas se ocultan. Cada motor guarda por separado la voz, el volumen, la velocidad y el tono. Volumen: del 5 % al 100 % en pasos de 5, inicialmente 100 %. Velocidad y tono: de 0 a 100 en pasos de 5, inicialmente 50. El volumen mínimo mantiene audibles los avisos de recuperación.
 Las opciones de configuración de mod se recuerdan entre sesiones. RESTAURAR LOS VALORES PREDETERMINADOS DEL MOD
 devuelve esas opciones a los valores predeterminados descritos anteriormente. Presiónelo una vez para solicitar
 confirmación, luego presiónelo nuevamente dentro de cinco segundos para restaurarlos. mudanza
@@ -264,7 +259,7 @@ atajo. Reset Gyro se encuentra con los controles del juego; las filas específic
 permanecen juntos en la parte inferior del menú, antes de Restablecer los valores predeterminados. CAMBIAR
 SALIDA DE VOZ recorre los mismos modos que Configuración > Configuración de Mod > SALIDA
 MODO. El orden de los modos es:
-Auto, SAPI, OneCore, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
+Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 Las entradas predeterminadas del atajo son F9 en el teclado y el botón de la cara oeste (X en una Xbox
 controlador). El botón Inicio del controlador está reservado para el nativo del juego.

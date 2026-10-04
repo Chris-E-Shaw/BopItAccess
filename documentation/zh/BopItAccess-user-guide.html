@@ -107,7 +107,7 @@
 <section id="mod">
 <h2>什么是 Bop It Access？</h2>
 <p>Bop It Access 是针对 Steam 上的 <strong>Windows x64 版《Bop It!》</strong>制作的非官方模组。它为菜单和结果提供语音与盲文输出，还增加了四个关卡的按需说明、额外控制方式和帧率限制等设置。模组旨在方便玩家操作，同时保留游戏原有的语音指令和节奏。</p>
-<p>该mod使用MelonLoader加载到游戏中。它使用 <a href="https://github.com/ethindp/prism">Prism</a> 通过支持的屏幕阅读器和语音引擎进行语音和盲文输出，包括屏幕阅读器不可用时的 Windows SAPI。它不会取代游戏，您仍然需要自己的 Bop It! 副本。</p>
+<p>本模组通过 MelonLoader 加载，并使用 <a href="https://github.com/ethindp/prism">Prism</a> 输出语音和盲文。您仍需要拥有游戏本体。 自动模式优先使用正在运行的兼容屏幕阅读器，其次使用 OneCore，最后使用 SAPI。</p>
 <p>该模组的菜单和公告遵循游戏的语言设置。它包括英语、法语、意大利语、德语、西班牙语（西班牙）、西班牙语（拉丁美洲）、日语、韩语、简体中文和巴西葡萄牙语。</p>
 </section>
 <section class="panel" id="transparency">
@@ -124,7 +124,7 @@
 <li>游戏当前模式和难度的教程参考，根据歌曲选择的要求以及每个动作当前指定的控制进行朗读。一对一包括 拍打 输入。</li>
 <li>可选的一对一颜色和生命计数公告。</li>
 <li>键盘、控制器或两者的按钮提示，具有可调节的时间、重复次数和按需发言提示快捷方式。</li>
-<li>通过 Prism 进行屏幕阅读器和语音引擎输出、可选盲文输出以及可配置的 SAPI 后备。</li>
+<li>Prism 支持通过屏幕阅读器、OneCore 和 SAPI 输出语音，并可通过兼容的屏幕阅读器输出盲文。</li>
 <li>键盘和控制器重新映射多个本机和 mod 控件，包括排行榜过滤器和语音快捷方式。</li>
 <li>已保存的主语音开关，带有用于重新打开语音的语音指令。</li>
 <li>游戏语言设置提供的每种语言的语音和游戏内用户指南。</li>
@@ -144,7 +144,7 @@
 <h2>注意事项与限制</h2>
 <ul>
 <li><strong>在回合开始前要求提供描述。</strong> 该模组故意不在游戏进行过程中叙述场景。玩家必须听到游戏的口头命令并做出反应；额外的旁白可以涵盖命令并结束回合。</li>
-<li><strong>SAPI 是一种可用的语音引擎。</strong> 您可以选择它，或者在没有支持的屏幕阅读器运行时让自动使用它。您安装的语音和系统会影响其响应时间。对于非英语语音，请选择已安装的支持您选择的游戏语言的 SAPI 语音；该模组不安装额外的声音。</li><li data-prism-note="true"><strong>提示的朗读顺序可能因输出方式而异。</strong> 不同的 Prism 输出方式可能以不同顺序排队播放不中断当前语音的提示。如果分数或制作人员名单的朗读顺序不对，请反馈。已保存的 SAPI 语音 ID 会与 Prism 显示的语音名称匹配；如果多个语音同名，可能选中第一个匹配项。</li>
+<li>自动模式依次优先使用运行中的屏幕阅读器、OneCore 和 SAPI。已安装的语音和系统会影响响应速度。模组不会安装额外语音。</li><li data-prism-note="true"><strong>提示的朗读顺序可能因输出方式而异。</strong> 不同的 Prism 输出方式可能以不同顺序排队播放不中断当前语音的提示。如果分数或制作人员名单的朗读顺序不对，请反馈。已保存的 SAPI 语音 ID 会与 Prism 显示的语音名称匹配；如果多个语音同名，可能选中第一个匹配项。</li>
 <li><strong>一些本机控件仍然是固定的。</strong> 该模组极大地扩展了游戏的控制菜单，但它并没有使每个游戏输入都可以重新映射。</li>
 <li><strong>帧速率影响输入轮询。</strong> FPS限制器可以大幅降低系统负载。它不会故意减慢动画速度或改变游戏时间，但游戏在较低 FPS 时检查基于帧的输入的频率较低。较高的设置可以提供更准确的输入计时，尤其是在快速回合中。</li>
 <li><strong>菜单和结果中的语音支持最强。</strong> 在意外的面板上，mod 可以在找到可见文本和聚焦控件时读取可见文本和焦点控件。鼠标悬停可能不会说话，直到该项目真正获得游戏焦点。</li>
@@ -173,7 +173,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <ol start="4">
 <li>游戏关闭后，复制构建的文件 <code>src\bin\Release\net6.0\BopItAccess.dll</code> 进入游戏的 <code>Mods</code> 文件夹。如果需要，创建该文件夹。复制构建的 <code>src\bin\Release\net6.0\documentation</code> 文件夹也放到游戏文件夹里。它包含本指南及其链接所需的配套文档。</li>
 <li>从 <a href="https://github.com/ethindp/prism/releases">Prism 发布页面</a>获取适用于 Windows x64 的官方 Prism v0.18.3 <code>prism.dll</code>，或从源代码构建相同版本。将 <code>prism.dll</code> 放在游戏主文件夹中，与游戏可执行文件放在一起，<strong>不要放进 <code>Mods</code> 文件夹</strong>。</li>
-<li>如果使用屏幕阅读器，请先启动它，再通过 Steam 启动游戏。如果没有运行兼容的屏幕阅读器，Prism 可以使用 SAPI 语音。</li>
+<li>如果使用屏幕阅读器，请先启动它，再启动游戏。没有运行兼容的屏幕阅读器时，Prism 优先使用 OneCore；如果 OneCore 不可用，则使用 SAPI。</li>
 </ol>
 <p>一个常见的 Steam 位置是 <code>C:\Program Files (x86)\Steam\steamapps\common\Bop It!</code>。如果您选择不同的 Steam 图书馆，您的位置可能会有所不同。如果您有项目中本地提供的安装 ZIP，请关闭游戏并将其内容解压到游戏文件夹中，从而允许 <code>Mods</code> 要合并的文件夹。这些本地包与纯源代码 GitHub 存储库是分开的。</p>
 <h3>未来的安装程序演练（计划）</h3>
@@ -238,7 +238,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <p>在游戏中的 <strong>设置 &gt; 语言</strong> 行，选择您想要的语言。该模组会遵循该选择来选择其语音菜单文本、提示、提示和其他公告。您可以在会话期间更改它。游戏的原始文本和音频仍由游戏自己控制。</p>
 <p>每种语言都有此 HTML 指南的单独副本 <code>documentation\&lt;language&gt;\BopItAccess-user-guide.html</code>。在游戏中打开指南会加载当前在“设置”中选择的语言的副本。如果该副本丢失或无法阅读，则会打开英文指南。其他项目文档也有相同语言文件夹中的翻译副本。</p>
 <p>包含的语言包括英语、法语、意大利语、德语、西班牙语（西班牙）、西班牙语（拉丁美洲）、日语、韩语、简体中文和巴西葡萄牙语。第一个非英语翻译是机器生成的草稿，欢迎流利的使用者进行更正。</p>
-<p>游戏动作名称遵循游戏自己的翻译，因此五个口头命令保持不同。四个阶段标题（Shapes、Space、City 和 Office）仍为英文，因为它们在游戏中显示为固定名称。该模组将翻译后的文本发送到您选择的语音输出；该输出还需要适合您的语言的语音。如果您使用 SAPI，当系统默认语音无法很好地发音翻译文本时，请在 Mod 设置中选择已安装的语音。</p>
+<p>游戏操作使用游戏自带的译名。Shapes、Space、City 和 Office 是固定的英文关卡名称。 使用 OneCore 或 SAPI 时，如果系统默认语音无法正确朗读游戏语言，请在模组设置中选择合适的已安装语音。</p>
 </section>
 <section id="in-game-guide">
 <h2>在游戏中阅读指南</h2>
@@ -248,6 +248,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <section id="speech-options">
 <h2>模组设置菜单</h2>
 <p>打开 <strong>设置 &gt; 模组设置</strong>。使用菜单上/下控件在行中移动。确认切换或按钮；使用左/右更改滑块。以下默认值适用于新设置。会话之间的更改会被记住。如果语音关闭，切换语音仍然有效，并且语音输出行使用相同的主开关。</p>
+<p>四项语音设置会显示当前实际使用的 OneCore 或 SAPI 名称，包括自动模式。仅显示当前引擎支持的设置；其他输出方式会隐藏这些设置。两个引擎分别保存语音、音量、语速和音高。 音量范围为 5% 至 100%，每次调整 5%，默认值为 100%。语速和音高范围为 0 至 100，每次调整 5，默认值为 50。最低音量仍可听到恢复提示。</p>
 <div class="table-scroll"><table>
 <caption>每个当前的 Mod 设置行（按菜单顺序）</caption>
 <thead><tr><th scope="col">设置</th><th scope="col">选择/默认</th><th scope="col">它的作用</th></tr></thead>
@@ -265,11 +266,11 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <tr><th scope="row">按钮提示延迟</th><td>无、5、10、15、30、60 秒； <strong>10秒</strong></td><td>没有人将提示放在一个语音字符串中的焦点项目宣布之后。定时选择在第一个单独提示之前等待不活动。移动焦点或更改设置会再次开始等待。 5 秒的选择可能会打断正在进行的演讲。</td></tr>
 <tr><th scope="row">重复按钮提示</th><td>关闭、2x、3x、4x、5x、无限； <strong>无限</strong></td><td>设置一个周期内听到提示的总次数。 “2x”表示第一次读数加一次重复。</td></tr>
 <tr><th scope="row">重复间隔</th><td>15、30、45、60 秒； <strong>30秒</strong></td><td>上述重复读数之间的时间。按需说出提示会替换待处理的第一个自动提示，但仍允许配置的重复。</td></tr>
-<tr><th scope="row">输出方式</th><td><code>Auto</code>, <code>SAPI</code>, <code>OneCore</code>, <code>NVDA</code>, <code>JAWS</code>, <code>UI Automation</code>, <code>ZDSR</code>, <code>ZoomText</code>, <code>Boy PC Reader</code>, <code>PC Talker</code>, <code>Sense Reader</code>, <code>System Access</code>, <code>Window-Eyes</code>; <strong><code>Auto</code></strong></td><td><code>Auto</code> 通过 Prism 使用正在运行的兼容屏幕阅读器；如果没有，则使用 SAPI。<code>OneCore</code> 可单独选择。如果所选输出不可用，模组会自动切换到可用的输出，并通过语音提示一次。“切换语音输出”快捷键也会轮换这些选项。</td></tr>
-<tr><th scope="row">SAPI 语音</th><td>系统默认或安装64位SAPI语音； <strong>系统默认</strong></td><td>选择用于直接 SAPI 或自动 SAPI 后备的 Windows 语音。</td></tr>
-<tr><th scope="row">SAPI 卷</th><td>5%–100%，步长为 5； <strong>100%</strong></td><td>调整 SAPI 语音响度。最小值保持在零以上，因此恢复消息仍然可以听到。</td></tr>
-<tr><th scope="row">SAPI 评分</th><td>0–100，步长为 5； <strong>50</strong></td><td>调整 SAPI 说话速度。</td></tr>
-<tr><th scope="row">SAPI 推介</th><td>0–100，步长为 5； <strong>50</strong></td><td>调整 SAPI 音调。</td></tr>
+<tr><th scope="row">输出方式</th><td><code>Auto</code>, <code>OneCore</code>, <code>SAPI</code>, <code>NVDA</code>, <code>JAWS</code>, <code>UI Automation</code>, <code>ZDSR</code>, <code>ZoomText</code>, <code>Boy PC Reader</code>, <code>PC Talker</code>, <code>Sense Reader</code>, <code>System Access</code>, <code>Window-Eyes</code>; <strong><code>Auto</code></strong></td><td>自动模式优先使用正在运行的兼容屏幕阅读器，其次使用 OneCore，最后使用 SAPI。</td></tr>
+<tr><th scope="row">OneCore 语音 / SAPI 语音</th><td>系统默认语音或当前引擎已安装的语音；<strong>系统默认</strong></td><td>选择当前引擎的语音。</td></tr>
+<tr><th scope="row">OneCore 音量 / SAPI 音量</th><td>5%–100%; <strong>100%</strong></td><td>调整当前引擎的音量。</td></tr>
+<tr><th scope="row">OneCore 语速 / SAPI 语速</th><td>0–100; <strong>50</strong></td><td>调整当前引擎的语速。</td></tr>
+<tr><th scope="row">OneCore 音高 / SAPI 音高</th><td>0–100; <strong>50</strong></td><td>调整当前引擎的音高。</td></tr>
 <tr><th scope="row">打开用户指南</th><td>按钮</td><td>在游戏中打开此文档。从目录中选择一个主题，然后逐行阅读。</td></tr>
 <tr><th scope="row">重置欢迎屏幕</th><td>按钮</td><td>按一次请求确认，然后在五秒内再次按一次。移动到另一行或等待五秒钟会取消请求。将宣布重置成功，并在下次游戏启动时出现欢迎屏幕。</td></tr>
 <tr><th scope="row">恢复模组默认值</th><td>按钮</td><td>按一次请求确认，然后在五秒内再次按以恢复上述 Mod 设置默认值。移动到另一行或等待五秒钟会取消请求。它不会更改游戏的音乐、SFX 或旁白音量、限制 FPS 或自定义键盘和控制器绑定。</td></tr>
@@ -542,7 +543,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <tr><th scope="row">Harmony (<code>0Harmony.dll</code>)</th><td>让 mod 检测游戏保存的设置何时完成加载，以便随后应用首次使用的音频级别。</td><td>提供单独安装的 MelonLoader；请查阅其随附的通知。不包含在此源存储库或本地 mod 包中。</td></tr>
 <tr><th scope="row"><a href="https://github.com/ethindp/prism">Prism</a></th><td>将模组连接到屏幕阅读器、语音引擎和盲文输出。</td><td><a href="https://github.com/ethindp/prism/blob/master/LICENSE">Mozilla 公共许可证版本 2.0</a>;感谢 Ethan Dupuy 和贡献者。</td></tr>
 <tr><th scope="row"><a href="https://dotnet.microsoft.com/">.NET 6</a></th><td>该 mod 针对 .NET 6 框架，需要匹配的目标包才能构建。</td><td><a href="https://github.com/dotnet/core/blob/main/license-information.md">Microsoft 的 .NET 许可证信息</a> 将 MIT 许可的源代码与 .NET 库许可下的 Windows 运行时发行版区分开来。</td></tr>
-<tr><th scope="row">Windows SAPI</th><td>当选择或未检测到支持的屏幕阅读器时提供备份系统语音。</td><td>Windows组件；未在此源存储库中捆绑为单独的库。</td></tr>
+<tr><th scope="row">Windows OneCore 和 SAPI</th><td>系统语音输出。没有兼容的屏幕阅读器时，自动模式优先使用 OneCore，再使用 SAPI。</td><td>Windows 组件，未作为独立库包含在此源代码仓库中。</td></tr>
 <tr><th scope="row">游戏和加载器构建参考</th><td>该 mod 针对 MelonLoader、Il2CppInterop.Runtime、游戏的 Assembly-CSharp 和 Il2Cppmscorlib 文件、Unity Engine/UI/Input System/TextMeshPro 模块以及游戏的FMODUnity 和 DOTween 组件。</td><td>这些来自单独安装的游戏和加载程序，根据其自己的适用条款。源存储库不会重新分发这些程序集。</td></tr>
 <tr><th scope="row"><a href="https://github.com/argosopentech/argos-translate">阿尔戈斯 翻译</a></th><td>用于准备第一个非英语模组和文档文本的离线创作工具。玩的时候不需要。</td><td><a href="https://github.com/argosopentech/argos-translate/blob/master/LICENSE">麻省理工学院许可证</a> 或CC0；模型和 Python 包不与 mod 捆绑在一起。</td></tr>
 <tr><th scope="row"><a href="https://www.crummy.com/software/BeautifulSoup/">美丽的汤</a></th><td>用于在翻译指南时保留 HTML 结构的创作工具。玩的时候不需要。</td><td>麻省理工学院许可证； Python 包未与 mod 捆绑在一起。</td></tr>

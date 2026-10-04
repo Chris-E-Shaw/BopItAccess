@@ -41,7 +41,7 @@ Wenn das SDK ein fehlendes .NET 6-Targeting-Paket meldet, installieren Sie ein S
 1. Schließe das Spiel. Kopieren Sie das Gebaute `BopItAccess.dll` hinein `<game directory>\Mods\`. Erstellen Sie die `Mods` Verzeichnis, wenn MelonLoader es nicht erstellt hat.
 2. Beziehen Sie die offizielle Windows-x64-Version von Prism v0.18.3 (`prism.dll`) von den [Prism-Releases](https://github.com/ethindp/prism/releases) oder erstellen Sie dieselbe Version aus dem Quellcode. Legen Sie `prism.dll` neben die ausführbare Spieldatei im Hauptordner des Spiels, nicht in den Ordner `Mods`.
 3. Kopieren Sie den gesamten Build `src\bin\Release\net6.0\documentation\` Ordner in das Spielverzeichnis. Es enthält den englischen Leitfaden im Stammverzeichnis und übersetzte Leitfäden darunter `fr`, `it`, `de`, `es`, `es-MX`, `ja`, `ko`, `zh`, und `pt-BR`. Behalten Sie diese Unterordner und die Begleitdokumente. Der In-Game-Guide liest bei jedem Öffnen den HTML-Code für die aktuelle Spielsprache, sodass beim Ersetzen eines Guides dessen Inhalt aktualisiert wird, ohne dass die DLL neu erstellt werden muss.
-4. Starten Sie Ihren Screenreader, falls Sie einen verwenden, und starten Sie danach das Spiel über Steam. Wenn kein unterstützter Screenreader läuft, kann Prism SAPI für die Sprachausgabe verwenden.
+4. Starten Sie Ihren Screenreader vor dem Spiel. Ohne laufenden unterstützten Screenreader bevorzugt Prism OneCore und verwendet SAPI, falls OneCore nicht verfügbar ist.
 
 Der Build-Befehl Bop It Access kompiliert nur diesen Mod; Prism wird nicht erstellt oder heruntergeladen. Wenn die Sprachausgabe nicht startet, überprüfen Sie dies `<game directory>\Mods\BopItAccess.log`. Das Protokoll zeichnet die Initialisierung Prism und den Sprachversand auf, obwohl ein erfolgreicher Versand allein nicht beweisen kann, dass Audio gehört wurde.
 
@@ -49,7 +49,7 @@ Beim ersten Start erscheint der Begrüßungsbildschirm, nachdem das Hauptmenü d
 
 Wählen Sie in der Zeile **Einstellungen > Sprache** des Spiels eine Sprache aus. Mod Speech folgt dieser Auswahl. Der In-Game-Guide verwendet das passende übersetzte HTML-Dokument, mit Englisch als Ersatz, wenn die ausgewählte Kopie fehlt oder nicht lesbar ist. Der gebündelte nicht-englische Text ist ein maschinell übersetzter erster Durchgang; Korrekturen, die fließend sprechen, sind willkommen.
 
-Der Mod verwendet die übersetzten Namen des Spiels für Gameplay-Aktionen. Shapes, Space, City und Office bleiben als feste Bühnentitel auf Englisch. Die ausgewählte Sprachausgabe benötigt eine Stimme für Ihre Sprache. Wählen Sie für die Ausgabe SAPI eine installierte Stimme, die zu Ihrer Sprache passt, wenn die Standardstimme des Systems falsch klingt.
+Spielaktionen verwenden die Übersetzungen des Spiels. Shapes, Space, City und Office bleiben feste englische Stufennamen. Für OneCore oder SAPI können Sie in den Mod-Einstellungen eine installierte Stimme für Ihre Spielsprache wählen, wenn die Systemstimme ungeeignet ist. Die vier Stimmregler tragen den Namen der tatsächlich verwendeten Engine, OneCore oder SAPI, auch im Auto-Modus. Nur unterstützte Regler sind sichtbar; bei anderen Ausgaben werden sie ausgeblendet. Beide Engines speichern Stimme, Lautstärke, Geschwindigkeit und Tonhöhe getrennt.
 
 ## Dokumentation
 

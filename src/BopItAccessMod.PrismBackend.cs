@@ -31,8 +31,13 @@ public sealed partial class BopItAccessMod
     private long _nextPrismErrorLogAt;
     private long _nextSlowPrismQueueLogAt;
     private int _prismAppliedSapiSettingsVersion = -1;
+    private int _prismAppliedOneCoreSettingsVersion = -1;
     private nuint _prismDefaultSapiVoice;
     private bool _prismDefaultSapiVoiceKnown;
+    private nuint _prismDefaultOneCoreVoice;
+    private bool _prismDefaultOneCoreVoiceKnown;
+    private PrismSpeechControlSnapshot? _prismSpeechControlSnapshot;
+    private int _prismSpeechControlRevision;
     private readonly List<ulong> _prismBrailleCandidates = new();
     private readonly List<ulong> _prismReaderCandidates = new();
 
@@ -98,6 +103,8 @@ public sealed partial class BopItAccessMod
 
         if (_prismSpeechBackendId == PrismNative.BackendIds.Sapi)
             ApplyPrismSapiSettingsOnWorker();
+        else if (_prismSpeechBackendId == PrismNative.BackendIds.OneCore)
+            ApplyPrismOneCoreSettingsOnWorker();
 
         PrismNative.Error result = PrismNative.Speak(_prismSpeechBackend,
             dispatchedText, interrupt);
@@ -115,6 +122,8 @@ public sealed partial class BopItAccessMod
                 return false;
             if (_prismSpeechBackendId == PrismNative.BackendIds.Sapi)
                 ApplyPrismSapiSettingsOnWorker();
+            else if (_prismSpeechBackendId == PrismNative.BackendIds.OneCore)
+                ApplyPrismOneCoreSettingsOnWorker();
             fallback = !string.Equals(mode, "Auto", StringComparison.OrdinalIgnoreCase) &&
                 PrismModeIds.TryGetValue(mode, out requestedId) &&
                 _prismSpeechBackendId != requestedId;
@@ -158,6 +167,8 @@ public sealed partial class BopItAccessMod
         {
             candidate = AcquireAutomaticPrismCandidateOnWorker(out candidateId);
         }
+        bool selectedModeChanged = !string.Equals(_prismSelectedMode, mode,
+            StringComparison.OrdinalIgnoreCase);
         _prismSelectedMode = mode;
         _nextPrismSelectionAt = now + 1000;
         if (candidate == IntPtr.Zero)
@@ -171,6 +182,8 @@ public sealed partial class BopItAccessMod
             _prismSpeechBackendId == candidateId)
         {
             PrismNative.FreeBackend(candidate);
+            if (selectedModeChanged)
+                PublishPrismSpeechControlsOnWorker();
             return true;
         }
 
@@ -178,7 +191,9 @@ public sealed partial class BopItAccessMod
         _prismSpeechBackend = candidate;
         _prismSpeechBackendId = candidateId;
         _prismAppliedSapiSettingsVersion = -1;
-        CaptureDefaultPrismSapiVoiceOnWorker(candidate, candidateId);
+        _prismAppliedOneCoreSettingsVersion = -1;
+        CaptureDefaultPrismVoiceOnWorker(candidate, candidateId);
+        PublishPrismSpeechControlsOnWorker();
         WriteStatus("Prism active speech backend: " + PrismSpeechBackendNameOnWorker() +
             "; selected output mode: " + mode + ".");
         return true;
@@ -196,15 +211,17 @@ public sealed partial class BopItAccessMod
         _prismSelectedMode = mode;
         _nextPrismSelectionAt = Environment.TickCount64 + 1000;
         _prismAppliedSapiSettingsVersion = -1;
-        CaptureDefaultPrismSapiVoiceOnWorker(candidate, id);
+        _prismAppliedOneCoreSettingsVersion = -1;
+        CaptureDefaultPrismVoiceOnWorker(candidate, id);
+        PublishPrismSpeechControlsOnWorker();
         return true;
     }
 
     private IntPtr AcquireAutomaticPrismCandidateOnWorker(out ulong id,
         ulong excludedId = PrismNative.BackendIds.Invalid)
     {
-        // Preserve the established Auto behavior: use a running reader, then
-        // SAPI. Prism's own priority would select OneCore ahead of SAPI.
+        // Prefer a running reader, then Prism's preferred Windows voice
+        // engine. SAPI remains available if OneCore cannot be initialized.
         foreach (ulong readerId in _prismReaderCandidates)
         {
             if (readerId == excludedId)
@@ -216,7 +233,7 @@ public sealed partial class BopItAccessMod
             return reader;
         }
         foreach (ulong fallbackId in new[]
-                 { PrismNative.BackendIds.Sapi, PrismNative.BackendIds.OneCore })
+                 { PrismNative.BackendIds.OneCore, PrismNative.BackendIds.Sapi })
         {
             if (fallbackId == excludedId)
                 continue;
@@ -245,14 +262,70 @@ public sealed partial class BopItAccessMod
         return IntPtr.Zero;
     }
 
-    private void CaptureDefaultPrismSapiVoiceOnWorker(IntPtr backend, ulong id)
+    private void CaptureDefaultPrismVoiceOnWorker(IntPtr backend, ulong id)
     {
-        if (id != PrismNative.BackendIds.Sapi || _prismDefaultSapiVoiceKnown ||
+        if ((id != PrismNative.BackendIds.Sapi || _prismDefaultSapiVoiceKnown) &&
+            (id != PrismNative.BackendIds.OneCore || _prismDefaultOneCoreVoiceKnown))
+            return;
+        if ((PrismNative.GetFeatures(backend) &
+             PrismNative.BackendFeature.SupportsGetVoice) == 0 ||
             PrismNative.GetVoice(backend, out nuint voice) != PrismNative.Error.Ok)
             return;
-        _prismDefaultSapiVoice = voice;
-        _prismDefaultSapiVoiceKnown = true;
+        if (id == PrismNative.BackendIds.Sapi)
+        {
+            _prismDefaultSapiVoice = voice;
+            _prismDefaultSapiVoiceKnown = true;
+        }
+        else if (id == PrismNative.BackendIds.OneCore)
+        {
+            _prismDefaultOneCoreVoice = voice;
+            _prismDefaultOneCoreVoiceKnown = true;
+        }
     }
+
+    private sealed record PrismSpeechControlSnapshot(string SelectedMode,
+        ulong BackendId, PrismNative.BackendFeature Features,
+        SpeechVoiceOption[] OneCoreVoices, int Revision);
+
+    private void PublishPrismSpeechControlsOnWorker()
+    {
+        PrismNative.BackendFeature features = _prismSpeechBackend == IntPtr.Zero
+            ? 0 : PrismNative.GetFeatures(_prismSpeechBackend);
+        SpeechVoiceOption[] voices = Array.Empty<SpeechVoiceOption>();
+        if (_prismSpeechBackendId == PrismNative.BackendIds.OneCore &&
+            (features & (PrismNative.BackendFeature.SupportsCountVoices |
+                         PrismNative.BackendFeature.SupportsGetVoiceName)) ==
+            (PrismNative.BackendFeature.SupportsCountVoices |
+             PrismNative.BackendFeature.SupportsGetVoiceName) &&
+            PrismNative.CountVoices(_prismSpeechBackend, out nuint count) ==
+                PrismNative.Error.Ok)
+        {
+            List<SpeechVoiceOption> found = new() { new(string.Empty, "System default") };
+            for (nuint index = 0; index < count; index++)
+            {
+                if (PrismNative.GetVoiceName(_prismSpeechBackend, index,
+                        out string? name) != PrismNative.Error.Ok ||
+                    string.IsNullOrWhiteSpace(name))
+                    continue;
+                string language = PrismNative.GetVoiceLanguage(_prismSpeechBackend,
+                    index, out string? languageName) == PrismNative.Error.Ok
+                    ? languageName ?? string.Empty : string.Empty;
+                string identity = OneCoreVoiceIdentity(name, language);
+                string display = string.IsNullOrWhiteSpace(language)
+                    ? name : name + " (" + language + ")";
+                found.Add(new(identity, display));
+            }
+            voices = found.ToArray();
+        }
+        lock (_speechLock)
+            _prismSpeechControlSnapshot = new PrismSpeechControlSnapshot(
+                _prismSelectedMode, _prismSpeechBackendId, features, voices,
+                ++_prismSpeechControlRevision);
+    }
+
+    private static string OneCoreVoiceIdentity(string name, string language) =>
+        Uri.EscapeDataString(name.Trim()) + "|" +
+        Uri.EscapeDataString(language.Trim());
 
     private IntPtr AcquirePrismBackendOnWorker(ulong id)
     {
@@ -349,6 +422,80 @@ public sealed partial class BopItAccessMod
         _prismAppliedSapiSettingsVersion = version;
     }
 
+    private void ApplyPrismOneCoreSettingsOnWorker()
+    {
+        int version;
+        int volume;
+        int rate;
+        int pitch;
+        string voiceId;
+        lock (_speechLock)
+        {
+            version = _oneCoreSettingsVersion;
+            volume = _oneCoreVolume;
+            rate = _oneCoreRate;
+            pitch = _oneCorePitch;
+            voiceId = _oneCoreVoiceId;
+        }
+        if (_prismAppliedOneCoreSettingsVersion == version)
+            return;
+
+        PrismNative.BackendFeature features = PrismNative.GetFeatures(_prismSpeechBackend);
+        if ((features & PrismNative.BackendFeature.SupportsSetVoice) != 0)
+        {
+            if (string.IsNullOrEmpty(voiceId))
+            {
+                if (_prismDefaultOneCoreVoiceKnown)
+                    LogPrismSettingError("OneCore", "voice", PrismNative.SetVoice(
+                        _prismSpeechBackend, _prismDefaultOneCoreVoice));
+            }
+            else if ((features & (PrismNative.BackendFeature.SupportsCountVoices |
+                                  PrismNative.BackendFeature.SupportsGetVoiceName)) ==
+                     (PrismNative.BackendFeature.SupportsCountVoices |
+                      PrismNative.BackendFeature.SupportsGetVoiceName) &&
+                     PrismNative.CountVoices(_prismSpeechBackend, out nuint count) ==
+                         PrismNative.Error.Ok)
+            {
+                bool matched = false;
+                for (nuint index = 0; index < count; index++)
+                {
+                    if (PrismNative.GetVoiceName(_prismSpeechBackend, index,
+                            out string? name) != PrismNative.Error.Ok ||
+                        string.IsNullOrWhiteSpace(name))
+                        continue;
+                    string language = PrismNative.GetVoiceLanguage(_prismSpeechBackend,
+                        index, out string? languageName) == PrismNative.Error.Ok
+                        ? languageName ?? string.Empty : string.Empty;
+                    if (!string.Equals(OneCoreVoiceIdentity(name, language), voiceId,
+                            StringComparison.OrdinalIgnoreCase))
+                        continue;
+                    LogPrismSettingError("OneCore", "voice", PrismNative.SetVoice(
+                        _prismSpeechBackend, index));
+                    matched = true;
+                    break;
+                }
+                if (!matched)
+                {
+                    LogPrismErrorOnWorker("The saved OneCore voice is no longer available; using the system default.");
+                    if (_prismDefaultOneCoreVoiceKnown)
+                        LogPrismSettingError("OneCore", "default voice",
+                            PrismNative.SetVoice(_prismSpeechBackend,
+                                _prismDefaultOneCoreVoice));
+                }
+            }
+        }
+        if ((features & PrismNative.BackendFeature.SupportsSetVolume) != 0)
+            LogPrismSettingError("OneCore", "volume", PrismNative.SetVolume(
+                _prismSpeechBackend, volume / 100f));
+        if ((features & PrismNative.BackendFeature.SupportsSetRate) != 0)
+            LogPrismSettingError("OneCore", "rate", PrismNative.SetRate(
+                _prismSpeechBackend, rate / 100f));
+        if ((features & PrismNative.BackendFeature.SupportsSetPitch) != 0)
+            LogPrismSettingError("OneCore", "pitch", PrismNative.SetPitch(
+                _prismSpeechBackend, pitch / 100f));
+        _prismAppliedOneCoreSettingsVersion = version;
+    }
+
     private static float MapLegacySapiScale(int value)
     {
         int legacyStep = (int)Math.Round((value - 50) / 5.0);
@@ -364,9 +511,13 @@ public sealed partial class BopItAccessMod
     }
 
     private void LogPrismSettingError(string setting, PrismNative.Error error)
+        => LogPrismSettingError("SAPI", setting, error);
+
+    private void LogPrismSettingError(string backend, string setting,
+        PrismNative.Error error)
     {
         if (error != PrismNative.Error.Ok)
-            LogPrismErrorOnWorker("Could not apply Prism SAPI " + setting + ": " +
+            LogPrismErrorOnWorker("Could not apply Prism " + backend + " " + setting + ": " +
                 PrismNative.ErrorString(error));
     }
 
@@ -487,6 +638,8 @@ public sealed partial class BopItAccessMod
                 _prismSpeechBackend = IntPtr.Zero;
                 _prismSpeechBackendId = PrismNative.BackendIds.Invalid;
                 _prismAppliedSapiSettingsVersion = -1;
+                _prismAppliedOneCoreSettingsVersion = -1;
+                PublishPrismSpeechControlsOnWorker();
             }
         }
     }

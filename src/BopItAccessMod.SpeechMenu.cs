@@ -24,6 +24,9 @@ public sealed partial class BopItAccessMod
     private TMP_Text? _speechMenuTitle;
     private string? _speechMenuRenderedLocale;
     private readonly List<SpeechUiOption> _speechUiOptions = new();
+    private int _speechMenuControlsRevision = -1;
+    private string _speechMenuControlsMode = string.Empty;
+    private ulong _speechMenuControlsBackendId = PrismNative.BackendIds.Invalid;
     private SettingsToggle? _speechOutputToggle;
     private SettingsToggle? _brailleOutputToggle;
     private SettingsToggle? _muteSpeechInBackgroundToggle;
@@ -139,6 +142,7 @@ public sealed partial class BopItAccessMod
     private void UpdateSpeechMenuUi()
     {
         RefreshSpeechMenuLocalizedLabels();
+        RefreshSpeechOutputControlRows();
         // The guide can temporarily sit above Mod Settings in the native
         // panel stack. Keep this menu's state so Back returns to its row.
         if (_guideOpen)
@@ -313,6 +317,7 @@ public sealed partial class BopItAccessMod
             if (_speechMenuPanel == null || _speechMenuRoot == null)
                 return;
 
+            RefreshSpeechOutputControlRows(force: true);
             UpdateSpeechMenuValues();
             // GoBack pops the top panel and shows the previous one, just as it
             // does when returning from the game's Controls panel.
@@ -591,6 +596,7 @@ public sealed partial class BopItAccessMod
 
             _speechMenuRoot = root;
             _speechMenuPanel = speechPanel;
+            RefreshSpeechOutputControlRows(force: true);
             WriteStatus($"Built Mod Settings submenu with {_speechUiOptions.Count} native-style rows.");
         }
         catch
@@ -795,6 +801,134 @@ public sealed partial class BopItAccessMod
                 scroll.verticalNormalizedPosition + overflow / height);
     }
 
+    private void RefreshSpeechOutputControlRows(bool force = false)
+    {
+        if (_speechMenuRoot == null || _speechModeSlider == null ||
+            _speechVoiceSlider == null || _speechVolumeSlider == null ||
+            _speechRateSlider == null || _speechPitchSlider == null)
+            return;
+
+        PrismSpeechControlSnapshot? snapshot;
+        lock (_speechLock)
+            snapshot = _prismSpeechControlSnapshot;
+        string mode = _outputMode;
+        int revision = snapshot?.Revision ?? -1;
+        if (!force && revision == _speechMenuControlsRevision &&
+            string.Equals(mode, _speechMenuControlsMode, StringComparison.Ordinal))
+            return;
+        _speechMenuControlsRevision = revision;
+        _speechMenuControlsMode = mode;
+
+        // A mode switch is resolved on the worker. Until its new snapshot
+        // arrives, avoid presenting controls for the previous output engine.
+        bool current = snapshot != null &&
+            string.Equals(snapshot.SelectedMode, mode, StringComparison.OrdinalIgnoreCase);
+        ulong backendId = current ? snapshot!.BackendId : PrismNative.BackendIds.Invalid;
+        PrismNative.BackendFeature features = current ? snapshot!.Features : 0;
+        _speechMenuControlsBackendId = backendId;
+        if (backendId == PrismNative.BackendIds.OneCore)
+            _oneCoreVoices = snapshot!.OneCoreVoices.ToList();
+
+        bool adjustable = backendId == PrismNative.BackendIds.Sapi ||
+            backendId == PrismNative.BackendIds.OneCore;
+        string prefix = backendId == PrismNative.BackendIds.OneCore ? "ONECORE" : "SAPI";
+        bool voice = adjustable && (features &
+            (PrismNative.BackendFeature.SupportsSetVoice |
+             PrismNative.BackendFeature.SupportsGetVoice |
+             PrismNative.BackendFeature.SupportsCountVoices |
+             PrismNative.BackendFeature.SupportsGetVoiceName)) ==
+            (PrismNative.BackendFeature.SupportsSetVoice |
+             PrismNative.BackendFeature.SupportsGetVoice |
+             PrismNative.BackendFeature.SupportsCountVoices |
+             PrismNative.BackendFeature.SupportsGetVoiceName) &&
+            (backendId == PrismNative.BackendIds.OneCore
+                ? _oneCoreVoices.Count > 1 : _sapiVoices.Count > 1);
+        bool volume = adjustable &&
+            (features & PrismNative.BackendFeature.SupportsSetVolume) != 0;
+        bool rate = adjustable &&
+            (features & PrismNative.BackendFeature.SupportsSetRate) != 0;
+        bool pitch = adjustable &&
+            (features & PrismNative.BackendFeature.SupportsSetPitch) != 0;
+
+        SettingsRow? selectedRow = EventSystem.current?.currentSelectedGameObject?
+            .GetComponentInParent<SettingsRow>();
+        bool selectedControlWillHide =
+            (selectedRow == _speechVoiceSlider && !voice) ||
+            (selectedRow == _speechVolumeSlider && !volume) ||
+            (selectedRow == _speechRateSlider && !rate) ||
+            (selectedRow == _speechPitchSlider && !pitch);
+        bool selectedControlWillRelabel = selectedRow != null &&
+            (selectedRow == _speechVoiceSlider || selectedRow == _speechVolumeSlider ||
+             selectedRow == _speechRateSlider || selectedRow == _speechPitchSlider);
+
+        _speechUiOptions.RemoveAll(option =>
+            option.Row == _speechVoiceSlider || option.Row == _speechVolumeSlider ||
+            option.Row == _speechRateSlider || option.Row == _speechPitchSlider);
+        int insertion = _speechUiOptions.FindIndex(option => option.Row == _speechModeSlider) + 1;
+        if (insertion == 0)
+            insertion = _speechUiOptions.Count;
+        if (voice)
+            _speechUiOptions.Insert(insertion++, new(prefix + " VOICE", "slider",
+                _speechVoiceSlider, ReadCurrentSpeechVoiceName));
+        if (volume)
+            _speechUiOptions.Insert(insertion++, new(prefix + " VOLUME", "slider",
+                _speechVolumeSlider, () => CurrentSpeechVolume() + "%"));
+        if (rate)
+            _speechUiOptions.Insert(insertion++, new(prefix + " RATE", "slider",
+                _speechRateSlider, () => CurrentSpeechRate().ToString()));
+        if (pitch)
+            _speechUiOptions.Insert(insertion, new(prefix + " PITCH", "slider",
+                _speechPitchSlider, () => CurrentSpeechPitch().ToString()));
+
+        _speechVoiceSlider.gameObject.SetActive(voice);
+        _speechVolumeSlider.gameObject.SetActive(volume);
+        _speechRateSlider.gameObject.SetActive(rate);
+        _speechPitchSlider.gameObject.SetActive(pitch);
+        if (voice)
+            SetSpeechRowLabel(_speechVoiceSlider, prefix + " VOICE");
+        if (volume)
+            SetSpeechRowLabel(_speechVolumeSlider, prefix + " VOLUME");
+        if (rate)
+            SetSpeechRowLabel(_speechRateSlider, prefix + " RATE");
+        if (pitch)
+            SetSpeechRowLabel(_speechPitchSlider, prefix + " PITCH");
+
+        UpdateSpeechMenuValues();
+        if (selectedControlWillHide)
+            EventSystem.current?.SetSelectedGameObject(_speechModeSlider.gameObject);
+        if (selectedControlWillHide || selectedControlWillRelabel)
+            ResetSpeechMenuFocus();
+        _cachedButtonHintContext = null;
+        _nextButtonHintContextProbeAt = 0;
+        if (_speechMenuScroll?.content != null)
+            LayoutRebuilder.ForceRebuildLayoutImmediate(_speechMenuScroll.content);
+        WriteStatus("Mod Settings voice controls now follow " +
+            (adjustable ? prefix : "the selected Prism output") + ".");
+    }
+
+    private int CurrentSpeechVolume() =>
+        _speechMenuControlsBackendId == PrismNative.BackendIds.OneCore
+            ? _oneCoreVolume : _sapiVolume;
+    private int CurrentSpeechRate() =>
+        _speechMenuControlsBackendId == PrismNative.BackendIds.OneCore
+            ? _oneCoreRate : _sapiRate;
+    private int CurrentSpeechPitch() =>
+        _speechMenuControlsBackendId == PrismNative.BackendIds.OneCore
+            ? _oneCorePitch : _sapiPitch;
+
+    private string ReadCurrentSpeechVoiceName()
+    {
+        if (_speechMenuControlsBackendId != PrismNative.BackendIds.OneCore)
+            return ReadCurrentSapiVoiceName();
+        foreach (SpeechVoiceOption voice in _oneCoreVoices)
+        {
+            if (string.Equals(voice.Id, _oneCoreVoiceId,
+                    StringComparison.OrdinalIgnoreCase))
+                return voice.Id.Length == 0 ? L(voice.Name) : voice.Name;
+        }
+        return L("System default");
+    }
+
     private void UpdateSpeechMenuValues()
     {
         if (_speechOutputToggle != null)
@@ -828,10 +962,10 @@ public sealed partial class BopItAccessMod
         _speechModeSlider?.SetValue(L(_outputMode));
         if (_trimSilenceToggle != null)
             SetSpeechToggleDisplay(_trimSilenceToggle, _trimSilence);
-        _speechVoiceSlider?.SetValue(ReadCurrentSapiVoiceName());
-        _speechVolumeSlider?.SetValue(_sapiVolume + "%");
-        _speechRateSlider?.SetValue(_sapiRate.ToString());
-        _speechPitchSlider?.SetValue(_sapiPitch.ToString());
+        _speechVoiceSlider?.SetValue(ReadCurrentSpeechVoiceName());
+        _speechVolumeSlider?.SetValue(CurrentSpeechVolume() + "%");
+        _speechRateSlider?.SetValue(CurrentSpeechRate().ToString());
+        _speechPitchSlider?.SetValue(CurrentSpeechPitch().ToString());
     }
 
     private string ReadCurrentSapiVoiceName()
@@ -1017,48 +1151,71 @@ public sealed partial class BopItAccessMod
         if (!_speechMenuOpen || !_speechMenuInputReady)
             return;
         int direction = Math.Sign(movement);
-        if (direction == 0 || _sapiVoices.Count == 0)
+        bool oneCore = _speechMenuControlsBackendId == PrismNative.BackendIds.OneCore;
+        if (!oneCore && _speechMenuControlsBackendId != PrismNative.BackendIds.Sapi)
             return;
-        int current = _sapiVoices.FindIndex(voice =>
-            string.Equals(voice.Id, _sapiVoiceId, StringComparison.OrdinalIgnoreCase));
-        int next = Math.Clamp(Math.Max(0, current) + direction, 0, _sapiVoices.Count - 1);
+        List<SpeechVoiceOption> voices = oneCore ? _oneCoreVoices : _sapiVoices;
+        string currentId = oneCore ? _oneCoreVoiceId : _sapiVoiceId;
+        if (direction == 0 || voices.Count == 0)
+            return;
+        int current = voices.FindIndex(voice =>
+            string.Equals(voice.Id, currentId, StringComparison.OrdinalIgnoreCase));
+        int next = Math.Clamp(Math.Max(0, current) + direction, 0, voices.Count - 1);
         if (next == current)
             return;
-        SetSapiVoiceFromMenu(_sapiVoices[next].Id);
-        _speechVoiceSlider?.SetValue(ReadCurrentSapiVoiceName());
+        if (oneCore)
+            SetOneCoreVoiceFromMenu(voices[next].Id);
+        else
+            SetSapiVoiceFromMenu(voices[next].Id);
+        _speechVoiceSlider?.SetValue(ReadCurrentSpeechVoiceName());
     }
 
     private void OnSpeechVolumeMoved(int movement)
     {
         if (!_speechMenuOpen || !_speechMenuInputReady)
             return;
-        int next = Math.Clamp(_sapiVolume + Math.Sign(movement) * 5, 5, 100);
-        if (next == _sapiVolume)
+        int next = Math.Clamp(CurrentSpeechVolume() + Math.Sign(movement) * 5, 5, 100);
+        if (next == CurrentSpeechVolume())
             return;
-        SetSapiVolumeFromMenu(next);
-        _speechVolumeSlider?.SetValue(_sapiVolume + "%");
+        if (_speechMenuControlsBackendId == PrismNative.BackendIds.OneCore)
+            SetOneCoreVolumeFromMenu(next);
+        else if (_speechMenuControlsBackendId == PrismNative.BackendIds.Sapi)
+            SetSapiVolumeFromMenu(next);
+        else
+            return;
+        _speechVolumeSlider?.SetValue(CurrentSpeechVolume() + "%");
     }
 
     private void OnSpeechRateMoved(int movement)
     {
         if (!_speechMenuOpen || !_speechMenuInputReady)
             return;
-        int next = Math.Clamp(_sapiRate + Math.Sign(movement) * 5, 0, 100);
-        if (next == _sapiRate)
+        int next = Math.Clamp(CurrentSpeechRate() + Math.Sign(movement) * 5, 0, 100);
+        if (next == CurrentSpeechRate())
             return;
-        SetSapiRateFromMenu(next);
-        _speechRateSlider?.SetValue(_sapiRate.ToString());
+        if (_speechMenuControlsBackendId == PrismNative.BackendIds.OneCore)
+            SetOneCoreRateFromMenu(next);
+        else if (_speechMenuControlsBackendId == PrismNative.BackendIds.Sapi)
+            SetSapiRateFromMenu(next);
+        else
+            return;
+        _speechRateSlider?.SetValue(CurrentSpeechRate().ToString());
     }
 
     private void OnSpeechPitchMoved(int movement)
     {
         if (!_speechMenuOpen || !_speechMenuInputReady)
             return;
-        int next = Math.Clamp(_sapiPitch + Math.Sign(movement) * 5, 0, 100);
-        if (next == _sapiPitch)
+        int next = Math.Clamp(CurrentSpeechPitch() + Math.Sign(movement) * 5, 0, 100);
+        if (next == CurrentSpeechPitch())
             return;
-        SetSapiPitchFromMenu(next);
-        _speechPitchSlider?.SetValue(_sapiPitch.ToString());
+        if (_speechMenuControlsBackendId == PrismNative.BackendIds.OneCore)
+            SetOneCorePitchFromMenu(next);
+        else if (_speechMenuControlsBackendId == PrismNative.BackendIds.Sapi)
+            SetSapiPitchFromMenu(next);
+        else
+            return;
+        _speechPitchSlider?.SetValue(CurrentSpeechPitch().ToString());
     }
 
     private void OnSpeechBackSubmitted()
@@ -1224,6 +1381,10 @@ public sealed partial class BopItAccessMod
         SetSapiVolumeFromMenu(100);
         SetSapiRateFromMenu(50);
         SetSapiPitchFromMenu(50);
+        SetOneCoreVoiceFromMenu(string.Empty);
+        SetOneCoreVolumeFromMenu(100);
+        SetOneCoreRateFromMenu(50);
+        SetOneCorePitchFromMenu(50);
         SetSpeechEnabledFromMenu(true);
         UpdateSpeechMenuValues();
         _lastSpeechMenuValue = null;
@@ -1337,6 +1498,7 @@ public sealed partial class BopItAccessMod
             "REPEAT INTERVAL" =>
                 LocalizedRepeatIntervalValue(_repeatButtonHintsIntervalSeconds),
             "SAPI VOICE" when !string.IsNullOrEmpty(_sapiVoiceId) => value,
+            "ONECORE VOICE" when !string.IsNullOrEmpty(_oneCoreVoiceId) => value,
             _ => L(value)
         };
 

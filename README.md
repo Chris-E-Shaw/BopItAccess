@@ -60,7 +60,7 @@ If the SDK reports a missing .NET 6 targeting pack, install an SDK that includes
 1. Close the game. Copy the built `BopItAccess.dll` into `<game directory>\Mods\`. Create the `Mods` directory if MelonLoader has not created it.
 2. Obtain the official Windows x64 Prism v0.18.3 `prism.dll` from the [Prism releases](https://github.com/ethindp/prism/releases), or build the matching Prism version from source. Put `prism.dll` in the game directory, beside the game executable, rather than inside `Mods`.
 3. Copy the build's entire `src\bin\Release\net6.0\documentation\` folder into the game directory. It contains the English guide at its root and translated guides under `fr`, `it`, `de`, `es`, `es-MX`, `ja`, `ko`, `zh`, and `pt-BR`. Keep those subfolders and the companion documents. The in-game guide reads the HTML for the current game language each time it opens, so replacing a guide updates its content without rebuilding the DLL.
-4. Start your screen reader if you use one, then launch Bop It! through Steam. The mod can use Prism's SAPI output when no supported screen reader is running.
+4. Start your screen reader if you use one, then launch Bop It! through Steam. When no supported screen reader is running, Prism prefers Windows OneCore speech and falls back to SAPI if OneCore is unavailable.
 
 The Bop It Access build command compiles only this mod; it does not build or download Prism. If speech does not start, inspect `<game directory>\Mods\BopItAccess.log`. The log records Prism initialization and speech dispatch, though a successful dispatch alone cannot prove audio was heard.
 
@@ -68,7 +68,7 @@ On a first run, the welcome screen appears after the game's main menu is ready. 
 
 Choose a language in the game's **Settings > Language** row. Mod speech follows that selection. The in-game guide uses the matching translated HTML document, with English as a fallback if the selected copy is missing or unreadable. The bundled non-English text is a machine-translated first pass; fluent-speaker corrections are welcome.
 
-The mod uses the game's translated names for gameplay actions. Shapes, Space, City, and Office stay in English as fixed stage titles. The selected speech output needs a voice for your language. For SAPI output, choose an installed voice suited to your language if the system default voice sounds wrong.
+The mod uses the game's translated names for gameplay actions. Shapes, Space, City, and Office stay in English as fixed stage titles. The selected speech output needs a voice for your language. In Mod Settings, the voice, volume, rate, and pitch rows follow the active OneCore or SAPI engine; each engine keeps its own choices. These rows are hidden when the active output does not offer those controls. Choose an installed voice suited to your language if the system default sounds wrong.
 
 ## Documentation
 

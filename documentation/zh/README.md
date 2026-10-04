@@ -41,7 +41,7 @@ Bop It Access 是 **Bop It!** 的 Windows Steam 版本的非官方辅助功能�
 1. 关闭游戏。复制构建的 `BopItAccess.dll` 进入 `<game directory>\Mods\`。创建 `Mods` 目录（如果 MelonLoader 尚未创建）。
 2. 从 [Prism 发布页面](https://github.com/ethindp/prism/releases)获取适用于 Windows x64 的官方 Prism v0.18.3 `prism.dll`，或从源代码构建相同版本。将 `prism.dll` 放在游戏主文件夹中，与游戏可执行文件放在一起，不要放进 `Mods` 文件夹。
 3. 复制整个构建 `src\bin\Release\net6.0\documentation\` 文件夹放入游戏目录。它包含其根部的英文指南和翻译后的指南 `fr`, `it`, `de`, `es`, `es-MX`, `ja`, `ko`, `zh`, 和 `pt-BR`。保留这些子文件夹和配套文档。游戏内指南每次打开时都会读取当前游戏语言的 HTML，因此替换指南会更新其内容，而无需重建 DLL。
-4. 如果使用屏幕阅读器，请先启动它，再通过 Steam 启动游戏。如果没有运行兼容的屏幕阅读器，Prism 可以使用 SAPI 语音。
+4. 如果使用屏幕阅读器，请先启动它，再启动游戏。没有运行兼容的屏幕阅读器时，Prism 优先使用 OneCore；如果 OneCore 不可用，则使用 SAPI。
 
 Bop It Access build命令仅编译此mod；它不会构建或下载 Prism。如果语音未开始，请检查 `<game directory>\Mods\BopItAccess.log`。日志记录了 Prism 初始化和语音调度，但仅成功调度并不能证明听到了音频。
 
@@ -49,7 +49,7 @@ Bop It Access build命令仅编译此mod；它不会构建或下载 Prism。如�
 
 在游戏的 **设置 > 语言** 行中选择一种语言。 Mod 语音遵循该选择。游戏内指南使用匹配的翻译 HTML 文档，如果所选副本丢失或不可读，则使用英语作为后备。捆绑的非英语文本是机器翻译的第一遍；欢迎能说流利的人指正。
 
-该模组使用游戏的翻译名称来执行游戏操作。 Shapes、Space、City 和 Office 保留英文作为固定舞台标题。所选语音输出需要适合您的语言的语音。对于 SAPI 输出，如果系统默认语音听起来不正确，请选择适合您语言的已安装语音。
+游戏操作使用游戏自带的译名。Shapes、Space、City 和 Office 是固定的英文关卡名称。 使用 OneCore 或 SAPI 时，如果系统默认语音无法正确朗读游戏语言，请在模组设置中选择合适的已安装语音。 四项语音设置会显示当前实际使用的 OneCore 或 SAPI 名称，包括自动模式。仅显示当前引擎支持的设置；其他输出方式会隐藏这些设置。两个引擎分别保存语音、音量、语速和音高。
 
 ## 文档
 
