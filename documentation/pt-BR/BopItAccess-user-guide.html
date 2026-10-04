@@ -118,7 +118,7 @@
 <h2>Recursos de acessibilidade</h2>
 <ul>
 <li>Fala para a tela de título, menu principal, reprodução e seleção de músicas, configurações e controles, configurações de mod, calibração de áudio, tabelas de classificação, livro de conquistas do jogo, créditos, menu de pausa e telas de resultados.</li>
-<li>Botões em foco, controles deslizantes, alternadores, nomes, valores e valores alterados são anunciados. Indexação opcional, rótulos de tipo de controle, intervalos de controle deslizante e filtragem de letras maiúsculas permitem ajustar os detalhes.</li>
+<li>Botões em foco, controles deslizantes, alternadores, nomes, valores e valores alterados são anunciados. Indexação opcional, rótulos de tipo de controle, intervalos de controle deslizante e formatação da fala permitem ajustar os detalhes.</li>
 <li>Pontuação ou discurso do vencedor no final do jogo, seguido de discurso no menu da fila, além de um atalho para Ler Pontuação apenas na tela de resultados.</li>
 <li>Quatro descrições de palco, faladas mediante solicitação na tela de seleção de músicas antes do início da partida.</li>
 <li>A referência do tutorial do jogo para o modo e dificuldade atuais, falada mediante solicitação na seleção da música com o controle atribuído atualmente a cada ação. One-on-One inclui ambas as entradas BATER.</li>
@@ -248,7 +248,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <section id="speech-options">
 <h2>Menu de configurações do mod</h2>
 <p>Abrir <strong>Configurações&gt; Configurações de mod</strong>. Percorra as linhas com o controle do menu para cima/para baixo. Confirme uma alternância ou botão; use Esquerda/Direita para alterar um controle deslizante. Os padrões abaixo são para uma nova configuração. As alterações são lembradas entre as sessões. Se a fala estiver desativada, Alternar fala ainda funciona e a linha Saída de fala usa a mesma chave mestre.</p>
-<p>Os quatro controles de voz mostram o nome do mecanismo ativo, OneCore ou SAPI, mesmo no modo Auto. Só aparecem os controles compatíveis; com outras saídas, eles são ocultados. Cada mecanismo guarda separadamente voz, volume, velocidade e tom. Volume: de 5% a 100% em passos de 5, inicialmente 100%. Velocidade e tom: de 0 a 100 em passos de 5, inicialmente 50. O volume mínimo mantém audíveis os avisos de recuperação.</p>
+<p>Voz, Volume, Velocidade e Tom ajustam a saída OneCore ou SAPI realmente em uso, mesmo no modo Auto. Só aparecem os controles compatíveis; com outras saídas, eles são ocultados. Cada mecanismo guarda suas configurações separadamente. Volume: de 5% a 100% em passos de 5, inicialmente 100%. Velocidade e tom: de 0 a 100 em passos de 5, inicialmente 50. O volume mínimo mantém audíveis os avisos de recuperação.</p>
 <div class="table-scroll"><table>
 <caption>Cada linha atual de configurações de mod, na ordem do menu</caption>
 <thead><tr><th scope="col">Configuração</th><th scope="col">Escolhas/padrão</th><th scope="col">O que isso faz</th></tr></thead>
@@ -257,7 +257,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <tr><th scope="row">Saída Braille</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Envia os mesmos anúncios para a saída braille de um leitor de tela compatível. Um display braille conectado ou o Braille Viewer do NVDA podem mostrá-los.</td></tr>
 <tr><th scope="row">Silenciar fala em segundo plano</th><td>Ligado/Desligado; <strong>Desligado</strong></td><td>Quando ativado, interrompe e descarta a fala mod enquanto outra janela está em foco.</td></tr>
 <tr><th scope="row">Indexação</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Adiciona a posição de um item, como “Reproduzir, 1 de 6”, nos menus suportados.</td></tr>
-<tr><th scope="row">Filtrar letras maiúsculas</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Altera o texto todo em maiúsculas para maiúsculas e minúsculas somente para fala e braille. As letras visíveis do jogo permanecem conforme projetadas.</td></tr>
+<tr><th scope="row">Formatar fala</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Deixa o texto em maiúsculas mais natural para fala e braille. No guia dentro do jogo, acrescenta reticências antes do número da linha se o texto terminar sem pontuação. O texto visível não muda. Desative para receber o texto como foi escrito.</td></tr>
 <tr><th scope="row">Ler tipos de controle</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Adiciona rótulos como “botão”, “alternar” ou “controle deslizante” aos controles em foco.</td></tr>
 <tr><th scope="row">Intervalos de controle deslizante</th><td>Ligado/Desligado; <strong>Desligado</strong></td><td>Lê os pontos finais disponíveis de um controle deslizante em foco, como “intervalo de 0 a 100”. Alterá-lo ainda lê apenas o novo valor.</td></tr>
 <tr><th scope="row">Feedback individual</th><td>Ligado/Desligado; <strong>Ligado</strong></td><td>Fala a cor verde ou amarela ativa e a contagem de vidas restantes quando uma vida é perdida ou ganha no One-on-One.</td></tr>
@@ -267,10 +267,10 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <tr><th scope="row">Repetir dicas de botão</th><td>Desligado, 2x, 3x, 4x, 5x, Infinitamente; <strong>Infinitamente</strong></td><td>Define o número total de vezes que uma dica será ouvida em um ciclo. “2x” significa a primeira leitura mais uma repetição.</td></tr>
 <tr><th scope="row">Intervalo de repetição</th><td>15, 30, 45, 60 segundos; <strong>30 segundos</strong></td><td>Tempo entre as leituras repetidas acima. Falar uma dica sob demanda substitui a primeira dica automática pendente, mas ainda permite repetições configuradas.</td></tr>
 <tr><th scope="row">Modo de saída</th><td><code>Auto</code>, <code>OneCore</code>, <code>SAPI</code>, <code>NVDA</code>, <code>JAWS</code>, <code>UI Automation</code>, <code>ZDSR</code>, <code>ZoomText</code>, <code>Boy PC Reader</code>, <code>PC Talker</code>, <code>Sense Reader</code>, <code>System Access</code>, <code>Window-Eyes</code>; <strong><code>Auto</code></strong></td><td>Auto usa um leitor de tela compatível em execução, depois OneCore e, por último, SAPI.</td></tr>
-<tr><th scope="row">Voz OneCore / Voz SAPI</th><td>Voz padrão do sistema ou vozes instaladas para o mecanismo ativo; <strong>Padrão do sistema</strong></td><td>Seleciona a voz do mecanismo ativo.</td></tr>
-<tr><th scope="row">Volume OneCore / Volume SAPI</th><td>5%–100%; <strong>100%</strong></td><td>Ajusta o volume do mecanismo ativo.</td></tr>
-<tr><th scope="row">Velocidade OneCore / Velocidade SAPI</th><td>0–100; <strong>50</strong></td><td>Ajusta a velocidade do mecanismo ativo.</td></tr>
-<tr><th scope="row">Tom OneCore / Tom SAPI</th><td>0–100; <strong>50</strong></td><td>Ajusta o tom do mecanismo ativo.</td></tr>
+<tr><th scope="row">Voz</th><td>Voz padrão do sistema ou vozes instaladas para o mecanismo ativo; <strong>Padrão do sistema</strong></td><td>Seleciona a voz do mecanismo ativo.</td></tr>
+<tr><th scope="row">Volume</th><td>5%–100%; <strong>100%</strong></td><td>Ajusta o volume do mecanismo ativo.</td></tr>
+<tr><th scope="row">Velocidade</th><td>0–100; <strong>50</strong></td><td>Ajusta a velocidade do mecanismo ativo.</td></tr>
+<tr><th scope="row">Tom</th><td>0–100; <strong>50</strong></td><td>Ajusta o tom do mecanismo ativo.</td></tr>
 <tr><th scope="row">Abra o Guia do usuário</th><td>Botão</td><td>Abre este documento no jogo. Escolha um tópico em seu índice e leia-o linha por linha.</td></tr>
 <tr><th scope="row">Redefinir tela de boas-vindas</th><td>Botão</td><td>Pressione uma vez para solicitar confirmação e pressione novamente dentro de cinco segundos. Mover para outra linha ou esperar cinco segundos cancela a solicitação. Uma reinicialização bem-sucedida é anunciada e a tela de boas-vindas aparece na próxima vez que o jogo for iniciado.</td></tr>
 <tr><th scope="row">Restaurar padrões de mod</th><td>Botão</td><td>Pressione uma vez para solicitar confirmação e pressione novamente dentro de cinco segundos para restaurar os padrões das configurações do Mod acima. Mover para outra linha ou esperar cinco segundos cancela a solicitação. Isso não altera os volumes de música, SFX ou narração do jogo, o limite de FPS ou as ligações personalizadas do teclado e do controlador.</td></tr>

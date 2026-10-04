@@ -472,5 +472,10 @@
   "SPACE": "Space",
   "CITY": "City",
   "OFFICE": "Office",
-  "BOP - PLAYER 2": "Klopfen – Spieler 2"
+  "BOP - PLAYER 2": "Klopfen – Spieler 2",
+  "FORMAT SPEECH": "Sprache formatieren",
+  "VOICE": "Stimme",
+  "VOLUME": "Lautstärke",
+  "RATE": "Sprechgeschwindigkeit",
+  "PITCH": "Tonhöhe"
 }

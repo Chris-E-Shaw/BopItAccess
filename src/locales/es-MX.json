@@ -472,5 +472,10 @@
   "SPACE": "Space",
   "CITY": "City",
   "OFFICE": "Office",
-  "BOP - PLAYER 2": "Pulsar - jugador 2"
+  "BOP - PLAYER 2": "Pulsar - jugador 2",
+  "FORMAT SPEECH": "Dar formato al habla",
+  "VOICE": "Voz",
+  "VOLUME": "Volumen",
+  "RATE": "Velocidad",
+  "PITCH": "Tono"
 }

@@ -458,7 +458,7 @@ public sealed partial class BopItAccessMod
                 _indexingSubmitListener ??= (UnityAction)OnIndexingSubmitted,
                 _indexingEnabled);
             _filterCapitalisationToggle = AddSpeechToggle(settings.vibration, content,
-                "FILTER CAPITALISATION",
+                "FORMAT SPEECH",
                 _filterCapitalisationSubmitListener ??=
                     (UnityAction)OnFilterCapitalisationSubmitted,
                 _filterCapitalisationEnabled);
@@ -498,13 +498,13 @@ public sealed partial class BopItAccessMod
                     _trimSilenceSubmitListener ??= (UnityAction)OnTrimSilenceSubmitted,
                     _trimSilence);
             _speechVoiceSlider = AddSpeechSlider(settings.resolution, content,
-                "SAPI VOICE");
+                "VOICE");
             _speechVolumeSlider = AddSpeechSlider(settings.resolution, content,
-                "SAPI VOLUME");
+                "VOLUME");
             _speechRateSlider = AddSpeechSlider(settings.resolution, content,
-                "SAPI RATE");
+                "RATE");
             _speechPitchSlider = AddSpeechSlider(settings.resolution, content,
-                "SAPI PITCH");
+                "PITCH");
             _openUserGuideButton = AddSpeechButton(settings.controls, content,
                 "OPEN USER'S GUIDE",
                 _openUserGuideSubmitListener ??=
@@ -529,7 +529,7 @@ public sealed partial class BopItAccessMod
                 () => _muteSpeechInBackground ? "On" : "Off"));
             _speechUiOptions.Add(new("INDEXING", "toggle", _indexingToggle,
                 () => _indexingEnabled ? "On" : "Off"));
-            _speechUiOptions.Add(new("FILTER CAPITALISATION", "toggle",
+            _speechUiOptions.Add(new("FORMAT SPEECH", "toggle",
                 _filterCapitalisationToggle,
                 () => _filterCapitalisationEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("READ CONTROL TYPES", "toggle",
@@ -559,14 +559,14 @@ public sealed partial class BopItAccessMod
             if (TrimSilenceExperimentAvailable && _trimSilenceToggle != null)
                 _speechUiOptions.Add(new("TRIM SILENCE", "toggle", _trimSilenceToggle,
                     () => _trimSilence ? "On" : "Off"));
-            _speechUiOptions.Add(new("SAPI VOICE", "slider", _speechVoiceSlider,
-                ReadCurrentSapiVoiceName));
-            _speechUiOptions.Add(new("SAPI VOLUME", "slider", _speechVolumeSlider,
-                () => _sapiVolume + "%"));
-            _speechUiOptions.Add(new("SAPI RATE", "slider", _speechRateSlider,
-                () => _sapiRate.ToString()));
-            _speechUiOptions.Add(new("SAPI PITCH", "slider", _speechPitchSlider,
-                () => _sapiPitch.ToString()));
+            _speechUiOptions.Add(new("VOICE", "slider", _speechVoiceSlider,
+                ReadCurrentSpeechVoiceName));
+            _speechUiOptions.Add(new("VOLUME", "slider", _speechVolumeSlider,
+                () => CurrentSpeechVolume() + "%"));
+            _speechUiOptions.Add(new("RATE", "slider", _speechRateSlider,
+                () => CurrentSpeechRate().ToString()));
+            _speechUiOptions.Add(new("PITCH", "slider", _speechPitchSlider,
+                () => CurrentSpeechPitch().ToString()));
             _speechUiOptions.Add(new("OPEN USER'S GUIDE", "button",
                 _openUserGuideButton, () => null));
             _speechUiOptions.Add(new("RESET WELCOME SCREEN", "button",
@@ -675,10 +675,10 @@ public sealed partial class BopItAccessMod
                 (UnityAction<int>)OnRepeatButtonHintsMoved,
             "REPEAT INTERVAL" => _repeatButtonHintsIntervalMoveListener ??=
                 (UnityAction<int>)OnRepeatButtonHintsIntervalMoved,
-            "SAPI VOICE" => _speechVoiceMoveListener ??= (UnityAction<int>)OnSpeechVoiceMoved,
-            "SAPI VOLUME" => _speechVolumeMoveListener ??= (UnityAction<int>)OnSpeechVolumeMoved,
-            "SAPI RATE" => _speechRateMoveListener ??= (UnityAction<int>)OnSpeechRateMoved,
-            "SAPI PITCH" => _speechPitchMoveListener ??= (UnityAction<int>)OnSpeechPitchMoved,
+            "VOICE" => _speechVoiceMoveListener ??= (UnityAction<int>)OnSpeechVoiceMoved,
+            "VOLUME" => _speechVolumeMoveListener ??= (UnityAction<int>)OnSpeechVolumeMoved,
+            "RATE" => _speechRateMoveListener ??= (UnityAction<int>)OnSpeechRateMoved,
+            "PITCH" => _speechPitchMoveListener ??= (UnityAction<int>)OnSpeechPitchMoved,
             _ => throw new ArgumentOutOfRangeException(nameof(label), label,
                 "No movement handler was registered for this Speech slider.")
         };
@@ -857,7 +857,7 @@ public sealed partial class BopItAccessMod
             (selectedRow == _speechVolumeSlider && !volume) ||
             (selectedRow == _speechRateSlider && !rate) ||
             (selectedRow == _speechPitchSlider && !pitch);
-        bool selectedControlWillRelabel = selectedRow != null &&
+        bool selectedControlWillRefresh = selectedRow != null &&
             (selectedRow == _speechVoiceSlider || selectedRow == _speechVolumeSlider ||
              selectedRow == _speechRateSlider || selectedRow == _speechPitchSlider);
 
@@ -868,16 +868,16 @@ public sealed partial class BopItAccessMod
         if (insertion == 0)
             insertion = _speechUiOptions.Count;
         if (voice)
-            _speechUiOptions.Insert(insertion++, new(prefix + " VOICE", "slider",
+            _speechUiOptions.Insert(insertion++, new("VOICE", "slider",
                 _speechVoiceSlider, ReadCurrentSpeechVoiceName));
         if (volume)
-            _speechUiOptions.Insert(insertion++, new(prefix + " VOLUME", "slider",
+            _speechUiOptions.Insert(insertion++, new("VOLUME", "slider",
                 _speechVolumeSlider, () => CurrentSpeechVolume() + "%"));
         if (rate)
-            _speechUiOptions.Insert(insertion++, new(prefix + " RATE", "slider",
+            _speechUiOptions.Insert(insertion++, new("RATE", "slider",
                 _speechRateSlider, () => CurrentSpeechRate().ToString()));
         if (pitch)
-            _speechUiOptions.Insert(insertion, new(prefix + " PITCH", "slider",
+            _speechUiOptions.Insert(insertion, new("PITCH", "slider",
                 _speechPitchSlider, () => CurrentSpeechPitch().ToString()));
 
         _speechVoiceSlider.gameObject.SetActive(voice);
@@ -885,18 +885,18 @@ public sealed partial class BopItAccessMod
         _speechRateSlider.gameObject.SetActive(rate);
         _speechPitchSlider.gameObject.SetActive(pitch);
         if (voice)
-            SetSpeechRowLabel(_speechVoiceSlider, prefix + " VOICE");
+            SetSpeechRowLabel(_speechVoiceSlider, "VOICE");
         if (volume)
-            SetSpeechRowLabel(_speechVolumeSlider, prefix + " VOLUME");
+            SetSpeechRowLabel(_speechVolumeSlider, "VOLUME");
         if (rate)
-            SetSpeechRowLabel(_speechRateSlider, prefix + " RATE");
+            SetSpeechRowLabel(_speechRateSlider, "RATE");
         if (pitch)
-            SetSpeechRowLabel(_speechPitchSlider, prefix + " PITCH");
+            SetSpeechRowLabel(_speechPitchSlider, "PITCH");
 
         UpdateSpeechMenuValues();
         if (selectedControlWillHide)
             EventSystem.current?.SetSelectedGameObject(_speechModeSlider.gameObject);
-        if (selectedControlWillHide || selectedControlWillRelabel)
+        if (selectedControlWillHide || selectedControlWillRefresh)
             ResetSpeechMenuFocus();
         _cachedButtonHintContext = null;
         _nextButtonHintContextProbeAt = 0;
@@ -1497,8 +1497,10 @@ public sealed partial class BopItAccessMod
                 LocalizedRepeatButtonHintsValue(_repeatButtonHintsCount),
             "REPEAT INTERVAL" =>
                 LocalizedRepeatIntervalValue(_repeatButtonHintsIntervalSeconds),
-            "SAPI VOICE" when !string.IsNullOrEmpty(_sapiVoiceId) => value,
-            "ONECORE VOICE" when !string.IsNullOrEmpty(_oneCoreVoiceId) => value,
+            "VOICE" when _speechMenuControlsBackendId == PrismNative.BackendIds.Sapi &&
+                !string.IsNullOrEmpty(_sapiVoiceId) => value,
+            "VOICE" when _speechMenuControlsBackendId == PrismNative.BackendIds.OneCore &&
+                !string.IsNullOrEmpty(_oneCoreVoiceId) => value,
             _ => L(value)
         };
 

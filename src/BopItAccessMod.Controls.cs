@@ -73,6 +73,11 @@ public sealed partial class BopItAccessMod
 
         if (!_controlsWasVisible)
         {
+            // This panel can open between the 250 ms custom-row probes in
+            // OnUpdate. Add every binding row before the first focus message
+            // counts the available controls.
+            if (!EnsureCustomControlsRowsBeforeFocus(panel))
+                return true;
             _controlsRebindingManager = panel.GetComponentInChildren<InputRebindingManager>(true);
             var foundRows = panel.GetComponentsInChildren<ControlRow>(true);
             var nativeRows = new List<ControlRow>(foundRows.Length);
@@ -624,6 +629,7 @@ public sealed partial class BopItAccessMod
 
     private void ResetControlsFocus()
     {
+        ResetPendingControlsSetup();
         _controlsRebindingManager = null;
         _controlsRows = null;
         _controlsResetRow = null;

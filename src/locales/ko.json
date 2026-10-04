@@ -472,5 +472,10 @@
   "SPACE": "Space",
   "CITY": "City",
   "OFFICE": "Office",
-  "BOP - PLAYER 2": "치기 - 플레이어 2"
+  "BOP - PLAYER 2": "치기 - 플레이어 2",
+  "FORMAT SPEECH": "음성 문구 다듬기",
+  "VOICE": "음성",
+  "VOLUME": "볼륨",
+  "RATE": "말하기 속도",
+  "PITCH": "음높이"
 }

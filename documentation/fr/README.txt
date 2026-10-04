@@ -60,13 +60,7 @@ Paramètres, choix de fin de partie, classements, réalisations, crédits et aut
 écrans pris en charge. Le décompte suit les choix actuellement disponibles. Changer
 un curseur ou une bascule alors qu'il reste focalisé n'annonce que la nouvelle valeur.
 
-FILTER CAPITALIZATION est une bascule de paramètres de module enregistrée, activée par défaut. Cela change seulement
-le texte envoyé à la parole et au braille, laissant l'interface graphique visible du jeu intacte.
-Les mots de menu en majuscules sont prononcés dans la casse : "PASS IT" devient "Pass it"
-et "ONE ON ONE" devient "One-on-one". Le premier mot après un point est
-capitalisé à nouveau. Mots à casse mixte existants et abréviations courantes telles que
-SAPI, NVDA, SFX et FPS sont conservés. Désactiver la bascule envoie le
-texte de discours original.
+FORMATER LA PAROLE est une option des paramètres du mod, activée par défaut et mémorisée. Elle rend plus naturelle la casse des mots de menu entièrement en majuscules, en conservant les mots à casse mixte et les abréviations comme SAPI, NVDA, SFX et FPS. Dans le guide intégré, si la numérotation est annoncée et que la ligne ne se termine pas par une ponctuation, elle ajoute trois points pour marquer une pause avant le numéro de ligne. La ponctuation existante est conservée. Seuls les textes envoyés à la parole et au braille changent ; les textes visibles du jeu et le guide restent intacts. Désactiver cette option désactive les deux ajustements. Votre ancien choix de filtrage des majuscules est conservé.
 
 READ CONTROL TYPES est une autre bascule MOD SETTINGS enregistrée, activée par défaut. Lorsqu'il est activé,
 le type de l'élément ciblé suit son nom et précède sa valeur et son index :
@@ -138,7 +132,7 @@ gameplay actif et les phases de beat-timing de Audio Calibration, où des extras
 le discours pourrait masquer un indice. Un rappel existant enregistré de 15, 30 ou 60 secondes
 le délai de la version 0.6.2 devient la nouvelle valeur BUTTON HINTS DELAY.
 
-MOD SETTINGS: Les quatre réglages vocaux portent le nom du moteur actif, OneCore ou SAPI, même en mode Auto. Seuls les réglages pris en charge sont visibles ; ils sont masqués pour les autres sorties. Chaque moteur mémorise séparément la voix, le volume, la vitesse et la hauteur. Volume : de 5 % à 100 % par pas de 5, valeur initiale 100 %. Vitesse et hauteur : de 0 à 100 par pas de 5, valeur initiale 50. Le volume minimal laisse les messages de récupération audibles.
+MOD SETTINGS: Voix, Volume, Vitesse et Hauteur de voix règlent la sortie OneCore ou SAPI réellement utilisée, même en mode Auto. Seuls les réglages pris en charge sont visibles ; ils sont masqués pour les autres sorties. Chaque moteur mémorise ses choix séparément. Volume : de 5 % à 100 % par pas de 5, valeur initiale 100 %. Vitesse et hauteur : de 0 à 100 par pas de 5, valeur initiale 50. Le volume minimal laisse les messages de récupération audibles.
 Les choix de paramètres du module sont mémorisés entre les sessions. RESTAURER LES DÉFAUTS DU MOD
 renvoie ces choix aux valeurs par défaut décrites ci-dessus. Appuyez dessus une fois pour demander
 confirmation, puis appuyez à nouveau dessus dans les cinq secondes pour les restaurer. Déménagement

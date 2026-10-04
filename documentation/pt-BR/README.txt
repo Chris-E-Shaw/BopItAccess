@@ -60,13 +60,7 @@ Configurações, opções de fim de jogo, tabelas de classificação, conquistas
 telas suportadas. A contagem segue as escolhas atualmente disponíveis. Mudando
 um controle deslizante ou alternância enquanto permanece em foco ainda anuncia apenas o novo valor.
 
-FILTER CAPITALIZATION é um botão de alternância de configurações de mod salvo, ativado por padrão. Ele muda apenas
-o texto enviado para fala e braille, deixando intacta a GUI visível do jogo.
-As palavras do menu em letras maiúsculas são faladas em maiúsculas e minúsculas: "PASS IT" torna-se "Pass it"
-e "ONE ON ONE" torna-se "One-on-one". A primeira palavra depois do ponto final é
-capitalizado novamente. Palavras existentes com maiúsculas e minúsculas e abreviações comuns, como
-SAPI, NVDA, SFX e FPS são preservados. Desligar o botão envia o
-texto original do discurso.
+FORMATAR FALA é uma opção salva nas configurações do mod, ativada por padrão. Usa maiúsculas e minúsculas naturais nos nomes de menu escritos apenas em maiúsculas, preservando palavras com maiúsculas e minúsculas e abreviações como SAPI, NVDA, SFX e FPS. No guia dentro do jogo, quando o número da linha é anunciado e o texto termina sem pontuação, acrescenta três pontos para uma pausa antes do número. A pontuação existente é preservada. Só muda o texto enviado à fala e ao braille; o texto visível do jogo e o guia ficam intactos. Desativar a opção desativa os dois ajustes. Sua preferência anterior de filtro de maiúsculas é mantida.
 
 READ CONTROL TYPES é outro botão de alternância de MOD SETTINGS salvo, ativado por padrão. Quando ativado,
 o tipo do item em foco segue seu nome e precede seu valor e índice:
@@ -138,7 +132,7 @@ jogabilidade ativa e as fases de tempo de batida da calibração de áudio, onde
 a fala pode mascarar uma deixa. Um lembrete existente salvo de 15, 30 ou 60 segundos
 atraso da versão 0.6.2 torna-se o novo valor BUTTON HINTS DELAY.
 
-MOD SETTINGS: Os quatro controles de voz mostram o nome do mecanismo ativo, OneCore ou SAPI, mesmo no modo Auto. Só aparecem os controles compatíveis; com outras saídas, eles são ocultados. Cada mecanismo guarda separadamente voz, volume, velocidade e tom. Volume: de 5% a 100% em passos de 5, inicialmente 100%. Velocidade e tom: de 0 a 100 em passos de 5, inicialmente 50. O volume mínimo mantém audíveis os avisos de recuperação.
+MOD SETTINGS: Voz, Volume, Velocidade e Tom ajustam a saída OneCore ou SAPI realmente em uso, mesmo no modo Auto. Só aparecem os controles compatíveis; com outras saídas, eles são ocultados. Cada mecanismo guarda suas configurações separadamente. Volume: de 5% a 100% em passos de 5, inicialmente 100%. Velocidade e tom: de 0 a 100 em passos de 5, inicialmente 50. O volume mínimo mantém audíveis os avisos de recuperação.
 As opções de configurações do mod são lembradas entre as sessões. RESTAURAR PADRÕES DO MOD
 retorna essas opções aos padrões descritos acima. Pressione uma vez para solicitar
 confirmação e pressione-o novamente dentro de cinco segundos para restaurá-los. Movendo-se

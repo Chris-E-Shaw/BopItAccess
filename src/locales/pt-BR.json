@@ -472,5 +472,10 @@
   "SPACE": "Space",
   "CITY": "City",
   "OFFICE": "Office",
-  "BOP - PLAYER 2": "Bater, Jogador 2"
+  "BOP - PLAYER 2": "Bater, Jogador 2",
+  "FORMAT SPEECH": "Formatar fala",
+  "VOICE": "Voz",
+  "VOLUME": "Volume",
+  "RATE": "Velocidade",
+  "PITCH": "Tom"
 }

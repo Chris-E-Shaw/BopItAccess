@@ -68,7 +68,9 @@ On a first run, the welcome screen appears after the game's main menu is ready. 
 
 Choose a language in the game's **Settings > Language** row. Mod speech follows that selection. The in-game guide uses the matching translated HTML document, with English as a fallback if the selected copy is missing or unreadable. The bundled non-English text is a machine-translated first pass; fluent-speaker corrections are welcome.
 
-The mod uses the game's translated names for gameplay actions. Shapes, Space, City, and Office stay in English as fixed stage titles. The selected speech output needs a voice for your language. In Mod Settings, the voice, volume, rate, and pitch rows follow the active OneCore or SAPI engine; each engine keeps its own choices. These rows are hidden when the active output does not offer those controls. Choose an installed voice suited to your language if the system default sounds wrong.
+The mod uses the game's translated names for gameplay actions. Shapes, Space, City, and Office stay in English as fixed stage titles. The selected speech output needs a voice for your language. In Mod Settings, Voice, Volume, Rate, and Pitch adjust the active OneCore or SAPI engine; each engine keeps its own choices. These rows are hidden when the active output does not offer those controls. Choose an installed voice suited to your language if the system default sounds wrong.
+
+Format Speech makes all-capitals menu text sound more natural and adds a pause before guide line numbers when the line ends without terminal punctuation. It affects speech and braille text only; visible game text and the HTML guide stay unchanged. This setting is On by default and keeps your earlier Filter Capitalisation choice. Switch it Off to receive the original text.
 
 ## Documentation
 

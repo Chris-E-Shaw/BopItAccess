@@ -49,7 +49,9 @@ Beim ersten Start erscheint der Begrüßungsbildschirm, nachdem das Hauptmenü d
 
 Wählen Sie in der Zeile **Einstellungen > Sprache** des Spiels eine Sprache aus. Mod Speech folgt dieser Auswahl. Der In-Game-Guide verwendet das passende übersetzte HTML-Dokument, mit Englisch als Ersatz, wenn die ausgewählte Kopie fehlt oder nicht lesbar ist. Der gebündelte nicht-englische Text ist ein maschinell übersetzter erster Durchgang; Korrekturen, die fließend sprechen, sind willkommen.
 
-Spielaktionen verwenden die Übersetzungen des Spiels. Shapes, Space, City und Office bleiben feste englische Stufennamen. Für OneCore oder SAPI können Sie in den Mod-Einstellungen eine installierte Stimme für Ihre Spielsprache wählen, wenn die Systemstimme ungeeignet ist. Die vier Stimmregler tragen den Namen der tatsächlich verwendeten Engine, OneCore oder SAPI, auch im Auto-Modus. Nur unterstützte Regler sind sichtbar; bei anderen Ausgaben werden sie ausgeblendet. Beide Engines speichern Stimme, Lautstärke, Geschwindigkeit und Tonhöhe getrennt.
+Spielaktionen verwenden die Übersetzungen des Spiels. Shapes, Space, City und Office bleiben feste englische Stufennamen. Für OneCore oder SAPI können Sie in den Mod-Einstellungen eine installierte Stimme für Ihre Spielsprache wählen, wenn die Systemstimme ungeeignet ist. Stimme, Lautstärke, Sprechgeschwindigkeit und Tonhöhe passen die tatsächlich verwendete OneCore- oder SAPI-Ausgabe an, auch im Auto-Modus. Nur unterstützte Regler sind sichtbar; bei anderen Ausgaben werden sie ausgeblendet. Beide Engines speichern ihre Einstellungen getrennt.
+
+**Sprache formatieren**: Macht Texte in Großbuchstaben für Sprache und Braille leichter lesbar. Im Spielratgeber wird vor der Zeilennummer eine Auslassungspause eingefügt, wenn die Zeile ohne Satzzeichen endet. Sichtbare Texte bleiben unverändert. Aus lässt die Ausgabe unverändert.
 
 ## Dokumentation
 

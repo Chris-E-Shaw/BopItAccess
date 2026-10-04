@@ -32,6 +32,9 @@ public sealed partial class BopItAccessMod
     private int _leaderboardControlsPanelId;
     private long _nextLeaderboardControlsProbeAt;
     private bool _leaderboardControlsAttempted;
+    private long _leaderboardControlsSetupStartedAt;
+    private long _nextLeaderboardControlsSetupAttemptAt;
+    private string? _leaderboardControlsSetupFailure;
     private string? _customControlRowsLocale;
 
     public override void OnUpdate()
@@ -77,14 +80,15 @@ public sealed partial class BopItAccessMod
         Panel? panel = main?.controlsPanel;
         if (panel == null || !panel.IsVisible || !panel.gameObject.activeInHierarchy)
         {
-            // A panel can become visible before its localized labels or input
-            // references finish initializing. Retry a failed injection when it
-            // is opened again, while keeping successfully added rows intact.
-            if (_leaderboardAddedRows.Count == 0)
-                _leaderboardControlsAttempted = false;
+            ResetPendingControlsSetup();
             return;
         }
 
+        EnsureCustomControlsRowsBeforeFocus(panel);
+    }
+
+    private bool EnsureCustomControlsRowsBeforeFocus(Panel panel)
+    {
         int panelId = panel.GetInstanceID();
         if (panelId != _leaderboardControlsPanelId)
         {
@@ -92,24 +96,63 @@ public sealed partial class BopItAccessMod
                 RemoveAddedLeaderboardControls();
             _leaderboardControlsPanelId = panelId;
             _leaderboardControlsAttempted = false;
+            _leaderboardControlsSetupStartedAt = 0;
+            _nextLeaderboardControlsSetupAttemptAt = 0;
+            _leaderboardControlsSetupFailure = null;
         }
 
         if (_leaderboardControlsAttempted)
-            return;
+            return true;
 
-        _leaderboardControlsAttempted = true;
+        long now = Environment.TickCount64;
+        if (_leaderboardControlsSetupStartedAt == 0)
+            _leaderboardControlsSetupStartedAt = now;
+        if (now < _nextLeaderboardControlsSetupAttemptAt)
+            return false;
+
+        _nextLeaderboardControlsSetupAttemptAt = now + 250;
+        string reason;
         try
         {
-            if (TryAddLeaderboardControls(panel, out string reason))
+            if (TryAddLeaderboardControls(panel, out reason))
+            {
+                _leaderboardControlsAttempted = true;
                 WriteStatus("Added Reset Gyro and the mod binding rows to Controls.");
-            else
-                WriteStatus("Leaderboard binding rows were not added: " + reason);
+                return true;
+            }
         }
         catch (Exception ex)
         {
             RemoveAddedLeaderboardControls();
-            WriteStatus("Leaderboard binding rows were not added: " + ex);
+            reason = ex.ToString();
         }
+
+        // Native row references can finish initializing after panel activation.
+        // Wait briefly instead of announcing a count that changes mid-visit.
+        if (_leaderboardControlsSetupFailure == null)
+            WriteStatus("Controls binding rows are not ready; retrying before " +
+                "the first focus announcement: " + reason);
+        _leaderboardControlsSetupFailure = reason;
+        if (now - _leaderboardControlsSetupStartedAt < 2000)
+            return false;
+
+        // A changed game UI must not leave Controls silent indefinitely. After
+        // bounded retries, read the controls that are actually visible.
+        _leaderboardControlsAttempted = true;
+        WriteStatus("Controls binding rows were not added after 2 seconds; " +
+            "announcing the available controls: " + reason);
+        return true;
+    }
+
+    private void ResetPendingControlsSetup()
+    {
+        // Successfully added rows survive closing and reopening the panel.
+        if (_leaderboardAddedRows.Count != 0)
+            return;
+        _leaderboardControlsAttempted = false;
+        _leaderboardControlsSetupStartedAt = 0;
+        _nextLeaderboardControlsSetupAttemptAt = 0;
+        _leaderboardControlsSetupFailure = null;
     }
 
     private bool TryAddLeaderboardControls(Panel panel, out string reason)
@@ -255,8 +298,8 @@ public sealed partial class BopItAccessMod
             LayoutRebuilder.ForceRebuildLayoutImmediate(contentRect);
             if (_leaderboardControlsScroll != null)
                 _leaderboardControlsScroll.verticalNormalizedPosition = 1f;
-            // ReadControlsFocus already has the native rows. The added rows
-            // are tracked separately, so keep this visit's introduction state.
+            // Added rows are tracked separately from native ControlRows.
+            // Keep this visit's introduction and selected-row state intact.
             reason = string.Empty;
             return true;
         }

@@ -16,6 +16,8 @@ public sealed partial class BopItAccessMod
     };
     private const string FilterCapitalisationPreferenceKey =
         "BopItAccess.FilterCapitalisation";
+    // Keep the saved key so existing choices survive the expanded Format
+    // Speech setting, which also separates guide text from its line index.
     private volatile bool _filterCapitalisationEnabled = true;
 
     private void InitializeFilterCapitalisationPreferenceOnMainThread()
@@ -28,7 +30,7 @@ public sealed partial class BopItAccessMod
         catch (Exception ex)
         {
             _filterCapitalisationEnabled = true;
-            WriteStatus("Could not read the capitalisation filter preference: " +
+            WriteStatus("Could not read the speech formatting preference: " +
                 ex.Message);
         }
     }
@@ -46,11 +48,25 @@ public sealed partial class BopItAccessMod
         }
         catch (Exception ex)
         {
-            WriteStatus("Could not save the capitalisation filter preference: " +
+            WriteStatus("Could not save the speech formatting preference: " +
                 ex.Message);
         }
-        WriteStatus("Capitalisation filter " +
+        WriteStatus("Speech formatting " +
             (enabled ? "enabled" : "disabled") + ".");
+    }
+
+    private static string FormatGuideTextBeforeIndex(string text)
+    {
+        string trimmed = text.TrimEnd();
+        int last = trimmed.Length - 1;
+        // Quoted sentences and parenthetical endings can already contain a
+        // pause before the closing character. Do not add a second one.
+        while (last >= 0 && (char.IsWhiteSpace(trimmed[last]) ||
+               "\"'’”»)]}）］】」』".Contains(trimmed[last])))
+            last--;
+        if (last < 0 || ".,!?;:…。，、！？；：".Contains(trimmed[last]))
+            return text;
+        return trimmed + "...";
     }
 
     // Only the text handed to an output driver is changed. The labels and

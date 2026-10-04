@@ -69,13 +69,16 @@ Settings, game-over choices, leaderboards, achievements, credits, and other
 supported screens. The count follows the currently available choices. Changing
 a slider or toggle while it remains focused still announces only the new value.
 
-FILTER CAPITALISATION is a saved Mod Settings toggle, On by default. It changes only
-the text sent to speech and braille, leaving the game's visible GUI untouched.
-All-capital menu words are spoken in sentence case: "PASS IT" becomes "Pass it"
-and "ONE ON ONE" becomes "One-on-one". The first word after a full stop is
-capitalised again. Existing mixed-case words and common abbreviations such as
-SAPI, NVDA, SFX, and FPS are preserved. Turning the toggle Off sends the
-original speech text.
+FORMAT SPEECH is a saved Mod Settings toggle, On by default. It changes only
+the text sent to speech and braille, leaving the game's visible GUI and guide
+unchanged. All-capital menu words use natural sentence case: "PASS IT" becomes
+"Pass it" and "ONE ON ONE" becomes "One-on-one". The first word after a full stop
+is capitalised again. Mixed-case words and common abbreviations such as SAPI,
+NVDA, SFX, and FPS are preserved. In an open guide topic, when Indexing is On,
+three dots add a pause before the line number if the text ends without terminal
+punctuation. Existing full stops, commas, and other terminal punctuation remain.
+Turning this toggle Off disables both adjustments and sends the original text.
+Your previous Filter Capitalisation preference carries over.
 
 READ CONTROL TYPES is another saved MOD SETTINGS toggle, On by default. When enabled,
 the focused item's type follows its name and precedes its value and index:
@@ -147,9 +150,9 @@ active gameplay and the beat-timing phases of Audio Calibration, where extra
 speech could mask a cue. An existing saved 15-, 30-, or 60-second reminder
 delay from version 0.6.2 becomes the new BUTTON HINTS DELAY value.
 
-The MOD SETTINGS menu has four engine-specific controls: VOICE, VOLUME, RATE,
-and PITCH. They are labelled ONECORE or SAPI to match the speech engine
-actually in use, including when OUTPUT MODE is Auto. Only controls supported
+The MOD SETTINGS menu has four voice adjustment controls: VOICE, VOLUME, RATE,
+and PITCH. They adjust the OneCore or SAPI engine actually in use, including
+when OUTPUT MODE is Auto. Only controls supported
 by the active engine appear; other speech outputs hide them. Each engine keeps
 its own voice and adjustment values. Voice lists the system default and the
 voices available to that engine. Volume starts at 100%; Rate and Pitch start

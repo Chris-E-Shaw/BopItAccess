@@ -472,5 +472,10 @@
   "SPACE": "Space",
   "CITY": "City",
   "OFFICE": "Office",
-  "BOP - PLAYER 2": "拍打 - 玩家 2"
+  "BOP - PLAYER 2": "拍打 - 玩家 2",
+  "FORMAT SPEECH": "优化朗读格式",
+  "VOICE": "语音",
+  "VOLUME": "音量",
+  "RATE": "语速",
+  "PITCH": "音高"
 }

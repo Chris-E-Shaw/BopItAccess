@@ -118,7 +118,7 @@
 <h2>접근성 기능</h2>
 <ul>
 <li>타이틀 화면, 메인 메뉴, 재생 및 노래 선택, 설정 및 컨트롤, 모드 설정, 오디오 보정, 순위표, 게임 내 업적 북, 크레딧, 일시 중지 메뉴 및 결과 화면에 대한 음성입니다.</li>
-<li>초점이 맞춰진 버튼, 슬라이더, 토글, 이름, 값, 변경된 값이 안내됩니다. 선택적 인덱싱, 컨트롤 유형 레이블, 슬라이더 범위 및 대문자 사용 필터링을 통해 세부 사항을 조정할 수 있습니다.</li>
+<li>초점이 맞춰진 버튼, 슬라이더, 토글, 이름, 값, 변경된 값이 안내됩니다. 선택적 인덱싱, 컨트롤 유형 레이블, 슬라이더 범위 및 음성 문구 다듬기를 통해 세부 사항을 조정할 수 있습니다.</li>
 <li>게임 종료 시 점수 또는 승자 연설, 대기 중인 메뉴 연설 및 결과 화면에만 점수 읽기 바로가기가 이어집니다.</li>
 <li>재생이 시작되기 전 노래 선택 화면에서 요청 시 음성으로 제공되는 4가지 스테이지 설명입니다.</li>
 <li>현재 모드 및 난이도에 대한 게임 튜토리얼 참조로, 각 작업에 현재 할당된 컨트롤을 사용하여 노래 선택 요청 시 음성으로 제공됩니다. 일대일에는 치기 입력이 모두 포함됩니다.</li>
@@ -248,7 +248,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <section id="speech-options">
 <h2>모드 설정 메뉴</h2>
 <p>열기 <strong>설정 &gt; 모드 설정</strong>. 메뉴 위/아래 컨트롤을 사용하여 행 사이를 이동합니다. 토글이나 버튼을 확인하세요. 슬라이더를 변경하려면 왼쪽/오른쪽을 사용하세요. 아래 기본값은 새 설정에 대한 것입니다. 변경 사항은 세션 간에 기억됩니다. 음성이 꺼진 경우에도 음성 전환은 계속 작동하며 음성 출력 행은 동일한 마스터 스위치를 사용합니다.</p>
-<p>네 가지 음성 설정은 Auto 모드에서도 실제로 사용 중인 OneCore 또는 SAPI의 이름을 표시합니다. 지원되는 설정만 나타나며 다른 출력 방식에서는 숨겨집니다. 두 엔진의 음성, 볼륨, 속도, 음높이는 따로 저장됩니다. 볼륨은 5%에서 100%까지 5씩 조정하며 기본값은 100%입니다. 속도와 음높이는 0에서 100까지 5씩 조정하며 기본값은 50입니다. 최소 볼륨에서도 복구 안내를 들을 수 있습니다.</p>
+<p>음성, 볼륨, 말하기 속도, 음높이는 Auto 모드에서도 실제로 사용 중인 OneCore 또는 SAPI를 조절합니다. 지원되는 설정만 나타나며 다른 출력 방식에서는 숨겨집니다. 두 엔진의 설정은 따로 저장됩니다. 볼륨은 5%에서 100%까지 5씩 조정하며 기본값은 100%입니다. 속도와 음높이는 0에서 100까지 5씩 조정하며 기본값은 50입니다. 최소 볼륨에서도 복구 안내를 들을 수 있습니다.</p>
 <div class="table-scroll"><table>
 <caption>메뉴 순서대로 모든 현재 Mod 설정 행</caption>
 <thead><tr><th scope="col">설정</th><th scope="col">선택사항 / 기본값</th><th scope="col">기능</th></tr></thead>
@@ -257,7 +257,7 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <tr><th scope="row">점자 출력</th><td>켜기 / 끄기; <strong>켜짐</strong></td><td>호환되는 화면 판독기의 점자 출력으로 동일한 공지 사항을 보냅니다. 연결된 점자 디스플레이 또는 NVDA의 점자 뷰어를 통해 표시할 수 있습니다.</td></tr>
 <tr><th scope="row">백그라운드에서 음성 음소거</th><td>켜기 / 끄기; <strong>끄기</strong></td><td>켜져 있으면 다른 창에 포커스가 있는 동안 모드 음성을 중지하고 삭제합니다.</td></tr>
 <tr><th scope="row">인덱싱</th><td>켜기 / 끄기; <strong>켜짐</strong></td><td>지원되는 메뉴 전체에 '재생, 1/6'과 같은 항목 위치를 추가합니다.</td></tr>
-<tr><th scope="row">대문자 사용 필터링</th><td>켜기 / 끄기; <strong>켜짐</strong></td><td>음성 및 점자에 대해서만 모두 대문자 텍스트를 자연 문장 케이스로 변경합니다. 게임의 눈에 보이는 글자는 설계된 대로 유지됩니다.</td></tr>
+<tr><th scope="row">음성 문구 다듬기</th><td>켜기 / 끄기; <strong>켜짐</strong></td><td>모두 대문자인 영문을 음성과 점자에서 자연스럽게 읽도록 다듬습니다. 게임 내 가이드에서 줄 끝에 문장 부호가 없으면 줄 번호 앞에 말줄임표를 넣어 잠시 쉬게 합니다. 화면의 글자는 바뀌지 않습니다. 끄면 원래 문구를 그대로 출력합니다.</td></tr>
 <tr><th scope="row">읽기 제어 유형</th><td>켜기 / 끄기; <strong>켜짐</strong></td><td>포커스가 있는 컨트롤에 '버튼', '토글' 또는 '슬라이더'와 같은 라벨을 추가합니다.</td></tr>
 <tr><th scope="row">슬라이더 범위</th><td>켜기 / 끄기; <strong>끄기</strong></td><td>'범위 0~100'과 같이 초점이 맞춰진 슬라이더의 사용 가능한 끝점을 읽습니다. 이를 변경해도 여전히 새 값만 읽습니다.</td></tr>
 <tr><th scope="row">일대일 피드백</th><td>켜기 / 끄기; <strong>켜짐</strong></td><td>활성 녹색 또는 노란색과 일대일에서 생명을 잃거나 얻었을 때 남은 생명 수를 말합니다.</td></tr>
@@ -267,10 +267,10 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <tr><th scope="row">반복 버튼 힌트</th><td>꺼짐, 2배, 3배, 4배, 5배, 무한; <strong>무한히</strong></td><td>한 주기에 힌트를 듣는 총 횟수를 설정합니다. "2x"는 첫 번째 판독값에 1회 반복을 의미합니다.</td></tr>
 <tr><th scope="row">반복 간격</th><td>15, 30, 45, 60초; <strong>30초</strong></td><td>위의 반복 판독값 사이의 시간입니다. 요청 시 힌트를 말하면 보류 중인 첫 번째 자동 힌트가 대체되지만 구성된 반복은 여전히 ​​허용됩니다.</td></tr>
 <tr><th scope="row">출력 모드</th><td><code>Auto</code>, <code>OneCore</code>, <code>SAPI</code>, <code>NVDA</code>, <code>JAWS</code>, <code>UI Automation</code>, <code>ZDSR</code>, <code>ZoomText</code>, <code>Boy PC Reader</code>, <code>PC Talker</code>, <code>Sense Reader</code>, <code>System Access</code>, <code>Window-Eyes</code>; <strong><code>Auto</code></strong></td><td>Auto는 실행 중인 호환 스크린 리더, OneCore, SAPI 순으로 사용합니다.</td></tr>
-<tr><th scope="row">OneCore 음성 / SAPI 음성</th><td>시스템 기본 음성 또는 현재 엔진에 설치된 음성; <strong>시스템 기본</strong></td><td>현재 엔진의 음성을 선택합니다.</td></tr>
-<tr><th scope="row">OneCore 볼륨 / SAPI 볼륨</th><td>5%–100%; <strong>100%</strong></td><td>현재 엔진의 볼륨을 조정합니다.</td></tr>
-<tr><th scope="row">OneCore 말하기 속도 / SAPI 말하기 속도</th><td>0–100; <strong>50</strong></td><td>현재 엔진의 말하기 속도를 조정합니다.</td></tr>
-<tr><th scope="row">OneCore 음높이 / SAPI 음높이</th><td>0–100; <strong>50</strong></td><td>현재 엔진의 음높이를 조정합니다.</td></tr>
+<tr><th scope="row">음성</th><td>시스템 기본 음성 또는 현재 엔진에 설치된 음성; <strong>시스템 기본</strong></td><td>현재 엔진의 음성을 선택합니다.</td></tr>
+<tr><th scope="row">볼륨</th><td>5%–100%; <strong>100%</strong></td><td>현재 엔진의 볼륨을 조정합니다.</td></tr>
+<tr><th scope="row">말하기 속도</th><td>0–100; <strong>50</strong></td><td>현재 엔진의 말하기 속도를 조정합니다.</td></tr>
+<tr><th scope="row">음높이</th><td>0–100; <strong>50</strong></td><td>현재 엔진의 음높이를 조정합니다.</td></tr>
 <tr><th scope="row">사용자 가이드 열기</th><td>버튼</td><td>게임에서 이 문서를 엽니다. 목차에서 주제를 선택한 다음 한 줄씩 읽어보세요.</td></tr>
 <tr><th scope="row">시작 화면 재설정</th><td>버튼</td><td>한 번 눌러 확인을 요청한 후 5초 이내에 다시 누르세요. 다른 행으로 이동하거나 5초 동안 기다리면 요청이 취소됩니다. 성공적인 재설정이 발표되고 다음에 게임을 시작할 때 시작 화면이 나타납니다.</td></tr>
 <tr><th scope="row">모드 기본값 복원</th><td>버튼</td><td>한 번 눌러 확인을 요청한 다음 5초 이내에 다시 눌러 위의 모드 설정 기본값을 복원하세요. 다른 행으로 이동하거나 5초 동안 기다리면 요청이 취소됩니다. 게임의 음악, SFX, 음성 해설 볼륨, FPS 제한, 사용자 정의 키보드 및 컨트롤러 바인딩은 변경되지 않습니다.</td></tr>

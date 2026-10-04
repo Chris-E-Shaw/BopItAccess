@@ -472,5 +472,10 @@
   "SPACE": "Space",
   "CITY": "City",
   "OFFICE": "Office",
-  "BOP - PLAYER 2": "Colpisci - giocatore 2"
+  "BOP - PLAYER 2": "Colpisci - giocatore 2",
+  "FORMAT SPEECH": "Formatta il parlato",
+  "VOICE": "Voce",
+  "VOLUME": "Volume",
+  "RATE": "Velocità",
+  "PITCH": "Tono"
 }

@@ -60,13 +60,7 @@ Einstellungen, Game-Over-Auswahl, Bestenlisten, Erfolge, Credits und mehr
 unterstützte Bildschirme. Die Zählung richtet sich nach den aktuell verfügbaren Auswahlmöglichkeiten. Verändern
 Ein Schieberegler oder Schalter gibt, solange er fokussiert bleibt, immer noch nur den neuen Wert an.
 
-FILTER-GROSSBUCHSTABE ist ein gespeicherter Mod-Einstellungsschalter, standardmäßig aktiviert. Es ändert sich nur
-Der Text wird an Sprache und Blindenschrift gesendet, wobei die sichtbare GUI des Spiels unberührt bleibt.
-Menüwörter, die nur in Großbuchstaben geschrieben sind, werden in Groß-/Kleinschreibung gesprochen: „PASS IT“ wird zu „Pass it“
-und aus „EINS ZU EINS“ wird „Eins zu eins“. Das erste Wort nach einem Punkt ist
-wieder großgeschrieben. Vorhandene Wörter mit gemischter Groß- und Kleinschreibung und gebräuchliche Abkürzungen wie z
-SAPI, NVDA, SFX und FPS bleiben erhalten. Durch Ausschalten des Schalters wird die gesendet
-ursprünglicher Redetext.
+SPRACHE FORMATIEREN ist ein gespeicherter Schalter in den Mod-Einstellungen, standardmäßig Ein. Vollständig großgeschriebene Menüwörter werden mit natürlicher Groß-/Kleinschreibung ausgegeben; gemischte Schreibweisen und Abkürzungen wie SAPI, NVDA, SFX und FPS bleiben erhalten. Wenn im Spielratgeber die Zeilennummer angesagt wird und der Text ohne Satzzeichen endet, werden zuvor drei Punkte für eine Pause eingefügt. Vorhandene Satzzeichen bleiben erhalten. Dies betrifft nur Sprache und Braille; sichtbare Spieltexte und der Ratgeber werden nicht verändert. Aus deaktiviert beide Anpassungen. Die bisherige Einstellung zur Großschreibung bleibt erhalten.
 
 CONTROL TYPES LESEN ist ein weiterer gespeicherter MOD-EINSTELLUNGS-Schalter, der standardmäßig aktiviert ist. Wenn aktiviert,
 Der Typ des fokussierten Elements folgt seinem Namen und geht seinem Wert und Index voraus:
@@ -138,7 +132,7 @@ Aktives Gameplay und die Beat-Timing-Phasen der Audiokalibrierung, wo extra
 Sprache könnte einen Hinweis maskieren. Eine bereits gespeicherte 15-, 30- oder 60-Sekunden-Erinnerung
 Verzögerung ab Version 0.6.2 wird zum neuen BUTTON HINTS DELAY-Wert.
 
-MOD SETTINGS: Die vier Stimmregler tragen den Namen der tatsächlich verwendeten Engine, OneCore oder SAPI, auch im Auto-Modus. Nur unterstützte Regler sind sichtbar; bei anderen Ausgaben werden sie ausgeblendet. Beide Engines speichern Stimme, Lautstärke, Geschwindigkeit und Tonhöhe getrennt. Lautstärke: 5 % bis 100 % in Fünferschritten, standardmäßig 100 %. Geschwindigkeit und Tonhöhe: 0 bis 100 in Fünferschritten, standardmäßig 50. Die Mindestlautstärke hält Wiederherstellungshinweise hörbar.
+MOD SETTINGS: Stimme, Lautstärke, Sprechgeschwindigkeit und Tonhöhe passen die tatsächlich verwendete OneCore- oder SAPI-Ausgabe an, auch im Auto-Modus. Nur unterstützte Regler sind sichtbar; bei anderen Ausgaben werden sie ausgeblendet. Beide Engines speichern ihre Einstellungen getrennt. Lautstärke: 5 % bis 100 % in Fünferschritten, standardmäßig 100 %. Geschwindigkeit und Tonhöhe: 0 bis 100 in Fünferschritten, standardmäßig 50. Die Mindestlautstärke hält Wiederherstellungshinweise hörbar.
 Die Auswahl der Mod-Einstellungen wird zwischen den Sitzungen gespeichert. MOD-STANDARDS WIEDERHERSTELLEN
 setzt diese Auswahl auf die oben beschriebenen Standardwerte zurück. Drücken Sie einmal darauf, um eine Anfrage zu stellen
 Bestätigung, und drücken Sie dann innerhalb von fünf Sekunden erneut darauf, um sie wiederherzustellen. Umzug

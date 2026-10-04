@@ -472,5 +472,10 @@
   "SPACE": "Space",
   "CITY": "City",
   "OFFICE": "Office",
-  "BOP - PLAYER 2": "叩く、プレイヤー2"
+  "BOP - PLAYER 2": "叩く、プレイヤー2",
+  "FORMAT SPEECH": "読み上げを整える",
+  "VOICE": "音声",
+  "VOLUME": "音量",
+  "RATE": "読み上げ速度",
+  "PITCH": "音程"
 }

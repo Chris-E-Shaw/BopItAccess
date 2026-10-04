@@ -472,5 +472,10 @@
   "SPACE": "Space",
   "CITY": "City",
   "OFFICE": "Office",
-  "BOP - PLAYER 2": "Taper - joueur 2"
+  "BOP - PLAYER 2": "Taper - joueur 2",
+  "FORMAT SPEECH": "Formater la parole",
+  "VOICE": "Voix",
+  "VOLUME": "Volume",
+  "RATE": "Vitesse",
+  "PITCH": "Hauteur de voix"
 }

@@ -60,13 +60,7 @@ Impostazioni, scelte di game-over, classifiche, risultati, crediti e altro
 schermi supportati. Il conteggio segue le scelte attualmente disponibili. Cambiare
 un cursore o un interruttore mentre rimane focalizzato annuncia ancora solo il nuovo valore.
 
-FILTRO MAIUSCOLO è un interruttore salvato delle Impostazioni Mod, attivato per impostazione predefinita. Cambia soltanto
-il testo viene inviato alla voce e al braille, lasciando intatta la GUI visibile del gioco.
-Le parole del menu tutte maiuscole vengono pronunciate in maiuscole e minuscole: "PASS IT" diventa "Pass it"
-e "ONE ON ONE" diventa "Uno contro uno". La prima parola dopo il punto è
-nuovamente maiuscolo. Parole esistenti composte da maiuscole e minuscole e abbreviazioni comuni come
-SAPI, NVDA, SFX e FPS vengono conservati. Disattivando l'interruttore si invia il file
-testo del discorso originale.
+FORMATTA IL PARLATO è un’opzione salvata nelle Impostazioni mod, attiva per impostazione predefinita. Rende naturale l’uso delle maiuscole nei nomi dei menu tutti maiuscoli, conservando le parole a maiuscole e minuscole e le abbreviazioni come SAPI, NVDA, SFX e FPS. Nella guida del gioco, quando viene letto il numero di riga e il testo termina senza punteggiatura, aggiunge tre puntini per una pausa prima del numero. La punteggiatura esistente viene conservata. Cambia solo il testo inviato alla voce e al braille; il testo visibile del gioco e la guida rimangono invariati. Disattivandola si disattivano entrambe le modifiche. La precedente preferenza per il filtro delle maiuscole viene mantenuta.
 
 LEGGI TIPI DI CONTROLLO è un'altra opzione salvata per le IMPOSTAZIONI MOD, attivata per impostazione predefinita. Quando abilitato,
 il tipo dell'elemento evidenziato segue il nome e precede il valore e l'indice:
@@ -138,7 +132,7 @@ gameplay attivo e fasi di timing della calibrazione audio, dove extra
 il discorso potrebbe mascherare un segnale. Un promemoria salvato esistente di 15, 30 o 60 secondi
 il ritardo dalla versione 0.6.2 diventa il nuovo valore BUTTON HINTS DELAY.
 
-MOD SETTINGS: I quattro controlli vocali mostrano il nome del motore attivo, OneCore o SAPI, anche in modalità Auto. Appaiono solo i controlli supportati; con le altre uscite vengono nascosti. Ogni motore conserva separatamente voce, volume, velocità e tono. Volume: dal 5% al 100% a passi di 5, inizialmente 100%. Velocità e tono: da 0 a 100 a passi di 5, inizialmente 50. Il volume minimo mantiene udibili gli avvisi di ripristino.
+MOD SETTINGS: Voce, Volume, Velocità e Tono regolano l’uscita OneCore o SAPI effettivamente in uso, anche in modalità Auto. Appaiono solo i controlli supportati; con le altre uscite vengono nascosti. Ogni motore conserva le proprie impostazioni separatamente. Volume: dal 5% al 100% a passi di 5, inizialmente 100%. Velocità e tono: da 0 a 100 a passi di 5, inizialmente 50. Il volume minimo mantiene udibili gli avvisi di ripristino.
 Le scelte delle impostazioni del mod vengono ricordate tra una sessione e l'altra. RIPRISTINA MODALITÀ PREDEFINITE
 riporta quelle scelte ai valori predefiniti sopra descritti. Premerlo una volta per richiedere
 conferma, quindi premerlo nuovamente entro cinque secondi per ripristinarli. In movimento

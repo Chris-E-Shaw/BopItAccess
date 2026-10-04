@@ -565,12 +565,14 @@ public sealed partial class BopItAccessMod
         GuideTopic topic = _guideTopics[_guideTopicIndex];
         _guidePageText.text = topic.Lines.Count == 0
             ? L("This topic has no readable text. Press Back to return to topics.")
-            : CurrentGuideLineSpeech();
+            : CurrentGuideLineText(forSpeech: false);
         if (_guidePageScroll != null)
             _guidePageScroll.verticalNormalizedPosition = 1f;
     }
 
-    private string CurrentGuideLineSpeech()
+    private string CurrentGuideLineSpeech() => CurrentGuideLineText(forSpeech: true);
+
+    private string CurrentGuideLineText(bool forSpeech)
     {
         GuideTopic topic = _guideTopics[_guideTopicIndex];
         if (topic.Lines.Count == 0)
@@ -603,6 +605,8 @@ public sealed partial class BopItAccessMod
         if (line.IsTableMarker)
             return _guideLastLineDirection < 0
                 ? line.ReverseTableText : plainText;
+        if (forSpeech && _indexingEnabled && _filterCapitalisationEnabled)
+            plainText = FormatGuideTextBeforeIndex(plainText);
         return _indexingEnabled
             ? string.Format(CultureInfo.CurrentCulture,
                 L("{0} Line {1} of {2}."), plainText,

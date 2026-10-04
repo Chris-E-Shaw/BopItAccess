@@ -49,7 +49,9 @@ Al primo avvio, viene visualizzata la schermata di benvenuto dopo che il menu pr
 
 Scegli una lingua nella riga **Impostazioni > Lingua** del gioco. Il discorso mod segue quella selezione. La guida del gioco utilizza il documento HTML tradotto corrispondente, con l'inglese come fallback se la copia selezionata è mancante o illeggibile. Il testo non inglese fornito in bundle è un primo passaggio tradotto automaticamente; sono gradite correzioni da parte di chi parla fluentemente.
 
-Le azioni usano le traduzioni del gioco. Shapes, Space, City e Office mantengono i nomi inglesi delle scene. Per OneCore o SAPI, scegli nelle Impostazioni mod una voce installata adatta alla lingua del gioco se quella predefinita non va bene. I quattro controlli vocali mostrano il nome del motore attivo, OneCore o SAPI, anche in modalità Auto. Appaiono solo i controlli supportati; con le altre uscite vengono nascosti. Ogni motore conserva separatamente voce, volume, velocità e tono.
+Le azioni usano le traduzioni del gioco. Shapes, Space, City e Office mantengono i nomi inglesi delle scene. Per OneCore o SAPI, scegli nelle Impostazioni mod una voce installata adatta alla lingua del gioco se quella predefinita non va bene. Voce, Volume, Velocità e Tono regolano l’uscita OneCore o SAPI effettivamente in uso, anche in modalità Auto. Appaiono solo i controlli supportati; con le altre uscite vengono nascosti. Ogni motore conserva le proprie impostazioni separatamente.
+
+**Formatta il parlato**: Rende più naturale il testo tutto maiuscolo per voce e braille. Nella guida del gioco aggiunge una pausa con tre puntini prima del numero di riga, se il testo termina senza punteggiatura. Il testo visibile resta invariato. Disattivala per leggere il testo così com’è.
 
 ## Documentazione
 

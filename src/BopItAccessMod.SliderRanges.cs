@@ -82,22 +82,18 @@ public sealed partial class BopItAccessMod
                 return FormatSpeechRange(L("Automatic"), L("Both"));
             case "OUTPUT MODE":
                 return FormatSpeechRange(L(OutputModes[0]), L(OutputModes[^1]));
-            case "SAPI VOICE":
-                return _sapiVoices.Count == 0 ? null :
-                    FormatSpeechRange(L(_sapiVoices[0].Name),
-                        L(_sapiVoices[^1].Name));
-            case "ONECORE VOICE":
-                return _oneCoreVoices.Count == 0 ? null :
-                    FormatSpeechRange(L(_oneCoreVoices[0].Name),
-                        _oneCoreVoices[^1].Id.Length == 0
-                            ? L(_oneCoreVoices[^1].Name) : _oneCoreVoices[^1].Name);
-            case "SAPI VOLUME":
-            case "ONECORE VOLUME":
+            case "VOICE":
+                List<SpeechVoiceOption> voices =
+                    _speechMenuControlsBackendId == PrismNative.BackendIds.OneCore
+                        ? _oneCoreVoices : _sapiVoices;
+                return voices.Count == 0 ? null :
+                    FormatSpeechRange(L(voices[0].Name),
+                        voices[^1].Id.Length == 0
+                            ? L(voices[^1].Name) : voices[^1].Name);
+            case "VOLUME":
                 return FormatSpeechRange("5%", "100%");
-            case "SAPI RATE":
-            case "SAPI PITCH":
-            case "ONECORE RATE":
-            case "ONECORE PITCH":
+            case "RATE":
+            case "PITCH":
                 return FormatSpeechRange("0", "100");
             default:
                 return null;
