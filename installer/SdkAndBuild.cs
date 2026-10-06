@@ -114,10 +114,24 @@ internal static class SdkAndBuild
         info.ArgumentList.Add("-p:BopItGameDir=" + gamePath);
         info.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(dotnet)!;
         info.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
-        using var process = Process.Start(info) ?? throw new InvalidOperationException("Could not start the .NET compiler.");
+        var elapsed = Stopwatch.StartNew();
+        InstallerDiagnostics.Current?.Write("process",
+            $"Compiler starting: executable={dotnet}; project={project}; game={gamePath}; configuration=Release.");
+        Process started;
+        try
+        {
+            started = Process.Start(info) ?? throw new InvalidOperationException("Could not start the .NET compiler.");
+        }
+        catch (Exception ex)
+        {
+            InstallerDiagnostics.Current?.Error($"Compiler launch failed; elapsed_ms={elapsed.ElapsedMilliseconds}", ex);
+            throw;
+        }
+        using var process = started;
+        InstallerDiagnostics.Current?.Write("process", $"Compiler started: pid={process.Id}.");
         var output = new Queue<string>(4);
         var outputLock = new object();
-        async Task DrainAsync(StreamReader reader)
+        async Task DrainAsync(StreamReader reader, string streamName)
         {
             while (await reader.ReadLineAsync(cancellation) is { } line)
             {
@@ -126,23 +140,34 @@ internal static class SdkAndBuild
                     if (output.Count == 4) output.Dequeue();
                     output.Enqueue(line);
                 }
-                log("Build: " + line);
+                log("Build " + streamName + ": " + line);
             }
         }
         try
         {
-            await Task.WhenAll(DrainAsync(process.StandardOutput), DrainAsync(process.StandardError),
+            await Task.WhenAll(DrainAsync(process.StandardOutput, "stdout"), DrainAsync(process.StandardError, "stderr"),
                 process.WaitForExitAsync(cancellation));
         }
         catch (OperationCanceledException)
         {
+            InstallerDiagnostics.Current?.Write("process",
+                $"Compiler cancellation requested: pid={process.Id}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
             try { if (!process.HasExited) process.Kill(entireProcessTree: true); }
             catch (InvalidOperationException) when (process.HasExited) { }
             // Kill signals termination; wait for it before rollback/temp
             // cleanup touches compiler-owned outputs and open file handles.
             await process.WaitForExitAsync(CancellationToken.None);
+            InstallerDiagnostics.Current?.Write("process",
+                $"Compiler stopped after cancellation: pid={process.Id}; exit_code={process.ExitCode}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
             throw;
         }
+        catch (Exception ex)
+        {
+            InstallerDiagnostics.Current?.Error($"Compiler output or wait failed: pid={process.Id}; elapsed_ms={elapsed.ElapsedMilliseconds}", ex);
+            throw;
+        }
+        InstallerDiagnostics.Current?.Write("process",
+            $"Compiler exited: pid={process.Id}; exit_code={process.ExitCode}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
         if (process.ExitCode != 0)
             throw new InvalidOperationException("Source build failed. Review the build messages in the status log. " +
                 string.Join(" ", output));

@@ -13,6 +13,8 @@ internal sealed class InstallerForm : Form
     private readonly Button _update = new();
     private readonly Button _uninstall = new();
     private readonly Button _abort = new();
+    private readonly Button _saveDiagnostics = new();
+    private readonly Button _copyDiagnostics = new();
     private readonly Label _stateLabel = new();
     private readonly ProgressBar _progress = new();
     private readonly TextBox _statusLog = new();
@@ -20,11 +22,14 @@ internal sealed class InstallerForm : Form
     private CancellationTokenSource? _operationCancellation;
     private readonly CancellationTokenSource _initializationCancellation = new();
     private bool _initializationRunning;
+    private bool _initializationFinished;
     private bool _closeAfterInitialization;
     private bool _updatingPath;
     private bool _gamePathHasUnappliedEdit;
     private bool _abortRequested;
     private bool _allowAbort;
+    private bool _reportedDiagnosticFailure;
+    private bool _reportedExportFailure;
 
     internal InstallerForm(InstallerService service, bool startUninstall)
     {
@@ -147,11 +152,12 @@ internal sealed class InstallerForm : Form
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
-            RowCount = 2,
+            RowCount = 3,
             Margin = Padding.Empty
         };
         logPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         logPanel.RowStyles.Add(new RowStyle(SizeType.Percent, 100));
+        logPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         var logLabel = new Label
         {
             Text = "Status &log:",
@@ -161,6 +167,7 @@ internal sealed class InstallerForm : Form
         _statusLog.Dock = DockStyle.Fill;
         _statusLog.Multiline = true;
         _statusLog.ReadOnly = true;
+        _statusLog.MaxLength = int.MaxValue;
         _statusLog.ScrollBars = ScrollBars.Vertical;
         _statusLog.WordWrap = true;
         _statusLog.AccessibleName = "Installer status log";
@@ -168,13 +175,37 @@ internal sealed class InstallerForm : Form
         _statusLog.TabIndex = 8;
         logPanel.Controls.Add(logLabel, 0, 0);
         logPanel.Controls.Add(_statusLog, 0, 1);
+        var diagnosticsActions = new FlowLayoutPanel
+        {
+            Dock = DockStyle.Fill,
+            AutoSize = true,
+            WrapContents = true,
+            Margin = new Padding(0, 6, 0, 0)
+        };
+        _saveDiagnostics.Text = "Save &diagnostics...";
+        _saveDiagnostics.AccessibleName = "Save diagnostics";
+        _saveDiagnostics.AccessibleDescription = "Save this session's detailed log and keep recording to that file until this window closes.";
+        _saveDiagnostics.AutoSize = true;
+        _saveDiagnostics.TabIndex = 9;
+        _saveDiagnostics.Click += (_, _) => SaveDiagnostics();
+        _copyDiagnostics.Text = "&Copy diagnostics";
+        _copyDiagnostics.AccessibleName = "Copy diagnostics";
+        _copyDiagnostics.AccessibleDescription = "Copy this session's detailed diagnostic log to the clipboard.";
+        _copyDiagnostics.AutoSize = true;
+        _copyDiagnostics.TabIndex = 10;
+        _copyDiagnostics.Click += (_, _) => CopyDiagnostics();
+        diagnosticsActions.Controls.AddRange(new Control[] { _saveDiagnostics, _copyDiagnostics });
+        logPanel.Controls.Add(diagnosticsActions, 0, 2);
         layout.Controls.Add(logPanel, 0, 3);
 
-        _service.StatusChanged += message => OnUiThread(() => AppendStatus(message));
+        _service.StatusChanged += message => OnUiThread(() => AppendStatus(message, record: false));
         _service.ProgressChanged += progress => OnUiThread(() => ShowProgress(progress));
         _service.StateChanged += state => OnUiThread(() => ShowState(state));
         Shown += async (_, _) => await InitializeAsync();
         FormClosing += OnFormClosing;
+        AppendStatus(_service.Diagnostics.FilePath is string diagnosticPath
+            ? "Diagnostic log for this session: " + diagnosticPath
+            : "Automatic diagnostic recording is unavailable. Save diagnostics can save this session's in-memory record.");
         UpdateActions();
     }
 
@@ -195,6 +226,8 @@ internal sealed class InstallerForm : Form
         {
             await Task.Run(() => _service.InitializeAsync(_initializationCancellation.Token));
             if (_closeAfterInitialization || IsDisposed) return;
+            _initializationFinished = true;
+            UpdateActions();
             if (_startUninstall)
             {
                 await UninstallRequestedAsync();
@@ -210,6 +243,7 @@ internal sealed class InstallerForm : Form
         finally
         {
             _initializationRunning = false;
+            _initializationFinished = true;
             if (!IsDisposed) UpdateActions();
             if (_closeAfterInitialization && !IsDisposed) Close();
         }
@@ -284,7 +318,7 @@ internal sealed class InstallerForm : Form
             {
                 succeeded = true;
                 var message = uninstall && _service.LastUninstallWarningCount > 0
-                    ? $"Bop It Access files were removed, but preference cleanup reported {_service.LastUninstallWarningCount} warning(s). Some Windows profiles may still contain mod settings. Review the status log now. You can run Uninstall again to retry cleanup."
+                    ? $"Bop It Access files were removed, but cleanup reported {_service.LastUninstallWarningCount} warning(s). Review the status log now. You can run Uninstall again to retry the remaining steps."
                     : successMessage;
                 var icon = uninstall && _service.LastUninstallWarningCount > 0
                     ? MessageBoxIcon.Warning : MessageBoxIcon.Information;
@@ -379,6 +413,7 @@ internal sealed class InstallerForm : Form
         _uninstall.Enabled = ready &&
             (_state.Installed || _service.LastUninstallWarningCount > 0);
         _abort.Enabled = busy && _allowAbort && _operationCancellation != null && !_abortRequested;
+        _saveDiagnostics.Enabled = _initializationFinished;
         if (!busy && _progress.Style == ProgressBarStyle.Marquee)
             _progress.Style = ProgressBarStyle.Blocks;
     }
@@ -400,8 +435,9 @@ internal sealed class InstallerForm : Form
         _stateLabel.Text = progress.Step;
     }
 
-    private void AppendStatus(string message)
+    private void AppendStatus(string message, bool record = true)
     {
+        if (record) _service.Diagnostics.Write("STATUS", message);
         // Keep the reader's caret and selection in place while new actions arrive.
         bool reviewing = _statusLog.Focused;
         int caret = _statusLog.SelectionStart;
@@ -413,10 +449,55 @@ internal sealed class InstallerForm : Form
             _statusLog.SelectionLength = selection;
             _statusLog.ScrollToCaret();
         }
+        if (!_reportedDiagnosticFailure && _service.Diagnostics.PersistenceFailure is string failure)
+        {
+            _reportedDiagnosticFailure = true;
+            AppendStatus("Automatic diagnostic recording could not continue: " + failure +
+                ". Save diagnostics can still save the in-memory record.", record: false);
+        }
+        if (!_reportedExportFailure && _service.Diagnostics.ExportFailure is string exportFailure)
+        {
+            _reportedExportFailure = true;
+            AppendStatus("The diagnostic copy could not continue recording: " + exportFailure +
+                ". Save diagnostics can select another file.", record: false);
+        }
+    }
+
+    private void SaveDiagnostics()
+    {
+        using var dialog = new SaveFileDialog
+        {
+            Title = "Save installer diagnostics",
+            Filter = "Diagnostic log (*.log)|*.log|Text file (*.txt)|*.txt",
+            DefaultExt = "log",
+            AddExtension = true,
+            FileName = "BopItAccess-Installer-" + _service.Diagnostics.SessionId + ".log",
+            InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
+        };
+        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        try
+        {
+            _service.Diagnostics.SaveRecording(dialog.FileName);
+            _reportedExportFailure = false;
+            AppendStatus("Saving diagnostic copy: " + dialog.FileName +
+                ". This file will keep recording until the installer closes.");
+        }
+        catch (Exception ex) { ShowError("Could not save diagnostics", ex); }
+    }
+
+    private void CopyDiagnostics()
+    {
+        try
+        {
+            Clipboard.SetText(_service.Diagnostics.Snapshot());
+            AppendStatus("Copied this session's diagnostics to the clipboard.");
+        }
+        catch (Exception ex) { ShowError("Could not copy diagnostics", ex); }
     }
 
     private void ShowError(string caption, Exception ex)
     {
+        _service.Diagnostics.Error(caption, ex);
         AppendStatus($"{caption}: {ex.Message}");
         MessageBox.Show(this, ex.Message, caption, MessageBoxButtons.OK,
             MessageBoxIcon.Error);

@@ -73,11 +73,7 @@ public sealed class InstallTransaction
             (!_legacyModWasPresent && File.Exists(Path.Combine(_gameDirectory, "Mods", "BopItAccess.log")));
         if (_legacyModWasPresent) AdoptLegacyFiles();
 
-        Directory.CreateDirectory(_stateDirectory);
-        if ((File.GetAttributes(_stateDirectory) & FileAttributes.ReparsePoint) != 0)
-            throw new InvalidDataException("The installer state directory is a reparse point.");
-        if (!stateExisted) VerifyNewStateOwner(_stateDirectory);
-        HardenStateDirectoryAcl(_stateDirectory);
+        EnsurePrivateDirectory(_stateDirectory);
         _journal = new TransactionJournal
         {
             Id = Guid.NewGuid().ToString("N"),
@@ -583,6 +579,32 @@ public sealed class InstallTransaction
         foreach (string backup in Directory.EnumerateFiles(originals, "*.bak", SearchOption.TopDirectoryOnly))
             if (!referenced.Contains(Path.GetFullPath(backup))) File.Delete(backup);
         if (!Directory.EnumerateFileSystemEntries(originals).Any()) Directory.Delete(originals);
+    }
+
+    internal static string PrepareDiagnosticsDirectory()
+    {
+        string state = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "BopItAccess");
+        EnsurePrivateDirectory(state);
+        string diagnostics = Path.Combine(state, "diagnostics");
+        EnsurePrivateDirectory(diagnostics);
+        return diagnostics;
+    }
+
+    private static void EnsurePrivateDirectory(string directory)
+    {
+        if (Directory.Exists(directory))
+        {
+            VerifyTrustedStateDirectory(directory);
+        }
+        else
+        {
+            Directory.CreateDirectory(directory);
+            if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
+                throw new InvalidDataException("The installer state directory is a reparse point.");
+            VerifyNewStateOwner(directory);
+        }
+        HardenStateDirectoryAcl(directory);
     }
 
     private static void HardenStateDirectoryAcl(string directory)

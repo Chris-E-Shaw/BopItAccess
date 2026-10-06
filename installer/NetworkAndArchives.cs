@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using System.Text.Json;
@@ -61,18 +62,21 @@ internal static class InstallerNetwork
     internal static async Task DownloadAsync(Uri url, string destination, Action<long, long?> progress, CancellationToken cancellation)
     {
         if (url.Scheme != Uri.UriSchemeHttps) throw new InvalidDataException("Downloads must use HTTPS.");
+        var elapsed = Stopwatch.StartNew();
+        long completed = 0;
+        InstallerDiagnostics.Current?.Write("network", $"Download started: {url}; destination={destination}.");
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         deadline.CancelAfter(TimeSpan.FromSeconds(60));
         try
         {
             using var response = await Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
+            RecordResponse("Download", url.ToString(), response, elapsed.ElapsedMilliseconds);
             ValidateHttpsResponse(response);
             response.EnsureSuccessStatusCode();
             Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
             await using var input = await response.Content.ReadAsStreamAsync(deadline.Token);
             await using var output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1024 * 128, true);
             var buffer = new byte[1024 * 128];
-            long completed = 0;
             var total = response.Content.Headers.ContentLength;
             if (total is > 4L * 1024 * 1024 * 1024) throw new InvalidDataException("Download exceeds four gigabytes.");
             progress(0, total);
@@ -92,23 +96,70 @@ internal static class InstallerNetwork
             await output.FlushAsync(deadline.Token);
             if (total is not null && completed != total.Value) throw new InvalidDataException("Download size did not match the server response.");
             progress(completed, total ?? completed);
+            InstallerDiagnostics.Current?.Write("network", $"Download completed: {url}; bytes={completed}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
         }
         catch (OperationCanceledException ex) when (!cancellation.IsCancellationRequested)
-        { throw new TimeoutException("The download stopped responding for sixty seconds. Check your connection and retry.", ex); }
+        {
+            InstallerDiagnostics.Current?.Error($"Download timed out: {url}; bytes={completed}; elapsed_ms={elapsed.ElapsedMilliseconds}", ex);
+            throw new TimeoutException("The download stopped responding for sixty seconds. Check your connection and retry.", ex);
+        }
+        catch (OperationCanceledException)
+        {
+            InstallerDiagnostics.Current?.Write("network", $"Download cancelled: {url}; bytes={completed}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            InstallerDiagnostics.Current?.Error($"Download failed: {url}; bytes={completed}; elapsed_ms={elapsed.ElapsedMilliseconds}", ex);
+            throw;
+        }
     }
 
     private static async Task<HttpResponseMessage> MetadataAsync(string url, CancellationToken cancellation)
     {
+        var elapsed = Stopwatch.StartNew();
+        InstallerDiagnostics.Current?.Write("network", $"Metadata request started: {url}.");
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         deadline.CancelAfter(TimeSpan.FromSeconds(30));
         try
         {
             HttpResponseMessage response = await Client.GetAsync(url, deadline.Token);
-            try { ValidateHttpsResponse(response); return response; }
+            RecordResponse("Metadata", url, response, elapsed.ElapsedMilliseconds);
+            try
+            {
+                ValidateHttpsResponse(response);
+                InstallerDiagnostics.Current?.Write("network", $"Metadata request completed: {url}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
+                return response;
+            }
             catch { response.Dispose(); throw; }
         }
         catch (OperationCanceledException ex) when (!cancellation.IsCancellationRequested)
-        { throw new TimeoutException("GitHub did not respond within thirty seconds. Check your connection and retry.", ex); }
+        {
+            InstallerDiagnostics.Current?.Error($"Metadata request timed out: {url}; elapsed_ms={elapsed.ElapsedMilliseconds}", ex);
+            throw new TimeoutException("GitHub did not respond within thirty seconds. Check your connection and retry.", ex);
+        }
+        catch (OperationCanceledException)
+        {
+            InstallerDiagnostics.Current?.Write("network", $"Metadata request cancelled: {url}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            InstallerDiagnostics.Current?.Error($"Metadata request failed: {url}; elapsed_ms={elapsed.ElapsedMilliseconds}", ex);
+            throw;
+        }
+    }
+
+    private static void RecordResponse(string operation, string requestedUrl,
+        HttpResponseMessage response, long elapsedMilliseconds)
+    {
+        string? finalUrl = response.RequestMessage?.RequestUri?.ToString();
+        bool redirected = finalUrl is not null &&
+            !string.Equals(requestedUrl, finalUrl, StringComparison.Ordinal);
+        InstallerDiagnostics.Current?.Write("network",
+            $"{operation} response: requested={requestedUrl}; final={finalUrl ?? "unknown"}; " +
+            $"redirected={redirected}; status={(int)response.StatusCode} ({response.StatusCode}); " +
+            $"content_length={response.Content.Headers.ContentLength?.ToString() ?? "unknown"}; elapsed_ms={elapsedMilliseconds}.");
     }
 
     private static void ValidateHttpsResponse(HttpResponseMessage response)
@@ -130,6 +181,9 @@ internal static class InstallerNetwork
     internal static void VerifyHash(string path, string expected, bool useSha512 = false)
     {
         var actual = useSha512 ? Sha512(path) : Sha256(path);
+        InstallerDiagnostics.Current?.Write("checksum",
+            $"{(useSha512 ? "SHA-512" : "SHA-256")} verification: file={path}; expected={expected}; actual={actual}; " +
+            $"match={actual.Equals(expected, StringComparison.OrdinalIgnoreCase)}.");
         if (!actual.Equals(expected, StringComparison.OrdinalIgnoreCase))
             throw new InvalidDataException($"Checksum mismatch for {Path.GetFileName(path)}. The download was not installed.");
     }

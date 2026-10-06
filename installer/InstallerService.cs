@@ -11,6 +11,7 @@ internal sealed record InstallerState(string? GamePath, bool ValidGamePath, bool
 
 internal sealed class InstallerService
 {
+    internal InstallerDiagnostics Diagnostics { get; }
     internal event Action<string>? StatusChanged;
     internal event Action<InstallerProgress>? ProgressChanged;
     internal event Action<InstallerState>? StateChanged;
@@ -30,11 +31,15 @@ internal sealed class InstallerService
     private readonly object _progressLock = new();
     private string? _lastProgressStep;
     private long _lastProgressAt;
+    private InstallerState? _lastRecordedState;
     private CancellationTokenSource? _abort;
     internal int LastUninstallWarningCount { get; private set; }
 
-    internal InstallerService(bool launchedForUninstall = false) =>
+    internal InstallerService(InstallerDiagnostics diagnostics, bool launchedForUninstall = false)
+    {
+        Diagnostics = diagnostics;
         _launchedForUninstall = launchedForUninstall;
+    }
 
     internal async Task InitializeAsync(CancellationToken cancellation = default)
     {
@@ -44,6 +49,7 @@ internal sealed class InstallerService
             cancellation.ThrowIfCancellationRequested();
             Log("Searching Steam libraries across available drives.");
             var found = await Task.Run(() => GameLocator.FindInstallations(cancellation), cancellation);
+            foreach (string game in found) Diagnostics.ProtectGameDirectory(game);
             var manifest = ReadManifest();
             string? detectedPath = manifest is not null
                 ? Path.GetFullPath(manifest.GameDirectory)
@@ -77,6 +83,7 @@ internal sealed class InstallerService
                 catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { throw; }
                 catch (Exception ex)
                 {
+                    Diagnostics.Error("GitHub release check failed", ex);
                     Log("Could not check GitHub releases: " + ex.Message);
                 }
             }
@@ -92,6 +99,11 @@ internal sealed class InstallerService
     internal void SetGamePath(string path)
     {
         string? selectedPath = string.IsNullOrWhiteSpace(path) ? null : Path.GetFullPath(path);
+        if (GameLocator.IsGameDirectory(selectedPath))
+        {
+            Diagnostics.ProtectGameDirectory(selectedPath!);
+            Diagnostics.EnsureExportOutsideGameDirectory(selectedPath!);
+        }
         lock (_gamePathLock)
         {
             _gamePath = selectedPath;
@@ -127,16 +139,27 @@ internal sealed class InstallerService
         if (manifest != null && selected != null && !PathsEqual(selected, manifest.GameDirectory))
             throw new InvalidOperationException("The installed-file ledger belongs to another game folder. Select " + manifest.GameDirectory + " before uninstalling.");
         var game = manifest == null ? RequireGame() : Path.GetFullPath(manifest.GameDirectory);
+        Diagnostics.EnsureExportOutsideGameDirectory(game);
         LastUninstallWarningCount = 0;
-        await RunBusyAsync(async ct =>
+        await RunBusyAsync("Uninstall", async ct =>
         {
             if (!File.Exists(manifestPath))
             {
                 Log("This mod installation predates the installer. Removing only known mod-owned files.");
                 var legacyResult = await UninstallManager.UninstallLegacyAsync(game, Log, ct);
                 LastUninstallWarningCount = legacyResult.PreferenceWarnings.Count;
+                if (LastUninstallWarningCount == 0)
+                {
+                    try { Diagnostics.RemoveAfterLegacyUninstall(); }
+                    catch (Exception ex)
+                    {
+                        LastUninstallWarningCount++;
+                        Diagnostics.Error("Legacy diagnostic cleanup failed", ex);
+                        Log("Automatic diagnostic files could not be removed. Use Uninstall to retry: " + ex.Message);
+                    }
+                }
                 if (LastUninstallWarningCount > 0)
-                    Log($"Preference cleanup reported {LastUninstallWarningCount} warning(s). Review the status log.");
+                    Log($"Cleanup reported {LastUninstallWarningCount} warning(s). Review the status log.");
                 PublishState();
                 return;
             }
@@ -158,7 +181,7 @@ internal sealed class InstallerService
     private async Task RunInstallAsync(bool alpha, CancellationToken cancellation)
     {
         var game = RequireGame();
-        await RunBusyAsync(async ct =>
+        await RunBusyAsync(alpha ? "Install alpha" : "Install release or update", async ct =>
         {
             string existingManifest = Path.Combine(_stateDirectory, InstallManifest.FileName);
             var existing = File.Exists(existingManifest) ? InstallManifest.Load(existingManifest) : null;
@@ -293,8 +316,9 @@ internal sealed class InstallerService
                 committed = true;
                 Log("Bop It Access installation completed successfully.");
             }
-            catch
+            catch (Exception ex)
             {
+                Diagnostics.Error("Installation attempt failed before rollback", ex);
                 if (transaction is not null && !committed)
                 {
                     Log("Reversing changes made during this attempt.");
@@ -315,23 +339,45 @@ internal sealed class InstallerService
             finally
             {
                 try { DeleteOwnedDirectory(temp, Path.GetTempPath(), "BopItAccessInstaller-"); }
-                catch (Exception ex) { Log("Temporary download cleanup needs attention: " + ex.Message); }
+                catch (Exception ex)
+                {
+                    Diagnostics.Error("Temporary download cleanup failed", ex);
+                    Log("Temporary download cleanup needs attention: " + ex.Message);
+                }
             }
             PublishState();
         }, cancellation);
     }
 
-    private async Task RunBusyAsync(Func<CancellationToken, Task> body, CancellationToken cancellation)
+    private async Task RunBusyAsync(string operation, Func<CancellationToken, Task> body, CancellationToken cancellation)
     {
         if (!_initialized) throw new InvalidOperationException("Wait for the initial installation checks to finish before starting an operation.");
         if (Interlocked.CompareExchange(ref _operationActive, 1, 0) != 0)
             throw new InvalidOperationException("Another installer operation is already running.");
         _busy = true;
+        long started = Environment.TickCount64;
+        Diagnostics.Write("OPERATION", "Started " + operation + ".");
         _abort = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         PublishState();
-        try { await body(_abort.Token); }
+        try
+        {
+            await body(_abort.Token);
+            Diagnostics.Write("OPERATION", "Completed " + operation + ".");
+        }
+        catch (OperationCanceledException)
+        {
+            Diagnostics.Write("OPERATION", "Canceled " + operation + ".");
+            throw;
+        }
+        catch (Exception ex)
+        {
+            Diagnostics.Error(operation + " failed", ex);
+            throw;
+        }
         finally
         {
+            Diagnostics.Write("OPERATION", operation + " duration: " +
+                (Environment.TickCount64 - started) + " ms.");
             _abort.Dispose();
             _abort = null;
             _busy = false;
@@ -343,9 +389,11 @@ internal sealed class InstallerService
     private string RequireGame()
     {
         string? gamePath = GetGamePath();
-        return GameLocator.IsGameDirectory(gamePath)
-            ? Path.GetFullPath(gamePath!)
-            : throw new InvalidOperationException("Select a valid Bop It! game folder first.");
+        if (!GameLocator.IsGameDirectory(gamePath))
+            throw new InvalidOperationException("Select a valid Bop It! game folder first.");
+        Diagnostics.ProtectGameDirectory(gamePath!);
+        Diagnostics.EnsureExportOutsideGameDirectory(gamePath!);
+        return Path.GetFullPath(gamePath!);
     }
 
     private string? GetGamePath()
@@ -379,16 +427,31 @@ internal sealed class InstallerService
             : _release is null ? "No GitHub release is published yet. Install alpha builds the latest source."
             : installed ? (update ? $"An update ({_release.Tag}) is available." : "Bop It Access is installed.")
             : $"Ready to install release {_release.Tag}.";
-        StateChanged?.Invoke(new InstallerState(gamePath, valid, installed, _release is not null,
-            update, _busy || _initializing, message, pathRevision, _initialized));
+        var state = new InstallerState(gamePath, valid, installed, _release is not null,
+            update, _busy || _initializing, message, pathRevision, _initialized);
+        if (Interlocked.Exchange(ref _lastRecordedState, state) != state)
+            Diagnostics.Write("STATE", $"Path revision {pathRevision}; game={gamePath ?? "not selected"}; " +
+                $"valid={valid}; installed={installed}; release={state.ReleaseAvailable}; " +
+                $"update={update}; busy={state.Busy}; ready={_initialized}; {message}");
+        StateChanged?.Invoke(state);
     }
 
     private InstallManifest? ReadManifest()
     {
         var path = Path.Combine(_stateDirectory, "install-manifest.json");
         if (!File.Exists(path)) return null;
-        try { return InstallManifest.Load(path); }
-        catch (Exception ex) { Log("Could not read installation ledger: " + ex.Message); return null; }
+        try
+        {
+            var manifest = InstallManifest.Load(path);
+            Diagnostics.ProtectGameDirectory(manifest.GameDirectory);
+            return manifest;
+        }
+        catch (Exception ex)
+        {
+            Diagnostics.Error("Installation ledger could not be read", ex);
+            Log("Could not read installation ledger: " + ex.Message);
+            return null;
+        }
     }
 
     private void ScheduleStandaloneCleanup()
@@ -414,7 +477,11 @@ internal sealed class InstallerService
         Log("Scheduled cleanup of the installer launcher after this window closes.");
     }
 
-    private void Log(string message) => StatusChanged?.Invoke(message);
+    private void Log(string message)
+    {
+        Diagnostics.Write("STATUS", message);
+        StatusChanged?.Invoke(message);
+    }
     private void Progress(string step, long done, long? total)
     {
         long now = Environment.TickCount64;
@@ -425,6 +492,7 @@ internal sealed class InstallerService
             _lastProgressStep = step;
             _lastProgressAt = now;
         }
+        Diagnostics.Progress(step, done, total);
         ProgressChanged?.Invoke(new InstallerProgress(step, done, total));
     }
 
