@@ -103,7 +103,7 @@ NATIVE_ACTION_NAMES = {
 CURATED_TOPICS = {
     "ja": (
         "ようこそ", "Bop It!とは？", "Bop It Accessとは？",
-        "制作について正直にお伝えすること", "アクセシビリティ機能", "便利な機能",
+        "AIの使用に関する透明性の説明", "アクセシビリティ機能", "便利な機能",
         "注意事項と制限", "ゲームの購入と動作環境の確認", "Modの入手とインストール",
         "操作一覧", "初めて起動するとき", "対応言語", "ゲーム内でガイドを読む",
         "Mod設定メニュー", "メニュー案内", "メインメニュー", "プレイメニュー",
@@ -114,7 +114,7 @@ CURATED_TOPICS = {
     ),
     "ko": (
         "환영합니다", "Bop It!은 어떤 게임인가요?", "Bop It Access란?",
-        "제작 과정에 대한 솔직한 설명", "접근성 기능", "편의 기능",
+        "AI 사용에 관한 투명성 안내", "접근성 기능", "편의 기능",
         "참고 사항과 제한 사항", "게임 구매 및 PC 사양 확인", "모드 다운로드 및 설치",
         "플레이어 조작 목록", "처음 실행하기", "지원 언어", "게임 안에서 가이드 읽기",
         "모드 설정 메뉴", "메뉴 안내", "메인 메뉴", "플레이 메뉴", "노래와 난이도 선택",
@@ -123,7 +123,7 @@ CURATED_TOPICS = {
         "향후 계획", "제작진 및 타사 고지", "법적 고지", "감사의 말",
     ),
     "zh": (
-        "欢迎", "什么是 Bop It!？", "什么是 Bop It Access？", "坦诚的透明说明",
+        "欢迎", "什么是 Bop It!？", "什么是 Bop It Access？", "人工智能透明度说明",
         "无障碍功能", "便利功能", "注意事项与限制", "购买游戏并检查电脑配置",
         "获取并安装模组", "玩家操作一览", "首次启动", "支持的语言",
         "在游戏中阅读指南", "模组设置菜单", "菜单指南", "主菜单", "游玩菜单",
@@ -134,7 +134,7 @@ CURATED_TOPICS = {
 }
 ENGLISH_TOPICS = (
     "Welcome", "What is Bop It!?", "What is Bop It Access?",
-    "Honest transparency note", "Accessibility features", "Quality of life features",
+    "AI Transparency Note", "Accessibility features", "Quality of life features",
     "Notes and limitations", "Buy the game and check your computer",
     "Get and install the mod", "Player control reference", "Your first launch",
     "Languages", "Read the guide in game", "Mod Settings menu", "Menu guide",

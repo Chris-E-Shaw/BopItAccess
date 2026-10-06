@@ -53,6 +53,7 @@ public static class UninstallManager
         cancellationToken.ThrowIfCancellationRequested();
 
         var result = new UninstallResult { RequiresSelfCleanup = true };
+        var loaderRestorations = new List<LoaderUiDefaults.RestorePlan>();
         ValidateSettingsFiles(game);
         bool sharedLoader = manifest.MelonLoaderInstalledByInstaller && HasOtherMods(game);
         if (sharedLoader)
@@ -69,6 +70,7 @@ public static class UninstallManager
         foreach (InstalledFile file in manifest.Files)
         {
             string path = InstallTransaction.ValidateAgainstRoots(file.Path, game, state);
+            if (file.IsLoaderConfiguration) LoaderUiDefaults.ValidatePath(path, game);
             if (ShouldPreserveShared(path, game, sharedLoader, file)) continue;
             if (InstallTransaction.IsWithin(path, state)) continue; // Defer running uninstaller files.
             if (file.OriginalBackupPath is not null)
@@ -80,16 +82,35 @@ public static class UninstallManager
                         file.OriginalSha256, StringComparison.OrdinalIgnoreCase))
                     result.Conflicts.Add($"Original backup changed: {backup}");
             }
-            if (File.Exists(path) &&
+            if (!file.IsLoaderConfiguration && File.Exists(path) &&
                 !string.Equals(await InstallTransaction.Sha256Async(path, cancellationToken),
                     file.Sha256, StringComparison.OrdinalIgnoreCase))
                 result.Conflicts.Add($"Installed file was modified: {path}");
+            if (file.IsLoaderConfiguration)
+            {
+                try
+                {
+                    loaderRestorations.Add(LoaderUiDefaults.PrepareRestore(file, game, state,
+                        manifest.MelonLoaderInstalledByInstaller && !sharedLoader));
+                }
+                catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or
+                    InvalidDataException or System.Text.DecoderFallbackException)
+                {
+                    result.Conflicts.Add("Loader configuration cannot be safely restored: " + ex.Message);
+                }
+            }
         }
         if (result.Conflicts.Count > 0)
         {
             foreach (string conflict in result.Conflicts) log(conflict);
             return result;
         }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        // Apply shared-config plans before deleting any mod files. A new read
+        // or write failure leaves the installed mod and manifest intact.
+        foreach (LoaderUiDefaults.RestorePlan plan in loaderRestorations)
+            LoaderUiDefaults.Restore(plan, log);
 
         // Once removal starts, finish it even if a UI cancellation token fires.
         foreach (InstalledFile file in manifest.Files.AsEnumerable().Reverse())
@@ -101,6 +122,7 @@ public static class UninstallManager
                 result.PreservedSharedFiles.Add(path);
                 continue;
             }
+            if (file.IsLoaderConfiguration) continue; // Already restored before file removal.
             if (file.OriginalBackupPath is not null)
             {
                 string backup = InstallTransaction.ValidateBackup(file.OriginalBackupPath, state);
@@ -213,7 +235,8 @@ public static class UninstallManager
              (File.GetAttributes(userData) & FileAttributes.ReparsePoint) != 0))
             throw new InvalidDataException("Settings cleanup cannot follow a UserData junction.");
         string[] paths = { Path.Combine(userData, "BopItAccess.ini"),
-            Path.Combine(userData, "BopItAccess.ini.tmp") };
+            Path.Combine(userData, "BopItAccess.ini.tmp"),
+            Path.Combine(userData, "Loader.cfg.bopitaccess-uninstall.tmp") };
         foreach (string path in paths)
         {
             if (!InstallTransaction.IsWithin(path, game) ||

@@ -282,8 +282,7 @@ public sealed partial class BopItAccessMod
         _lastControlsBinding = CleanSpeechValue(spoken);
         _lastControlsRebinding = false;
         _controlsBindingChangedDuringRebind = false;
-        QueueSpeech(_lastControlsBinding == null ? L("Binding changed") :
-            LocalizeBindingDisplay(_lastControlsBinding));
+        QueueControlAssignmentSpeech(_lastControlsBinding, row.Part.Label);
     }
 
     private void CancelLeaderboardControlRebinding(bool announce = true)

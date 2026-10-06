@@ -480,5 +480,13 @@
   "PITCH": "Tom",
   "SPEAK MENU INDEXES": "Ler posições nos menus",
   "Done!": "Concluído!",
-  "Calibration failed.": "Falha na calibração."
+  "Calibration failed.": "Falha na calibração.",
+  "Hints for every screen, including this one, are available at any time by pressing {0} on your keyboard, or {1} on your controller.": "As dicas de todas as telas, incluindo esta, estão disponíveis a qualquer momento: pressione {0} no teclado ou use “{1}” no controle.",
+  "Before playing, feel free to visit Mod Settings to customize your experience, or jump right in with the defaults.": "Antes de jogar, sinta-se à vontade para visitar as Configurações do Mod para personalizar sua experiência ou usar os padrões.",
+  "A full user's guide is also built right in if you'd like additional help.": "Um guia do usuário completo também está incluído se você precisar de ajuda adicional.",
+  "{0} assigned to {1}": "{0} atribuído a {1}",
+  "Input assigned to {0}": "Entrada atribuída a {0}",
+  "Right Stick click": "Clique no analógico direito",
+  "Left Stick click": "Clique no analógico esquerdo",
+  "The welcome screen could not be displayed. You can open Mod Settings and the user's guide from Settings. The welcome screen will be tried again next time you launch the game.": "Não foi possível exibir a tela de boas-vindas. Você pode abrir as configurações do mod e o guia do usuário em Configurações. Na próxima vez que iniciar o jogo, a tela de boas-vindas será tentada novamente."
 }

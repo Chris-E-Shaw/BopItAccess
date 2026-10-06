@@ -1,4 +1,4 @@
-Bop It Access 0.9.5 - Prism Sprache und Blindenschrift
+Bop It Access 0.9.6 - Prism Sprache und Blindenschrift
 
 Was das bewirkt
 --------------
@@ -45,7 +45,7 @@ OUTPUT MODE: Auto verwendet einen laufenden unterstützten Screenreader, danach 
 Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 Die einzelnen Screenreader und Sprach-Engines sind nur verfügbar, wenn die installierte Prism-Version und das System sie unterstützen. Ist der gewählte Modus nicht verfügbar, wechselt der Mod automatisch zu einer verfügbaren Ausgabe und sagt dies einmal an.
-Prism-Backends können nicht unterbrechende Ansagen unterschiedlich einreihen. Bitte melden Sie Punktestände oder Credits, die in falscher Reihenfolge gesprochen werden. Gespeicherte SAPI-Stimmkennungen werden mit den Anzeigenamen in Prism abgeglichen; bei gleichen Namen kann die erste passende Stimme gewählt werden.
+Gespeicherte SAPI-Stimmkennungen werden mit den Anzeigenamen in Prism abgeglichen; bei gleichen Namen kann die erste passende Stimme gewählt werden.
 „SPRACHE IM HINTERGRUND STUMMSCHALTEN“ ist ein gespeicherter Schalter, standardmäßig deaktiviert. Wenn aktiviert,
 Der Mod hört auf zu sprechen, sobald das Spiel den Fensterfokus verliert. Rede geschaffen
 während das Spiel im Hintergrund läuft, wird verworfen und die Ankündigungen werden fortgesetzt
@@ -291,14 +291,7 @@ kündigt die Anweisungen und Kalibrierungsschritte an, liest den Aufwärm-Countd
 und gibt das angezeigte Latenzergebnis bekannt. Es wird nicht bei jedem Schlag gesprochen
 Machen Sie die Timing-Übung, damit der Beat hörbar bleibt. Nach deiner letzten Kalibrierungseingabe sagt der Mod sofort „Fertig!“. Höre auf zu klopfen und warte auf das Messergebnis. Schlägt die Kalibrierung fehl, weil keine Eingabe erfolgte, sagt er „Kalibrierung fehlgeschlagen.“.
 
-Auf dem Pausenbildschirm wird „Pause“ angezeigt, die fokussierte Schaltfläche „Fortsetzen“ oder „Hauptmenü“
-und seine Schaltflächenhinweise. Fokusänderungen unterbrechen frühere Pausenmenü-Sprachausgabe;
-Durch das Fortsetzen oder Verlassen der Runde werden alle verbleibenden Pausenreden vor dem Spiel gelöscht
-oder das Hauptmenü wird fortgesetzt. Ein geschützter Fallback liest auch fokussierte Kontrollen
-und sichtbarer Text auf einem unerwarteten, dem Spieler zugewandten Panel, ohne Priorität zu haben
-über die engagierten Leser oben. Während einer aktiven Runde verlässt der Mod die
-allein die verbalen Befehle des Spiels und der laufende Punktestand. Bewegen Sie die Maus über ein
-Artikel ohne Angabe von Unity UI-Fokus spricht möglicherweise nicht.
+Der Pausenbildschirm sagt Pause, die ausgewählte Schaltfläche Fortsetzen oder Hauptmenü und die zugehörigen Tastenhinweise an. Ein Auswahlwechsel unterbricht die vorherige Pausenansage. Beim Fortsetzen oder Verlassen einer Runde wird verbleibende Pausensprache gestoppt, bevor das Spiel oder das Hauptmenü weitergeht. Während einer laufenden Runde lässt die Mod die Sprachbefehle und den laufenden Punktestand des Spiels unverändert.
 
 Installieren
 -------
@@ -409,3 +402,41 @@ Voice=System default
 Voice=System default
 
 Die Deinstallationsfunktion des Installers und die installierten Apps von Windows entfernen auch UserData/BopItAccess.ini und die zugehörige .tmp-Datei, einschließlich älterer manueller Installationen.
+
+Hinweis zur KI-Transparenz
+--------------------
+
+Diese Mod wurde mit Vibe Coding erstellt. Der gesamte Code wurde vollständig durch künstliche Intelligenz generiert und erforscht, wobei das technische menschliche Verständnis der zugrunde liegenden Architektur begrenzt war. Bitte verwenden Sie diesen Mod auf eigenes Risiko.
+
+Allerdings wurde jedes einzelne Mod-Feature und jede Designentscheidung von Menschen verfasst und genehmigt. Das Testen wurde nie automatisiert; Es wurde sorgfältig und ausführlich von echten menschlichen Spielern und Testern durchgeführt.
+
+Bitte beachten Sie: Mehrsprachiger Text und Dokumentation wurden von KI generiert und nicht von Muttersprachlern überprüft. Es ist mit einer hohen Übersetzungsungenauigkeit zu rechnen. Ohne Agentencodierung würde dieses Projekt nicht existieren. Vielen Dank, dass Sie ihm eine Chance gegeben haben!
+
+Was kann als nächstes kommen?
+------------------
+
+Dieses Projekt ist im Wesentlichen abgeschlossen und es sind keine größeren Inhalte oder Funktionen geplant. Dieser Mod wird jedoch im Laufe der Zeit bei Bedarf aktiv gepflegt und aktualisiert, wobei das Feedback der Spieler diese Verbesserungen vorantreibt. Zu den möglichen zukünftigen Arbeiten gehören weitere Überprüfungen und Fehlerbehebungen, Codeverfeinerungen und weitere Verbesserungen der Sprachreaktionsfähigkeit. Prism schafft einen möglichen Weg zu anderen Plattformen in der Zukunft, aber dieser Mod unterstützt derzeit nur Windows x64. Das Projekt-Repository ist der Ort, an dem Sie die weitere Entwicklung verfolgen können.
+
+Vielen Dank
+---------
+
+Vielen Dank an diejenigen, die diesen Mod vor der Veröffentlichung getestet und dabei geholfen haben, ihn dorthin zu bringen, wo er jetzt ist. Ihr wisst alle, wer ihr seid. An die Spieler, die Feedback geben, den Mod zum ersten Mal ausprobieren oder an mich und dieses Projekt glauben, vielen Dank. Ihre Unterstützung motiviert mich, weiterhin Dinge in einer Welt zu schaffen, die sich verrückt und zutiefst fehlerhaft anfühlen kann. Ich hoffe, dass dieses Projekt es Ihnen leichter macht, das Spiel zu genießen und mit anderen zu spielen. Vielen Dank euch allen. Genießen Sie Bop It!
+
+— Christopher Shaw
+
+MelonLoader Startfenster
+---------------------------
+
+Die mitgelieferte Vorlage Loader.cfg verbirgt den separaten Startbildschirm und die Konsole von MelonLoader. Das Installationsprogramm wendet automatisch dieselben beiden Standardeinstellungen an, bevor der Alpha-Build vorbereitet wird, der zum Starten des Spiels erforderlich ist. Diese Einstellungen überspringen weder den Titelbildschirm des Spiels noch den Begrüßungsbildschirm des Mods.
+
+Schließen Sie das Spiel und öffnen Sie UserData/Loader.cfg im Spielordner. Wenn die Datei bereits vorhanden ist, setzen Sie disable_start_screen im vorhandenen Abschnitt [loader] auf true und hide_console im vorhandenen Abschnitt [console] auf true. Behalten Sie alle anderen Einträge bei. Wenn die Datei fehlt, kopieren Sie die mitgelieferte Vorlage UserData/Loader.cfg aus dem Build oder configuration/Loader.cfg aus dem Quellcode. Ersetzen Sie niemals eine vorhandene Loader.cfg durch die gesamte Vorlage.
+
+[loader]
+disable_start_screen = true
+
+[console]
+hide_console = true
+
+Der Mod setzt diese Optionen nicht bei jedem Start zurück. Sie können jeden Wert manuell wieder auf „false“ ändern, wenn Sie die Fenster des Loaders zur Fehlerbehebung benötigen. Durch die Deinstallation des Installationsprogramms werden die ursprünglichen Werte nur dann wiederhergestellt, wenn die tatsächlichen Werte des Installationsprogramms noch vorhanden sind, wodurch andere Änderungen an der Loader-Konfiguration erhalten bleiben.
+
+Nach einer erfolgreichen Änderung kündigt der Mod die Eingabe und die ihr zugewiesene Aktion an, zum Beispiel „Space zugewiesen an KLOPFEN“.

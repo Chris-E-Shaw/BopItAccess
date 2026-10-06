@@ -64,7 +64,7 @@
 <li><a href="#welcome">Bem vindo</a></li>
 <li><a href="#game">O que é Bop It!?</a></li>
 <li><a href="#mod">O que é Bop It Access?</a></li>
-<li><a href="#transparency">Nota de transparência honesta</a></li>
+<li><a href="#transparency">Nota sobre transparência de IA</a></li>
 <li><a href="#features">Recursos de acessibilidade</a></li>
 <li><a href="#quality">Características de qualidade de vida</a></li>
 <li><a href="#limitations">Notas e limitações</a></li>
@@ -112,8 +112,10 @@
 <p>O mod segue a configuração de idioma do jogo para seus menus e anúncios. Inclui inglês, francês, italiano, alemão, espanhol (Espanha), espanhol (América Latina), japonês, coreano, chinês simplificado e português brasileiro.</p>
 </section>
 <section class="panel" id="transparency">
-<h2>Nota de transparência honesta</h2>
-<p>Este mod foi feito em forte colaboração com inteligência artificial. Toda a pesquisa para o mod foi conduzida pela IA, e seu código foi gerado pela IA, em vez de originalmente escrito à mão. As decisões de design e os testes de jogabilidade foram inteiramente humanos. Cada adição e alteração anterior foi cuidadosamente revisada por uma pessoa, e pessoas reais jogaram e testaram o mod em diferentes sistemas. O novo texto multilíngue foi elaborado com tradução automática e ainda precisa de revisão por falantes fluentes. Sem codificação agente, este projeto não existiria. Obrigado por dar uma chance a este projeto liderado por humanos e assistido por IA.</p>
+<h2>Nota sobre transparência de IA</h2>
+<p>Este mod foi criado por meio de “vibe coding”. Todo o código foi totalmente gerado e pesquisado por inteligência artificial, com compreensão técnica humana limitada de sua arquitetura subjacente. Por favor, use este mod por sua própria conta e risco.</p>
+<p>Dito isto, cada recurso de mod e decisão de design foram criados e aprovados por humanos. Os testes nunca foram automatizados; foram realizados cuidadosa e extensivamente por jogadores e testadores humanos reais.</p>
+<p>Observação: o texto e a documentação multilíngues foram gerados pela IA e não foram revisados por falantes nativos. É esperada uma alta imprecisão na tradução. Sem codificação agente, este projeto não existiria. Obrigado por dar uma chance!</p>
 </section>
 <section id="features">
 <h2>Recursos de acessibilidade</h2>
@@ -145,10 +147,10 @@
 <h2>Notas e limitações</h2>
 <ul>
 <li><strong>As descrições são solicitadas antes da rodada.</strong> O mod intencionalmente não narra o cenário durante o jogo ativo. O jogador deve ouvir e reagir aos comandos verbais do jogo; narração extra poderia cobrir um comando e encerrar a rodada.</li>
-<li>Auto prefere um leitor de tela em execução, depois OneCore e, por último, SAPI. As vozes instaladas e o sistema podem afetar a resposta. O mod não instala vozes adicionais.</li><li data-prism-note="true"><strong>A ordem dos avisos pode variar.</strong> Os mecanismos do Prism podem enfileirar de modo diferente avisos que não interrompem a fala. Informe se pontuações ou créditos forem lidos fora de ordem. As vozes SAPI salvas são localizadas pelo nome exibido no Prism; se várias tiverem o mesmo nome, a primeira poderá ser escolhida.</li>
+<li>Auto prefere um leitor de tela em execução, depois OneCore e, por último, SAPI. As vozes instaladas e o sistema podem afetar a resposta. O mod não instala vozes adicionais.</li>
 <li><strong>Alguns controles nativos ainda estão corrigidos.</strong> O mod expande bastante o menu de controles do jogo, mas não torna todas as entradas do jogo remapeáveis.</li>
 <li><strong>A taxa de quadros afeta a pesquisa de entrada.</strong> O limitador FPS pode reduzir drasticamente a carga do sistema. Ele não retarda deliberadamente as animações nem altera o tempo do jogo, mas o jogo verifica a entrada baseada em quadros com menos frequência em FPS mais baixos. Uma configuração mais alta pode fornecer um tempo de entrada mais preciso, especialmente em rodadas rápidas.</li>
-<li><strong>O suporte de fala é mais forte em menus e resultados.</strong> Em um painel inesperado, o mod pode ler texto visível e um controle focado quando encontrar um. Ao passar o mouse, você não pode falar até que o item realmente receba o foco do jogo.</li>
+
 <li><strong>Windows x64 é a plataforma mod atual.</strong> Prism oferece suporte a outras plataformas, o que pode ajudar no desenvolvimento futuro. A integração do jogo, as referências de construção e as etapas de instalação desta versão são para Windows x64.</li>
 <li><strong>As traduções precisam de revisão.</strong> O texto e os guias iniciais do mod em idioma diferente do inglês foram traduzidos automaticamente. Algumas palavras, termos do jogo e nomes de entrada podem precisar de correção por falantes fluentes. Por favor, relate qualquer coisa pouco clara ou imprecisa.</li>
 </ul>
@@ -161,7 +163,8 @@
 </section>
 <section id="install">
 <h2>Obtenha e instale o mod</h2>
-<p class="planned"><strong>Status do instalador:</strong> Um instalador de mod público ainda não foi projetado ou lançado, portanto, não há nenhum link de download do instalador real ou tela do instalador a seguir. Por favor, observe o <a href="https://github.com/Chris-E-Shaw/BopItAccess">Bop It Access página do projeto</a> para disponibilidade futura. Este é o local pretendido do link do instalador, não uma afirmação de que um instalador está lá agora.</p>
+<p class="current"><strong>Status do instalador:</strong> Uma visualização do instalador Windows foi criada para testes locais e sua fonte está incluída no projeto. Nenhum instalador compilado público ou lançamento de mod foi publicado ainda. Assista o <a href="https://github.com/Chris-E-Shaw/BopItAccess">Bop It Access página do projeto</a> para downloads públicos. Use a rota de origem abaixo ou uma visualização fornecida diretamente pelo projeto.</p>
+
 <h3>Rota de instalação atual: construir a partir da fonte</h3>
 <p>O repositório público GitHub atualmente contém fonte e documentação, sem download compilado ou versão GitHub. Construir significa transformar os arquivos de origem na DLL do mod. O <a href="README.md#build-from-source">instruções de construção do repositório</a> são a referência mantida. Aqui está a rota atual completa na linguagem cotidiana:</p>
 <ol>
@@ -177,11 +180,14 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <li>Inicie o leitor de tela antes do jogo. Sem um leitor compatível em execução, o Prism prefere OneCore e usa SAPI se OneCore não estiver disponível.</li>
 </ol>
 <p>Um local comum Steam é <code>C:\Program Files (x86)\Steam\steamapps\common\Bop It!</code>. Sua localização pode ser diferente se você escolher uma biblioteca Steam diferente. Se você tiver um ZIP de instalação do projeto fornecido localmente, feche o jogo e extraia seu conteúdo para a pasta do jogo, permitindo que o <code>Mods</code> pasta para mesclar. Esses pacotes locais são separados do repositório GitHub somente de origem.</p>
-<h3>Passo a passo do instalador futuro (planejado)</h3>
-<div class="planned">
-<p><strong>Apenas esboço provisório:</strong> Quando existe um instalador oficial, as etapas esperadas são obtê-lo na página do projeto, fechar o jogo, executar o instalador, apontar para a pasta Bop It! se não conseguir encontrar o jogo automaticamente, deixá-lo instalar o mod e os arquivos de fala necessários e, em seguida, iniciar através de Steam. O instalador real pode ter opções diferentes. Suas telas exatas, método de atualização, método de remoção e link para download serão documentados aqui assim que existirem.</p>
-<p>Por enquanto, use a página do projeto e as instruções de origem acima. Atualmente, nenhuma página de terceiros pode fornecer um instalador oficial Bop It Access.</p>
-</div>
+<div class="current"><h3>MelonLoader janelas de inicialização</h3><p>O modelo Loader.cfg fornecido oculta a tela inicial e o console separados do MelonLoader. O instalador aplica os mesmos dois padrões automaticamente, antes de qualquer preparação da versão alfa necessária para iniciar o jogo. Essas configurações não pulam a tela de título do jogo ou a tela de boas-vindas do mod.</p><p>Com o jogo fechado, abra <code>UserData/Loader.cfg</code> na pasta do jogo. Se o arquivo já existir, defina <code>disable_start_screen</code> como <code>true</code> na seção <code>[loader]</code> existente e <code>hide_console</code> como <code>true</code> na seção <code>[console]</code> existente. Mantenha todas as outras entradas. Se o arquivo não existir, copie o modelo <code>UserData/Loader.cfg</code> fornecido com a compilação, ou <code>configuration/Loader.cfg</code> a partir do código-fonte. Nunca substitua um Loader.cfg existente pelo modelo completo.</p><pre><code>[loader]
+disable_start_screen = true
+
+[console]
+hide_console = true</code></pre><p>O mod não redefine essas opções a cada inicialização. Você pode alterar manualmente qualquer valor de volta para falso se precisar das janelas do carregador para solução de problemas. A desinstalação do instalador restaura os valores originais apenas enquanto os valores verdadeiros do instalador ainda estão presentes, preservando outras edições de configuração do carregador.</p></div>
+<h3>Usando uma visualização do instalador fornecida</h3><div class="current"><p>Feche o jogo, execute o instalador e aprove o prompt do administrador Windows’. Ele pesquisa Steam bibliotecas nas unidades disponíveis. Se necessário, use Navegar para selecionar a pasta do jogo. Seu campo de status é somente leitura: vá até ele e use as teclas do cursor ou selecione e copie o texto para revisar suas ações. Uma barra de progresso informa a etapa atual.</p><p>Instalar baixa a versão pública mais recente do mod, quando existe. Até então, use Install alpha somente se você se sentir confortável em testar a fonte mais recente: confirme seu aviso, deixe-o preparar as dependências ausentes e compilar o mod, e aguarde a mensagem de sucesso. A rota alfa pode abrir o jogo para preparar referências de construção; feche a janela do jogo quando solicitado para que o instalador possa continuar.</p><p>O instalador busca MelonLoader oficial 0.7.3, Prism 0.18.3 e um SDK portátil .NET 6 conforme necessário. Ele oculta a tela inicial e o console do próprio MelonLoader usando os dois sinalizadores de configuração mostrados acima. As atualizações usam GitHub sem exigir um instalador baixado recentemente. Abort pede confirmação e reverte as alterações da instalação.</p><p>A desinstalação está disponível no instalador e em Windows Aplicativos instalados. Ele remove arquivos mod de propriedade e preferências Bop It Access, incluindo UserData/BopItAccess.ini e seu arquivo temporário. Ele preserva as preferências nativas do jogo, mods não relacionados e o SDK .NET. A limpeza da configuração do carregador restaura apenas os sinalizadores de destino inalterados do instalador, preservando outras edições. Se a limpeza não puder ser concluída, o log de status e a mensagem de conclusão informam isso.</p></div>
+
+
 </section>
 <section id="controls">
 <h2>Referência de controle do jogador</h2>
@@ -230,7 +236,8 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 </ol>
 <div class="current">
 <h3>Tela de boas-vindas</h3>
-<p>A mensagem introdutória é em si um item focalizável acima das três opções. Volte para ouvir a mensagem inteira novamente. Ele nomeia ambas as ligações atuais do Speak Hints, mesmo que o Tipo de dicas esteja definido para mostrar apenas um dispositivo. Por padrão, pressione <kbd>H</kbd> no teclado ou pressione o controle direito do controlador para dentro para solicitar as dicas da tela atual.</p>
+<p>A mensagem introdutória é em si um item focalizável acima das três opções. Volte para ouvir a mensagem inteira novamente. Ele nomeia ambas as ligações atuais do Speak Hints, mesmo que o Tipo de dicas esteja definido para mostrar apenas um dispositivo. O exemplo abaixo usa as ligações padrão; o jogo anuncia suas atribuições atuais.</p>
+<blockquote><p>Mensagem de boas-vindas. Bem-vindo ao Bop It Access! Obrigado por instalar este projeto. As dicas de todas as telas, incluindo esta, estão disponíveis a qualquer momento: pressione H no teclado ou use “Clique no analógico direito” no controle. Antes de jogar, sinta-se à vontade para visitar as Configurações do Mod para personalizar sua experiência ou usar os padrões. Um guia do usuário completo também está incluído se você precisar de ajuda adicional. O que você gostaria de fazer?</p></blockquote>
 <p>A tela de boas-vindas é marcada como concluída somente depois que uma de suas opções abre o destino selecionado. Se o jogo fechar enquanto você ainda estiver na tela de boas-vindas, ele aparecerá novamente no próximo lançamento. Para vê-lo novamente após concluí-lo, use <strong>Configurações &gt; Configurações do Mod &gt; Redefinir tela de boas-vindas</strong>; a redefinição entra em vigor na próxima inicialização.</p>
 </div>
 </section>
@@ -387,6 +394,7 @@ Voice=System default</code></pre>
 <section id="controls-menu">
 <h3>Menu de controles</h3>
 <p>Foque uma linha para ouvir a ligação atual do dispositivo de entrada ativo. Confirme e siga o prompt de religação do jogo para atribuir um substituto. Uma ligação duplicada é rejeitada em vez de compartilhada. A lista rola, então as linhas específicas do mod perto da parte inferior podem levar vários toques para baixo para serem alcançadas.</p>
+<p>Após uma alteração bem-sucedida, o mod anuncia a entrada e a ação à qual está atribuído, por exemplo, “Space atribuído a BATER”.</p>
 <div class="table-scroll"><table>
 <caption>Linhas do menu Controles atuais</caption>
 <thead><tr><th scope="col">Artigo</th><th scope="col">O que isso faz</th></tr></thead>
@@ -547,8 +555,7 @@ Voice=System default</code></pre>
 </section>
 <section id="roadmap">
 <h2>O que pode vir a seguir</h2>
-<p>Este projeto ainda é jovem. O trabalho potencial inclui um instalador com atualização automática, revisões adicionais e correções de bugs, refinamento de código e melhorias contínuas na capacidade de resposta de fala. Prism cria um caminho possível para outras plataformas no futuro, mas este mod atualmente suporta Windows x64.</p>
-<p>As sugestões e relatórios dos jogadores ajudarão a moldar melhorias futuras. Christopher pretende manter o mod ao longo do tempo, com atualizações guiadas por jogo real e revisão humana cuidadosa. O <a href="https://github.com/Chris-E-Shaw/BopItAccess">repositório de projetos</a> é o lugar para acompanhar sua fonte e documentação à medida que se desenvolvem.</p>
+<p>Este projeto está essencialmente completo e nenhum conteúdo ou recursos importantes estão planejados. No entanto, este mod será mantido e atualizado ativamente ao longo do tempo, conforme necessário, com o feedback dos jogadores impulsionando essas melhorias. O trabalho futuro potencial inclui revisões adicionais e correções de bugs, refinamento de código e melhorias contínuas na capacidade de resposta da fala. Prism cria um caminho possível para outras plataformas no futuro, mas este mod atualmente suporta apenas Windows x64. O repositório do projeto é o local para acompanhar o desenvolvimento.</p>
 </section>
 <section id="project-credits">
 <h2>Créditos e avisos de terceiros</h2>
@@ -586,12 +593,12 @@ Voice=System default</code></pre>
 </section>
 <section class="panel" id="thanks">
 <h2>Obrigado</h2>
-<p>A todos que testaram este mod, deram feedback, experimentaram pela primeira vez ou acreditaram em mim: obrigado. Seu apoio me motiva a continuar fazendo coisas em um mundo que pode parecer louco e profundamente falho. Espero que este projeto torne mais fácil para você aproveitar o jogo e compartilhá-lo com outras pessoas. Muito obrigado a todos. Aproveite Bop It!</p>
-<p>-Christopher Shaw</p>
+<p>Para aqueles que testaram este mod antes do lançamento e ajudaram a chegar onde está agora, obrigado. Vocês sabem quem vocês são. Aos jogadores que deram feedback, experimentem o mod pela primeira vez, ou acreditem em mim e neste projeto, obrigado. Seu apoio me motiva a continuar fazendo coisas em um mundo que pode parecer louco e profundamente falho. Espero que este projeto torne mais fácil para você aproveitar o jogo e jogar com outras pessoas. Muito obrigado a todos. Aproveite Bop It!</p>
+<p>— Christopher Shaw</p>
 </section>
 </main>
 <footer>
-<p class="small">Bop It Access guia do usuário. Os recursos atuais refletem a fonte na versão 0.9.0; os itens planejados estão claramente marcados. <a href="#contents">Voltar ao conteúdo</a>.</p>
+<p class="small">Bop It Access guia do usuário. Os recursos atuais refletem a fonte na versão 0.9.6; os itens planejados estão claramente marcados. <a href="#contents">Voltar ao conteúdo</a>.</p>
 </footer>
 </body>
 </html>

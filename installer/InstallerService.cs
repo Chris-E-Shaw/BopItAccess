@@ -218,6 +218,10 @@ internal sealed class InstallerService
                     await transaction.InstallFileAsync(prismDll, installedPrism, ct);
                 }
 
+                // Set loader UI preferences before the first proxy-generation
+                // launch, and use the same path for release and alpha installs.
+                await LoaderUiDefaults.ApplyAsync(transaction, temp, Log, ct);
+
                 string dll;
                 if (alpha)
                 {

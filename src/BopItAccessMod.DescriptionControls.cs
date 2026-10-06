@@ -217,6 +217,12 @@ public sealed partial class BopItAccessMod
         if (binding != null && !string.Equals(binding, _lastControlsBinding,
                 StringComparison.Ordinal))
         {
+            if (rebinding)
+            {
+                // Completion callbacks announce only accepted assignments.
+                _lastControlsRebinding = true;
+                return;
+            }
             _lastControlsBinding = binding;
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = true;
@@ -414,8 +420,7 @@ public sealed partial class BopItAccessMod
         _lastControlsRebinding = false;
         _controlsBindingChangedDuringRebind = false;
         WriteStatus($"Rebound Read Descriptions to {path}.");
-        QueueSpeech(_lastControlsBinding == null ? L("Binding changed") :
-            LocalizeBindingDisplay(_lastControlsBinding));
+        QueueControlAssignmentSpeech(_lastControlsBinding, "Read Descriptions");
     }
 
     private void ResetDescriptionControlBindings()

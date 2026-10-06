@@ -1,4 +1,6 @@
 using System;
+using System.Runtime.Versioning;
+using HarmonyLib;
 using Il2Cpp;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -19,6 +21,7 @@ public sealed partial class BopItAccessMod
     private string? _lastControlsResetDevice;
     private bool _lastControlsRebinding;
     private bool _controlsBindingChangedDuringRebind;
+    private CompletedNativeControlAssignment? _completedNativeControlAssignment;
     private bool _controlsWasVisible;
     private bool _controlsIntroductionPending;
     private long _controlsOpenedAt;
@@ -246,6 +249,9 @@ public sealed partial class BopItAccessMod
         bool rebinding = manager != null && manager.IsRebinding;
         string? feedback = ReadVisibleControlFeedback(row);
 
+        if (!rebinding && ReadCompletedNativeControlAssignment(row, manager, binding, feedback))
+            return;
+
         if (id != _lastFocusedControlsRowId)
         {
             _lastFocusedControlsRowId = id;
@@ -268,12 +274,23 @@ public sealed partial class BopItAccessMod
         if (binding != null &&
             !string.Equals(binding, _lastControlsBinding, StringComparison.Ordinal))
         {
-            if (rebinding || _lastControlsRebinding)
-                _controlsBindingChangedDuringRebind = true;
+            if (rebinding)
+            {
+                // An interactive operation can expose a temporary candidate
+                // before validation. Keep the previous accepted baseline and
+                // let completed native assignments announce after the guard.
+                _lastControlsRebinding = true;
+                return;
+            }
+            bool completedRebind = _lastControlsRebinding;
+            _controlsBindingChangedDuringRebind = completedRebind;
             _lastControlsBinding = binding;
             _lastControlsFeedback = feedback;
-            _lastControlsRebinding = rebinding;
-            QueueSpeech(LocalizeBindingDisplay(binding));
+            _lastControlsRebinding = false;
+            if (completedRebind)
+                QueueControlAssignmentSpeech(binding, GetControlRowLabel(row));
+            else
+                QueueSpeech(LocalizeBindingDisplay(binding));
             return;
         }
 
@@ -299,6 +316,80 @@ public sealed partial class BopItAccessMod
         _lastControlsFeedback = feedback;
         _lastControlsRebinding = rebinding;
     }
+
+    private void QueueControlAssignmentSpeech(string? binding, string actionLabel)
+    {
+        string? displayed = CleanSpeechValue(binding);
+        string message = displayed == null
+            ? LF("Input assigned to {0}", L(actionLabel))
+            : LF("{0} assigned to {1}", LocalizeBindingDisplay(displayed), L(actionLabel));
+        WriteStatus("Control assignment confirmation: " + message);
+        QueueSpeech(message);
+    }
+
+    internal static void NoteCompletedNativeControlAssignment(InputRebindingManager manager,
+        string actionName, string actionMapName)
+    {
+        BopItAccessMod? mod = _activeNativeAudioMod;
+        InputAction? action = manager.inputActions?.FindActionMap(actionMapName, false)?
+            .FindAction(actionName, false);
+        if (mod == null || action == null)
+            return;
+        string device = manager.ActiveDevice ?? manager.deviceTracker?.ActiveDevice ?? string.Empty;
+        int index = manager.FindAppropriateBindingIndex(action, device);
+        if (index < 0 || index >= action.bindings.Count)
+            return;
+        mod._completedNativeControlAssignment = new(manager.GetInstanceID(),
+            actionMapName, actionName, index, action.bindings[index].overridePath,
+            CleanSpeechValue(InputActionRebindingExtensions.GetBindingDisplayString(action, index)),
+            Environment.TickCount64);
+    }
+
+    private bool ReadCompletedNativeControlAssignment(ControlRow row,
+        InputRebindingManager? manager, string? binding, string? feedback)
+    {
+        CompletedNativeControlAssignment? completed = _completedNativeControlAssignment;
+        if (completed == null)
+            return false;
+        if (Environment.TickCount64 - completed.CompletedAt > 3000)
+        {
+            _completedNativeControlAssignment = null;
+            return false;
+        }
+        if (manager == null || completed.ManagerId != manager.GetInstanceID() ||
+            !string.Equals(completed.ActionMapName, row.ActionMapName, StringComparison.Ordinal) ||
+            !string.Equals(completed.ActionName, row.ActionName, StringComparison.Ordinal))
+        {
+            // Moving away owns the next focus message; do not replay an old
+            // assignment if the player returns to this row shortly afterward.
+            _completedNativeControlAssignment = null;
+            return false;
+        }
+        _completedNativeControlAssignment = null;
+        // Native callbacks usually arrive before OnUpdate. Also validate here
+        // to cover completion later in the same frame, before focus speech.
+        UpdateNativeBindingConflictGuard();
+        InputAction? action = manager.inputActions?.FindActionMap(completed.ActionMapName, false)?
+            .FindAction(completed.ActionName, false);
+        bool stillAssigned = action != null && completed.BindingIndex < action.bindings.Count &&
+            string.Equals(action.bindings[completed.BindingIndex].overridePath,
+                completed.OverridePath, StringComparison.Ordinal);
+        _lastFocusedControlsRowId = row.GetInstanceID();
+        _lastControlsBinding = stillAssigned ? binding : ReadControlBinding(row, manager);
+        _lastControlsFeedback = stillAssigned ? feedback : ReadVisibleControlFeedback(row);
+        _lastControlsRebinding = false;
+        _controlsBindingChangedDuringRebind = false;
+        _lastControlsResetSnapshot = null;
+        // OnUpdate's duplicate guard can reverse a native completion before
+        // this focus pass. Its rejection message owns feedback in that case.
+        if (stillAssigned)
+            QueueControlAssignmentSpeech(completed.BindingDisplay ?? binding, GetControlRowLabel(row));
+        return true;
+    }
+
+    private sealed record CompletedNativeControlAssignment(int ManagerId,
+        string ActionMapName, string ActionName, int BindingIndex,
+        string? OverridePath, string? BindingDisplay, long CompletedAt);
 
     private void ReadAddedLeaderboardControlRow(AddedLeaderboardControlRow row)
     {
@@ -329,6 +420,12 @@ public sealed partial class BopItAccessMod
         if (binding != null &&
             !string.Equals(binding, _lastControlsBinding, StringComparison.Ordinal))
         {
+            if (rebinding)
+            {
+                // The leaderboard completion callback announces its result.
+                _lastControlsRebinding = true;
+                return;
+            }
             _lastControlsBinding = binding;
             _lastControlsRebinding = rebinding;
             _controlsBindingChangedDuringRebind = true;
@@ -629,6 +726,7 @@ public sealed partial class BopItAccessMod
 
     private void ResetControlsFocus()
     {
+        _completedNativeControlAssignment = null;
         ResetPendingControlsSetup();
         _controlsRebindingManager = null;
         _controlsRows = null;
@@ -644,5 +742,18 @@ public sealed partial class BopItAccessMod
         _controlsWasVisible = false;
         _controlsIntroductionPending = false;
         _controlsOpenedAt = 0;
+    }
+}
+
+[HarmonyPatch(typeof(InputRebindingManager), "CompleteRebinding")]
+[SupportedOSPlatform("windows")]
+internal static class NativeControlAssignmentCompletedPatch
+{
+    [HarmonyPostfix]
+    private static void AfterComplete(InputRebindingManager __instance,
+        string actionName, string actionMapName)
+    {
+        try { BopItAccessMod.NoteCompletedNativeControlAssignment(__instance, actionName, actionMapName); }
+        catch { /* A speech confirmation must never prevent a native rebind. */ }
     }
 }

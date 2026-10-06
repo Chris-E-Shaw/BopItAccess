@@ -40,7 +40,7 @@ L’action Désinstaller de l’installeur et les Applications installées de Wi
 
 ## Statut du projet
 
-Ce projet est en début de développement. Ce référentiel contient le code source et la documentation technique. **Il n'y a pas encore de versions compilées ni de versions GitHub ici.** Pour utiliser le mod de ce référentiel, construisez-le à partir des sources et fournissez le runtime Prism décrit ci-dessous.
+Ce projet est pour l’essentiel terminé et aucun contenu ou fonctionnalité majeur n’est prévu. Il sera maintenu selon les besoins, les commentaires des joueurs guidant les améliorations. Le référentiel GitHub contient le code source et la documentation technique. **Il n'y a pas encore de versions GitHub.** La source contient désormais également un projet d'installation Windows. Jusqu'à ce qu'une version soit publiée, son bouton **Installer** explique qu'aucune version n'est disponible ; **Install alpha** crée le dernier commit de branche principale à partir des sources.
 
 L'historique des validations comprend des instantanés source reconstruits de 37 versions antérieures. Les commits ont été créés lorsque ces archives ont été importées dans Git ; leurs dates ne sont pas les dates de construction d'origine. Le [historique de construction technique](BopItAccess-build-history.html) décrit le travail derrière chaque instantané.
 
@@ -91,6 +91,22 @@ Lire les positions dans les menus. Cette option mémorisée, activée par défau
 
 **Formater la parole**: Rend les textes tout en majuscules plus naturels pour la parole et le braille. Dans le guide intégré, ajoute des points de suspension avant le numéro de ligne si le texte se termine sans ponctuation. Le texte visible reste inchangé. Désactivez cette option pour conserver le texte tel quel.
 
+### MelonLoader fenêtres de démarrage
+
+Le modèle Loader.cfg fourni masque l’écran de démarrage et la console séparés de MelonLoader. Le programme d'installation applique automatiquement les deux mêmes valeurs par défaut, avant toute préparation de build alpha nécessaire au démarrage du jeu. Ces paramètres ne sautent pas l’écran titre du jeu ni l’écran de bienvenue du mod.
+
+Le jeu étant fermé, ouvrez `UserData/Loader.cfg` dans le dossier du jeu. Si ce fichier existe déjà, réglez `disable_start_screen` sur `true` dans sa section `[loader]` existante, et `hide_console` sur `true` dans sa section `[console]` existante. Conservez toutes les autres entrées. Si le fichier n'existe pas, copiez le modèle `UserData/Loader.cfg` fourni avec la compilation, ou `configuration/Loader.cfg` depuis le code source. Ne remplacez jamais un Loader.cfg existant par le modèle complet.
+
+```ini
+[loader]
+disable_start_screen = true
+
+[console]
+hide_console = true
+```
+
+Le mod ne réinitialise pas ces options à chaque lancement. Vous pouvez redéfinir manuellement l’une ou l’autre valeur sur false si vous avez besoin des fenêtres du chargeur pour le dépannage. La désinstallation du programme d'installation restaure les valeurs d'origine uniquement tant que les vraies valeurs du programme d'installation sont toujours présentes, préservant ainsi les autres modifications de configuration du chargeur.
+
 ## Documentation
 
 - [Guide d'utilisation du jeu et du mod (anglais)](BopItAccess-user-guide.html) - une présentation pas à pas conviviale des commandes, des paramètres, des menus et des modes de jeu.
@@ -102,9 +118,23 @@ Lire les positions dans les menus. Cette option mémorisée, activée par défau
 
 Des copies traduites des six documents ci-dessus sont en [`documentation/`](../) sous chaque code de langue pris en charge. Leur source est l'anglais ; `scripts/translate_documents.py` peut régénérer les brouillons traduits automatiquement après des modifications de source.
 
-## Transparence de l'IA
+## Que pourrait-il arriver ensuite
 
-Christopher Shaw dirige ce projet et évalue son accessibilité dans le jeu. Les modèles OpenAI Codex ont aidé à la recherche, au code et à la documentation. Les messages de validation publiés incluent un `Co-authored-by` une bande-annonce identifiant le modèle qui a contribué à chaque changement ; les crédits historiques ont été vérifiés par rapport aux enregistrements de session de ce projet. L'historique de construction antérieur a été reconstruit à partir des archives sources enregistrées plutôt que enregistré en tant que validation à l'époque. Les contributions assistées par l'IA peuvent contenir des erreurs et doivent être examinées avant utilisation.
+Ce projet est pour l’essentiel terminé et aucun contenu ou fonctionnalité majeur n’est prévu. Cependant, ce mod sera activement maintenu et mis à jour au fil du temps selon les besoins, les commentaires des joueurs étant à l'origine de ces améliorations. Les travaux futurs potentiels incluent une révision plus approfondie et des corrections de bugs, un raffinement du code et des améliorations continues de la réactivité vocale. Prism crée un chemin possible vers d'autres plates-formes dans le futur, mais ce mod ne prend actuellement en charge que Windows x64. Le référentiel du projet est l'endroit idéal pour suivre le développement ultérieur.
+
+## Note de transparence sur l'IA
+
+Ce mod a été réalisé par « vibe coding ». Tout le code a été entièrement généré et étudié par l’intelligence artificielle, avec une compréhension humaine technique limitée de son architecture sous-jacente. Veuillez utiliser ce mod à vos propres risques.
+
+Cela étant dit, chaque fonctionnalité du mod et chaque décision de conception ont été rédigées et approuvées par des humains. Les tests n’ont jamais été automatisés ; ils ont été réalisés avec soin et de manière approfondie par de vrais joueurs et testeurs humains.
+
+Remarque : les textes et la documentation multilingues ont été générés par l'IA et n'ont pas été révisés par des locuteurs natifs. Il faut s’attendre à une grande imprécision de traduction. Sans codage agent, ce projet n’existerait pas. Merci de lui avoir donné une chance !
+
+## Merci
+
+À ceux qui ont testé ce mod avant sa sortie et qui ont contribué à l'amener là où il est actuellement, merci. Vous savez tous qui vous êtes. Aux joueurs qui donnent leur avis, essaient le mod pour la première fois, ou croient en moi et en ce projet, merci. Votre soutien me motive à continuer à créer des choses dans un monde qui peut sembler fou et profondément imparfait. J'espère que ce projet vous permettra d'apprécier plus facilement le jeu et de jouer avec les autres. Merci beaucoup à tous. Profitez du Bop It!
+
+— Christopher Shaw
 
 ## Licence
 

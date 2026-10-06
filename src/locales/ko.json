@@ -480,5 +480,13 @@
   "PITCH": "음높이",
   "SPEAK MENU INDEXES": "메뉴 항목 위치 읽기",
   "Done!": "완료!",
-  "Calibration failed.": "보정에 실패했습니다."
+  "Calibration failed.": "보정에 실패했습니다.",
+  "Hints for every screen, including this one, are available at any time by pressing {0} on your keyboard, or {1} on your controller.": "이 화면을 포함한 모든 화면의 힌트는 언제든지 키보드의 {0} 또는 컨트롤러의 '{1}' 입력으로 들을 수 있습니다.",
+  "Before playing, feel free to visit Mod Settings to customize your experience, or jump right in with the defaults.": "플레이하기 전에 Mod 설정을 방문하여 환경을 맞춤 설정하거나 기본값으로 바로 시작하세요.",
+  "A full user's guide is also built right in if you'd like additional help.": "추가 도움이 필요한 경우 전체 사용자 가이드도 바로 내장되어 있습니다.",
+  "{0} assigned to {1}": "{0} 입력이 {1}에 할당되었습니다",
+  "Input assigned to {0}": "입력이 {0}에 할당되었습니다",
+  "Right Stick click": "오른쪽 스틱 누르기",
+  "Left Stick click": "왼쪽 스틱 누르기",
+  "The welcome screen could not be displayed. You can open Mod Settings and the user's guide from Settings. The welcome screen will be tried again next time you launch the game.": "환영 화면을 표시하지 못했습니다. 설정에서 모드 설정과 사용자 가이드를 열 수 있습니다. 다음에 게임을 실행하면 환영 화면 표시를 다시 시도합니다."
 }

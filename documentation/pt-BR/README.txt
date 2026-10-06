@@ -1,4 +1,4 @@
-Bop It Access 0.9.5 - Prism Fala e Braille
+Bop It Access 0.9.6 - Prism Fala e Braille
 
 O que isso faz
 --------------
@@ -45,7 +45,7 @@ OUTPUT MODE: Auto usa um leitor de tela compatível em execução, depois OneCor
 Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 Cada leitor de tela e mecanismo de voz só está disponível se for compatível com a versão do Prism instalada e com o sistema do jogador. Se o modo escolhido não estiver disponível, o mod muda para uma saída disponível e avisa por voz uma única vez.
-Os mecanismos do Prism podem enfileirar de modo diferente avisos que não interrompem a fala. Informe se pontuações ou créditos forem lidos fora de ordem. As vozes SAPI salvas são localizadas pelo nome exibido no Prism; se várias tiverem o mesmo nome, a primeira poderá ser escolhida.
+As vozes SAPI salvas são localizadas pelo nome exibido no Prism; se várias tiverem o mesmo nome, a primeira poderá ser escolhida.
 MUTE SPEECH IN BACKGROUND é um botão de alternância salvo, desativado por padrão. Quando ativado,
 o mod para de falar assim que o jogo perde o foco da janela. Discurso criado
 enquanto o jogo está em segundo plano é descartado e os anúncios são retomados
@@ -291,14 +291,7 @@ anuncia as instruções e etapas de calibração, lê a contagem regressiva de a
 e anuncia o resultado de latência exibido. Ele não fala todas as batidas durante
 o exercício de cronometragem para que a batida permaneça audível. Após a última entrada de calibração, o mod diz imediatamente “Concluído!”. Pare de bater e espere o resultado medido. Se a calibração falhar porque nenhuma entrada foi feita, ele diz “Falha na calibração.”.
 
-A tela de pausa anuncia Pausado, o botão Continuar ou Menu Principal em foco,
-e suas dicas de botão. As mudanças de foco interrompem a fala anterior do menu de pausa;
-retomar ou sair da rodada limpa qualquer discurso de pausa restante antes do jogo
-ou o menu principal continua. Um substituto protegido também lê controles focados
-e texto visível em um painel inesperado voltado para o jogador sem prioridade
-sobre os leitores dedicados acima. Durante uma rodada ativa, o mod sai do
-apenas os comandos verbais do jogo e a pontuação em andamento. Movendo o mouse sobre um
-item sem dar-lhe Unity O foco da UI pode não falar.
+A tela de pausa anuncia Pausado, o botão Retomar ou Menu principal selecionado e suas dicas de controles. Mudar a seleção interrompe a fala anterior do menu de pausa. Retomar ou sair da rodada interrompe as falas de pausa restantes antes de continuar no jogo ou no menu principal. Durante uma rodada, o mod deixa intactos os comandos de voz do jogo e a pontuação em andamento.
 
 Instalar
 -------
@@ -409,3 +402,41 @@ Voice=System default
 Voice=System default
 
 A opção Desinstalar do instalador e os Aplicativos instalados do Windows também removem UserData/BopItAccess.ini e seu arquivo .tmp, inclusive em instalações manuais antigas.
+
+Nota sobre transparência de IA
+--------------------
+
+Este mod foi criado por meio de “vibe coding”. Todo o código foi totalmente gerado e pesquisado por inteligência artificial, com compreensão técnica humana limitada de sua arquitetura subjacente. Por favor, use este mod por sua própria conta e risco.
+
+Dito isto, cada recurso de mod e decisão de design foram criados e aprovados por humanos. Os testes nunca foram automatizados; foram realizados cuidadosa e extensivamente por jogadores e testadores humanos reais.
+
+Observação: o texto e a documentação multilíngues foram gerados pela IA e não foram revisados por falantes nativos. É esperada uma alta imprecisão na tradução. Sem codificação agente, este projeto não existiria. Obrigado por dar uma chance!
+
+O que pode vir a seguir
+------------------
+
+Este projeto está essencialmente completo e nenhum conteúdo ou recursos importantes estão planejados. No entanto, este mod será mantido e atualizado ativamente ao longo do tempo, conforme necessário, com o feedback dos jogadores impulsionando essas melhorias. O trabalho futuro potencial inclui revisões adicionais e correções de bugs, refinamento de código e melhorias contínuas na capacidade de resposta da fala. Prism cria um caminho possível para outras plataformas no futuro, mas este mod atualmente suporta apenas Windows x64. O repositório do projeto é o local para acompanhar o desenvolvimento.
+
+Obrigado
+---------
+
+Para aqueles que testaram este mod antes do lançamento e ajudaram a chegar onde está agora, obrigado. Vocês sabem quem vocês são. Aos jogadores que deram feedback, experimentem o mod pela primeira vez, ou acreditem em mim e neste projeto, obrigado. Seu apoio me motiva a continuar fazendo coisas em um mundo que pode parecer louco e profundamente falho. Espero que este projeto torne mais fácil para você aproveitar o jogo e jogar com outras pessoas. Muito obrigado a todos. Aproveite Bop It!
+
+— Christopher Shaw
+
+MelonLoader janelas de inicialização
+---------------------------
+
+O modelo Loader.cfg fornecido oculta a tela inicial e o console separados do MelonLoader. O instalador aplica os mesmos dois padrões automaticamente, antes de qualquer preparação da versão alfa necessária para iniciar o jogo. Essas configurações não pulam a tela de título do jogo ou a tela de boas-vindas do mod.
+
+Com o jogo fechado, abra UserData/Loader.cfg na pasta do jogo. Se o arquivo já existir, defina disable_start_screen como true na seção [loader] existente e hide_console como true na seção [console] existente. Mantenha todas as outras entradas. Se o arquivo não existir, copie o modelo UserData/Loader.cfg fornecido com a compilação, ou configuration/Loader.cfg a partir do código-fonte. Nunca substitua um Loader.cfg existente pelo modelo completo.
+
+[loader]
+disable_start_screen = true
+
+[console]
+hide_console = true
+
+O mod não redefine essas opções a cada inicialização. Você pode alterar manualmente qualquer valor de volta para falso se precisar das janelas do carregador para solução de problemas. A desinstalação do instalador restaura os valores originais apenas enquanto os valores verdadeiros do instalador ainda estão presentes, preservando outras edições de configuração do carregador.
+
+Após uma alteração bem-sucedida, o mod anuncia a entrada e a ação à qual está atribuído, por exemplo, “Space atribuído a BATER”.

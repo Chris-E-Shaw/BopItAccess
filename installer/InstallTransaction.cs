@@ -150,11 +150,12 @@ public sealed class InstallTransaction
     /// preserved as the baseline to restore on uninstall.
     /// </summary>
     public async Task InstallFileAsync(string sourceAbsolute, string destinationAbsolute,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default, bool isLoaderConfiguration = false)
     {
         ThrowIfFinished();
         string source = Path.GetFullPath(sourceAbsolute);
         string destination = ValidateDestination(destinationAbsolute);
+        if (isLoaderConfiguration) LoaderUiDefaults.ValidatePath(destination, _gameDirectory);
         if (!File.Exists(source)) throw new FileNotFoundException("Install source not found.", source);
         if (PathsEqual(source, destination))
         {
@@ -168,7 +169,8 @@ public sealed class InstallTransaction
                 Path = destination,
                 Sha256 = hash,
                 OriginalBackupPath = current?.OriginalBackupPath,
-                OriginalSha256 = current?.OriginalSha256
+                OriginalSha256 = current?.OriginalSha256,
+                IsLoaderConfiguration = isLoaderConfiguration || current?.IsLoaderConfiguration == true
             };
             _log($"Installer file is already in place: {destination}");
             return;
@@ -243,7 +245,8 @@ public sealed class InstallTransaction
                 Path = destination,
                 Sha256 = sourceHash,
                 OriginalBackupPath = prior?.OriginalBackupPath ?? originalBackup,
-                OriginalSha256 = prior?.OriginalSha256 ?? originalHash
+                OriginalSha256 = prior?.OriginalSha256 ?? originalHash,
+                IsLoaderConfiguration = isLoaderConfiguration || prior?.IsLoaderConfiguration == true
             };
             _log($"Installed file: {destination}");
         }

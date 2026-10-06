@@ -64,7 +64,7 @@
 <li><a href="#welcome">欢迎</a></li>
 <li><a href="#game">什么是 Bop It!？</a></li>
 <li><a href="#mod">什么是 Bop It Access？</a></li>
-<li><a href="#transparency">坦诚的透明说明</a></li>
+<li><a href="#transparency">人工智能透明度说明</a></li>
 <li><a href="#features">无障碍功能</a></li>
 <li><a href="#quality">便利功能</a></li>
 <li><a href="#limitations">注意事项与限制</a></li>
@@ -112,8 +112,10 @@
 <p>该模组的菜单和公告遵循游戏的语言设置。它包括英语、法语、意大利语、德语、西班牙语（西班牙）、西班牙语（拉丁美洲）、日语、韩语、简体中文和巴西葡萄牙语。</p>
 </section>
 <section class="panel" id="transparency">
-<h2>坦诚的透明说明</h2>
-<p>该模组是与人工智能密切合作制作的。该模组的所有研究都是由人工智能进行的，其代码也是由人工智能生成的，而不是最初由手工编写的。设计决策和游戏测试完全是人为的。每一个早期的添加和更改都经过一个人的仔细审查，并且真人在不同的系统上玩和测试了该模组。新的多语言文本是通过机器翻译编写的，仍需要流利的使用者进行审阅。如果没有代理编码，这个项目就不会存在。感谢您给这个由人类主导、人工智能辅助的项目一个机会。</p>
+<h2>人工智能透明度说明</h2>
+<p>本模组采用“vibe coding（氛围编程）”方式开发。所有代码完全由人工智能生成和研究，人类对其底层架构的技术理解有限。请自行承担使用此模组的风险。</p>
+<p>话虽这么说，每个模组功能和设计决策都是由人类编写和批准的。测试从来都不是自动化的；它是由真实的人类玩家和测试人员仔细而广泛地执行的。</p>
+<p>请注意：多语言文本和文档由人工智能生成，未经母语人士审核。翻译的高度不准确是可以预料的。如果没有代理编码，这个项目就不会存在。感谢您给它一个机会！</p>
 </section>
 <section id="features">
 <h2>无障碍功能</h2>
@@ -145,10 +147,10 @@
 <h2>注意事项与限制</h2>
 <ul>
 <li><strong>在回合开始前要求提供描述。</strong> 该模组故意不在游戏进行过程中叙述场景。玩家必须听到游戏的口头命令并做出反应；额外的旁白可以涵盖命令并结束回合。</li>
-<li>自动模式依次优先使用运行中的屏幕阅读器、OneCore 和 SAPI。已安装的语音和系统会影响响应速度。模组不会安装额外语音。</li><li data-prism-note="true"><strong>提示的朗读顺序可能因输出方式而异。</strong> 不同的 Prism 输出方式可能以不同顺序排队播放不中断当前语音的提示。如果分数或制作人员名单的朗读顺序不对，请反馈。已保存的 SAPI 语音 ID 会与 Prism 显示的语音名称匹配；如果多个语音同名，可能选中第一个匹配项。</li>
+<li>自动模式依次优先使用运行中的屏幕阅读器、OneCore 和 SAPI。已安装的语音和系统会影响响应速度。模组不会安装额外语音。</li>
 <li><strong>一些本机控件仍然是固定的。</strong> 该模组极大地扩展了游戏的控制菜单，但它并没有使每个游戏输入都可以重新映射。</li>
 <li><strong>帧速率影响输入轮询。</strong> FPS限制器可以大幅降低系统负载。它不会故意减慢动画速度或改变游戏时间，但游戏在较低 FPS 时检查基于帧的输入的频率较低。较高的设置可以提供更准确的输入计时，尤其是在快速回合中。</li>
-<li><strong>菜单和结果中的语音支持最强。</strong> 在意外的面板上，mod 可以在找到可见文本和聚焦控件时读取可见文本和焦点控件。鼠标悬停可能不会说话，直到该项目真正获得游戏焦点。</li>
+
 <li><strong>Windows x64 是当前的 mod 平台。</strong> Prism支持其他平台，可能有助于以后的开发。此版本的游戏集成、构建参考和安装步骤适用于 Windows x64。</li>
 <li><strong>翻译需要审核。</strong> 最初的非英语模组文本和指南是机器翻译的。某些措辞、游戏术语和输入名称可能需要流利的说话者进行纠正。请报告任何不清楚或不准确的内容。</li>
 </ul>
@@ -161,7 +163,8 @@
 </section>
 <section id="install">
 <h2>获取并安装模组</h2>
-<p class="planned"><strong>安装人员状态：</strong> 公共模组安装程序尚未设计或发布，因此没有真正的安装程序下载链接或安装程序屏幕可供遵循。请观看 <a href="https://github.com/Chris-E-Shaw/BopItAccess">Bop It Access 项目页面</a> 以备将来使用。这是安装程序链接的预期主页，而不是声称安装程序现在就在那里。</p>
+<p class="current"><strong>安装人员状态：</strong> 已经构建了 Windows 安装程序预览用于本地测试，其源代码包含在项目中。尚未发布公共编译的安装程序或 mod 版本。观看 <a href="https://github.com/Chris-E-Shaw/BopItAccess">Bop It Access 项目页面</a> 供公众下载。使用下面的源路径或项目直接提供的预览。</p>
+
 <h3>当前安装路径：从源构建</h3>
 <p>公共 GitHub 存储库当前包含源代码和文档，没有编译的下载或 GitHub 版本。构建意味着将源文件转换为 mod 的 DLL。的 <a href="README.md#build-from-source">存储库的构建说明</a> 是维护的参考。以下是用日常语言表达的完整当前路线：</p>
 <ol>
@@ -177,11 +180,14 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <li>如果使用屏幕阅读器，请先启动它，再启动游戏。没有运行兼容的屏幕阅读器时，Prism 优先使用 OneCore；如果 OneCore 不可用，则使用 SAPI。</li>
 </ol>
 <p>一个常见的 Steam 位置是 <code>C:\Program Files (x86)\Steam\steamapps\common\Bop It!</code>。如果您选择不同的 Steam 图书馆，您的位置可能会有所不同。如果您有项目中本地提供的安装 ZIP，请关闭游戏并将其内容解压到游戏文件夹中，从而允许 <code>Mods</code> 要合并的文件夹。这些本地包与纯源代码 GitHub 存储库是分开的。</p>
-<h3>未来的安装程序演练（计划）</h3>
-<div class="planned">
-<p><strong>仅临时大纲：</strong> 当存在官方安装程序时，预期的步骤是从项目页面获取它，关闭游戏，运行安装程序，如果无法自动找到游戏，则将其指向Bop It!文件夹，让它安装mod和所需的语音文件，然后通过Steam启动。真正的安装程序可能有不同的选择。其确切屏幕、更新方法、删除方法和下载链接一旦存在，将在此处记录。</p>
-<p>现在，请使用上面的项目页面和源说明。目前没有第三方页面可以提供官方的 Bop It Access 安装程序。</p>
-</div>
+<div class="current"><h3>MelonLoader 启动窗口</h3><p>提供的 Loader.cfg 模板隐藏了 MelonLoader 的单独启动屏幕和控制台。在需要启动游戏的任何 alpha 构建准备之前，安装程序会自动应用相同的两个默认值。这些设置不会跳过游戏的标题屏幕或模组的欢迎屏幕。</p><p>关闭游戏后，打开游戏文件夹中的 <code>UserData/Loader.cfg</code>。如果文件已经存在，请在现有的 <code>[loader]</code> 节中将 <code>disable_start_screen</code> 设为 <code>true</code>，在现有的 <code>[console]</code> 节中将 <code>hide_console</code> 设为 <code>true</code>。保留其他所有设置。如果文件不存在，请复制构建文件中提供的 <code>UserData/Loader.cfg</code> 模板，或源码中的 <code>configuration/Loader.cfg</code>。切勿用整个模板覆盖已有的 Loader.cfg。</p><pre><code>[loader]
+disable_start_screen = true
+
+[console]
+hide_console = true</code></pre><p>该模组不会在每次启动时重置这些选项。如果您需要加载程序的窗口进行故障排除，您可以手动将任一值更改回 false。仅当安装程序的真实值仍然存在时，安装程​​序卸载才会恢复原始值，并保留其他加载程序配置编辑。</p></div>
+<h3>使用提供的安装程序预览</h3><div class="current"><p>关闭游戏，运行安装程序，并批准Windows’管理员提示。它在可用驱动器中搜索 Steam 个库。如果需要，请使用“浏览”选择游戏文件夹。它的状态字段是只读的：使用 Tab 键切换到它并使用光标键或选择并复制文本来查看其操作。进度条报告当前步骤。</p><p>如果存在最新的公共模组版本，安装会下载该版本。在此之前，仅当您愿意测试最新源时才使用 Install alpha：确认其警告，让它准备缺少的依赖项并编译 mod，然后等待成功消息。 alpha路线可能会打开游戏准备构建参考；当询问时关闭该游戏窗口，以便安装程序可以继续。</p><p>安装程序根据需要获取官方 MelonLoader 0.7.3、Prism 0.18.3 和便携式 .NET 6 SDK。它使用上面显示的两个配置标志隐藏 MelonLoader 自己的开始屏幕和控制台。更新使用 GitHub，无需新下载的安装程序。中止请求确认并撤消安装的更改。</p><p>可以在安装程序和 Windows 已安装的应用程序中进行卸载。它删除拥有的 mod 文件和 Bop It Access 首选项，包括 UserData/BopItAccess.ini 及其临时文件。它保留了本机游戏首选项、不相关的模组和 .NET SDK。加载程序配置清理仅恢复安装程序未更改的目标标志，保留其他编辑。如果清理无法完成，状态日志和完成消息会报告该情况。</p></div>
+
+
 </section>
 <section id="controls">
 <h2>玩家操作一览</h2>
@@ -230,7 +236,8 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 </ol>
 <div class="current">
 <h3>欢迎屏幕</h3>
-<p>介绍性消息本身就是三个选项之上的一个可聚焦的项目。向后移动以再次听到整个消息。它会命名您当前的两个说出提示绑定，即使提示类型设置为仅显示一台设备也是如此。默认情况下，按 <kbd>H</kbd> 或向内按下控制器的右摇杆以请求当前屏幕的提示。</p>
+<p>介绍性消息本身就是三个选项上方的可聚焦项目。向后移动以再次听到整个消息。它会命名您当前的两个说出提示绑定，即使提示类型设置为仅显示一台设备也是如此。下面的示例使用默认绑定；游戏会宣布您当前的任务。</p>
+<blockquote><p>欢迎留言。 欢迎拨打Bop It Access！感谢您安装此项目。 包括本屏幕在内的所有屏幕提示都可随时通过键盘上的H键，或手柄上的“按下右摇杆”操作获取。 在玩游戏之前，请随时访问 Mod 设置来自定义您的体验，或直接使用默认设置。 如果您需要其他帮助，还内置了完整的用户指南。 你想做什么？</p></blockquote>
 <p>仅当其选项之一打开所选目的地后，欢迎屏幕才会被标记为完成。如果游戏在您仍在欢迎屏幕上时关闭，则下次启动时会再次出现。要在完成后再次查看它，请使用 <strong>设置 &gt; 模组设置 &gt; 重置欢迎屏幕</strong>;重置将在下次启动时生效。</p>
 </div>
 </section>
@@ -387,6 +394,7 @@ Voice=System default</code></pre>
 <section id="controls-menu">
 <h3>控制设置菜单</h3>
 <p>聚焦一行以收听活动输入设备的当前绑定。确认并按照游戏的重新绑定提示分配替代者。重复的绑定将被拒绝而不是共享。列表会滚动，因此底部附近的特定于模组的行可能需要按几次向下键才能到达。</p>
+<p>成功更改后，mod 会宣布输入及其分配的操作，例如“Space 分配给 拍打”。</p>
 <div class="table-scroll"><table>
 <caption>当前控件菜单行</caption>
 <thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
@@ -547,8 +555,7 @@ Voice=System default</code></pre>
 </section>
 <section id="roadmap">
 <h2>未来计划</h2>
-<p>这个项目还很年轻。潜在的工作包括自我更新安装程序、进一步审查和错误修复、代码细化以及语音响应能力的持续改进。 Prism创建了未来通往其他平台的可能路径，但该mod目前支持Windows x64。</p>
-<p>玩家的建议和报告将有助于塑造未来的改进。克里斯托弗打算随着时间的推移维护该模组，并在真实游戏和仔细的人工审查指导下进行更新。的 <a href="https://github.com/Chris-E-Shaw/BopItAccess">项目库</a> 是在其开发过程中跟踪其来源和文档的地方。</p>
+<p>该项目已基本完成，未计划主要内容或功能。然而，该模组将根据需要积极维护和更新，并根据玩家反馈推动这些改进。未来潜在的工作包括进一步审查和错误修复、代码细化以及语音响应能力的持续改进。 Prism创建了未来通往其他平台的可能路径，但该mod目前仅支持Windows x64。项目存储库是进行进一步开发的地方。</p>
 </section>
 <section id="project-credits">
 <h2>制作人员及第三方声明</h2>
@@ -586,12 +593,12 @@ Voice=System default</code></pre>
 </section>
 <section class="panel" id="thanks">
 <h2>谢谢你</h2>
-<p>对于所有测试过这个模组、提供反馈、第一次尝试或相信我的人：谢谢。你们的支持激励我在一个让人感到疯狂和存在严重缺陷的世界里继续创造东西。我希望这个项目能让您更轻松地享受游戏并与他人分享。非常感谢大家。享受Bop It!</p>
-<p>— 克里斯托弗·肖</p>
+<p>对于那些在发布之前测试过这个模组并帮助它达到现在水平的玩家，谢谢你们。你们都知道自己是谁。对于那些提供反馈、第一次尝试该模组、或者相信我和这个项目的玩家，谢谢你们。你们的支持激励我在一个让人感到疯狂和存在严重缺陷的世界里继续创造东西。我希望这个项目能让您更轻松地享受游戏并与他人一起玩。非常感谢大家。享受Bop It!</p>
+<p>— Christopher Shaw</p>
 </section>
 </main>
 <footer>
-<p class="small">Bop It Access 用户指南。当前功能反映版本 0.9.0 的来源；计划项目有明确标记。 <a href="#contents">返回内容</a>.</p>
+<p class="small">Bop It Access 用户指南。当前功能反映版本 0.9.6 的来源；计划项目有明确标记。 <a href="#contents">返回内容</a>.</p>
 </footer>
 </body>
 </html>

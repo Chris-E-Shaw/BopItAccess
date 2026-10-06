@@ -62,6 +62,8 @@ public sealed class InstalledFile
 {
     public string Path { get; set; } = string.Empty;
     public string Sha256 { get; set; } = string.Empty;
+    // Only UserData/Loader.cfg may use targeted shared-config restoration.
+    public bool IsLoaderConfiguration { get; set; }
 
     /// <summary>
     /// Copy of a file that existed before the first installer-managed install.

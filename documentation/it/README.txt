@@ -1,4 +1,4 @@
-Bop It Access 0.9.5 - Prism Voce e Braille
+Bop It Access 0.9.6 - Prism Voce e Braille
 
 Cosa fa questo
 --------------
@@ -45,7 +45,7 @@ OUTPUT MODE: Auto usa uno screen reader compatibile in esecuzione, poi OneCore e
 Auto, OneCore, SAPI, NVDA, JAWS, UI Automation, ZDSR, ZoomText,
 Boy PC Reader, PC Talker, Sense Reader, System Access, Window-Eyes.
 Ogni screen reader e motore vocale è disponibile solo se supportato dalla versione di Prism installata e dal sistema del giocatore. Se la modalità scelta non è disponibile, la mod usa un’uscita disponibile e lo comunica una sola volta.
-I motori Prism possono accodare in modo diverso gli annunci che non interrompono la voce. Segnala se punteggi o crediti vengono letti fuori ordine. Le voci SAPI salvate vengono cercate tramite il nome mostrato da Prism; se più voci hanno lo stesso nome, può essere scelta la prima.
+Le voci SAPI salvate vengono cercate tramite il nome mostrato da Prism; se più voci hanno lo stesso nome, può essere scelta la prima.
 MUTE PARLATO IN SFONDO è un'opzione salvata, disattivata per impostazione predefinita. Quando abilitato,
 la mod smette di parlare non appena il gioco perde il focus della finestra. Discorso creato
 mentre il gioco è in background viene scartato e gli annunci riprendono
@@ -291,14 +291,7 @@ annuncia le istruzioni e le fasi di calibrazione, legge il conto alla rovescia d
 e annuncia il risultato della latenza visualizzato. Non parla ogni battito durante
 l'esercizio di cronometraggio in modo che il ritmo rimanga udibile. Dopo l’ultimo input di calibrazione, il mod dice subito “Fatto!”. Smetti di colpire e attendi il risultato misurato. Se la calibrazione fallisce perché non è stato dato alcun input, dice “Calibrazione fallita.”.
 
-La schermata di pausa annuncia In pausa, il pulsante Riprendi o Menu principale focalizzato,
-e il suo pulsante suggerisce. I cambiamenti di focus interrompono il discorso precedente del menu di pausa;
-riprendere o abbandonare il round cancella qualsiasi pausa rimanente prima del gioco
-oppure il menu principale continua. Un fallback protetto legge anche i controlli mirati
-e testo visibile su un pannello inaspettato rivolto al giocatore senza avere la priorità
-sui lettori dedicati sopra. Durante un round attivo, il mod lascia il
-solo i comandi verbali del gioco e il punteggio in corso. Muovendo il mouse su un
-l'elemento senza fornirlo Unity Il focus dell'interfaccia utente potrebbe non parlare.
+La schermata di pausa annuncia Pausa, il pulsante Riprendi o Menu principale selezionato e i relativi suggerimenti. I cambiamenti di selezione interrompono la voce precedente del menu di pausa. Riprendere o lasciare la partita interrompe la voce rimasta prima di continuare il gioco o il menu principale. Durante una partita, la mod lascia invariati i comandi vocali del gioco e il punteggio in corso.
 
 Installa
 -------
@@ -409,3 +402,41 @@ Voice=System default
 Voice=System default
 
 L’azione Disinstalla del programma di installazione e le App installate di Windows rimuovono anche UserData/BopItAccess.ini e il relativo file .tmp, comprese le vecchie installazioni manuali.
+
+Nota sulla trasparenza dell'IA
+--------------------
+
+Questa mod è stata realizzata con il « vibe coding ». Tutto il codice è stato completamente generato e ricercato dall'intelligenza artificiale, con una comprensione umana limitata della sua architettura sottostante. Si prega di utilizzare questa mod a proprio rischio.
+
+Detto questo, ogni singola funzionalità della mod e decisione progettuale è stata creata e approvata da esseri umani. I test non sono mai stati automatizzati; sono stati eseguiti con attenzione e in modo approfondito da veri giocatori e tester umani.
+
+Nota: il testo e la documentazione multilingue sono stati generati dall'intelligenza artificiale e non sono stati revisionati da madrelingua. È prevedibile un'elevata imprecisione della traduzione. Senza la codifica degli agenti, questo progetto non esisterebbe. Grazie per avergli dato una possibilità!
+
+Cosa potrebbe accadere dopo
+------------------
+
+Questo progetto è sostanzialmente completo e non sono previsti contenuti o funzionalità importanti. Tuttavia, questa mod verrà mantenuta e aggiornata attivamente nel tempo secondo necessità, con il feedback dei giocatori che guida questi miglioramenti. Il potenziale lavoro futuro include ulteriori revisioni e correzioni di bug, perfezionamento del codice e continui miglioramenti alla reattività vocale. Prism crea un possibile percorso verso altre piattaforme in futuro, ma questa mod attualmente supporta solo Windows x64. Il repository del progetto è il luogo in cui seguire gli ulteriori sviluppi.
+
+Grazie
+---------
+
+A coloro che hanno testato questa mod prima del rilascio e hanno contribuito a portarla dov'è ora, grazie. Sapete tutti chi siete. Ai giocatori che offrono feedback, provano la mod per la prima volta o credono in me e in questo progetto, grazie. Il tuo sostegno mi motiva a continuare a creare cose in un mondo che può sembrare folle e profondamente imperfetto. Spero che questo progetto ti renda più facile goderti il ​​gioco e giocare con gli altri. Grazie mille a tutti. Divertitevi Bop It!
+
+— Christopher Shaw
+
+MelonLoader finestre di avvio
+---------------------------
+
+Il modello Loader.cfg fornito nasconde la schermata iniziale e la console separate di MelonLoader. Il programma di installazione applica automaticamente le stesse due impostazioni predefinite, prima di qualsiasi preparazione della build alpha necessaria per avviare il gioco. Queste impostazioni non saltano la schermata del titolo del gioco o la schermata di benvenuto della mod.
+
+A gioco chiuso, apri UserData/Loader.cfg nella cartella del gioco. Se il file esiste già, imposta disable_start_screen su true nella sezione [loader] esistente e hide_console su true nella sezione [console] esistente. Mantieni tutte le altre voci. Se il file non esiste, copia il modello UserData/Loader.cfg fornito con la compilazione, oppure configuration/Loader.cfg dal codice sorgente. Non sostituire mai un Loader.cfg esistente con il modello completo.
+
+[loader]
+disable_start_screen = true
+
+[console]
+hide_console = true
+
+La mod non ripristina queste opzioni ad ogni lancio. Puoi modificare manualmente uno dei due valori su false se hai bisogno delle finestre del caricatore per la risoluzione dei problemi. La disinstallazione del programma di installazione ripristina i valori originali solo mentre i valori reali del programma di installazione sono ancora presenti, preservando le altre modifiche alla configurazione del caricatore.
+
+Dopo una modifica riuscita, il mod annuncia l'input e l'azione a cui è assegnato, ad esempio "Space assegnato a COLPISCI".

@@ -42,11 +42,13 @@ public sealed partial class BopItAccessMod
     // remain alive behind song selection and the result screen.
     private (string Key, string Hint)? ResolveButtonHintContext()
     {
+        bool welcomePending = EnsureWelcomeBeforeMainMenuSpeech();
         (string Key, string Hint)? guideHint = GetGuideHintContext();
         if (guideHint != null)
             return guideHint;
         if (WelcomeScreenOpen)
             return ("Welcome", WelcomeScreenHint());
+        if (welcomePending) return null;
 
         GameUIManager? gameUi = _trackSelectUi;
         if (gameUi == null)

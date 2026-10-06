@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.5", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.6", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -115,7 +115,8 @@ public sealed partial class BopItAccessMod : MelonMod
         // focus before any underlying game panel can announce itself.
         try
         {
-            if (ReadGuideFocus() || ReadWelcomeScreenFocus())
+            bool welcomePending = EnsureWelcomeBeforeMainMenuSpeech();
+            if (ReadGuideFocus() || ReadWelcomeScreenFocus() || welcomePending)
             {
                 ResetUncoveredPanelFocus();
                 ResetSettingsFocus();
@@ -806,7 +807,13 @@ public sealed partial class BopItAccessMod : MelonMod
                 index = count;
             count++;
         }
-        QueueFocusSpeech(WithMenuIndex(WithControlType(label, "button"), index, count));
+        string announcement = WithMenuIndex(WithControlType(label, "button"), index, count);
+        if (_welcomeRecoveryIntro != null)
+        {
+            announcement = _welcomeRecoveryIntro + " " + announcement;
+            _welcomeRecoveryIntro = null;
+        }
+        QueueFocusSpeech(announcement);
     }
 
     private string? GetMainMenuLabel(int focusedButtonId)

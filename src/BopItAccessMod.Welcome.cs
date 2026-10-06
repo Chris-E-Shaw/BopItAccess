@@ -35,7 +35,7 @@ public sealed partial class BopItAccessMod
     private int _welcomeFocusedRowId;
     private int _welcomeMainMenuId;
     private long _nextWelcomeProbeAt;
-    private long _nextWelcomeErrorAt;
+    private string? _welcomeRecoveryIntro;
     private UnityAction? _welcomeIntroSubmitListener;
     private UnityAction? _welcomeSettingsSubmitListener;
     private UnityAction? _welcomeGuideSubmitListener;
@@ -45,9 +45,31 @@ public sealed partial class BopItAccessMod
         _welcomeRoot != null && _welcomeRoot.activeInHierarchy &&
         IsHintPanelVisible(_welcomePanel);
 
+    private bool WelcomeScreenRequired => !_welcomeSuppressedUntilRestart &&
+        PlayerPrefs.GetInt(WelcomeDismissedPreferenceKey, 0) == 0;
+
+    // Unity can reveal the main menu after OnUpdate's periodic probe. Take
+    // welcome focus before any LateUpdate reader or hint can describe Play.
+    private bool EnsureWelcomeBeforeMainMenuSpeech()
+    {
+        if (!WelcomeScreenRequired) return false;
+        if (_mainMenu == null)
+            _mainMenu = UnityEngine.Object.FindFirstObjectByType<MainMenuUIManager>();
+        MainMenuUIManager? main = _mainMenu;
+        if (main?.mainMenuPanel == null || !IsHintPanelVisible(main.mainMenuPanel) ||
+            main.panels == null || main.panels.Count == 0 ||
+            main.panels.Peek().GetInstanceID() != main.mainMenuPanel.GetInstanceID())
+            return false;
+        UpdateWelcomeScreen(forceProbe: true);
+        // Keep native menu speech quiet during the focus handover. If the
+        // native template is unavailable, its first announcement will include
+        // the welcome text and recovery instructions before the menu item.
+        return WelcomeScreenRequired;
+    }
+
     // Called before the ordinary menu readers. The game's main-menu panel is
     // the signal that startup and the title screen are fully behind us.
-    private void UpdateWelcomeScreen()
+    private void UpdateWelcomeScreen(bool forceProbe = false)
     {
         _activeWelcomeMod = this;
         if (_welcomeOpen)
@@ -80,12 +102,11 @@ public sealed partial class BopItAccessMod
             return;
         }
 
-        if (_welcomeSuppressedUntilRestart ||
-            PlayerPrefs.GetInt(WelcomeDismissedPreferenceKey, 0) != 0)
+        if (!WelcomeScreenRequired)
             return;
 
         long now = Environment.TickCount64;
-        if (now < _nextWelcomeProbeAt)
+        if (now < _nextWelcomeProbeAt && !forceProbe)
             return;
         _nextWelcomeProbeAt = now + 250;
 
@@ -109,13 +130,15 @@ public sealed partial class BopItAccessMod
         }
         catch (Exception ex)
         {
-            if (now >= _nextWelcomeErrorAt)
-            {
-                _nextWelcomeErrorAt = now + 5000;
-                WriteStatus("Welcome screen could not open; will retry: " + ex);
-                MelonLoader.MelonLogger.Warning(
-                    "Welcome screen could not open; will retry: " + ex.Message);
-            }
+            // Do not strand the player behind a silent native menu or persist
+            // dismissal for a screen they could not use. Retry next launch.
+            _welcomeSuppressedUntilRestart = true;
+            _welcomeRecoveryIntro = L("Welcome message.") + " " +
+                ComposeWelcomeIntroText() + " " +
+                L("The welcome screen could not be displayed. You can open Mod Settings and the user's guide from Settings. The welcome screen will be tried again next time you launch the game.");
+            WriteStatus("Welcome screen could not open; continuing with spoken welcome: " + ex);
+            MelonLoader.MelonLogger.Warning(
+                "Welcome screen could not open; will retry next launch: " + ex.Message);
         }
     }
 
@@ -277,12 +300,23 @@ public sealed partial class BopItAccessMod
         }
 
         return L("Welcome to Bop It Access! Thank you for installing this project.") +
-            " " + LF("Hints for every screen, including this one, are available at any time: {0} on keyboard or {1} on controller.",
+            " " + LF("Hints for every screen, including this one, are available at any time by pressing {0} on your keyboard, or {1} on your controller.",
                 LocalizeBindingDisplay(keyboard),
-                LocalizeBindingDisplay(controller)) + " " +
-            L("We recommend visiting Mod Settings to customize the experience before playing.") +
-            " " + L("If you need more help, a full user's guide is available.") +
+                WelcomeControllerBindingDisplay(controller)) + " " +
+            L("Before playing, feel free to visit Mod Settings to customize your experience, or jump right in with the defaults.") +
+            " " + L("A full user's guide is also built right in if you'd like additional help.") +
             " " + L("What would you like to do?");
+    }
+
+    private static string WelcomeControllerBindingDisplay(string controller)
+    {
+        if (controller.Equals("Right Stick Press", StringComparison.OrdinalIgnoreCase) ||
+            controller.Equals("RS Press", StringComparison.OrdinalIgnoreCase))
+            return L("Right Stick click");
+        if (controller.Equals("Left Stick Press", StringComparison.OrdinalIgnoreCase) ||
+            controller.Equals("LS Press", StringComparison.OrdinalIgnoreCase))
+            return L("Left Stick click");
+        return LocalizeBindingDisplay(controller);
     }
 
     private static void FormatWelcomeIntroRow(SettingsButton row)

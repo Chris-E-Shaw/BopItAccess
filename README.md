@@ -38,7 +38,7 @@ Voice=System default
 
 ## Project status
 
-This project is in early development. The GitHub repository contains source code and technical documentation. **There are no GitHub releases yet.** The source now also contains a Windows installer project. Until a release is published, its **Install** button explains that no release is available; **Install alpha** builds the latest main-branch commit from source.
+This project is essentially complete, and no major content or features are planned. It will be maintained as needed, with player feedback guiding improvements. The GitHub repository contains source code and technical documentation. **There are no GitHub releases yet.** The source now also contains a Windows installer project. Until a release is published, its **Install** button explains that no release is available; **Install alpha** builds the latest main-branch commit from source.
 
 The commit history includes reconstructed source snapshots of 37 earlier builds. The commits were created when those archives were imported into Git; their dates are not the original build dates. The [technical build history](BopItAccess-build-history.html) describes the work behind each snapshot.
 
@@ -108,6 +108,22 @@ Speak Menu Indexes is the saved menu-position toggle, enabled by default. It add
 
 Format Speech makes all-capitals menu text sound more natural and adds a pause before guide line numbers when the line ends without terminal punctuation. It affects speech and braille text only; visible game text and the HTML guide stay unchanged. This setting is On by default and keeps your earlier Filter Capitalisation choice. Switch it Off to receive the original text.
 
+### MelonLoader startup windows
+
+The supplied Loader.cfg template hides MelonLoader’s separate start screen and console. The installer applies the same two defaults automatically, before any alpha build preparation that needs to start the game. These settings do not skip the game’s title screen or the mod’s welcome screen.
+
+With the game closed, open `UserData/Loader.cfg` in the game folder. If it already exists, set `disable_start_screen` to true in its existing `[loader]` section and `hide_console` to true in its existing `[console]` section. Keep all other entries. If the file does not exist, copy the supplied `UserData/Loader.cfg` template from the build output, or `configuration/Loader.cfg` from the source. Never overwrite an existing Loader.cfg with the whole template.
+
+```ini
+[loader]
+disable_start_screen = true
+
+[console]
+hide_console = true
+```
+
+The mod does not reset these options on each launch. You may manually change either value back to false if you need the loader’s windows for troubleshooting. Installer uninstall restores the original values only while the installer’s true values are still present, preserving other loader configuration edits.
+
 ## Documentation
 
 - [Game and mod user's guide (English)](BopItAccess-user-guide.html) — a beginner-friendly walkthrough of controls, settings, menus, and play modes.
@@ -119,9 +135,23 @@ Format Speech makes all-capitals menu text sound more natural and adds a pause b
 
 Translated copies of all six documents above are in [`documentation/`](documentation/) under each supported language code. The source for them is English; `scripts/translate_documents.py` can regenerate the machine-translated drafts after source changes.
 
-## AI transparency
+## What may come next
 
-Christopher Shaw directs this project and evaluates its accessibility in the game. OpenAI Codex models have assisted with research, code, and documentation. Published commit messages include a `Co-authored-by` trailer identifying the model that contributed to each change; the historical credits were checked against this project's session records. The earlier build history was reconstructed from saved source archives rather than recorded as commits at the time. AI-assisted contributions can contain mistakes and should be reviewed before use.
+This project is essentially complete, and no major content or features are planned. However, this mod will be actively maintained and updated over time as needed, with player feedback driving these improvements. Potential future work includes further review and bug fixes, code refinement, and continued improvements to speech responsiveness. Prism creates a possible path to other platforms in the future, but this mod currently only supports Windows x64. The project repository is the place to follow further development.
+
+## AI Transparency Note
+
+This mod is vibe-coded. All code was completely generated and researched by artificial intelligence, with limited technical human understanding of its underlying architecture. Please use this mod at your own risk.
+
+That being said, every single mod feature and design decision was authored and approved by humans. Testing was never automated; it was carefully and extensively performed by real human players and testers.
+
+Please note: Multilingual text and documentation were generated by AI and have not been reviewed by native speakers. High translation inaccuracy is to be expected. Without agentic coding, this project would not exist. Thank you for giving it a chance!
+
+## Thank you
+
+To those who play tested this mod before release and helped get it to where it is now, thank you. Y'all know who you are. To the players who offer feedback, try the mod for the first time, or believe in me and this project, thank you. Your support motivates me to keep making things in a world that can feel crazy and deeply flawed. I hope this project makes it easier for you to enjoy the game and play with others. Thank you all so much. Enjoy Bop It!
+
+— Christopher Shaw
 
 ## Licensing
 
