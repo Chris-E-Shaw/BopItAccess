@@ -1,4 +1,4 @@
-Bop It Access 0.9.9 - Prism Sprache und Blindenschrift
+Bop It Access 0.9.10 - Prism Sprache und Blindenschrift
 
 Was das bewirkt
 --------------

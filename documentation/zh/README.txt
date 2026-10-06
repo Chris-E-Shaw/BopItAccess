@@ -1,4 +1,4 @@
-Bop It Access 0.9.9 - Prism 语音和盲文
+Bop It Access 0.9.10 - Prism 语音和盲文
 
 这是做什么的
 --------------

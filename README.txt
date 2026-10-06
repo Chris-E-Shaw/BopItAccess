@@ -1,4 +1,4 @@
-Bop It Access 0.9.9 - Prism Speech and Braille
+Bop It Access 0.9.10 - Prism Speech and Braille
 
 What this does
 --------------
