@@ -158,7 +158,13 @@
 <li>使用可感知取消的截止时间及大小检查限制元数据和下载；拒绝重复 ZIP 目标，验证实际解压长度并重用解压缓冲区。合并视觉进度，同时保留完整、可无障碍读取的状态记录。通过实际 .NET 6 运行时/引用标记文件识别兼容 SDK，不改动不完整的既有 SDK 目录。</li>
 <li>成功发布 Windows x64 自包含安装程序 0.1.5，诊断为 0。未运行安装、卸载、游戏启动、测试或基准测试。 <a href="BopItAccess-release-review.html">完整审查报告</a> 记录了剩余的恢复、权限及原生运行环境限制。关联 Mod 为 v0.9.8；没有发布 GitHub Release。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9fdca03288d817fdb92f043ebfe068b643a9e0a7">源代码提交</a> · 无 GitHub 发布版 · <a href="BopItAccess-release-review.html">完整审查报告</a></p></article>
-    </section>
+          <article class="commit" id="installer-0-1-6"><div class="meta"><span class="version">Installer 0.1.6 preview</span><span class="kind">feat · diagnostics · docs</span></div><h3>feat(installer)：记录本地诊断会话以改进安装流程</h3><ul>
+<li>在 %ProgramData%\BopItAccess\diagnostics 中自动保存UTF-8会话日志，记录安装程序和运行时版本、完整日期时间及已用时间。在可选择文本的状态日志旁添加 Save diagnostics（Alt+D）和 Copy diagnostics（Alt+C）。 Save diagnostics会持续更新所选文本文件，直到关闭安装程序，卸载期间也会继续记录。Copy diagnostics提供当前内容的快照。建议下次测试前先选择保存位置，以便在自动日志被清理后保留记录。</li>
+<li>记录操作和状态变化、进度阶段、清除敏感URL信息后的HTTP请求及结果、编译器输出和详细错误。排除URL查询字符串和嵌入的认证信息，不上传诊断内容。最多保留10个会话，每个不超过8 MiB。磁盘记录失败时使用内存和导出功能，不阻止安装。</li>
+<li>成功卸载的最终清理会删除属于安装程序的诊断文件，保留用户主动导出的副本。说明日志位置、查看及分享方法，以及可能包含的用户名和文件夹路径。Mod保持v0.9.11，已有审查报告保持不变。</li>
+<li>生成Windows x64自包含安装程序预览版0.1.6，警告和错误均为零。验证仅限编译和静态审查，未运行自动测试、安装、卸载或游戏。Mod保持v0.9.11，不发布GitHub版本。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/982f55ddb5bbca3bbaab51af5e0e9ab7e41b56a4">源码提交</a> · 未发布GitHub版本</p></article>
+</section>
 </main>
 <footer><div class="wrap"><p>37 个本地源档案用于重建公共源提交。安装包保留在本地并且不是 GitHub 版本。 v0.5.4重新绑定预览和v0.5.18 SAPI修剪实验被记录为历史实现；后来的条目说明了它们是如何改变的。</p><p><a href="#history">返回创建历史</a></p></div></footer>
 </body>

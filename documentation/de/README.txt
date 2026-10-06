@@ -440,3 +440,8 @@ hide_console = true
 Der Mod setzt diese Optionen nicht bei jedem Start zurück. Sie können jeden Wert manuell wieder auf „false“ ändern, wenn Sie die Fenster des Loaders zur Fehlerbehebung benötigen. Durch die Deinstallation des Installationsprogramms werden die ursprünglichen Werte nur dann wiederhergestellt, wenn die tatsächlichen Werte des Installationsprogramms noch vorhanden sind, wodurch andere Änderungen an der Loader-Konfiguration erhalten bleiben.
 
 Nach einer erfolgreichen Änderung kündigt der Mod die Eingabe und die ihr zugewiesene Aktion an, zum Beispiel „Space zugewiesen an KLOPFEN“.
+
+Diagnoseprotokolle des Installers
+---------------------------------
+
+Die Installer-Vorschau 0.1.6 speichert Diagnoseprotokolle automatisch lokal unter %ProgramData%\BopItAccess\diagnostics. Mit Save diagnostics (Alt+D) wählen Sie eine Textdatei, speichern die aktuelle Sitzung und lassen neue Einträge bis zum Schließen des Installers hinzufügen. Copy diagnostics (Alt+C) kopiert den aktuellen Stand. Wählen Sie Save diagnostics vor dem nächsten Installations- oder Deinstallationstest, damit die vollständige Aufzeichnung auch nach dem Entfernen der automatischen Protokolle erhalten bleibt. Aufgezeichnet werden Statusmeldungen, Fortschrittsschritte und Fehlerdetails. Es wird nichts hochgeladen. Prüfen Sie ein Protokoll vor dem Weitergeben: Es kann Windows-Benutzernamen und vollständige Ordnerpfade enthalten. Eine erfolgreiche Deinstallation entfernt die automatischen Protokolle; bewusst an anderer Stelle gespeicherte Kopien bleiben erhalten.

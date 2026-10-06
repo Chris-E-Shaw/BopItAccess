@@ -440,3 +440,8 @@ hide_console = true
 El mod no restablece estas opciones en cada inicio. Puede cambiar manualmente cualquiera de los valores a falso si necesita las ventanas del cargador para solucionar problemas. La desinstalación del instalador restaura los valores originales solo mientras los valores verdaderos del instalador aún están presentes, preservando otras ediciones de configuración del cargador.
 
 Después de un cambio exitoso, el mod anuncia la entrada y la acción a la que está asignado, por ejemplo, "Space asignado a PULSAR".
+
+Diagnósticos del instalador
+---------------------------
+
+La versión preliminar 0.1.6 del instalador guarda automáticamente registros de diagnóstico locales en %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permite elegir un archivo de texto, guarda la sesión actual y sigue agregando entradas hasta cerrar el instalador; Copy diagnostics (Alt+C) copia una instantánea. Elige Save diagnostics antes de la siguiente prueba de instalación o desinstalación para conservar el registro completo aunque se eliminen los registros automáticos. Los registros incluyen mensajes de estado, etapas del progreso y detalles de errores. No se envía nada a Internet. Revisa un registro antes de compartirlo: puede contener nombres de usuario de Windows y rutas completas de carpetas. Una desinstalación exitosa elimina los registros automáticos; las copias que guardes intencionalmente en otro lugar se conservan.

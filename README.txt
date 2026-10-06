@@ -465,3 +465,8 @@ hide_console = true
 The mod does not reset these options on each launch. You may manually change either value back to false if you need the loader’s windows for troubleshooting. Installer uninstall restores the original values only while the installer’s true values are still present, preserving other loader configuration edits.
 
 After a successful change, the mod announces the input and the action it is assigned to, for example, “Space assigned to Bop.”
+
+Installer diagnostics
+---------------------
+
+Installer preview 0.1.6 automatically keeps local diagnostic logs in %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) chooses a text file, saves the current session and keeps adding entries until the installer closes; Copy diagnostics (Alt+C) copies a current snapshot. Choose Save diagnostics before the next installation or uninstall test so the full recording survives removal of the automatic logs. Recording includes status messages, progress milestones and error details; nothing is uploaded. Inspect a log before sharing it: it can include Windows usernames and full folder paths. Successful uninstall removes the automatic logs, but copies you deliberately save elsewhere remain.

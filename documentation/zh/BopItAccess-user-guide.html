@@ -189,6 +189,7 @@ hide_console = true</code></pre><p>该模组不会在每次启动时重置这些
 <h3>使用提供的安装程序预览</h3><div class="current"><p>关闭游戏，运行安装程序，并批准Windows’管理员提示。它在可用驱动器中搜索 Steam 个库。如果需要，请使用“浏览”选择游戏文件夹。它的状态字段是只读的：使用 Tab 键切换到它并使用光标键或选择并复制文本来查看其操作。进度条报告当前步骤。</p><p>如果存在最新的公共模组版本，安装会下载该版本。在此之前，仅当您愿意测试最新源时才使用 Install alpha：确认其警告，让它准备缺少的依赖项并编译 mod，然后等待成功消息。 alpha路线可能会打开游戏准备构建参考；当询问时关闭该游戏窗口，以便安装程序可以继续。</p><p>安装程序根据需要获取官方 MelonLoader 0.7.3、Prism 0.18.3 和便携式 .NET 6 SDK。它使用上面显示的两个配置标志隐藏 MelonLoader 自己的开始屏幕和控制台。更新使用 GitHub，无需新下载的安装程序。中止请求确认并撤消安装的更改。</p><p>可通过安装程序和 Windows 已安装的应用 卸载。它会删除自身拥有的 Mod 文件和 Bop It Access 偏好设置，包括 <code>UserData/BopItAccess.ini</code>、较旧的 <code>UserData/BopItAccess.ini.tmp</code>、经过验证的 <code>BopItAccess.ini.&lt;GUID&gt;.tmp</code> 残留文件（位于 <code>UserData</code>），以及已知 Mod 日志，包括 <code>Mods/BopItAccess.log.previous</code>。这里的 GUID 必须恰好为不带连字符的 32 个十六进制字符；保留无关文件。原生游戏偏好设置、无关 Mod 和 .NET SDK 保留。加载器配置清理仅恢复安装程序设定且未被改动的目标标记，保留其他编辑。若无法安全完成清理，状态日志和完成消息会说明原因。对于安装程序管理的副本，Windows 条目、卸载启动器及清理检查点会保留至清理成功，以便重试。较旧的手动安装没有持久所有权记录；其警告可在打开的安装程序中重试。</p></div>
 
 
+<div class="current" id="installer-diagnostics"><h3>安装程序诊断日志</h3><p>安装程序预览版0.1.6会自动将本地诊断日志保存到 %ProgramData%\BopItAccess\diagnostics。选择 Save diagnostics（Alt+D）可指定文本文件，立即保存当前会话，并持续添加新记录直到关闭安装程序。Copy diagnostics（Alt+C）仅复制按下时的内容。下次测试安装或卸载前，请先选择 Save diagnostics。这样，即使自动日志被删除，也能保留完整记录。 日志包含状态消息、进度阶段和错误详情，不会上传到网络。分享前请检查内容：日志可能包含Windows用户名和完整文件夹路径。成功卸载后会删除自动日志，但您主动保存到其他位置的副本会保留。</p></div>
 </section>
 <section id="controls">
 <h2>玩家操作一览</h2>

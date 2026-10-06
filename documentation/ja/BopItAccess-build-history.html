@@ -158,7 +158,13 @@
 <li>キャンセルを認識する期限とサイズ確認でメタデータ・ダウンロードに上限を設けます。重複する ZIP 展開先を拒否し、実際の展開長を確認し、展開バッファーを再利用します。視覚進捗をまとめながら、アクセシブルなステータス記録を完全に維持します。実際の .NET 6 ランタイム・参照マーカーファイルで互換 SDK を認識し、不完全な既存 SDK ディレクトリは変更しません。</li>
 <li>Windows x64 の自己完結型インストーラー 0.1.5 を診断 0 件で正常に publish します。インストール、アンインストール、ゲーム起動、テスト、ベンチマークは実施していません。 <a href="BopItAccess-release-review.html">レビュー報告書全文</a> には、復旧、アクセス許可、ネイティブ実行環境の残る制約を記録しています。対応する Mod は v0.9.8 です。GitHub Release は公開していません。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9fdca03288d817fdb92f043ebfe068b643a9e0a7">ソースコミット</a> · GitHub リリースなし · <a href="BopItAccess-release-review.html">レビュー報告書全文</a></p></article>
-    </section>
+          <article class="commit" id="installer-0-1-6"><div class="meta"><span class="version">Installer 0.1.6 preview</span><span class="kind">feat · diagnostics · docs</span></div><h3>feat(installer): インストール改善に向けてローカル診断を記録</h3><ul>
+<li>%ProgramData%\BopItAccess\diagnostics にUTF-8のセッションログを自動保存。インストーラーとランタイムのバージョン、完全な日時、経過時間を記録する。選択可能な状態ログの横にSave diagnostics（Alt+D）とCopy diagnostics（Alt+C）を追加。 Save diagnosticsは、アンインストール中も含め、インストーラーを閉じるまで選択したテキストファイルを更新する。Copy diagnosticsは現在の内容をコピーする。次の確認の前に保存先を選び、自動ログの削除後も記録を残せるよう案内する。</li>
+<li>処理と状態の変化、進捗の節目、不要な情報を除いたHTTPリクエストと結果、コンパイラー出力、詳細なエラーを記録。URLのクエリ文字列と埋め込まれた認証情報は除外し、診断情報をアップロードしない。最大10セッション、各8 MiBまで保持する。ディスクへの記録が失敗しても、メモリと書き出しを利用してインストールを妨げない。</li>
+<li>アンインストールの正常完了時に所有する診断ファイルを削除し、意図的に書き出したコピーは残す。保存場所、確認方法、共有方法と、ユーザー名やフォルダーパスが含まれる可能性を文書化。Modはv0.9.11のまま、既存のレビューレポートは変更しない。</li>
+<li>Windows x64向け自己完結型インストーラープレビュー0.1.6を警告・エラーなしで生成。確認はコンパイルと静的レビューに限定し、自動テスト、インストール・アンインストールの実行、ゲームの起動は行っていない。Modはv0.9.11のままで、GitHubリリースは公開しない。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/982f55ddb5bbca3bbaab51af5e0e9ab7e41b56a4">ソースコミット</a> · GitHubリリースなし</p></article>
+</section>
 </main>
 <footer><div class="wrap"><p>37 のローカル ソース アーカイブは、パブリック ソースのコミットを再構築するために使用されました。インストール パッケージはローカルに残り、GitHub リリースではありません。 v0.5.4 の再バインド プレビューと v0.5.18 SAPI トリム実験は、履歴実装として記録されます。後のエントリには、それらがどのように変更されたかが記載されています。</p><p><a href="#history">ビルド履歴に戻る</a></p></div></footer>
 </body>

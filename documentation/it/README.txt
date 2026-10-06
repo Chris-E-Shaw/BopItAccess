@@ -440,3 +440,8 @@ hide_console = true
 La mod non ripristina queste opzioni ad ogni lancio. Puoi modificare manualmente uno dei due valori su false se hai bisogno delle finestre del caricatore per la risoluzione dei problemi. La disinstallazione del programma di installazione ripristina i valori originali solo mentre i valori reali del programma di installazione sono ancora presenti, preservando le altre modifiche alla configurazione del caricatore.
 
 Dopo una modifica riuscita, il mod annuncia l'input e l'azione a cui è assegnato, ad esempio "Space assegnato a COLPISCI".
+
+Diagnostica del programma di installazione
+------------------------------------------
+
+L’anteprima 0.1.6 del programma di installazione salva automaticamente registri diagnostici locali in %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permette di scegliere un file di testo, salva la sessione corrente e continua ad aggiungere nuove voci fino alla chiusura del programma; Copy diagnostics (Alt+C) copia un’istantanea. Scegli Save diagnostics prima della prossima prova di installazione o disinstallazione per conservare l’intera registrazione anche dopo la rimozione dei registri automatici. I registri includono messaggi di stato, fasi di avanzamento e dettagli degli errori. Non viene caricato nulla online. Controlla un registro prima di condividerlo: può contenere nomi utente Windows e percorsi completi delle cartelle. Una disinstallazione completata rimuove i registri automatici; le copie salvate volontariamente altrove restano.

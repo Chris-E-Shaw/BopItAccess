@@ -440,3 +440,8 @@ hide_console = true
 El mod no restablece estas opciones en cada inicio. Puede cambiar manualmente cualquiera de los valores a falso si necesita las ventanas del cargador para solucionar problemas. La desinstalación del instalador restaura los valores originales solo mientras los valores verdaderos del instalador aún están presentes, preservando otras ediciones de configuración del cargador.
 
 Después de un cambio exitoso, el mod anuncia la entrada y la acción a la que está asignado, por ejemplo, "Space asignado a GOLPEAR".
+
+Diagnósticos del instalador
+---------------------------
+
+La versión preliminar 0.1.6 del instalador guarda automáticamente registros de diagnóstico locales en %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permite elegir un archivo de texto, guarda la sesión actual y sigue añadiendo entradas hasta cerrar el instalador; Copy diagnostics (Alt+C) copia una instantánea. Selecciona Save diagnostics antes de la siguiente prueba de instalación o desinstalación para conservar el registro completo aunque se eliminen los registros automáticos. Se registran mensajes de estado, etapas del progreso y detalles de errores. No se sube nada a Internet. Revisa el registro antes de compartirlo: puede contener nombres de usuario de Windows y rutas completas de carpetas. Una desinstalación correcta elimina los registros automáticos; las copias guardadas deliberadamente en otro lugar permanecen.

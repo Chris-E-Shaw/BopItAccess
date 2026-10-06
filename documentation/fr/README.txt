@@ -440,3 +440,8 @@ hide_console = true
 Le mod ne réinitialise pas ces options à chaque lancement. Vous pouvez redéfinir manuellement l’une ou l’autre valeur sur false si vous avez besoin des fenêtres du chargeur pour le dépannage. La désinstallation du programme d'installation restaure les valeurs d'origine uniquement tant que les vraies valeurs du programme d'installation sont toujours présentes, préservant ainsi les autres modifications de configuration du chargeur.
 
 Après un changement réussi, le mod annonce l'entrée et l'action à laquelle elle est affectée, par exemple « Space attribué à TAPER ».
+
+Diagnostics du programme d’installation
+---------------------------------------
+
+L’aperçu 0.1.6 du programme d’installation conserve automatiquement des journaux de diagnostic locaux dans %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permet de choisir un fichier texte, y enregistre la session actuelle et continue d’ajouter les nouvelles entrées jusqu’à la fermeture de l’installateur ; Copy diagnostics (Alt+C) copie un instantané. Choisissez Save diagnostics avant le prochain essai d’installation ou de désinstallation pour conserver l’enregistrement complet même après la suppression des journaux automatiques. Les journaux comprennent les messages d’état, les étapes de progression et les détails des erreurs. Rien n’est envoyé en ligne. Vérifiez un journal avant de le partager : il peut contenir des noms d’utilisateur Windows et des chemins de dossiers complets. Une désinstallation réussie supprime les journaux automatiques ; les copies enregistrées volontairement ailleurs sont conservées.

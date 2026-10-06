@@ -440,3 +440,8 @@ hide_console = true
 O mod não redefine essas opções a cada inicialização. Você pode alterar manualmente qualquer valor de volta para falso se precisar das janelas do carregador para solução de problemas. A desinstalação do instalador restaura os valores originais apenas enquanto os valores verdadeiros do instalador ainda estão presentes, preservando outras edições de configuração do carregador.
 
 Após uma alteração bem-sucedida, o mod anuncia a entrada e a ação à qual está atribuído, por exemplo, “Space atribuído a BATER”.
+
+Diagnósticos do instalador
+--------------------------
+
+A prévia 0.1.6 do instalador salva automaticamente registros de diagnóstico locais em %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permite escolher um arquivo de texto, salva a sessão atual e continua acrescentando entradas até o instalador fechar; Copy diagnostics (Alt+C) copia um retrato do momento atual. Escolha Save diagnostics antes do próximo teste de instalação ou desinstalação para preservar o registro completo mesmo após a remoção dos registros automáticos. Os registros incluem mensagens de status, etapas do progresso e detalhes de erros. Nada é enviado pela internet. Confira o registro antes de compartilhá-lo: ele pode conter nomes de usuário do Windows e caminhos completos de pastas. Uma desinstalação bem-sucedida remove os registros automáticos; cópias salvas intencionalmente em outro local permanecem.
