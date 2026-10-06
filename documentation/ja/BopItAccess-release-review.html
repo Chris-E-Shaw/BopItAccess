@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+<html lang="ja"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Bop It Access — リリース準備コードレビュー</title><style>body{max-width:1100px;margin:2rem auto;padding:0 1rem;font:17px/1.6 system-ui,sans-serif;color:#17202a;background:#fff}a{color:#0756a4}table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #aab4bd;padding:.65rem;vertical-align:top;text-align:left}th{background:#eef3f7}code{overflow-wrap:anywhere}h2{margin-top:2.5rem}a:focus{outline:3px solid #6a35ad} @media(prefers-color-scheme:dark){body{color:#eee;background:#121820}th{background:#263442}a{color:#8fc9ff}}</style></head><body><header><h1>Bop It Access：リリース準備コードレビュー</h1><p>Mod 0.9.8 およびインストーラープレビュー 0.1.5。予定されている 1.0 リリースに向け、Christopher Shaw のために 2026 年 10 月 7 日に作成。</p><nav aria-label="目次" id="contents-nav"><ul><li><a href="#scope">対象範囲と方法</a></li>
+<li><a href="#findings">指摘事項と変更</a></li>
+<li><a href="#preserved">意図的に維持した動作とコード</a></li>
+<li><a href="#validation">コンパイルと実用上の制約</a></li>
+<li><a href="#inventory">レビュー対象ファイル一覧</a></li>
+</ul></nav></header><main><section id="scope"><h2>対象範囲と方法</h2><p>静的レビューでは、Mod とインストーラーのすべての C# ソースファイル、アンインストールスクリプト、プロジェクトのビルド定義、設定テンプレート、文書・カタログ作成スクリプトを対象としました。所有権、終了処理、並行処理、ナビゲーションと再割り当ての遷移、破損ファイル、ネイティブのフォールバック経路、フレームごとの処理、繰り返される状態確認、未使用コードを検討しました。並行して作業したレビュアーは音声・オーディオ・画面、入力・設定・ツール、インストール・復旧を担当し、統括レビュアーはルーティング、ヒント、ガイドのナビゲーション、Mod Settings、ウェルカム処理を担当しました。統合後の変更には 2 回目のソースレビューを行いました。</p><p>これはコードレビューとコンパイルの記録です。今回の変更について、ゲームの実行、インストーラーの操作、アンインストールの操作、自動テストスイート、性能ベンチマークは実施していません。過去の人によるテストは有用ですが、このリファクタリングの実行時の動作を証明するものではありません。</p></section>
+<section id="findings"><h2>指摘事項と変更</h2><table><caption>レビューの指摘事項と対応</caption><thead><tr><th scope="col">領域</th><th scope="col">指摘事項</th><th scope="col">変更と理由</th><th scope="col">ソースファイル</th></tr>
+</thead><tbody><tr><th scope="row">音声ワーカーの継続動作</th><td>起動時の出力や通常の音声バッチで例外が発生すると、そのセッションの残りの期間、ワーカーが停止する可能性がありました。</td><td>バッチごとに出力処理の失敗を捕捉し、エラーの記録頻度を制限して、次の要求を処理します。Prism の初期化に失敗した場合は、終了要求を認識する待機を挟み、5 秒ごとに再試行します。</td><td><code>src/BopItAccessMod.cs</code></td></tr>
+<tr><th scope="row">自動スコア読み上げの保護</th><td>出力エラーにより、メニューの読み上げが保留中のスコア保護の解除を待ち続ける可能性がありました。同じバッチ内で後から発生したエラーによって、すでに受理したスコアの保護を解除してはいけません。</td><td>スコアの出力が完了前に失敗し、より新しいスコアが保留されていない場合にのみ保護を解除します。受理済みの自動スコアの保護は維持します。</td><td><code>src/BopItAccessMod.cs</code><br/><code>src/BopItAccessMod.GameOver.cs</code></td></tr>
+<tr><th scope="row">終了処理の分離</th><td>設定保存、オーディオ、フィルターの例外により、ワーカーへ終了シグナルを送れない可能性がありました。静的フックや入力アセットが古い Mod を保持し続ける可能性もありました。</td><td>最初に終了を通知し、保留中の音声を無効化します。各クリーンアップ処理を分離し、結果リスナーを解除し、所有するフック参照を消去して、所有する入力リソースを解放します。ワーカーの待機は最大 500 ミリ秒とし、ネイティブ音声の破棄はその専用スレッドで行います。</td><td><code>src/BopItAccessMod.cs</code><br/><code>src/BopItAccessMod.Controls.cs</code><br/><code>src/BopItAccessMod.FirstRunAudio.cs</code><br/><code>src/BopItAccessMod.Calibration.cs</code><br/><code>src/BopItAccessMod.ResultRank.cs</code></td></tr>
+<tr><th scope="row">Prism のネイティブリソース所有権</th><td>初期化失敗時に不完全なコンテキストや重複したレジストリ候補が残る可能性がありました。バックエンドの検査中の例外により、ハンドルが漏れる可能性もありました。</td><td>起動を試みるたびに候補を消去し、不完全なコンテキスト状態をクリーンアップし、レジストリ列挙に上限を設けます。拒否された、または失敗したバックエンド検査のリソースを finally ブロックで解放します。</td><td><code>src/BopItAccessMod.PrismBackend.cs</code></td></tr>
+<tr><th scope="row">一時的な音声設定の失敗</th><td>ネイティブの音声やパラメーターの設定が失敗しても、正常に適用されたものとして記憶される可能性がありました。</td><td>対応する設定処理が成功した後にのみ成功を記録します。アナウンスのたびに再試行するのではなく、上限のある遅延後に失敗した設定を再試行します。OneCore と SAPI のプロファイルは別々に維持します。</td><td><code>src/BopItAccessMod.PrismBackend.cs</code></td></tr>
+<tr><th scope="row">カスタム再割り当ての分離</th><td>テンプレート入力アセットと PlayerInput の実行時コピーは別のものになる場合があります。テンプレートのみを無効化すると、新しい割り当てを取得中でも実際の決定とナビゲーションが有効なままになります。</td><td>両方のコピーで有効なアクションを正確に記録し、関連アクションを一時停止してから、記録したアクションのみを復元します。カスタム入力取得の重複を拒否し、決定入力が離されるまで再有効化を待ち、取得したフレームのグローバルショートカットを抑制します。</td><td><code>src/BopItAccessMod.Controls.cs</code><br/><code>src/BopItAccessMod.LeaderboardControlsRebind.cs</code></td></tr>
+<tr><th scope="row">再割り当てのクリーンアップ</th><td>Cancel または Dispose の例外により、ナビゲーションの復元が省略される可能性がありました。複数のカスタム操作で同じライフサイクルコードが繰り返されていました。</td><td>7 つのカスタム操作で入力取得のクリーンアップを共有します。元のオーバーライドの復元、キャンセル、破棄、アクションの復元を個別に保護します。置き換え済みで未使用の重複確認ヘルパーを削除し、Toggle Speech にフォーカス読み上げの経路を使用し、終了時には Mod が作成した 5 つの入力アセットのみを破棄します。</td><td><code>src/BopItAccessMod.Controls.cs</code><br/><code>src/BopItAccessMod.DescriptionControls.cs</code><br/><code>src/BopItAccessMod.ScoreControls.cs</code><br/><code>src/BopItAccessMod.SpeakHintsControls.cs</code><br/><code>src/BopItAccessMod.ToggleSpeechControls.cs</code><br/><code>src/BopItAccessMod.ChangeSpeechOutputControls.cs</code><br/><code>src/BopItAccessMod.ResetGyroControls.cs</code><br/><code>src/BopItAccessMod.LeaderboardControlsRebind.cs</code></td></tr>
+<tr><th scope="row">ネイティブ入力の重複</th><td>ネイティブ再割り当てが競合を受け入れ、別のアクションを消去する場合があります。これは、競合を拒否して元の割り当てを維持するという方針に反します。</td><td>基準となるスナップショットを使用して、新たに発生した競合を拒否し、以前の割り当てを復元します。意図的に共有されているネイティブの既定割り当てと、変更されていない修飾キーの組み合わせは維持します。</td><td><code>src/BopItAccessMod.BindingConflicts.cs</code></td></tr>
+<tr><th scope="row">設定内の割り当ての検証</th><td>合成 anyKey パスや別名のデバイス・キー名により、物理入力の検証や競合比較を回避できる場合がありました。</td><td>合成の全入力対象割り当てを拒否し、物理キーボードの別名を正規化し、デバイス間で汎用ゲームパッドパスを認識します。</td><td><code>src/BopItAccessMod.ConfigPreferences.cs</code><br/><code>src/BopItAccessMod.ConfigBindings.cs</code><br/><code>src/BopItAccessMod.DescriptionControls.cs</code></td></tr>
+<tr><th scope="row">編集可能な設定の安全性</th><td>開く前にファイルサイズを確認すると競合の余地が残ります。共通の一時ファイル名は別の書き込み処理と衝突する可能性があります。キャッシュされた Unity マネージャーはシーンの切り替えで破棄される場合があります。</td><td>開いたファイルからの読み込みと書き込む UTF-8 出力を 1 メガバイトに制限します。固有の <code>BopItAccess.ini.&lt;GUID&gt;.tmp</code> ファイルを <code>CreateNew</code> 指定で開き、アトミックな置換を行います。破棄された Unity マネージャーは再取得します。読み取れないファイル、コメント、未知のキー、外部からの編集を維持します。</td><td><code>src/SettingsConfigFile.cs</code><br/><code>src/BopItAccessMod.SettingsConfig.cs</code></td></tr>
+<tr><th scope="row">フォーカスのルーティング</th><td>9 つの画面リーダーで、増え続ける表示状態の確認と復旧ブロックが繰り返されていました。</td><td>キャッシュされた順序付きルート表を使用し、単一の担当フラグ、ルートごとに頻度制限したエラー、既存の復旧・リセットコールバックを使います。画面の優先順位と新規訪問時のアナウンスは維持します。</td><td><code>src/BopItAccessMod.cs</code></td></tr>
+<tr><th scope="row">ヒント入力の追跡</th><td>無効なアクションが現在の入力として扱われる可能性がありました。更新時には 0.25 秒ごとに新しい集合が割り当てられ、再割り当てや切断の後でアナログ入力のデバイスパス状態が増大する可能性がありました。</td><td>有効で明示的に割り当てられたアクションを追跡し、集合を再利用します。アナログ状態のキーにはコントロールを使用し、古いコントロールを取り除きます。カスタム再割り当ての状態を共有し、未使用のヒント動詞パラメーターと重複した書式処理を削除します。</td><td><code>src/BopItAccessMod.ButtonHintTimer.cs</code><br/><code>src/BopItAccessMod.ButtonHintBindings.cs</code><br/><code>src/BopItAccessMod.HintsType.cs</code></td></tr>
+<tr><th scope="row">メニューとローカライズの処理負荷</th><td>変更のない複数の画面で、フレームごとにシグネチャ、結果リスト、選択可能項目リストを再構築したり、すべての翻訳断片を検索したりしていました。</td><td>結果リストを再利用し、ランキングのシグネチャは行データに変更がある場合のみ更新します。曲選択のコントロールは必要なときだけ数え、翻訳断片は先頭文字でグループ化します。ポーリング間隔と最長一致優先の翻訳照合を維持します。</td><td><code>src/BopItAccessMod.GameOver.cs</code><br/><code>src/BopItAccessMod.OneOnOneFeedback.cs</code><br/><code>src/BopItAccessMod.TrackSelect.cs</code><br/><code>src/BopItAccessMod.Leaderboards.cs</code><br/><code>src/BopItAccessMod.Localization.cs</code></td></tr>
+<tr><th scope="row">フォールバックパネル</th><td>フォーカスが変わらなくても、ラベルとインデックスが繰り返し走査されていました。汎用スライダーとスクロールバーでは、範囲が一貫して含まれていませんでした。</td><td>フォーカスが同じ場所にある間は、変化する値のみを読み取ります。フォーカスの遷移時にラベルとインデックスを構築し、汎用スライダーとスクロールバーに種類、値、必要に応じた範囲のフィードバックを適用します。</td><td><code>src/BopItAccessMod.UncoveredPanels.cs</code></td></tr>
+<tr><th scope="row">ガイド解析の上限</th><td>再帰的な HTML 走査は、破損した入れ子構造によりスタックをあふれさせる可能性があります。ファイル、トークン、トピックの無制限処理はリソースを使い果たす可能性があります。セクション検索では文書全体を繰り返し検索していました。</td><td>反復的な走査、セクション ID の検索表、および明示的な上限を使用します。上限は 4 メガバイト、50,000 トークン、入れ子 128 階層、256 トピック、読み上げ 20,000 行です。展開中に行数制限を適用し、単語走査を逐次処理し、空白のない長いテキストを書記素境界で分割します。正規表現にタイムアウトを追加し、属性名を先頭または空白の境界に固定して、 <code>id</code> が <code>data-id</code>に一致しないようにします。ローカライズ版から英語へのフォールバックを維持します。</td><td><code>src/BopItAccessMod.GuideReader.cs</code></td></tr>
+<tr><th scope="row">ガイドの遷移</th><td>トピックを非表示にした後の例外により、プレイヤーがトピックメニューを使えなくなる可能性がありました。破棄された Unity ラッパーでも、マネージドコード内では非 null のままになる場合があります。</td><td>ページを開けなかった場合はトピックパネルを復元し、部分的に表示されたページを隠します。存在しないパネル・行を保護し、古いルートを無効化する前に Unity の状態を考慮した確認を行います。</td><td><code>src/BopItAccessMod.GuideReader.cs</code></td></tr>
+<tr><th scope="row">ウェルカムとリセットの保護</th><td>ウェルカムの Back フックでの例外がネイティブの Back アクションに影響する可能性があります。メニューが失われた後もリセット確認が残ってはいけません。</td><td>Mod のフックが失敗した場合はネイティブの Back を許可します。終了時にはこのインスタンスのみを消去します。Mod Settings がパネルスタックから外れたら、両方の確認状態をキャンセルします。</td><td><code>src/BopItAccessMod.Welcome.cs</code><br/><code>src/BopItAccessMod.WelcomeTransitions.cs</code><br/><code>src/BopItAccessMod.SpeechMenu.cs</code></td></tr>
+<tr><th scope="row">設定値と初回起動の検出</th><td>オーディオ・FPS コールバックで設定値の処理が失敗すると、Unity のイベントディスパッチの外に例外が伝播する可能性がありました。OneCore またはウェルカムのマーカーのみがある旧インストールを、新規と判断する可能性もありました。</td><td>読み込みと保存を保護し、一時的な読み込み失敗を再試行します。保存が失敗してもセッション内の値を有効に保ち、追加の既存インストールマーカーを認識します。既存の既定値と INI キーは維持します。</td><td><code>src/BopItAccessMod.FirstRunAudio.cs</code><br/><code>src/BopItAccessMod.BackgroundAudio.cs</code><br/><code>src/BopItAccessMod.FpsLimit.cs</code></td></tr>
+<tr><th scope="row">オーディオフィルターの付け替え</th><td>ゲームがメニュー音楽イベントを置き換えた後も、ガイドのフィルターが古いイベントに付いたままになる可能性がありました。</td><td>ガイドが開いている間はイベントを 1 秒に 1 回確認し、置き換わったイベントにフィルターを再適用します。可能なら古いイベントを元に戻します。</td><td><code>src/BopItAccessMod.GuideMusicFilter.cs</code></td></tr>
+<tr><th scope="row">クレジットのフォールバック完了</th><td>視覚情報に基づくフォールバックが、残りのすべての行をキューに入れた後も、完了を繰り返し記録する可能性がありました。</td><td>残りのクレジットをキューに入れた後、そのフォールバックを完了済みとします。手動ナビゲーションと既存のフォールバック順序は維持します。</td><td><code>src/BopItAccessMod.Credits.cs</code></td></tr>
+<tr><th scope="row">診断の上限</th><td>ステータスログの増大に上限がありませんでした。Release ビルドでも、詳細なコントローラー調査が毎フレーム走査して記録していました。</td><td>現在のログを 8 メガバイトでローテーションし、前のログを 1 つ残します。個々のエントリに上限を設け、ログパスをキャッシュします。詳細なメニュー入力診断は Debug ビルドで利用可能にし、通常のステータス・エラーログは Release に維持します。</td><td><code>src/BopItAccessMod.cs</code><br/><code>src/BopItAccessMod.MenuInputDiagnostics.cs</code></td></tr>
+<tr><th scope="row">インストーラー操作の所有権</th><td>複数のインストーラーが共有ジャーナルで競合する可能性がありました。起動時の検出・復旧、変更可能なパス、Abort 確認中の操作完了、遅延した UI コールバックも、削除や終了と重なる可能性がありました。</td><td>インストーラーウィンドウと最終クリーンアップにグローバルな名前付きミューテックスを使用し、サービス操作をアトミックに確保し、初期化完了まで処理を制限します。前提条件の処理や削除の前に、選択パスをマニフェストと照合します。確認後に Abort の操作 ID を確認し、破棄済みコントロールへの遅延コールバックを保護します。インストールされているアプリ からのアンインストールではオンラインのリリース確認を省略します。</td><td><code>installer/Program.cs</code><br/><code>installer/InstallerService.cs</code><br/><code>installer/InstallerForm.cs</code><br/><code>installer/GameLocator.cs</code><br/><code>installer/uninstall.ps1</code></td></tr>
+<tr><th scope="row">インストーラーのキャンセルと復旧</th><td>キャンセル後もコンパイラープロセスが動作し続ける可能性がありました。ジャーナルに未検証の復旧パスを指定でき、後続の失敗によってインストーラーがすでに復元したファイルを拒否する可能性もありました。</td><td>クリーンアップの前にコンパイラーを終了させ、その終了を待ちます。既存ローダーがある場合も含め、生成が必要な場合は生成ツリーの元の内容と名前を記録し、ロールバック時に変更・削除された元の内容を復元します。正確なジャーナル GUID、トランザクションルート、バックアップパス、リンクされた末端の対象を検証します。復元済みファイルは、検証した元のハッシュと一致する場合のみ受け入れます。</td><td><code>installer/InstallTransaction.cs</code><br/><code>installer/SdkAndBuild.cs</code><br/><code>installer/UninstallManager.cs</code></td></tr>
+<tr><th scope="row">アンインストールの再試行と共有ファイル</th><td>設定値のクリーンアップ警告が残っていても、修復用ランチャーを削除する可能性がありました。サブフォルダー内の他の Mod を認識していませんでした。ログのローテーションや固有の設定残存ファイルにも対応していませんでした。</td><td>管理対象のクリーンアップが終わるまで、Windows の登録、ランチャー、台帳、永続的なファイル削除チェックポイントを保持します。入れ子の他の Mod を検出し、フォルダーがリンクされている場合や読み取れない場合はローダーを維持します。既知のローテーションログと、有効な 32 桁の 16 進 GUID 設定残存ファイルのみを削除します。最終自己クリーンアップでは、完了フラグ、ミューテックスの所有権、正確な状態フォルダー、すべての子孫のリンクを確認します。</td><td><code>installer/InstallManifest.cs</code><br/><code>installer/UninstallManager.cs</code><br/><code>installer/InstallerService.cs</code><br/><code>installer/InstallerForm.cs</code><br/><code>installer/uninstall.ps1</code></td></tr>
+<tr><th scope="row">インストーラーの進捗とネットワークの上限</th><td>頻繁なバイト・ファイルのコールバックが UI キューをあふれさせる可能性がありました。ネットワーク処理には明示的な期限と、長さ不明の場合に意味のある進捗表示が必要でした。</td><td>同じ手順の中間的な視覚進捗を毎秒最大 10 回にまとめ、完全なステータス記録を維持します。メタデータを 30 秒、1 メガバイトに制限し、ダウンロードには更新可能な無通信期限 60 秒と 4 ギガバイトのサイズ上限を設けます。最終対象に HTTPS を必須とし、重複する ZIP 展開先を拒否し、展開された長さを確認して、1 つの展開バッファーを再利用します。実際のランタイム・参照マーカーで互換 SDK を認識し、次も含めます： <code>DOTNET_ROOT_X64</code>.</td><td><code>installer/NetworkAndArchives.cs</code><br/><code>installer/InstallerService.cs</code><br/><code>installer/SdkAndBuild.cs</code></td></tr>
+<tr><th scope="row">文書・カタログ作成ツール</th><td>古い Prism 文書移行が現在の OneCore の記述を上書きする可能性がありました。カタログの再生成がレビュー済みの翻訳を上書きし、破損した保護対象翻訳トークンを書き込む可能性もありました。</td><td>旧移行には明示的な有効化を必須とし、既定では既存カタログ項目を維持します。破損した翻訳出力は文書へ書き込む前に拒否します。</td><td><code>scripts/generate_speech_catalogs.py</code><br/><code>scripts/translate_documents.py</code><br/><code>scripts/upgrade_speech_catalogs_google.py</code><br/><code>scripts/polish_prism_documents.py</code></td></tr>
+<tr><th scope="row">キャンセルされた入力取得の復元</th><td>完了した操作がフレームのポーリング前に候補を適用する場合があります。その後で行を閉じたり置き換えたりすると、未検証のオーバーライドが残る可能性がありました。</td><td>キャンセルされた入力取得を解放する前に、必ず元のソースのオーバーライドの復元を試みます。復元エラーを封じ込め、破棄とナビゲーションの復旧を続行します。正常に検証されて完了した場合は、新しい割り当てを維持します。</td><td><code>src/BopItAccessMod.Controls.cs</code><br/><code>src/BopItAccessMod.LeaderboardControls.cs</code></td></tr>
+<tr><th scope="row">割り当て保存のロールバック</th><td>保存失敗後も Mod の設定値に候補が残る可能性がありました。保存前にネイティブ入力取得を解放すると、ソースのロールバックスナップショットを破棄し、実行時コピーを変更したままにしていました。</td><td>保存が例外を送出した場合、キーが存在しなかった状態も含めて以前の Mod 設定値を復元します。ネイティブの Reset Gyro・ランキング入力取得の状態を、 <code>SaveBindings</code> が成功するまで保持し、失敗時には以前の実行時オーバーライドを復元します。ネイティブゲームと Steam の保存には、両方の保存先をまたぐトランザクションが依然としてありません。</td><td><code>src/BopItAccessMod.Controls.cs</code><br/><code>src/BopItAccessMod.ResetGyroControls.cs</code><br/><code>src/BopItAccessMod.LeaderboardControlsRebind.cs</code></td></tr>
+<tr><th scope="row">ネイティブのロケール読み込み</th><td>破棄された、または一時的に利用できないネイティブの Settings ラッパーが、ロケール・起動処理の完了前に例外を送出する可能性がありました。</td><td>共通の保護された経路でネイティブのロケールを読み、エラー頻度を制限し、既存の起動タイムアウトとフォールバックを維持します。このコード修正では翻訳の文言を変更していません。</td><td><code>src/BopItAccessMod.Localization.cs</code><br/><code>src/BopItAccessMod.SpeechToggle.cs</code></td></tr>
+<tr><th scope="row">本体ゲーム削除後のアンインストール</th><td>アンインストール操作が本体ゲームの実行ファイル・データフォルダーに依存していたため、Steam でゲームを削除すると、残った管理対象 Mod のクリーンアップが表示されなくなる可能性がありました。</td><td>本体ゲームの有効性とは独立して、マニフェストで管理されているインストールを認識します。本体ゲーム削除後のクリーンアップを許可しますが、ドライブが利用不能、アクセス不能、またはパスが存在しないことを確認できない場合は記録を保持します。</td><td><code>installer/InstallerService.cs</code><br/><code>installer/InstallerForm.cs</code><br/><code>installer/UninstallManager.cs</code></td></tr>
+</tbody></table></section>
+<section id="preserved"><h2>意図的に維持した動作とコード</h2><ul><li>自動の最終スコア読み上げは優先順位を維持し、要求に応じたスコアの再読み上げは割り込み可能なままです。プレイ中にスコアは公開されません。</li>
+<li>音声と点字は引き続き Prism を使用します。自動モードは実行中のスクリーンリーダー、OneCore、SAPI の順に優先します。音声プロファイルは別々に維持します。</li>
+<li>メニューの既定値、保存設定キー、編集可能な INI 名、割り当て、ウェルカムを閉じる規則、翻訳されたプレイヤー向け文字列は互換性を維持します。</li>
+<li>以前の要望に従い、非表示の Trim Silence 実験はソースに残します。引き続きエンドユーザーは利用できません。誤って残った未使用コードとは扱いませんでした。</li>
+<li>過去のビルド記録、保存されたソースインポート、旧作成ツールは由来の記録として残します。古い移行はその記録を黙って削除せず、有効化を制限します。</li>
+<li>音声キュー、ネイティブのフォールバック確認、ロックの前後にある繰り返しの受付確認は、順序や並行状態変更を保護する場合に維持します。実装が短くなるだけでは、保護を削除する十分な理由になりません。</li>
+<li>生成されたゲームアセンブリとコンパイル済みの Mod・インストーラーファイルは Git の外に置きます。ビルド参照は引き続きプレイヤー自身のインストールを使用し、コピーを無効にします。</li>
+<li>静的レビューで欠陥を確認できなかったネイティブのゲームタイミング、キャリブレーションのスケジュール、スコアルール、翻訳文言には、推測による変更を行いませんでした。</li>
+</ul></section>
+<section id="validation"><h2>コンパイルと実用上の制約</h2><p id="build-result">統合後の .NET 6 x64 Mod 0.9.8 は、Release と Debug の両方で警告・エラー 0 件でコンパイルされました。Windows x64 の自己完結型インストーラー 0.1.5 は、最終ソース変更後、診断 0 件で publish を完了しました。このコンパイル成功は実行時の正しさを証明しません。このビルドについて、テスト、ゲームの実行、インストール、アンインストール、ベンチマークは実施していません。</p><p>Prism の P/Invoke 宣言を、固定した v0.18.3 の公開 C ヘッダーと比較しました。宣言の不一致は検出できますが、すべてのネイティブドライバー、スクリーンリーダー、音声、点字ディスプレイの動作を証明することはできません。</p><p>ネイティブ DLL のクラッシュや、ブロックしたドライバー呼び出しは、マネージドコードで常に復旧できるとは限りません。そのため、終了時の待機に上限を設け、別スレッドからコンテキストを解放しないようにしています。失敗した音声バッチは記録して破棄します。後続の要求は続行できますが、失敗したテキストは自動では再読み上げしません。</p><p>一部のキャリブレーションコールバックは、引き続き FMOD コールバックからネイティブ状態を参照します。既存の保護でマネージド例外は封じ込めますが、静的レビューではスレッド間のすべてのタイミング動作を証明できません。人によるプレイテストなしにこのスケジュールを変更すると、キャリブレーションに影響する可能性があるため、具体的な追加確認対象として残します。</p><p>ガイドは引き続き、提供された HTML 文書を読む軽量リーダーです。汎用ブラウザーではありません。新しい上限は、異常に大きい文書や深く入れ子になった文書を意図的に拒否し、安全にフォールバックします。Windows がプロファイルへのアクセスを拒否すると、インストーラーのクリーンアップが未完了になる場合があります。保持されるランチャーとチェックポイントにより、後で再試行できます。</p><p>性能変更では、特定できた繰り返し処理と割り当てを削除します。フレームレート、遅延、メモリの改善を測定したとは主張しません。リリース前の人による確認では、ネイティブとカスタムの再割り当て、画面を開く入力の押下・解放、初回ウェルカム、すべてのガイド表、メニューより前のスコア読み上げ順序、OneCore/SAPI 切り替え、バックグラウンド動作を確認する必要があります。インストーラーの中止、中断後の復旧、共有ローダーの維持、設定値クリーンアップの再試行も、使い捨てのテスト用インストールで確認する必要があります。</p><p>このレビューで問題が見つからなかったとしても、プロジェクトに欠陥がない保証にはなりません。このビルドはリリース準備候補であり、1.0 の公開リリースではありません。</p><p id="config-limits">編集可能な設定はフィンガープリントとアトミックな置換を使いますが、最後の比較と名前変更は OS の compare-and-swap ではありません。協調しないエディターは、その短い間隔に書き込めます。強制終了により固有の一時ファイルが残る場合があり、アンインストールでは所有が検証された名前のみを削除します。ネイティブゲーム・Steam の設定保存は、例外を送出する前に一部を書き込む可能性があり、共通のトランザクション API がありません。</p><p id="legacy-install-limits">旧手動インストールには永続的な所有権台帳がありません。削除対象にできるのは既知の Mod ファイルと安全に特定できる依存関係のみです。クリーンアップ警告は、開いているインストーラーで再試行できます。保持される Windows 登録・チェックポイントの経路は、インストーラー管理のコピーに適用されます。バックアップの欠如、プロファイルのアクセス拒否、利用不能なドライブ、慎重な共有ローダー検出により、後の再試行が必要な場合があります。不確かなファイルを黙って削除せず、これらを報告します。</p><p id="reload-limits">入力アセットのクリーンアップは、Unity スレッド上でアプリケーションを終了するためのものです。将来、ゲームを継続するホットアンロード経路を追加する場合、参照先の Mod 入力アセットを破棄する前に、複製行とプロンプトの参照を削除する必要があります。ネイティブドライバーの呼び出し、複数コントローラーの入力取得順序、キャリブレーションコールバックには、引き続き人による実行時確認が必要です。</p><p id="script-syntax">6 つすべての Python 作成スクリプトが py_compile による構文コンパイルに合格しました。PowerShell の AST パーサーは uninstall.ps1 と prepare_prism.ps1 について構文エラー 0 件を報告しました。これらの確認では、スクリプトの機能を実行せず、依存関係をダウンロードせず、インストール・削除を試していません。</p><p id="sdk-staging-limits">ポータブル SDK はファイルのトランザクション前に準備されます。処理できたキャンセルでは準備用ディレクトリを削除しますが、展開中に電源が失われると、その一意のディレクトリが残る場合があります。通常のアンインストールでは意図的に SDK を残します。古いクリーンアップ補助プロセスが動作を再開した時点で新しいインストーラーがクリーンアップ用ミューテックスを所有している場合、補助プロセスは状態フォルダーを保持します。アンインストール完了の記録を使って、後でクリーンアップを再試行できます。</p></section>
+<section id="inventory"><h2>レビュー対象ファイル一覧</h2><p>以下に記載したすべてのファイルを静的レビューの対象に含めました。十分な根拠のある欠陥が見つからなかったファイルは、変更されない場合があります。</p><ul><li><code>src/BopItAccessMod.Achievements.cs</code></li>
+<li><code>src/BopItAccessMod.BackgroundAudio.cs</code></li>
+<li><code>src/BopItAccessMod.BindingConflicts.cs</code></li>
+<li><code>src/BopItAccessMod.Braille.cs</code></li>
+<li><code>src/BopItAccessMod.ButtonHintBindings.cs</code></li>
+<li><code>src/BopItAccessMod.ButtonHintContexts.cs</code></li>
+<li><code>src/BopItAccessMod.ButtonHintTimer.cs</code></li>
+<li><code>src/BopItAccessMod.Calibration.cs</code></li>
+<li><code>src/BopItAccessMod.Capitalisation.cs</code></li>
+<li><code>src/BopItAccessMod.ChangeSpeechOutputControls.cs</code></li>
+<li><code>src/BopItAccessMod.ConfigBindings.cs</code></li>
+<li><code>src/BopItAccessMod.ConfigNative.cs</code></li>
+<li><code>src/BopItAccessMod.ConfigPreferences.cs</code></li>
+<li><code>src/BopItAccessMod.Controls.cs</code></li>
+<li><code>src/BopItAccessMod.ControlTypes.cs</code></li>
+<li><code>src/BopItAccessMod.Credits.cs</code></li>
+<li><code>src/BopItAccessMod.cs</code></li>
+<li><code>src/BopItAccessMod.DescriptionControls.cs</code></li>
+<li><code>src/BopItAccessMod.FirstRunAudio.cs</code></li>
+<li><code>src/BopItAccessMod.FpsLimit.cs</code></li>
+<li><code>src/BopItAccessMod.GameOver.cs</code></li>
+<li><code>src/BopItAccessMod.GuideMusicFilter.cs</code></li>
+<li><code>src/BopItAccessMod.GuideReader.cs</code></li>
+<li><code>src/BopItAccessMod.HintsType.cs</code></li>
+<li><code>src/BopItAccessMod.Indexing.cs</code></li>
+<li><code>src/BopItAccessMod.LeaderboardControls.cs</code></li>
+<li><code>src/BopItAccessMod.LeaderboardControlsRebind.cs</code></li>
+<li><code>src/BopItAccessMod.Leaderboards.cs</code></li>
+<li><code>src/BopItAccessMod.Localization.cs</code></li>
+<li><code>src/BopItAccessMod.MenuInputDiagnostics.cs</code></li>
+<li><code>src/BopItAccessMod.OneOnOneFeedback.cs</code></li>
+<li><code>src/BopItAccessMod.PauseMenu.cs</code></li>
+<li><code>src/BopItAccessMod.PlayModes.cs</code></li>
+<li><code>src/BopItAccessMod.PrismBackend.cs</code></li>
+<li><code>src/BopItAccessMod.ResetGyroControls.cs</code></li>
+<li><code>src/BopItAccessMod.ResultRank.cs</code></li>
+<li><code>src/BopItAccessMod.ScoreControls.cs</code></li>
+<li><code>src/BopItAccessMod.SettingsConfig.cs</code></li>
+<li><code>src/BopItAccessMod.SliderRanges.cs</code></li>
+<li><code>src/BopItAccessMod.SpeakHintsControls.cs</code></li>
+<li><code>src/BopItAccessMod.SpeechBackend.cs</code></li>
+<li><code>src/BopItAccessMod.SpeechMenu.cs</code></li>
+<li><code>src/BopItAccessMod.SpeechToggle.cs</code></li>
+<li><code>src/BopItAccessMod.TitleScreen.cs</code></li>
+<li><code>src/BopItAccessMod.ToggleSpeechControls.cs</code></li>
+<li><code>src/BopItAccessMod.TrackSelect.cs</code></li>
+<li><code>src/BopItAccessMod.Tutorial.cs</code></li>
+<li><code>src/BopItAccessMod.UncoveredPanels.cs</code></li>
+<li><code>src/BopItAccessMod.Welcome.cs</code></li>
+<li><code>src/BopItAccessMod.WelcomeTransitions.cs</code></li>
+<li><code>src/PrismNative.cs</code></li>
+<li><code>src/SettingsConfigFile.cs</code></li>
+<li><code>installer/GameLocator.cs</code></li>
+<li><code>installer/InstallerForm.cs</code></li>
+<li><code>installer/InstallerService.cs</code></li>
+<li><code>installer/InstallManifest.cs</code></li>
+<li><code>installer/InstallTransaction.cs</code></li>
+<li><code>installer/LoaderUiDefaults.cs</code></li>
+<li><code>installer/ModPreferenceCleaner.cs</code></li>
+<li><code>installer/NetworkAndArchives.cs</code></li>
+<li><code>installer/Program.cs</code></li>
+<li><code>installer/SdkAndBuild.cs</code></li>
+<li><code>installer/UninstallManager.cs</code></li>
+<li><code>scripts/extract_native_game_terms.py</code></li>
+<li><code>scripts/extract_native_localization.py</code></li>
+<li><code>scripts/generate_speech_catalogs.py</code></li>
+<li><code>scripts/polish_prism_documents.py</code></li>
+<li><code>scripts/translate_documents.py</code></li>
+<li><code>scripts/upgrade_speech_catalogs_google.py</code></li>
+<li><code>scripts/prepare_prism.ps1</code></li>
+<li><code>src/BopItAccess.csproj</code></li>
+<li><code>installer/BopItAccess.Installer.csproj</code></li>
+<li><code>installer/uninstall.ps1</code></li>
+<li><code>installer/app.manifest</code></li>
+<li><code>configuration/Loader.cfg</code></li>
+<li><code>NuGet.Config</code></li>
+<li><code>.gitignore</code></li>
+</ul></section>
+</main><footer><p>Christopher Shaw はプロジェクトの設計者であり、コミットの作成者です。GPT-6 Sol がこのレビューを支援し、コード変更を生成しました。 <a href="BopItAccess-build-history.html">技術的なビルド履歴</a>.</p></footer></body></html>

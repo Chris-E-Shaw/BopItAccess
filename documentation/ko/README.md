@@ -36,7 +36,9 @@ Voice=System default
 Voice=System default
 ```
 
-설치 프로그램의 제거 기능과 Windows 설치된 앱에서 제거하면 이전 수동 설치를 포함하여 UserData/BopItAccess.ini 및 해당 .tmp 파일도 삭제됩니다.
+설치된 파일을 소유권 매니페스트에 기록하므로 업데이트는 기존 파일을 보존하고 중단된 설치는 자신의 변경을 되돌릴 수 있습니다. **제거**와 Windows **설치된 앱**는 같은 제거 코드를 사용합니다. 제공된 `installer/uninstall.ps1` 는 설치된 앱에서 접근 가능한 제거 창을 실행합니다. 제거가 완전히 성공하면 제거 실행기, 소유권 기록, Windows 항목을 삭제합니다. 기존의 무관한 Mod와 공유 MelonLoader 파일은 보존합니다. 관리 설치와 이전 수동 설치의 정리는 모두 알려진 Mod 로그를 다루며 다음을 포함합니다: `Mods/BopItAccess.log.previous`, `UserData/BopItAccess.ini`, 이전 `UserData/BopItAccess.ini.tmp`, 그리고 검증된 `BopItAccess.ini.<GUID>.tmp` 잔여 파일(위치: `UserData`. 여기서 `<GUID>` 는 하이픈 없는 정확히 32자 16진수여야 합니다. 광범위한 와일드카드에 일치하는 임의 파일은 제거하지 않습니다.
+
+소유권 매니페스트가 없는 이전 수동 설치에서는 제거가 식별 가능한 Bop It Access 파일을 삭제하고 출처를 입증할 수 없는 공유 파일은 남깁니다. 또한 로그아웃한 프로필을 포함한 각 로컬 Windows 사용자 프로필에서 `BopItAccess.*` 환경설정 값만 제거합니다. 게임 자체 환경설정과 .NET SDK는 남습니다. Windows가 접근을 거부하거나 다른 정리 단계를 안전하게 마칠 수 없으면 설치 프로그램은 미완료 정리를 보고합니다. 설치 프로그램 관리 사본에서는 정리가 성공할 때까지 Windows 항목, 제거 실행기, 영구 정리 체크포인트가 유지되어 나머지 단계를 재시도할 수 있습니다. 이전 수동 설치에는 이러한 영구 소유권 기록이 없으며 경고는 열린 설치 프로그램에서 재시도할 수 있습니다.
 
 ## 프로젝트 현황
 
@@ -113,10 +115,11 @@ hide_console = true
 - [일본어 사용자 가이드(일본어)](../ja/BopItAccess-user-guide.html). 기타 번역된 가이드는 아래의 언어 폴더에서 사용할 수 있습니다. [`documentation/`](../).
 - [세부 기능 및 제어 가이드](README.txt). 설치 섹션에서는 로컬로 준비된 설치 ZIP을 설명합니다. 이 GitHub 저장소는 소스만 제공합니다.
 - [기술 빌드 기록](BopItAccess-build-history.html).
+- [출시 준비 코드 검토](BopItAccess-release-review.html) — 구현된 발견 사항, 검토한 파일, 컴파일 결과, 남은 한계.
 - [이 프로젝트의 Git 워크플로](GIT-WORKFLOW.md).
 - [제3자 고지사항](THIRD-PARTY-NOTICES.txt).
 
-위 6개 문서의 번역본은 모두 [`documentation/`](../) 지원되는 각 언어 코드 아래에 있습니다. 해당 소스는 영어입니다. `scripts/translate_documents.py` 소스 변경 후 기계 번역된 초안을 다시 생성할 수 있습니다.
+위 문서의 번역본은 [`documentation/`](../) 아래의 지원 언어 코드별 폴더에 있습니다. 원문은 영어이며 `scripts/translate_documents.py` 는 원문 변경 후 기계 번역 초안을 다시 생성할 수 있습니다.
 
 ## 앞으로 일어날 일
 

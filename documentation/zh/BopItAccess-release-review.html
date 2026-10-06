@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+
+<html lang="zh"><head><meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/><title>Bop It Access — 发布准备代码审查</title><style>body{max-width:1100px;margin:2rem auto;padding:0 1rem;font:17px/1.6 system-ui,sans-serif;color:#17202a;background:#fff}a{color:#0756a4}table{border-collapse:collapse;width:100%;margin:1rem 0}th,td{border:1px solid #aab4bd;padding:.65rem;vertical-align:top;text-align:left}th{background:#eef3f7}code{overflow-wrap:anywhere}h2{margin-top:2.5rem}a:focus{outline:3px solid #6a35ad} @media(prefers-color-scheme:dark){body{color:#eee;background:#121820}th{background:#263442}a{color:#8fc9ff}}</style></head><body><header><h1>Bop It Access：发布准备代码审查</h1><p>Mod 0.9.8 和安装程序预览版 0.1.5。于 2026 年 10 月 7 日为 Christopher Shaw 编写，为计划中的 1.0 发布做准备。</p><nav aria-label="目录" id="contents-nav"><ul><li><a href="#scope">范围与方法</a></li>
+<li><a href="#findings">发现的问题与修改</a></li>
+<li><a href="#preserved">有意保留的行为与代码</a></li>
+<li><a href="#validation">编译与实际限制</a></li>
+<li><a href="#inventory">已审查文件清单</a></li>
+</ul></nav></header><main><section id="scope"><h2>范围与方法</h2><p>静态审查涵盖了 Mod 和安装程序的所有 C# 源文件、卸载脚本、项目构建定义、配置模板及文档与目录编制脚本。审查考虑了所有权、关闭、并发、导航和重新绑定的状态转换、损坏文件、原生回退路径、每帧工作、重复状态检查及未使用代码。并行审查人员分别负责语音/音频/界面、输入/配置/工具及安装/恢复；协调审查人员负责路由、提示、指南导航、Mod Settings 及欢迎界面处理。集成后的修改经过了第二次源代码审查。</p><p>这是代码审查和编译记录。没有为这些修改运行游戏、安装程序操作、卸载操作、自动化测试套件或性能基准测试。先前的人工测试仍有价值，但不能证明此次重构的运行时行为。</p></section>
+<section id="findings"><h2>发现的问题与修改</h2><table><caption>审查发现及其解决方法</caption><thead><tr><th scope="col">领域</th><th scope="col">发现的问题</th><th scope="col">修改及原因</th><th scope="col">源文件</th></tr>
+</thead><tbody><tr><th scope="row">语音工作线程的持续运行</th><td>启动输出或普通语音批次中的异常可能使工作线程在该会话的剩余时间内停止。</td><td>逐批捕获分发失败，限制错误记录频率，并继续处理下一请求。使用可感知关闭请求的等待，每 5 秒重试失败的 Prism 初始化。</td><td><code>src/BopItAccessMod.cs</code></td></tr>
+<tr><th scope="row">自动分数保护</th><td>输出错误可能使菜单语音一直等待待处理分数的保护解除；同一批次中后续的错误不得取消已接受分数的保护。</td><td>仅当分数分发在完成前失败且没有更新的待处理分数时才解除保护。保留已接受的自动分数保护。</td><td><code>src/BopItAccessMod.cs</code><br/><code>src/BopItAccessMod.GameOver.cs</code></td></tr>
+<tr><th scope="row">关闭处理隔离</th><td>设置保存、音频或过滤器异常可能使工作线程无法收到关闭信号。静态钩子和输入资源可能继续引用旧 Mod。</td><td>先发送关闭信号，使待处理语音失效，隔离每项清理操作，移除结果监听器，清除自身拥有的钩子引用并释放自身拥有的输入资源。最多等待工作线程 500 毫秒；在原生语音所属线程上释放它。</td><td><code>src/BopItAccessMod.cs</code><br/><code>src/BopItAccessMod.Controls.cs</code><br/><code>src/BopItAccessMod.FirstRunAudio.cs</code><br/><code>src/BopItAccessMod.Calibration.cs</code><br/><code>src/BopItAccessMod.ResultRank.cs</code></td></tr>
+<tr><th scope="row">Prism 原生资源所有权</th><td>初始化失败可能留下不完整的上下文或重复的注册表候选项。探测后端时发生异常可能泄漏句柄。</td><td>每次尝试启动时清除候选项，清理不完整的上下文状态，限制注册表枚举数量，并在 finally 块中释放被拒绝或失败的后端探测资源。</td><td><code>src/BopItAccessMod.PrismBackend.cs</code></td></tr>
+<tr><th scope="row">暂时性语音设置失败</th><td>失败的原生语音或参数设置可能被记录为已成功应用。</td><td>仅在受支持的设置函数成功后记录成功。在有界延迟后重试失败的设置，而非每次播报都重试；保持 OneCore 和 SAPI 配置分别独立。</td><td><code>src/BopItAccessMod.PrismBackend.cs</code></td></tr>
+<tr><th scope="row">自定义重新绑定的隔离</th><td>模板输入资源与 PlayerInput 运行时副本可能不同。仅禁用模板会导致在捕获新绑定时，实际确认和导航动作仍处于启用状态。</td><td>准确记录两个副本中已启用动作的快照，暂停相关动作，然后仅恢复这些动作。拒绝重叠的自定义捕获，等待确认输入释放后再重新准备，并在捕获所在帧抑制全局快捷键。</td><td><code>src/BopItAccessMod.Controls.cs</code><br/><code>src/BopItAccessMod.LeaderboardControlsRebind.cs</code></td></tr>
+<tr><th scope="row">重新绑定清理</th><td>Cancel 或 Dispose 中的异常可能跳过导航恢复。多个自定义控件重复了相同的生命周期代码。</td><td>在 7 个自定义控件间共享捕获清理。分别保护原始覆盖恢复、取消、释放和动作恢复。移除已被替代且未使用的重复检查辅助函数，让 Toggle Speech 使用焦点语音路径，并在关闭时仅销毁 Mod 创建的 5 个输入资源。</td><td><code>src/BopItAccessMod.Controls.cs</code><br/><code>src/BopItAccessMod.DescriptionControls.cs</code><br/><code>src/BopItAccessMod.ScoreControls.cs</code><br/><code>src/BopItAccessMod.SpeakHintsControls.cs</code><br/><code>src/BopItAccessMod.ToggleSpeechControls.cs</code><br/><code>src/BopItAccessMod.ChangeSpeechOutputControls.cs</code><br/><code>src/BopItAccessMod.ResetGyroControls.cs</code><br/><code>src/BopItAccessMod.LeaderboardControlsRebind.cs</code></td></tr>
+<tr><th scope="row">重复的原生输入</th><td>原生重新绑定可能接受冲突并清除另一动作。这违反了预期的拒绝冲突并保留原绑定策略。</td><td>使用基准快照拒绝新引入的冲突并恢复之前的绑定。保留有意共享的原生默认绑定和未改动的修饰键组合。</td><td><code>src/BopItAccessMod.BindingConflicts.cs</code></td></tr>
+<tr><th scope="row">配置绑定验证</th><td>合成 anyKey 路径及设备/按键别名可能绕过物理输入验证或冲突比较。</td><td>拒绝合成的任意输入绑定，规范化物理键盘别名，并识别跨设备的通用游戏手柄路径。</td><td><code>src/BopItAccessMod.ConfigPreferences.cs</code><br/><code>src/BopItAccessMod.ConfigBindings.cs</code><br/><code>src/BopItAccessMod.DescriptionControls.cs</code></td></tr>
+<tr><th scope="row">可编辑配置的安全性</th><td>在打开文件前检查大小仍存在竞态。共用临时文件名可能与其他写入者冲突。缓存的 Unity 管理器可能在场景切换时被销毁。</td><td>将已打开文件的读取量和写入的 UTF-8 输出限制为 1 兆字节；使用唯一的 <code>BopItAccess.ini.&lt;GUID&gt;.tmp</code> 文件，并以 <code>CreateNew</code> 方式打开以进行原子替换。重新获取已销毁的 Unity 管理器。保留不可读文件、注释、不熟悉的键及外部编辑。</td><td><code>src/SettingsConfigFile.cs</code><br/><code>src/BopItAccessMod.SettingsConfig.cs</code></td></tr>
+<tr><th scope="row">焦点路由</th><td>9 个界面读取器重复了不断增长的可见性检查链和恢复代码块。</td><td>使用缓存的有序路由表，配合一个占用标记、各路由的限频错误记录及现有的恢复/重置回调。保留界面优先级及首次进入时的播报。</td><td><code>src/BopItAccessMod.cs</code></td></tr>
+<tr><th scope="row">提示输入跟踪</th><td>已禁用动作可能被计入当前输入。刷新每 0.25 秒分配一个新集合，重新映射或断开连接后，模拟输入的设备路径状态可能不断增大。</td><td>跟踪已启用且明确分配的动作，重用集合，以控件为键存储模拟输入状态并清除过期控件。共享自定义重新绑定状态，移除未使用的提示动词参数和重复格式处理。</td><td><code>src/BopItAccessMod.ButtonHintTimer.cs</code><br/><code>src/BopItAccessMod.ButtonHintBindings.cs</code><br/><code>src/BopItAccessMod.HintsType.cs</code></td></tr>
+<tr><th scope="row">菜单与本地化开销</th><td>多个未变化的界面每帧都重建签名、结果列表、可选项列表，或搜索所有翻译片段。</td><td>重用结果列表，仅在有行数据时刷新排行榜签名，仅在需要时统计选曲控件，并按首字符对翻译片段分组。保留轮询间隔及优先匹配最长翻译的方式。</td><td><code>src/BopItAccessMod.GameOver.cs</code><br/><code>src/BopItAccessMod.OneOnOneFeedback.cs</code><br/><code>src/BopItAccessMod.TrackSelect.cs</code><br/><code>src/BopItAccessMod.Leaderboards.cs</code><br/><code>src/BopItAccessMod.Localization.cs</code></td></tr>
+<tr><th scope="row">回退面板</th><td>焦点未变化时仍反复扫描标签和索引。通用滑块与滚动条的反馈未始终包含其范围。</td><td>焦点保持不变时仅读取变化的值。在焦点转换时构建标签和索引，为通用滑块与滚动条提供类型、数值及可选范围反馈。</td><td><code>src/BopItAccessMod.UncoveredPanels.cs</code></td></tr>
+<tr><th scope="row">指南解析限制</th><td>递归 HTML 遍历可能因损坏的嵌套结构而导致堆栈溢出。无上限的文件、标记和主题处理可能耗尽资源。章节查找反复搜索整份文档。</td><td>使用迭代遍历、章节 ID 查找表及明确限制：4 兆字节、50,000 个标记、128 层嵌套、256 个主题及 20,000 行阅读内容。在展开时执行行数限制，以流式方式扫描单词，并在字素边界拆分无空格的长文本。添加正则表达式超时，将属性名限定在起始或空白边界，使 <code>id</code> 不会匹配 <code>data-id</code>。保留从本地化文档回退到英文的功能。</td><td><code>src/BopItAccessMod.GuideReader.cs</code></td></tr>
+<tr><th scope="row">指南状态转换</th><td>隐藏主题后的异常可能使玩家无法使用主题菜单。已销毁的 Unity 包装对象在托管代码中仍可能不为 null。</td><td>打开页面失败后恢复主题面板，隐藏部分显示的页面，保护缺失面板/行的处理，并在停用旧根对象前进行识别 Unity 状态的检查。</td><td><code>src/BopItAccessMod.GuideReader.cs</code></td></tr>
+<tr><th scope="row">欢迎与重置保护</th><td>欢迎界面的 Back 钩子异常可能影响原生 Back 动作。重置确认不应在失去其菜单后继续存在。</td><td>Mod 钩子失败时允许原生 Back。关闭时仅清除此实例；Mod Settings 离开面板栈时取消两种确认状态。</td><td><code>src/BopItAccessMod.Welcome.cs</code><br/><code>src/BopItAccessMod.WelcomeTransitions.cs</code><br/><code>src/BopItAccessMod.SpeechMenu.cs</code></td></tr>
+<tr><th scope="row">偏好设置与首次运行检测</th><td>音频/FPS 回调中的偏好设置失败可能逃逸出 Unity 事件分发。仅有 OneCore 或欢迎标记的旧安装可能被视为新安装。</td><td>保护读取和保存，重试暂时性读取失败，保存失败后仍保持会话值有效，并识别额外的旧安装标记。保留现有默认值和 INI 键。</td><td><code>src/BopItAccessMod.FirstRunAudio.cs</code><br/><code>src/BopItAccessMod.BackgroundAudio.cs</code><br/><code>src/BopItAccessMod.FpsLimit.cs</code></td></tr>
+<tr><th scope="row">音频过滤器重新挂接</th><td>游戏替换菜单音乐事件后，指南过滤器可能仍挂接在旧事件上。</td><td>指南打开时每秒探测一次事件，将过滤器重新应用到替换事件，并在可能时恢复旧事件。</td><td><code>src/BopItAccessMod.GuideMusicFilter.cs</code></td></tr>
+<tr><th scope="row">制作人员名单回退完成</th><td>视觉回退在将剩余全部行加入队列后仍可能反复记录完成。</td><td>将剩余制作人员名单加入队列后，把该回退标记为已完成。保留手动导航和现有回退顺序。</td><td><code>src/BopItAccessMod.Credits.cs</code></td></tr>
+<tr><th scope="row">有界诊断</th><td>状态日志没有增长限制。详细控制器调查在 Release 构建中每帧扫描并记录。</td><td>当前日志达到 8 兆字节时轮换，保留一份旧日志，限制单条记录大小并缓存日志路径。在 Debug 构建中保留详细菜单输入诊断；Release 中仍保留普通状态/错误记录。</td><td><code>src/BopItAccessMod.cs</code><br/><code>src/BopItAccessMod.MenuInputDiagnostics.cs</code></td></tr>
+<tr><th scope="row">安装程序操作所有权</th><td>多个安装程序副本可能在共用日志上发生竞态。启动时的发现/恢复、可变路径、Abort 确认期间的操作完成及延迟 UI 回调也可能与删除或关闭重叠。</td><td>为安装程序窗口和最终清理使用全局命名互斥量、原子的服务操作占用及初始化就绪门控。在处理先决条件或删除前，对照清单验证选定路径；确认后检查 Abort 操作标识，保护对已释放控件的延迟回调。从 已安装的应用 卸载时跳过在线版本检查。</td><td><code>installer/Program.cs</code><br/><code>installer/InstallerService.cs</code><br/><code>installer/InstallerForm.cs</code><br/><code>installer/GameLocator.cs</code><br/><code>installer/uninstall.ps1</code></td></tr>
+<tr><th scope="row">安装程序取消与恢复</th><td>取消可能留下运行中的编译器进程。日志可能指定未经检查的恢复路径；后续失败可能拒绝安装程序已恢复的文件。</td><td>清理前终止编译器并等待其退出。需要生成时，为生成树的原始内容和名称建立快照，包括存在旧加载器的情况；回滚时恢复被修改或删除的原始内容。验证准确的日志 GUID、事务根目录、备份路径及链接末端目标。仅在经过验证的原始哈希一致时接受已恢复文件。</td><td><code>installer/InstallTransaction.cs</code><br/><code>installer/SdkAndBuild.cs</code><br/><code>installer/UninstallManager.cs</code></td></tr>
+<tr><th scope="row">卸载重试与共享文件</th><td>偏好设置清理警告可能导致剩余修复启动器被删除。未识别子文件夹中的其他 Mod。未涵盖日志轮换及唯一配置残留文件。</td><td>在管理范围内的清理结束前，保留 Windows 条目、启动器、台账及持久文件删除检查点。检测嵌套的其他 Mod，文件夹为链接或不可读时保留加载器。仅删除已知轮换日志和有效的 32 字符十六进制 GUID 配置残留文件。最终自清理检查完成标记、互斥量所有权、准确的状态文件夹及所有后代的链接。</td><td><code>installer/InstallManifest.cs</code><br/><code>installer/UninstallManager.cs</code><br/><code>installer/InstallerService.cs</code><br/><code>installer/InstallerForm.cs</code><br/><code>installer/uninstall.ps1</code></td></tr>
+<tr><th scope="row">安装程序进度与网络限制</th><td>频繁的字节/文件回调可能淹没 UI 队列。网络工作需要明确截止时间，并在长度未知时提供有意义的进度。</td><td>将同一步骤的中间视觉进度合并为每秒最多 10 次更新，同时保留完整状态记录。将元数据限制为 30 秒和 1 兆字节；使用可续期的 60 秒下载无活动期限及 4 吉字节大小上限。要求最终目标使用 HTTPS，拒绝重复 ZIP 目标，验证解压长度并重用一个解压缓冲区。以实际运行时/引用标记识别兼容 SDK，包括 <code>DOTNET_ROOT_X64</code>.</td><td><code>installer/NetworkAndArchives.cs</code><br/><code>installer/InstallerService.cs</code><br/><code>installer/SdkAndBuild.cs</code></td></tr>
+<tr><th scope="row">编制工具</th><td>旧 Prism 文档迁移可能覆盖当前 OneCore 说明。重新生成目录可能覆盖已审查的翻译，并可能写入损坏的受保护翻译标记。</td><td>要求明确启用旧迁移，默认保留现有目录项，并在写入文档前拒绝损坏的翻译输出。</td><td><code>scripts/generate_speech_catalogs.py</code><br/><code>scripts/translate_documents.py</code><br/><code>scripts/upgrade_speech_catalogs_google.py</code><br/><code>scripts/polish_prism_documents.py</code></td></tr>
+<tr><th scope="row">已取消捕获的恢复</th><td>已完成操作可能在帧轮询前应用候选绑定；此时关闭/替换行可能留下未经验证的覆盖。</td><td>释放每个已取消捕获前，尝试恢复原始源覆盖。隔离恢复错误，使释放及导航恢复仍能进行；成功验证并完成的操作保留其新绑定。</td><td><code>src/BopItAccessMod.Controls.cs</code><br/><code>src/BopItAccessMod.LeaderboardControls.cs</code></td></tr>
+<tr><th scope="row">绑定持久化回滚</th><td>保存失败后，Mod 偏好设置可能仍保留候选绑定。保存前释放原生捕获会丢弃其源回滚快照，使运行时副本保持已修改状态。</td><td>保存抛出异常时恢复旧 Mod 偏好设置，包括键原本不存在的情况。保留原生 Reset Gyro/排行榜捕获状态，直到 <code>SaveBindings</code> 成功，并在失败时恢复之前的运行时覆盖。原生游戏与 Steam 持久化仍不提供跨两个存储的事务。</td><td><code>src/BopItAccessMod.Controls.cs</code><br/><code>src/BopItAccessMod.ResetGyroControls.cs</code><br/><code>src/BopItAccessMod.LeaderboardControlsRebind.cs</code></td></tr>
+<tr><th scope="row">原生区域设置读取</th><td>已销毁或暂时不可用的原生 Settings 包装对象可能在区域设置/启动流程完成前抛出异常。</td><td>通过共用的受保护路径读取原生区域设置，限制错误记录频率，并保留现有启动超时/回退。此代码修复未改变翻译措辞。</td><td><code>src/BopItAccessMod.Localization.cs</code><br/><code>src/BopItAccessMod.SpeechToggle.cs</code></td></tr>
+<tr><th scope="row">本体游戏移除后的卸载</th><td>卸载操作依赖本体游戏的可执行文件/数据文件夹，因此 Steam 移除游戏后可能隐藏剩余的受管理 Mod 清理功能。</td><td>独立于本体游戏有效性识别清单管理的安装。本体游戏移除后允许清理，但在其驱动器不可用、无法访问或无法确认路径不存在时保留记录。</td><td><code>installer/InstallerService.cs</code><br/><code>installer/InstallerForm.cs</code><br/><code>installer/UninstallManager.cs</code></td></tr>
+</tbody></table></section>
+<section id="preserved"><h2>有意保留的行为与代码</h2><ul><li>自动最终分数语音保持优先级；按需重复分数仍可被打断。游戏过程中不公开分数。</li>
+<li>语音和盲文仍使用 Prism。自动模式仍依次优先选择运行中的屏幕阅读器、OneCore、SAPI。语音配置保持独立。</li>
+<li>菜单默认值、已保存偏好设置键、可编辑 INI 名称、绑定、欢迎界面关闭规则及翻译后的玩家可见字符串保持兼容。</li>
+<li>按先前要求，隐藏的 Trim Silence 实验保留在源代码中，仍不对最终用户开放。未将其视为意外遗留的无用代码。</li>
+<li>历史构建记录、保留的源代码导入及旧编制工具继续作为来源记录。对过时迁移设置启用门槛，而非悄悄删除该记录。</li>
+<li>在需要保护顺序或并发状态变化的地方，保留语音队列、原生回退检查及锁前后的重复准入检查。实现更短并不足以成为删除保护措施的理由。</li>
+<li>生成的游戏程序集及编译后的 Mod/安装程序文件仍置于 Git 之外。构建引用继续使用玩家自己的安装，并禁用复制。</li>
+<li>静态审查未确认缺陷的原生游戏时序、校准调度、分数规则及翻译措辞均未进行推测性修改。</li>
+</ul></section>
+<section id="validation"><h2>编译与实际限制</h2><p id="build-result">集成后的 .NET 6 x64 Mod 0.9.8 在 Release 和 Debug 中编译，警告和错误均为 0。最终源代码修改后，Windows x64 自包含安装程序 0.1.5 发布完成，诊断为 0。编译成功不能证明运行时正确性。未为此构建运行测试、游戏、安装、卸载或基准测试。</p><p>Prism 的 P/Invoke 声明已与固定的 v0.18.3 公共 C 头文件比较。这可以发现声明不匹配，但不能证明每个原生驱动程序、屏幕阅读器、语音或盲文显示器的行为。</p><p>原生 DLL 崩溃和阻塞的驱动调用不总能在托管代码中恢复。因此关闭等待有上限，并避免从其他线程释放上下文。失败的语音批次被记录并丢弃；后续请求可继续，但失败文本不会自动重播。</p><p>部分校准回调仍在 FMOD 回调中读取原生状态。现有保护可隔离托管异常，但静态审查无法证明所有跨线程时序行为。在未经人工游戏测试的情况下改变调度可能影响校准，因此这仍是具体的后续检查领域。</p><p>指南仍是用于提供的 HTML 文档的轻量阅读器，而非通用浏览器。新的限制会有意拒绝异常庞大或深度嵌套的文档，并安全回退。Windows 拒绝访问用户配置文件时，安装程序清理可能无法完成；保留的启动器和检查点允许稍后重试。</p><p>性能修改移除了可识别的重复工作及分配。不声称帧率、延迟或内存已有测量证明的改善。发布前人工检查应涵盖原生及自定义重新绑定、打开界面输入的按住/释放、首次运行欢迎界面、所有指南表格、分数先于菜单的语音顺序、OneCore/SAPI 切换及后台行为。安装程序中止、中断恢复、共享加载器保留及偏好设置清理重试也需要在可丢弃的测试安装上检查。</p><p>本次审查未发现问题并不能保证项目没有缺陷。此构建是发布准备候选版，并非 1.0 公开发布版。</p><p id="config-limits">可编辑配置使用指纹和原子替换，但最后一次比较与重命名并非操作系统的 compare-and-swap：不配合的编辑器可能在这个短暂间隔内写入。强制终止可能留下唯一临时文件；卸载仅删除经过所有权验证的名称。原生游戏/Steam 偏好设置持久化可能在抛出异常前已部分写入，且没有共享事务 API。</p><p id="legacy-install-limits">旧手动安装没有持久所有权台账。其删除只能针对已知 Mod 文件及安全识别的依赖项，清理警告可在打开的安装程序中重试。保留的 Windows 条目/检查点路径适用于安装程序管理的副本。备份缺失、用户配置文件访问被拒绝、驱动器不可用及保守的共享加载器检测可能需要稍后重试；这些情况会被报告，而非悄悄删除归属不明的文件。</p><p id="reload-limits">输入资源清理旨在 Unity 线程上的应用程序关闭时执行。未来若增加游戏继续运行的热卸载路径，必须先移除克隆行和提示引用，再销毁其引用的 Mod 输入资源。原生驱动调用、多控制器捕获顺序及校准回调仍需要人工运行时检查。</p><p id="script-syntax">全部 6 个 Python 编制脚本均通过 py_compile 语法编译。PowerShell AST 解析器报告 uninstall.ps1 和 prepare_prism.ps1 的语法错误均为 0。这些检查未执行脚本功能、下载依赖项或进行安装/删除。</p><p id="sdk-staging-limits">便携式 SDK 在文件事务之前准备。捕获到取消操作时会删除其暂存目录，但解压期间断电可能会留下这个唯一命名的目录。常规卸载会有意保留 SDK。如果旧清理辅助进程恢复运行时，新安装程序持有清理互斥锁，辅助进程会保留状态文件夹；其中的卸载完成记录允许以后重试清理。</p></section>
+<section id="inventory"><h2>已审查文件清单</h2><p>下列每个文件均纳入静态审查。没有发现充分证据支持的缺陷时，文件可能保持未修改。</p><ul><li><code>src/BopItAccessMod.Achievements.cs</code></li>
+<li><code>src/BopItAccessMod.BackgroundAudio.cs</code></li>
+<li><code>src/BopItAccessMod.BindingConflicts.cs</code></li>
+<li><code>src/BopItAccessMod.Braille.cs</code></li>
+<li><code>src/BopItAccessMod.ButtonHintBindings.cs</code></li>
+<li><code>src/BopItAccessMod.ButtonHintContexts.cs</code></li>
+<li><code>src/BopItAccessMod.ButtonHintTimer.cs</code></li>
+<li><code>src/BopItAccessMod.Calibration.cs</code></li>
+<li><code>src/BopItAccessMod.Capitalisation.cs</code></li>
+<li><code>src/BopItAccessMod.ChangeSpeechOutputControls.cs</code></li>
+<li><code>src/BopItAccessMod.ConfigBindings.cs</code></li>
+<li><code>src/BopItAccessMod.ConfigNative.cs</code></li>
+<li><code>src/BopItAccessMod.ConfigPreferences.cs</code></li>
+<li><code>src/BopItAccessMod.Controls.cs</code></li>
+<li><code>src/BopItAccessMod.ControlTypes.cs</code></li>
+<li><code>src/BopItAccessMod.Credits.cs</code></li>
+<li><code>src/BopItAccessMod.cs</code></li>
+<li><code>src/BopItAccessMod.DescriptionControls.cs</code></li>
+<li><code>src/BopItAccessMod.FirstRunAudio.cs</code></li>
+<li><code>src/BopItAccessMod.FpsLimit.cs</code></li>
+<li><code>src/BopItAccessMod.GameOver.cs</code></li>
+<li><code>src/BopItAccessMod.GuideMusicFilter.cs</code></li>
+<li><code>src/BopItAccessMod.GuideReader.cs</code></li>
+<li><code>src/BopItAccessMod.HintsType.cs</code></li>
+<li><code>src/BopItAccessMod.Indexing.cs</code></li>
+<li><code>src/BopItAccessMod.LeaderboardControls.cs</code></li>
+<li><code>src/BopItAccessMod.LeaderboardControlsRebind.cs</code></li>
+<li><code>src/BopItAccessMod.Leaderboards.cs</code></li>
+<li><code>src/BopItAccessMod.Localization.cs</code></li>
+<li><code>src/BopItAccessMod.MenuInputDiagnostics.cs</code></li>
+<li><code>src/BopItAccessMod.OneOnOneFeedback.cs</code></li>
+<li><code>src/BopItAccessMod.PauseMenu.cs</code></li>
+<li><code>src/BopItAccessMod.PlayModes.cs</code></li>
+<li><code>src/BopItAccessMod.PrismBackend.cs</code></li>
+<li><code>src/BopItAccessMod.ResetGyroControls.cs</code></li>
+<li><code>src/BopItAccessMod.ResultRank.cs</code></li>
+<li><code>src/BopItAccessMod.ScoreControls.cs</code></li>
+<li><code>src/BopItAccessMod.SettingsConfig.cs</code></li>
+<li><code>src/BopItAccessMod.SliderRanges.cs</code></li>
+<li><code>src/BopItAccessMod.SpeakHintsControls.cs</code></li>
+<li><code>src/BopItAccessMod.SpeechBackend.cs</code></li>
+<li><code>src/BopItAccessMod.SpeechMenu.cs</code></li>
+<li><code>src/BopItAccessMod.SpeechToggle.cs</code></li>
+<li><code>src/BopItAccessMod.TitleScreen.cs</code></li>
+<li><code>src/BopItAccessMod.ToggleSpeechControls.cs</code></li>
+<li><code>src/BopItAccessMod.TrackSelect.cs</code></li>
+<li><code>src/BopItAccessMod.Tutorial.cs</code></li>
+<li><code>src/BopItAccessMod.UncoveredPanels.cs</code></li>
+<li><code>src/BopItAccessMod.Welcome.cs</code></li>
+<li><code>src/BopItAccessMod.WelcomeTransitions.cs</code></li>
+<li><code>src/PrismNative.cs</code></li>
+<li><code>src/SettingsConfigFile.cs</code></li>
+<li><code>installer/GameLocator.cs</code></li>
+<li><code>installer/InstallerForm.cs</code></li>
+<li><code>installer/InstallerService.cs</code></li>
+<li><code>installer/InstallManifest.cs</code></li>
+<li><code>installer/InstallTransaction.cs</code></li>
+<li><code>installer/LoaderUiDefaults.cs</code></li>
+<li><code>installer/ModPreferenceCleaner.cs</code></li>
+<li><code>installer/NetworkAndArchives.cs</code></li>
+<li><code>installer/Program.cs</code></li>
+<li><code>installer/SdkAndBuild.cs</code></li>
+<li><code>installer/UninstallManager.cs</code></li>
+<li><code>scripts/extract_native_game_terms.py</code></li>
+<li><code>scripts/extract_native_localization.py</code></li>
+<li><code>scripts/generate_speech_catalogs.py</code></li>
+<li><code>scripts/polish_prism_documents.py</code></li>
+<li><code>scripts/translate_documents.py</code></li>
+<li><code>scripts/upgrade_speech_catalogs_google.py</code></li>
+<li><code>scripts/prepare_prism.ps1</code></li>
+<li><code>src/BopItAccess.csproj</code></li>
+<li><code>installer/BopItAccess.Installer.csproj</code></li>
+<li><code>installer/uninstall.ps1</code></li>
+<li><code>installer/app.manifest</code></li>
+<li><code>configuration/Loader.cfg</code></li>
+<li><code>NuGet.Config</code></li>
+<li><code>.gitignore</code></li>
+</ul></section>
+</main><footer><p>Christopher Shaw 是项目设计者和提交作者。GPT-6 Sol 协助此次审查并生成了代码修改。 <a href="BopItAccess-build-history.html">技术构建历史</a>.</p></footer></body></html>

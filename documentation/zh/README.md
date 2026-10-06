@@ -36,7 +36,9 @@ Voice=System default
 Voice=System default
 ```
 
-通过安装程序的卸载操作或 Windows“已安装的应用”卸载时，也会删除 UserData/BopItAccess.ini 及其 .tmp 文件，包括旧版手动安装。
+安装的文件记录在所有权清单中，因此更新能保留原有文件，中止的安装能撤销自身修改。**卸载**和 Windows **已安装的应用** 使用相同的卸载代码。提供的 `installer/uninstall.ps1` 会从 已安装的应用 启动无障碍卸载窗口。完全成功删除后，它会移除卸载启动器、所有权记录和 Windows 条目。保留已有无关 Mod 及共享 MelonLoader 文件。管理安装和旧手动安装的清理均涵盖已知 Mod 日志，包括 `Mods/BopItAccess.log.previous`, `UserData/BopItAccess.ini`、较旧的 `UserData/BopItAccess.ini.tmp`以及经过验证的 `BopItAccess.ini.<GUID>.tmp` 残留文件（位于 `UserData`。这里 `<GUID>` 必须恰好为不带连字符的 32 个十六进制字符；不会删除仅匹配宽泛通配符的任意文件。
+
+对于没有所有权清单的旧手动安装，卸载会删除可识别的 Bop It Access 文件，并保留无法证明来源的共享文件。卸载还会从每个本地 Windows 用户配置文件中删除仅属于 `BopItAccess.*` 的偏好设置值，包括已注销的用户配置文件。游戏自身的偏好设置和 .NET SDK 保留。若 Windows 拒绝访问，或其他清理步骤无法安全完成，安装程序会报告清理未完成。对于安装程序管理的副本，Windows 条目、卸载启动器和持久清理检查点会保留至清理成功，使剩余步骤可重试。旧手动安装没有此类持久所有权记录；其警告可在打开的安装程序中重试。
 
 ## 项目状况
 
@@ -113,10 +115,11 @@ hide_console = true
 - [日语用户指南（日本语）](../ja/BopItAccess-user-guide.html)。其他翻译的指南可在以下语言文件夹中找到 [`documentation/`](../).
 - [详细的功能和控制指南](README.txt)。它的安装部分描述了本地准备的安装 ZIP；此 GitHub 存储库仅提供源代码。
 - [技术构建历史](BopItAccess-build-history.html).
+- [发布准备代码审查](BopItAccess-release-review.html) — 已实施的修复、已审查文件、编译结果及剩余限制。
 - [此项目的 Git 工作流程](GIT-WORKFLOW.md).
 - [第三方通知](THIRD-PARTY-NOTICES.txt).
 
-上述所有六份文件的翻译副本位于 [`documentation/`](../) 在每种支持的语言代码下。它们的来源是英语； `scripts/translate_documents.py` 可以在源更改后重新生成机器翻译的草稿。
+上述文档的翻译副本位于 [`documentation/`](../) 下各受支持语言代码的文件夹中。其源文为英语； `scripts/translate_documents.py` 可在源文改变后重新生成机器翻译草稿。
 
 ## 接下来可能会发生什么
 

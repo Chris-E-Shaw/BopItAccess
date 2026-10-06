@@ -1,4 +1,4 @@
-Bop It Access 0.9.7 - Prism Sprache und Blindenschrift
+Bop It Access 0.9.8 - Prism Sprache und Blindenschrift
 
 Was das bewirkt
 --------------
@@ -401,7 +401,7 @@ Voice=System default
 [SAPI]
 Voice=System default
 
-Die Deinstallationsfunktion des Installers und die installierten Apps von Windows entfernen auch UserData/BopItAccess.ini und die zugehörige .tmp-Datei, einschließlich älterer manueller Installationen.
+Die Deinstallation im Installationsprogramm und unter Installierte Apps in Windows entfernt bekannte Mod-Protokolle einschließlich Mods/BopItAccess.log.previous, UserData/BopItAccess.ini, der älteren UserData/BopItAccess.ini.tmp und geprüfter BopItAccess.ini.<GUID>.tmp-Reste in UserData. <GUID> bedeutet genau 32 hexadezimale Zeichen ohne Bindestriche; fremde Dateien bleiben erhalten. Native Spieleinstellungen, andere Mods und das .NET SDK bleiben bestehen. Unvollständige Bereinigung wird im Statusprotokoll gemeldet. Bei einer verwalteten Kopie bleiben Windows-Eintrag, Deinstallationsstarter und Wiederaufnahmepunkt bis zur erfolgreichen Bereinigung für erneute Versuche verfügbar. Ältere manuelle Installationen besitzen kein dauerhaftes Besitzverzeichnis; ihre Warnungen können deshalb im geöffneten Installationsprogramm erneut bearbeitet werden.
 
 Hinweis zur KI-Transparenz
 --------------------

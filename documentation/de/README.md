@@ -36,7 +36,9 @@ Voice=System default
 Voice=System default
 ```
 
-Die Deinstallationsfunktion des Installers und die installierten Apps von Windows entfernen auch UserData/BopItAccess.ini und die zugehörige .tmp-Datei, einschließlich älterer manueller Installationen.
+Installierte Dateien werden in einem Besitzmanifest erfasst, damit Updates vorhandene Dateien bewahren und ein Installationsabbruch eigene Änderungen zurücknehmen kann. **Deinstallieren** und **Installierte Apps** in Windows verwenden denselben Deinstallationscode. Die mitgelieferte `installer/uninstall.ps1` öffnet ein zugängliches Deinstallationsfenster aus Installierte Apps. Nach vollständig erfolgreicher Entfernung werden Deinstallationsstarter, Besitzdatensätze und Windows-Eintrag entfernt. Vorhandene fremde Mods und gemeinsame MelonLoader-Dateien bleiben erhalten. Die Bereinigung verwalteter und älterer manueller Installationen erfasst die bekannten Mod-Protokolle einschließlich `Mods/BopItAccess.log.previous`, `UserData/BopItAccess.ini`, die ältere Datei `UserData/BopItAccess.ini.tmp`, sowie geprüfte `BopItAccess.ini.<GUID>.tmp` in `UserData`Dateireste. Hier muss `<GUID>` aus genau 32 hexadezimalen Zeichen ohne Bindestriche bestehen; beliebige Dateien, die einem weiten Platzhaltermuster entsprechen, werden nicht entfernt.
+
+Bei einer älteren manuell installierten Kopie ohne Besitzmanifest entfernt die Deinstallation identifizierbare Bop It Access-Dateien und lässt gemeinsame Dateien bestehen, deren Herkunft nicht nachgewiesen werden kann. Die Deinstallation entfernt außerdem nur `BopItAccess.*` Einstellungswerte aus jedem lokalen Windows-Benutzerprofil, auch aus abgemeldeten Profilen. Die eigenen Einstellungen des Spiels und das .NET SDK bleiben bestehen. Wenn Windows den Zugriff verweigert oder ein anderer Schritt nicht sicher abgeschlossen werden kann, meldet das Installationsprogramm unvollständige Bereinigung. Bei einer verwalteten Kopie bleiben Windows-Eintrag, Deinstallationsstarter und dauerhafter Wiederaufnahmepunkt bis zum erfolgreichen Abschluss verfügbar, damit verbleibende Schritte erneut versucht werden können. Eine ältere manuelle Installation besitzt keinen solchen dauerhaften Besitznachweis; ihre Warnungen können im geöffneten Installationsprogramm erneut bearbeitet werden.
 
 ## Projektstatus
 
@@ -113,10 +115,11 @@ Der Mod setzt diese Optionen nicht bei jedem Start zurück. Sie können jeden We
 - [Japanisches Benutzerhandbuch (日本語)](../ja/BopItAccess-user-guide.html). Weitere übersetzte Handbücher sind in den Sprachordnern unten verfügbar [`documentation/`](../).
 - [Detaillierte Funktions- und Steuerungsanleitung](README.txt). Der Installationsabschnitt beschreibt die lokal vorbereiteten Installations-ZIPs. Dieses GitHub-Repository stellt nur die Quelle bereit.
 - [Technische Baugeschichte](BopItAccess-build-history.html).
+- [Codeprüfung zur Vorbereitung der Veröffentlichung](BopItAccess-release-review.html) — umgesetzte Feststellungen, geprüfte Dateien, Kompilierungsergebnisse und verbleibende Grenzen.
 - [Git-Workflow für dieses Projekt](GIT-WORKFLOW.md).
 - [Hinweise Dritter](THIRD-PARTY-NOTICES.txt).
 
-Übersetzte Kopien aller sechs oben genannten Dokumente liegen vor [`documentation/`](../) unter jedem unterstützten Sprachcode. Die Quelle dafür ist Englisch; `scripts/translate_documents.py` kann die maschinell übersetzten Entwürfe nach Quelländerungen neu generieren.
+Übersetzte Kopien der oben genannten Dokumente befinden sich in [`documentation/`](../) unter dem jeweiligen unterstützten Sprachcode. Ihre Quelle ist Englisch; `scripts/translate_documents.py` kann die maschinell übersetzten Entwürfe nach Quelländerungen erneut erzeugen.
 
 ## Was als nächstes kommt
 

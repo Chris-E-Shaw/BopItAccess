@@ -1,4 +1,4 @@
-Bop It Access 0.9.7 - Prism 语音和盲文
+Bop It Access 0.9.8 - Prism 语音和盲文
 
 这是做什么的
 --------------
@@ -401,7 +401,7 @@ Voice=System default
 [SAPI]
 Voice=System default
 
-通过安装程序的卸载操作或 Windows“已安装的应用”卸载时，也会删除 UserData/BopItAccess.ini 及其 .tmp 文件，包括旧版手动安装。
+安装程序和 Windows 已安装的应用 中的卸载会删除已知 Mod 日志，包括 Mods/BopItAccess.log.previous、UserData/BopItAccess.ini、较旧的 UserData/BopItAccess.ini.tmp，以及 UserData 中经过验证的 BopItAccess.ini.<GUID>.tmp 残留文件。<GUID> 指恰好 32 个不带连字符的十六进制字符；无关文件保留。原生游戏偏好设置、无关 Mod 和 .NET SDK 保留。清理未完成时，状态日志会报告。对于安装程序管理的副本，Windows 条目、卸载启动器及清理检查点会保留至清理成功，以便重试。旧手动安装没有持久所有权记录，因此其警告可在打开的安装程序中重试。
 
 人工智能透明度说明
 --------------------

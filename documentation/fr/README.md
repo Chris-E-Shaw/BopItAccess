@@ -36,7 +36,9 @@ Voice=System default
 Voice=System default
 ```
 
-L’action Désinstaller de l’installeur et les Applications installées de Windows suppriment aussi UserData/BopItAccess.ini et son fichier .tmp, y compris pour les anciennes installations manuelles.
+Les fichiers installés sont consignés dans un manifeste de propriété afin que les mises à jour préservent les fichiers préexistants et qu’une installation annulée puisse revenir sur ses propres modifications. **Désinstaller** et les **Applications installées** de Windows utilisent le même code de désinstallation. Le fichier fourni `installer/uninstall.ps1` ouvre une fenêtre accessible de désinstallation depuis les Applications installées. Après une suppression entièrement réussie, il supprime le lanceur de désinstallation, les registres de propriété et l’entrée Windows. Les autres mods préexistants et les fichiers MelonLoader partagés sont conservés. Le nettoyage des installations gérées comme des anciennes installations manuelles couvre les journaux connus du mod, dont `Mods/BopItAccess.log.previous`, `UserData/BopItAccess.ini`, l’ancien fichier `UserData/BopItAccess.ini.tmp`, ainsi que les résidus validés de `BopItAccess.ini.<GUID>.tmp` dans `UserData`. Ici, `<GUID>` doit comporter exactement 32 caractères hexadécimaux sans tirets ; les fichiers quelconques correspondant à un joker large ne sont pas supprimés.
+
+Pour une ancienne copie installée manuellement sans manifeste de propriété, la désinstallation supprime les fichiers Bop It Access identifiables et laisse les fichiers partagés dont l’origine ne peut pas être prouvée. La désinstallation supprime également uniquement les valeurs de préférences `BopItAccess.*` de chaque profil utilisateur Windows local, y compris les profils déconnectés. Les préférences propres au jeu et le SDK .NET restent en place. Si Windows refuse l’accès ou si une autre étape de nettoyage ne peut pas se terminer en sûreté, l’installateur signale un nettoyage incomplet. Pour une copie gérée par l’installateur, son entrée Windows, son lanceur de désinstallation et son point de reprise durable restent disponibles jusqu’à la réussite du nettoyage, afin de réessayer les étapes restantes. Une ancienne installation manuelle n’a pas ce registre de propriété durable ; ses avertissements permettent une nouvelle tentative dans l’installateur ouvert.
 
 ## Statut du projet
 
@@ -113,10 +115,11 @@ Le mod ne réinitialise pas ces options à chaque lancement. Vous pouvez redéfi
 - [Guide de l'utilisateur japonais (日本語)](../ja/BopItAccess-user-guide.html). D'autres guides traduits sont disponibles dans les dossiers de langue sous [`documentation/`](../).
 - [Guide détaillé des fonctionnalités et des commandes](README.txt). Sa section d'installation décrit les ZIP d'installation préparés localement ; ce référentiel GitHub fournit uniquement la source.
 - [Historique de construction technique](BopItAccess-build-history.html).
+- [Revue du code pour préparer la publication](BopItAccess-release-review.html) — constats traités, fichiers examinés, résultats de compilation et limites restantes.
 - [Workflow Git pour ce projet](GIT-WORKFLOW.md).
 - [Avis de tiers](THIRD-PARTY-NOTICES.txt).
 
-Des copies traduites des six documents ci-dessus sont en [`documentation/`](../) sous chaque code de langue pris en charge. Leur source est l'anglais ; `scripts/translate_documents.py` peut régénérer les brouillons traduits automatiquement après des modifications de source.
+Les versions traduites des documents ci-dessus se trouvent dans [`documentation/`](../) sous le code de chaque langue prise en charge. Leur source est en anglais ; `scripts/translate_documents.py` permet de régénérer les brouillons traduits automatiquement après modification de la source.
 
 ## Que pourrait-il arriver ensuite
 

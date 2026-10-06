@@ -36,7 +36,9 @@ Voice=System default
 Voice=System default
 ```
 
-A opção Desinstalar do instalador e os Aplicativos instalados do Windows também removem UserData/BopItAccess.ini e seu arquivo .tmp, inclusive em instalações manuais antigas.
+Arquivos instalados são registrados em um manifesto de propriedade para que atualizações preservem arquivos já existentes e uma instalação cancelada possa reverter suas próprias alterações. **Desinstalar** e **Aplicativos Instalados** do Windows usam o mesmo código de desinstalação. O arquivo fornecido `installer/uninstall.ps1` abre uma janela acessível de desinstalação a partir dos Aplicativos Instalados. Após a remoção completamente bem-sucedida, ele remove o iniciador de desinstalação, os registros de propriedade e a entrada do Windows. Outros mods existentes e arquivos compartilhados do MelonLoader são preservados. Tanto a limpeza de instalações gerenciadas quanto a de antigas instalações manuais abrangem os registros conhecidos do mod, incluindo `Mods/BopItAccess.log.previous`, `UserData/BopItAccess.ini`, o antigo `UserData/BopItAccess.ini.tmp`, e restos validados de `BopItAccess.ini.<GUID>.tmp` em `UserData`. Aqui, `<GUID>` deve ter exatamente 32 caracteres hexadecimais sem hífens; arquivos arbitrários que correspondam a um curinga amplo não são removidos.
+
+Para cópias antigas instaladas manualmente sem manifesto de propriedade, a desinstalação remove os arquivos identificáveis do Bop It Access e preserva arquivos compartilhados cuja origem não pode ser comprovada. A desinstalação também remove apenas os valores de preferências `BopItAccess.*` de cada perfil local de usuário Windows, incluindo perfis desconectados. As preferências do jogo e o SDK .NET permanecem. Se o Windows negar acesso ou outra etapa não puder terminar com segurança, o instalador informa limpeza incompleta. Para cópias gerenciadas pelo instalador, sua entrada do Windows, iniciador de desinstalação e ponto de controle durável permanecem disponíveis até a limpeza ter êxito, permitindo repetir as etapas restantes. Instalações manuais antigas não têm esse registro durável; seus avisos podem ser tentados novamente no instalador aberto.
 
 ## Status do projeto
 
@@ -113,10 +115,11 @@ O mod não redefine essas opções a cada inicialização. Você pode alterar ma
 - [Guia do usuário japonês (日本語)](../ja/BopItAccess-user-guide.html). Outros guias traduzidos estão disponíveis nas pastas de idiomas em [`documentation/`](../).
 - [Recursos detalhados e guia de controle](README.txt). Sua seção de instalação descreve os ZIPs de instalação preparados localmente; este repositório GitHub fornece apenas a fonte.
 - [Histórico técnico de construção](BopItAccess-build-history.html).
+- [Revisão do código para preparar o lançamento](BopItAccess-release-review.html) — problemas implementados, arquivos revisados, resultados de compilação e limites restantes.
 - [Fluxo de trabalho Git para este projeto](GIT-WORKFLOW.md).
 - [Avisos de terceiros](THIRD-PARTY-NOTICES.txt).
 
-Cópias traduzidas de todos os seis documentos acima estão em [`documentation/`](../) em cada código de idioma suportado. A fonte deles é o inglês; `scripts/translate_documents.py` pode regenerar os rascunhos traduzidos automaticamente após alterações na fonte.
+Cópias traduzidas dos documentos acima estão em [`documentation/`](../) sob o código de cada idioma compatível. A fonte é o inglês; `scripts/translate_documents.py` pode regenerar os rascunhos traduzidos automaticamente após alterações na fonte.
 
 ## O que pode vir a seguir
 

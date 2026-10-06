@@ -1,4 +1,4 @@
-Bop It Access 0.9.7 - Prism 音声と点字
+Bop It Access 0.9.8 - Prism 音声と点字
 
 これが何をするのか
 --------------
@@ -401,7 +401,7 @@ Voice=System default
 [SAPI]
 Voice=System default
 
-インストーラーのアンインストール操作とWindowsの「インストールされているアプリ」からの削除では、以前の手動インストールも含め、UserData/BopItAccess.iniとその.tmpファイルも削除されます。
+インストーラーと Windows の インストールされているアプリ からのアンインストールは、Mods/BopItAccess.log.previous、UserData/BopItAccess.ini、古い UserData/BopItAccess.ini.tmp、および UserData 内の検証済み BopItAccess.ini.<GUID>.tmp 残存ファイルを含む既知の Mod ログを削除します。<GUID> は、ハイフンなしの正確に 32 桁の 16 進文字を意味します。無関係なファイルは維持します。ネイティブゲームの設定値、無関係な Mod、.NET SDK は残ります。クリーンアップが未完了の場合、ステータスログで報告します。インストーラー管理のコピーでは、成功するまで Windows 登録、アンインストールランチャー、クリーンアップチェックポイントを再試行に利用できます。古い手動インストールには永続的な所有権記録がないため、その警告は、開いているインストーラーで再試行できます。
 
 AIの使用に関する透明性の説明
 --------------------

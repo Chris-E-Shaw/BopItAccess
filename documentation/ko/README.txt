@@ -1,4 +1,4 @@
-Bop It Access 0.9.7 - Prism 음성 및 점자
+Bop It Access 0.9.8 - Prism 음성 및 점자
 
 이것이 무엇을 하는가
 --------------
@@ -401,7 +401,7 @@ Voice=System default
 [SAPI]
 Voice=System default
 
-설치 프로그램의 제거 기능과 Windows 설치된 앱에서 제거하면 이전 수동 설치를 포함하여 UserData/BopItAccess.ini 및 해당 .tmp 파일도 삭제됩니다.
+설치 프로그램과 Windows 설치된 앱의 제거는 Mods/BopItAccess.log.previous, UserData/BopItAccess.ini, 이전 UserData/BopItAccess.ini.tmp 및 UserData의 검증된 BopItAccess.ini.<GUID>.tmp 잔여 파일을 포함한 알려진 Mod 로그를 제거합니다. <GUID>는 하이픈 없는 정확히 32자 16진수를 뜻하며 무관한 파일은 보존합니다. 네이티브 게임 환경설정, 무관한 Mod, .NET SDK는 남습니다. 정리가 미완료이면 상태 로그에 보고합니다. 설치 프로그램 관리 사본에서는 정리가 성공할 때까지 Windows 항목, 제거 실행기, 정리 체크포인트를 재시도에 사용할 수 있습니다. 이전 수동 설치에는 영구 소유권 기록이 없으므로 경고는 열린 설치 프로그램에서 재시도할 수 있습니다.
 
 AI 사용에 관한 투명성 안내
 --------------------

@@ -1,4 +1,4 @@
-Bop It Access 0.9.7 - Prism Parole et Braille
+Bop It Access 0.9.8 - Prism Parole et Braille
 
 Qu'est-ce que cela fait
 --------------
@@ -401,7 +401,7 @@ Voice=System default
 [SAPI]
 Voice=System default
 
-L’action Désinstaller de l’installeur et les Applications installées de Windows suppriment aussi UserData/BopItAccess.ini et son fichier .tmp, y compris pour les anciennes installations manuelles.
+La désinstallation dans l’installateur et les Applications installées de Windows supprime les journaux connus du mod, dont Mods/BopItAccess.log.previous, UserData/BopItAccess.ini, l’ancien UserData/BopItAccess.ini.tmp et les résidus validés BopItAccess.ini.<GUID>.tmp dans UserData. <GUID> désigne exactement 32 caractères hexadécimaux sans tirets ; les fichiers sans rapport sont conservés. Les préférences natives du jeu, les autres mods et le SDK .NET restent en place. Si le nettoyage est incomplet, le journal d’état le signale. Pour une copie gérée par l’installateur, l’entrée Windows, le lanceur de désinstallation et le point de reprise restent disponibles pour réessayer jusqu’à la réussite du nettoyage. Les anciennes installations manuelles n’ont pas de registre de propriété durable ; leurs avertissements permettent une nouvelle tentative dans l’installateur ouvert.
 
 Note de transparence sur l'IA
 --------------------
