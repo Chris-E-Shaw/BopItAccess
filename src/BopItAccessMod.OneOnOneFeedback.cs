@@ -155,11 +155,17 @@ public sealed partial class BopItAccessMod
                 bool greenLifeChanged = greenLives != _oneOnOneLastGreenLives;
                 bool bothLivesChanged = yellowLifeChanged && greenLifeChanged;
                 lifeChanged = yellowLifeChanged || greenLifeChanged;
+                // Shared Bop prompts let either player earn a life. Identify
+                // the winner from the counter that increased, regardless of
+                // the last active instruction colour. Ordinary losses keep
+                // their existing short life-count announcement.
                 if (yellowLifeChanged)
-                    announcements.Add((bothLivesChanged ? L("Yellow") + ", " : "") +
+                    announcements.Add((bothLivesChanged ||
+                        yellowLives > _oneOnOneLastYellowLives ? L("Yellow") + ", " : "") +
                         FormatOneOnOneLives(yellowLives));
                 if (greenLifeChanged)
-                    announcements.Add((bothLivesChanged ? L("Green") + ", " : "") +
+                    announcements.Add((bothLivesChanged ||
+                        greenLives > _oneOnOneLastGreenLives ? L("Green") + ", " : "") +
                         FormatOneOnOneLives(greenLives));
             }
 

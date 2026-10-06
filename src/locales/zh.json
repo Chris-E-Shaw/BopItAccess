@@ -477,5 +477,8 @@
   "VOICE": "语音",
   "VOLUME": "音量",
   "RATE": "语速",
-  "PITCH": "音高"
+  "PITCH": "音高",
+  "SPEAK MENU INDEXES": "朗读菜单项位置",
+  "Done!": "完成！",
+  "Calibration failed.": "校准失败。"
 }

@@ -53,7 +53,7 @@ con una nuova attività dopo il ritorno dello stato attivo. Se il parlato stesso
 riacquista la messa a fuoco, la mod ripristina la tastiera e il controller correnti
 istruzioni una volta.
 
-Il menu IMPOSTAZIONI MOD dispone anche di INDICIZZAZIONE, attivata per impostazione predefinita e salvata tra le sessioni.
+Il menu IMPOSTAZIONI MOD dispone anche di Leggi le posizioni nei menu, attivata per impostazione predefinita e salvata tra le sessioni.
 Quando abilitata, una voce di menu evidenziata include la sua posizione, ad esempio "PLAY, 1 di 6".
 Questo vale per i menu principale e Impostazioni, Controlli, modalità di gioco, Mod
 Impostazioni, scelte di game-over, classifiche, risultati, crediti e altro
@@ -71,13 +71,7 @@ INTERVENTI SLIDER è un interruttore salvato, disattivato per impostazione prede
 riporta anche i loro endpoint disponibili dopo il valore corrente, come ad esempio
 "Slider MUSIC, 30, intervallo da 0 a 100, 1 di 12" durante l'indicizzazione e i tipi di controllo
 sono abilitati. Lo spostamento di un cursore continua a indicare solo il nuovo valore.
-Il FEEDBACK UNO A UNO è un'opzione salvata, attivata per impostazione predefinita. Quando abilitato, esso
-annuncia il colore attivo all'inizio di un round Uno contro Uno e quando
-cambiamenti di colore. Una vita perduta annuncia il conteggio rimanente, ad esempio "2 vite"
-o "1 vita". Una vita guadagnata annuncia il nuovo conteggio allo stesso modo, fino a
-il limite di tre vite del gioco. Se il conteggio delle vite di entrambi i giocatori cambia insieme,
-entrambi i conteggi sono identificati dal colore. La funzione viene eseguita solo durante One on One
-giocare.
+Il feedback uno a uno viene salvato ed è attivo per impostazione predefinita. Annuncia il colore attivo all’inizio e quando cambia. Quando si perde una vita, annuncia il numero di vite rimaste. Quando si guadagna una vita, annuncia il colore del giocatore e il nuovo totale, per esempio “Verde, 3 vite”, così entrambi sanno chi è stato più veloce. Questi annunci sono disattivati quando il feedback uno a uno è disattivato. Il limite di tre vite del gioco resta invariato. Questa funzione opera solo durante una partita uno contro uno.
 
 TIPO DI SUGGERIMENTO ora appare sopra SUGGERIMENTI PULSANTE AUTO-SPEAK nel menu Impostazioni mod.
 I SUGGERIMENTI PER IL PULSANTE DI PARLAZIONE AUTOMATICA sono un interruttore salvato ed è attivato per impostazione predefinita. Girandolo
@@ -295,7 +289,7 @@ sovrascrive qualsiasi associazione di input del gioco.
 All'interno di Calibrazione audio, la mod legge i controlli Calibra, Indietro e COLPISCI,
 annuncia le istruzioni e le fasi di calibrazione, legge il conto alla rovescia del riscaldamento,
 e annuncia il risultato della latenza visualizzato. Non parla ogni battito durante
-l'esercizio di cronometraggio in modo che il ritmo rimanga udibile.
+l'esercizio di cronometraggio in modo che il ritmo rimanga udibile. Dopo l’ultimo input di calibrazione, il mod dice subito “Fatto!”. Smetti di colpire e attendi il risultato misurato. Se la calibrazione fallisce perché non è stato dato alcun input, dice “Calibrazione fallita.”.
 
 La schermata di pausa annuncia In pausa, il pulsante Riprendi o Menu principale focalizzato,
 e il suo pulsante suggerisce. I cambiamenti di focus interrompono il discorso precedente del menu di pausa;

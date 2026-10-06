@@ -454,7 +454,7 @@ public sealed partial class BopItAccessMod
                     (UnityAction)OnMuteSpeechInBackgroundSubmitted,
                 _muteSpeechInBackground);
             _indexingToggle = AddSpeechToggle(settings.vibration, content,
-                "INDEXING",
+                "SPEAK MENU INDEXES",
                 _indexingSubmitListener ??= (UnityAction)OnIndexingSubmitted,
                 _indexingEnabled);
             _filterCapitalisationToggle = AddSpeechToggle(settings.vibration, content,
@@ -527,7 +527,7 @@ public sealed partial class BopItAccessMod
             _speechUiOptions.Add(new("MUTE SPEECH IN BACKGROUND", "toggle",
                 _muteSpeechInBackgroundToggle,
                 () => _muteSpeechInBackground ? "On" : "Off"));
-            _speechUiOptions.Add(new("INDEXING", "toggle", _indexingToggle,
+            _speechUiOptions.Add(new("SPEAK MENU INDEXES", "toggle", _indexingToggle,
                 () => _indexingEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("FORMAT SPEECH", "toggle",
                 _filterCapitalisationToggle,

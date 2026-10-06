@@ -51,6 +51,8 @@ Elige un idioma en la fila **Configuración > Idioma** del juego. El discurso mo
 
 Las acciones del juego usan sus traducciones oficiales. Shapes, Space, City y Office conservan sus nombres de escenario en inglés. Para OneCore o SAPI, elija en Configuración del mod una voz instalada para el idioma del juego si la voz predeterminada no suena bien. Voz, Volumen, Velocidad y Tono ajustan la salida OneCore o SAPI que está realmente en uso, incluso en el modo Auto. Solo aparecen los controles compatibles; con otras salidas se ocultan. Cada motor guarda sus ajustes por separado.
 
+Leer posiciones de los menús. Esta opción guardada, activada de forma predeterminada, anuncia la posición del elemento dentro de su menú. Los comentarios uno a uno se guardan y están activados de forma predeterminada. Anuncia el color activo al inicio y cuando cambia. Al perder una vida, anuncia la cantidad restante. Al ganar una vida, anuncia el color del jugador y su nuevo total, por ejemplo «Verde, 3 vidas», para que ambos sepan quién fue más rápido. Estos anuncios se desactivan al desactivar los comentarios uno a uno. El límite de tres vidas del juego no cambia. Esta función solo actúa durante una partida uno a uno. Después de la última entrada de calibración, el mod dice inmediatamente «¡Listo!». Deja de golpear y espera el resultado medido. Si la calibración falla porque no se ha realizado ninguna entrada, dice «Calibración fallida».
+
 **Dar formato al habla**: Hace más natural el texto en mayúsculas para voz y braille. En la guía del juego añade puntos suspensivos antes del número de línea si el texto termina sin puntuación. El texto visible no cambia. Desactívalo para recibir el texto tal como está escrito.
 
 ## Documentación

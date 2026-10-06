@@ -53,7 +53,7 @@ mit neuer Aktivität, nachdem der Fokus zurückgekehrt ist. Wenn die Sprache sel
 Erhält den Fokus wieder, stellt der Mod die aktuelle Tastatur und den Controller wieder her
 Anweisungen einmal.
 
-Das Menü MOD-EINSTELLUNGEN verfügt auch über INDEXING, das standardmäßig aktiviert ist und zwischen Sitzungen gespeichert wird.
+Das Menü MOD-EINSTELLUNGEN verfügt auch über Menüpositionen vorlesen, das standardmäßig aktiviert ist und zwischen Sitzungen gespeichert wird.
 Wenn diese Option aktiviert ist, enthält ein fokussierter Menüpunkt seine Position, z. B. „PLAY, 1 von 6“.
 Dies gilt für das Haupt- und Einstellungsmenü, die Steuerung, die Wiedergabemodi und Mod
 Einstellungen, Game-Over-Auswahl, Bestenlisten, Erfolge, Credits und mehr
@@ -71,13 +71,7 @@ SLIDER RANGES ist ein gespeicherter Schalter, standardmäßig deaktiviert. Wenn 
 Melden Sie auch ihre verfügbaren Endpunkte nach dem aktuellen Wert, z
 „MUSIK-Schieberegler, 30, Bereich 0 bis 100, 1 von 12“ beim Indizieren und Kontrollieren von Typen
 sind aktiviert. Beim Verschieben eines Schiebereglers wird weiterhin nur der neue Wert angezeigt.
-EINS-ZU-EINS-FEEDBACK ist ein gespeicherter Schalter, standardmäßig aktiviert. Wenn es aktiviert ist, wird es
-kündigt die aktive Farbe zu Beginn einer Eins-gegen-Eins-Runde an und wenn das so ist
-Farbveränderungen. Ein verlorenes Leben gibt die verbleibende Anzahl an, z. B. „2 Leben“.
-oder „1 Leben“. Ein gewonnenes Leben kündigt die neue Zählung auf die gleiche Weise an, bis zu
-das Drei-Leben-Limit des Spiels. Wenn sich die Lebenspunkte beider Spieler gemeinsam ändern,
-beide Zählungen sind farblich gekennzeichnet. Die Funktion läuft nur während One on One
-spielen.
+Das Eins-gegen-Eins-Feedback wird gespeichert und ist standardmäßig eingeschaltet. Nennt die aktive Farbe zu Beginn und bei einem Wechsel. Bei einem verlorenen Leben wird die verbleibende Anzahl genannt. Bei einem gewonnenen Leben werden die Spielerfarbe und die neue Anzahl genannt, etwa „Grün, 3 Leben“, damit beide Spieler wissen, wer schneller war. Diese Ansagen entfallen, wenn das Eins-gegen-Eins-Feedback ausgeschaltet ist. Die Grenze von drei Leben bleibt unverändert. Diese Funktion gilt nur während einer Eins-gegen-Eins-Runde.
 
 HINTS TYPE erscheint jetzt über den AUTO-SPEAK-BUTTON-HINTS im Mod-Einstellungen-Menü.
 AUTO-SPEAK-TASTE HINTS ist ein gespeicherter Schalter und standardmäßig aktiviert. Drehen
@@ -295,7 +289,7 @@ wiederholt, nachdem die Szene geschlossen wurde. Beschreibungen nicht mehr vorü
 Innerhalb der Audiokalibrierung liest der Mod die Steuerelemente „Kalibrieren“, „Zurück“ und „KLOPFEN“.
 kündigt die Anweisungen und Kalibrierungsschritte an, liest den Aufwärm-Countdown vor,
 und gibt das angezeigte Latenzergebnis bekannt. Es wird nicht bei jedem Schlag gesprochen
-Machen Sie die Timing-Übung, damit der Beat hörbar bleibt.
+Machen Sie die Timing-Übung, damit der Beat hörbar bleibt. Nach deiner letzten Kalibrierungseingabe sagt der Mod sofort „Fertig!“. Höre auf zu klopfen und warte auf das Messergebnis. Schlägt die Kalibrierung fehl, weil keine Eingabe erfolgte, sagt er „Kalibrierung fehlgeschlagen.“.
 
 Auf dem Pausenbildschirm wird „Pause“ angezeigt, die fokussierte Schaltfläche „Fortsetzen“ oder „Hauptmenü“
 und seine Schaltflächenhinweise. Fokusänderungen unterbrechen frühere Pausenmenü-Sprachausgabe;

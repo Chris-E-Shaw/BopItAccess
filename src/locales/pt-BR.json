@@ -477,5 +477,8 @@
   "VOICE": "Voz",
   "VOLUME": "Volume",
   "RATE": "Velocidade",
-  "PITCH": "Tom"
+  "PITCH": "Tom",
+  "SPEAK MENU INDEXES": "Ler posições nos menus",
+  "Done!": "Concluído!",
+  "Calibration failed.": "Falha na calibração."
 }

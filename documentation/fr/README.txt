@@ -53,7 +53,7 @@ avec une nouvelle activité après le retour de la concentration. Si la parole e
 retrouve le focus, le mod donne la récupération actuelle du clavier et du contrôleur
 instructions une fois.
 
-Le menu MOD SETTINGS a également INDEXATION, activé par défaut et enregistré entre les sessions.
+Le menu MOD SETTINGS a également Lire les positions dans les menus, activé par défaut et enregistré entre les sessions.
 Lorsqu'il est activé, un élément de menu ciblé inclut sa position, telle que « PLAY, 1 of 6 ».
 Cela s'applique aux menus principal et paramètres, commandes, modes de lecture, Mod
 Paramètres, choix de fin de partie, classements, réalisations, crédits et autres
@@ -71,13 +71,7 @@ SLIDER RANGES est une bascule enregistrée, désactivée par défaut. Lorsqu'ils
 signalent également leurs points de terminaison disponibles après la valeur actuelle, tels que
 "Curseur MUSIQUE, 30, plage 0 à 100, 1 sur 12" lors de l'indexation et des types de contrôle
 sont activés. Le déplacement d'un curseur indique toujours uniquement la nouvelle valeur.
-ONE-ON-ONE FEEDBACK est une bascule enregistrée, activée par défaut. Lorsqu'il est activé, il
-annonce la couleur active au début d'un tour One contre One et quand celle-ci
-changements de couleur. Une vie perdue annonce le décompte restant, par exemple "2 vies"
-ou "1 vie". Une vie gagnée annonce le nouveau décompte de la même manière, jusqu'à
-la limite de trois vies du jeu. Si la vie des deux joueurs compte, cela change ensemble,
-les deux chefs d'accusation sont identifiés par la couleur. La fonctionnalité ne fonctionne que pendant les sessions One to One
-jouer.
+Les commentaires individuels sont mémorisés et activés par défaut. Annonce la couleur active au début et lorsqu’elle change. Après une vie perdue, annonce le nombre de vies restantes. Après une vie gagnée, annonce la couleur du joueur et son nouveau total, par exemple « Vert, 3 vies », pour indiquer quel joueur a été le plus rapide. Ces annonces sont désactivées lorsque les commentaires individuels sont désactivés. La limite de trois vies du jeu reste inchangée. Cette fonction n’agit que pendant une partie en tête-à-tête.
 
 LE TYPE DE CONSEILS apparaît désormais au-dessus des CONSEILS DU BOUTON AUTO-SPEAK dans le menu Paramètres du module.
 CONSEILS SUR LE BOUTON DE PAROLE AUTOMATIQUE est une bascule enregistrée et est activé par défaut. Le tourner
@@ -295,7 +289,7 @@ remplace toutes les propres liaisons d'entrée du jeu.
 Dans Audio Calibration, le mod lit les commandes Calibrate, Back et TAPER,
 annonce les instructions et les étapes d'étalonnage, lit le compte à rebours de l'échauffement,
 et annonce le résultat de latence affiché. Il ne parle pas à chaque battement pendant
-l'exercice de chronométrage pour que le rythme reste audible.
+l'exercice de chronométrage pour que le rythme reste audible. Après votre dernière entrée de calibrage, le mod dit immédiatement « Terminé ! » ; cessez de taper et attendez le résultat mesuré. Si le calibrage échoue parce qu’aucune entrée n’a été effectuée, il dit « Échec du calibrage. ».
 
 L'écran de pause annonce Pause, le bouton Reprendre ou Menu principal ciblé,
 et son bouton fait allusion. Les changements de focus interrompent le discours du menu pause précédent ;

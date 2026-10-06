@@ -62,7 +62,7 @@ with new activity after focus returns. If speech itself is Off when the game
 regains focus, the mod gives the current keyboard and controller recovery
 instructions once.
 
-The MOD SETTINGS menu also has INDEXING, On by default and saved between sessions.
+The MOD SETTINGS menu also has SPEAK MENU INDEXES, On by default and saved between sessions.
 When enabled, a focused menu item includes its position, such as "PLAY, 1 of 6".
 This applies across the main and Settings menus, Controls, play modes, Mod
 Settings, game-over choices, leaderboards, achievements, credits, and other
@@ -74,7 +74,7 @@ the text sent to speech and braille, leaving the game's visible GUI and guide
 unchanged. All-capital menu words use natural sentence case: "PASS IT" becomes
 "Pass it" and "ONE ON ONE" becomes "One-on-one". The first word after a full stop
 is capitalised again. Mixed-case words and common abbreviations such as SAPI,
-NVDA, SFX, and FPS are preserved. In an open guide topic, when Indexing is On,
+NVDA, SFX, and FPS are preserved. In an open guide topic, when Speak Menu Indexes is On,
 three dots add a pause before the line number if the text ends without terminal
 punctuation. Existing full stops, commas, and other terminal punctuation remain.
 Turning this toggle Off disables both adjustments and sends the original text.
@@ -89,13 +89,7 @@ SLIDER RANGES is a saved toggle, Off by default. When enabled, focused sliders
 also report their available endpoints after the current value, such as
 "MUSIC slider, 30, range 0 to 100, 1 of 12" when indexing and control types
 are enabled. Moving a slider still speaks only the new value.
-ONE-ON-ONE FEEDBACK is a saved toggle, On by default. When enabled, it
-announces the active colour at the start of a One on One round and when that
-colour changes. A lost life announces the remaining count, such as "2 lives"
-or "1 life". A gained life announces the new count in the same way, up to
-the game's three-life limit. If both players' life counts change together,
-both counts are identified by colour. The feature runs only during One on One
-play.
+ONE-ON-ONE FEEDBACK is saved and On by default. Announces the active colour at the start and when it changes. A lost life announces the remaining count. A gained life announces the player’s colour and new life total, such as “Green, 3 lives,” so both players know who won the Bop race. These announcements are disabled when One-on-One Feedback is Off. The game’s three-life limit is unchanged. This feature runs only during One-on-One play.
 
 HINTS TYPE now appears above AUTO-SPEAK BUTTON HINTS in the Mod Settings menu.
 AUTO-SPEAK BUTTON HINTS is a saved toggle and is On by default. Turning it
@@ -321,7 +315,7 @@ overrides any of the game's own input bindings.
 Inside Audio Calibration, the mod reads the Calibrate, Back, and Bop controls,
 announces the instructions and calibration stages, reads the warmup countdown,
 and announces the displayed latency result. It does not speak every beat during
-the timing exercise so the beat remains audible.
+the timing exercise so the beat remains audible. After your final calibration input, the mod immediately says “Done!”; stop bopping and wait for the measured result. If calibration fails because no input was made, it says “Calibration failed.”
 
 The pause screen announces Paused, the focused Resume or Main Menu button,
 and its button hints. Focus changes interrupt earlier pause-menu speech;

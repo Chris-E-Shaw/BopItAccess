@@ -477,5 +477,8 @@
   "VOICE": "Stimme",
   "VOLUME": "Lautstärke",
   "RATE": "Sprechgeschwindigkeit",
-  "PITCH": "Tonhöhe"
+  "PITCH": "Tonhöhe",
+  "SPEAK MENU INDEXES": "Menüpositionen vorlesen",
+  "Done!": "Fertig!",
+  "Calibration failed.": "Kalibrierung fehlgeschlagen."
 }

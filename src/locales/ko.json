@@ -477,5 +477,8 @@
   "VOICE": "음성",
   "VOLUME": "볼륨",
   "RATE": "말하기 속도",
-  "PITCH": "음높이"
+  "PITCH": "음높이",
+  "SPEAK MENU INDEXES": "메뉴 항목 위치 읽기",
+  "Done!": "완료!",
+  "Calibration failed.": "보정에 실패했습니다."
 }

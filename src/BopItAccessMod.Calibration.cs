@@ -1,4 +1,7 @@
 using System.Globalization;
+using System.Reflection;
+using System.Runtime.Versioning;
+using HarmonyLib;
 using Il2Cpp;
 using Il2CppTMPro;
 using UnityEngine;
@@ -19,10 +22,18 @@ public sealed partial class BopItAccessMod
     private long _lastCalibrationCountdownAt;
     private long _nextCalibrationSearchAt;
     private bool _calibrationWasVisible;
+    private static BopItAccessMod? _activeCalibrationMod;
+    private int _calibrationFinalBeatObserved;
+    private int _calibrationAcceptedInput;
+    private float _calibrationLastAcceptedInputTime;
+    private int _calibrationEndNoticePending;
+    private bool _calibrationEndNoticeSpoken;
+    private bool _calibrationAttemptFailed;
 
     // True means this panel owns the current screen, even when it has no selected button.
     private bool ReadCalibrationFocus()
     {
+        _activeCalibrationMod = this;
         if (_calibrationPanel == null)
         {
             long now = Environment.TickCount64;
@@ -60,6 +71,9 @@ public sealed partial class BopItAccessMod
         }
 
         CalibrateState state = panel.State;
+        int endNotice = Interlocked.Exchange(ref _calibrationEndNoticePending, 0);
+        if (endNotice != 0 && !_calibrationEndNoticeSpoken)
+            AnnounceCalibrationEnd(endNotice == 2);
         string? result = state == CalibrateState.Result && panel.latencyContainer?.IsVisible == true
             ? CleanSpeechValue(panel.latency == null ? null : panel.latency.text)
             : null;
@@ -86,7 +100,9 @@ public sealed partial class BopItAccessMod
                 CalibrateState.Start => L("Audio calibration."),
                 CalibrateState.Warmup => L("Get ready. Bop to the beat."),
                 CalibrateState.Calibrate => L("Bop to the beat."),
-                CalibrateState.Finished => L("Calibration finished. Calculating latency."),
+                CalibrateState.Finished => _calibrationEndNoticeSpoken ? null :
+                    L("Done!"),
+                CalibrateState.Result when _calibrationAttemptFailed => null,
                 CalibrateState.Result => result == null
                     ? L("Audio calibration complete.")
                     : LF("Audio calibration complete. Latency, {0}.", result),
@@ -106,7 +122,7 @@ public sealed partial class BopItAccessMod
                 _lastSpokenCalibrationCountdown = null;
             }
         }
-        else if (resultChanged)
+        else if (resultChanged && !_calibrationAttemptFailed)
         {
             announcement = LF("Latency, {0}.", result);
         }
@@ -133,7 +149,13 @@ public sealed partial class BopItAccessMod
 
         if (announcement != null)
         {
-            if (focusChanged && actionLabel != null &&
+            // The native Finished state can become Result within the same
+            // call. Keep its result behind the short end notice even if the
+            // Prism worker has not picked that notice up yet.
+            if (_calibrationEndNoticeSpoken && (stageChanged || resultChanged) &&
+                (state == CalibrateState.Finished || state == CalibrateState.Result))
+                QueueSequentialSpeech(announcement);
+            else if (focusChanged && actionLabel != null &&
                 state != CalibrateState.Warmup && state != CalibrateState.Calibrate &&
                 state != CalibrateState.Finished)
                 QueueFocusSpeech(announcement);
@@ -142,6 +164,106 @@ public sealed partial class BopItAccessMod
         }
 
         return true;
+    }
+
+    private void AnnounceCalibrationEnd(bool failed)
+    {
+        _calibrationEndNoticeSpoken = true;
+        _calibrationAttemptFailed = failed;
+        string notice = failed ? L("Calibration failed.") : L("Done!");
+        WriteStatus(failed
+            ? "Audio calibration ended without any accepted calibration-phase input."
+            : "Audio calibration final input/end reached; no more beat inputs are needed.");
+        QueueSpeech(notice);
+    }
+
+    private bool IsObservedCalibrationPanel(CalibratePanel panel) =>
+        !ReferenceEquals(_calibrationPanel, null) &&
+        panel.Pointer == _calibrationPanel.Pointer;
+
+    internal static void NoteCalibrationStarted(CalibratePanel panel)
+    {
+        BopItAccessMod? mod = _activeCalibrationMod;
+        if (mod == null || !mod.IsObservedCalibrationPanel(panel))
+            return;
+        Volatile.Write(ref mod._calibrationFinalBeatObserved, 0);
+        Volatile.Write(ref mod._calibrationAcceptedInput, 0);
+        Volatile.Write(ref mod._calibrationLastAcceptedInputTime, float.NegativeInfinity);
+        Interlocked.Exchange(ref mod._calibrationEndNoticePending, 0);
+        mod._calibrationEndNoticeSpoken = false;
+        mod._calibrationAttemptFailed = false;
+    }
+
+    internal static void NoteCalibrationMarker(CalibratePanel panel,
+        Il2CppFMOD.Studio.TIMELINE_MARKER_PROPERTIES marker)
+    {
+        BopItAccessMod? mod = _activeCalibrationMod;
+        if (mod == null || !mod.IsObservedCalibrationPanel(panel) ||
+            panel.State != CalibrateState.Calibrate)
+            return;
+
+        // The shipped calibration chart repeats its Kick/Snare pair while
+        // LoopCounter is below 7. Its End transition exits on the eighth loop.
+        // The final Snare therefore identifies the final required beat, not
+        // an arbitrary total of button presses (extra taps cannot finish it).
+        // Observe only; do not alter FMOD parameters, timing, or game inputs.
+        try
+        {
+            string name = marker.name;
+            if (!string.Equals(name, "Snare", StringComparison.Ordinal) ||
+                panel.eventInstance.getParameterByName("LoopCounter", out float loop,
+                    out float finalLoop) != Il2CppFMOD.RESULT.OK ||
+                Math.Max(loop, finalLoop) < 7f)
+                return;
+            Volatile.Write(ref mod._calibrationFinalBeatObserved, 1);
+
+            // A player can tap slightly before the audible beat. An already
+            // accepted tap within a quarter beat also belongs to this last
+            // beat; announce from Unity's next update instead of waiting End.
+            float earlyTapAge = panel.calibrationTime -
+                Volatile.Read(ref mod._calibrationLastAcceptedInputTime);
+            if (Volatile.Read(ref mod._calibrationAcceptedInput) != 0 &&
+                earlyTapAge >= 0f && earlyTapAge <= panel.beatPeriod * 0.25f)
+                Interlocked.CompareExchange(ref mod._calibrationEndNoticePending, 1, 0);
+        }
+        catch
+        {
+            // Older/different game charts may lack this optional metadata.
+            // The native OnFinished observation remains the safe fallback.
+        }
+    }
+
+    internal static void NoteCalibrationInput(CalibratePanel panel,
+        CalibrateState previousState, int previousCount)
+    {
+        BopItAccessMod? mod = _activeCalibrationMod;
+        if (mod == null || !mod.IsObservedCalibrationPanel(panel) ||
+            previousState != CalibrateState.Calibrate ||
+            panel.playerInputTimes == null || panel.playerInputTimes.Count <= previousCount)
+            return;
+
+        Volatile.Write(ref mod._calibrationAcceptedInput, 1);
+        Volatile.Write(ref mod._calibrationLastAcceptedInputTime,
+            panel.playerInputTimes[panel.playerInputTimes.Count - 1]);
+        if (Volatile.Read(ref mod._calibrationFinalBeatObserved) != 0 &&
+            !mod._calibrationEndNoticeSpoken && panel.IsVisible &&
+            panel.gameObject.activeInHierarchy)
+            mod.AnnounceCalibrationEnd(failed: false);
+    }
+
+    internal static void NoteCalibrationEnded(CalibratePanel panel)
+    {
+        BopItAccessMod? mod = _activeCalibrationMod;
+        if (mod == null || !mod.IsObservedCalibrationPanel(panel) ||
+            panel.State != CalibrateState.Calibrate)
+            return;
+
+        // FMOD can call this on its audio thread. Only post an atomic notice;
+        // localization, Unity visibility checks, and speech happen on Unity's
+        // thread. Native no-input attempts also produce a numeric latency, so
+        // zero milliseconds is not a safe way to identify a failed attempt.
+        Interlocked.CompareExchange(ref mod._calibrationEndNoticePending,
+            Volatile.Read(ref mod._calibrationAcceptedInput) == 0 ? 2 : 1, 0);
     }
 
     private static string? ReadCalibrationCountdown(CalibratePanel panel)
@@ -217,5 +339,77 @@ public sealed partial class BopItAccessMod
         _lastCalibrationResult = null;
         _lastSpokenCalibrationCountdown = null;
         _lastCalibrationCountdownAt = 0;
+        Volatile.Write(ref _calibrationFinalBeatObserved, 0);
+        Volatile.Write(ref _calibrationAcceptedInput, 0);
+        Volatile.Write(ref _calibrationLastAcceptedInputTime, float.NegativeInfinity);
+        Interlocked.Exchange(ref _calibrationEndNoticePending, 0);
+        _calibrationEndNoticeSpoken = false;
+        _calibrationAttemptFailed = false;
+    }
+}
+
+[HarmonyPatch(typeof(CalibratePanel), "OnStart")]
+[SupportedOSPlatform("windows")]
+internal static class CalibrationStartNoticePatch
+{
+    [HarmonyPrefix]
+    private static void BeforeStart(CalibratePanel __instance)
+    {
+        try { BopItAccessMod.NoteCalibrationStarted(__instance); }
+        catch { } // An optional announcement must never abort native calibration.
+    }
+}
+
+[HarmonyPatch(typeof(CalibratePanel), "OnMarker")]
+[SupportedOSPlatform("windows")]
+internal static class CalibrationFinalBeatPatch
+{
+    [HarmonyPostfix]
+    private static void AfterMarker(CalibratePanel __instance,
+        Il2CppFMOD.Studio.TIMELINE_MARKER_PROPERTIES marker)
+    {
+        try { BopItAccessMod.NoteCalibrationMarker(__instance, marker); }
+        catch { } // Preserve FMOD's callback and its native timing.
+    }
+}
+
+[HarmonyPatch]
+[SupportedOSPlatform("windows")]
+internal static class CalibrationAcceptedInputPatch
+{
+    [HarmonyTargetMethods]
+    private static IEnumerable<MethodBase> TargetMethods()
+    {
+        yield return AccessTools.Method(typeof(CalibratePanel), "InputBop");
+        yield return AccessTools.Method(typeof(CalibratePanel), "OnInput");
+    }
+
+    [HarmonyPrefix]
+    private static void BeforeInput(CalibratePanel __instance,
+        out (CalibrateState State, int Count) __state)
+    {
+        __state = (CalibrateState.Start, 0);
+        try { __state = (__instance.State, __instance.playerInputTimes?.Count ?? 0); }
+        catch { } // Native input must still run if observation is unavailable.
+    }
+
+    [HarmonyPostfix]
+    private static void AfterInput(CalibratePanel __instance,
+        (CalibrateState State, int Count) __state)
+    {
+        try { BopItAccessMod.NoteCalibrationInput(__instance, __state.State, __state.Count); }
+        catch { }
+    }
+}
+
+[HarmonyPatch(typeof(CalibratePanel), "OnFinished")]
+[SupportedOSPlatform("windows")]
+internal static class CalibrationEndNoticePatch
+{
+    [HarmonyPrefix]
+    private static void BeforeFinished(CalibratePanel __instance)
+    {
+        try { BopItAccessMod.NoteCalibrationEnded(__instance); }
+        catch { } // Native latency estimation and result display must still run.
     }
 }

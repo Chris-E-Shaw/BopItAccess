@@ -71,13 +71,7 @@ RANGOS DESLIZADORES es una opción guardada, desactivada de forma predeterminada
 también informar sus puntos finales disponibles después del valor actual, como
 "Control deslizante MÚSICA, 30, rango de 0 a 100, 1 de 12" al indexar y tipos de control
 están habilitados. Mover un control deslizante todavía indica solo el nuevo valor.
-COMENTARIOS UNO A UNO es una opción guardada, activada de forma predeterminada. Cuando está habilitado,
-anuncia el color activo al comienzo de una ronda Uno a Uno y cuando ese
-cambios de color. Una vida perdida anuncia el conteo restante, como por ejemplo "2 vidas".
-o "1 vida". Una vida ganada anuncia del mismo modo el nuevo conde, hasta
-El límite de tres vidas del juego. Si la vida de ambos jugadores cambia juntos,
-Ambos recuentos se identifican por color. La función se ejecuta solo durante uno a uno.
-jugar.
+Los comentarios uno a uno se guardan y están activados de forma predeterminada. Anuncia el color activo al inicio y cuando cambia. Al perder una vida, anuncia la cantidad restante. Al ganar una vida, anuncia el color del jugador y su nuevo total, por ejemplo «Verde, 3 vidas», para que ambos sepan quién fue más rápido. Estos anuncios se desactivan al desactivar los comentarios uno a uno. El límite de tres vidas del juego no cambia. Esta función solo actúa durante una partida uno a uno.
 
 El TIPO DE CONSEJO ahora aparece encima de CONSEJOS DEL BOTÓN DE HABLA AUTOMÁTICA en el menú Configuración del mod.
 SUGERENCIAS DEL BOTÓN DE HABLA AUTOMÁTICA es una opción guardada y está activada de forma predeterminada. girándolo
@@ -295,7 +289,7 @@ anula cualquiera de los enlaces de entrada propios del juego.
 Dentro de Calibración de audio, el mod lee los controles Calibrar, Atrás y PULSAR,
 anuncia las instrucciones y etapas de calibración, lee la cuenta atrás del calentamiento,
 y anuncia el resultado de latencia mostrado. No habla cada latido durante
-el ejercicio de sincronización para que el ritmo siga siendo audible.
+el ejercicio de sincronización para que el ritmo siga siendo audible. Después de la última entrada de calibración, el mod dice inmediatamente «¡Listo!». Deja de golpear y espera el resultado medido. Si la calibración falla porque no se ha realizado ninguna entrada, dice «Calibración fallida».
 
 La pantalla de pausa anuncia En pausa, el botón Reanudar o Menú principal enfocado,
 y sus sugerencias de botones. Los cambios de enfoque interrumpen el discurso anterior del menú de pausa;

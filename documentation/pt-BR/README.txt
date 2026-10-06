@@ -53,7 +53,7 @@ com nova atividade após o retorno do foco. Se a própria fala estiver desligada
 recupera o foco, o mod dá recuperação ao teclado e controlador atuais
 instruções uma vez.
 
-O menu MOD SETTINGS também possui INDEXAÇÃO, ativado por padrão e salvo entre sessões.
+O menu MOD SETTINGS também possui Ler posições nos menus, ativado por padrão e salvo entre sessões.
 Quando ativado, um item de menu em foco inclui sua posição, como "PLAY, 1 of 6".
 Isso se aplica aos menus principal e de configurações, controles, modos de jogo, Mod
 Configurações, opções de fim de jogo, tabelas de classificação, conquistas, créditos e outros
@@ -71,13 +71,7 @@ SLIDER RANGES é uma alternância salva, desativada por padrão. Quando ativado,
 também reportam seus endpoints disponíveis após o valor atual, como
 "MUSIC slider, 30, range 0 to 100, 1 of 12" ao indexar e controlar tipos
 estão habilitados. Mover um controle deslizante ainda fala apenas o novo valor.
-FEEDBACK ONE-ON-ONE é uma opção salva, ativada por padrão. Quando habilitado, ele
-anuncia a cor ativa no início de uma rodada One on One e quando isso
-mudanças de cor. Uma vida perdida anuncia a contagem restante, como "2 vidas"
-ou "1 vida". Uma vida ganha anuncia a nova contagem da mesma forma, até
-o limite de três vidas do jogo. Se a contagem de pontos de vida de ambos os jogadores mudar ao mesmo tempo,
-ambas as contagens são identificadas por cor. O recurso é executado apenas durante o One on One
-jogar.
+O feedback individual é salvo e fica ativado por padrão. Anuncia a cor ativa no início e quando ela muda. Ao perder uma vida, anuncia a quantidade restante. Ao ganhar uma vida, anuncia a cor do jogador e o novo total, como “Verde, 3 vidas”, para que ambos saibam quem foi mais rápido. Esses anúncios são desativados quando o feedback individual está desligado. O limite de três vidas do jogo não muda. Esse recurso atua apenas durante uma partida individual entre dois jogadores.
 
 O TIPO DE DICA agora aparece acima de DICAS DO BOTÃO AUTO-SPEAK no menu Mod Settings.
 DICAS DO BOTÃO AUTO-SPEAK é uma alternância salva e está ativada por padrão. Girando
@@ -295,7 +289,7 @@ substitui qualquer uma das ligações de entrada do próprio jogo.
 Dentro da calibração de áudio, o mod lê os controles Calibrar, Voltar e BATER,
 anuncia as instruções e etapas de calibração, lê a contagem regressiva de aquecimento,
 e anuncia o resultado de latência exibido. Ele não fala todas as batidas durante
-o exercício de cronometragem para que a batida permaneça audível.
+o exercício de cronometragem para que a batida permaneça audível. Após a última entrada de calibração, o mod diz imediatamente “Concluído!”. Pare de bater e espere o resultado medido. Se a calibração falhar porque nenhuma entrada foi feita, ele diz “Falha na calibração.”.
 
 A tela de pausa anuncia Pausado, o botão Continuar ou Menu Principal em foco,
 e suas dicas de botão. As mudanças de foco interrompem a fala anterior do menu de pausa;

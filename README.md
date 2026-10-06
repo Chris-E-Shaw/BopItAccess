@@ -70,6 +70,8 @@ Choose a language in the game's **Settings > Language** row. Mod speech follows 
 
 The mod uses the game's translated names for gameplay actions. Shapes, Space, City, and Office stay in English as fixed stage titles. The selected speech output needs a voice for your language. In Mod Settings, Voice, Volume, Rate, and Pitch adjust the active OneCore or SAPI engine; each engine keeps its own choices. These rows are hidden when the active output does not offer those controls. Choose an installed voice suited to your language if the system default sounds wrong.
 
+Speak Menu Indexes is the saved menu-position toggle, enabled by default. It adds the focused item’s position within its menu. One-on-One Feedback now identifies a player’s colour and new life total when a life is gained; a loss retains the count-only announcement. Audio calibration says “Done!” as soon as the final input is registered, before the measured result, and “Calibration failed.” if no input was made.
+
 Format Speech makes all-capitals menu text sound more natural and adds a pause before guide line numbers when the line ends without terminal punctuation. It affects speech and braille text only; visible game text and the HTML guide stay unchanged. This setting is On by default and keeps your earlier Filter Capitalisation choice. Switch it Off to receive the original text.
 
 ## Documentation

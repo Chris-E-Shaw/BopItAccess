@@ -51,6 +51,8 @@ Scegli una lingua nella riga **Impostazioni > Lingua** del gioco. Il discorso mo
 
 Le azioni usano le traduzioni del gioco. Shapes, Space, City e Office mantengono i nomi inglesi delle scene. Per OneCore o SAPI, scegli nelle Impostazioni mod una voce installata adatta alla lingua del gioco se quella predefinita non va bene. Voce, Volume, Velocità e Tono regolano l’uscita OneCore o SAPI effettivamente in uso, anche in modalità Auto. Appaiono solo i controlli supportati; con le altre uscite vengono nascosti. Ogni motore conserva le proprie impostazioni separatamente.
 
+Leggi le posizioni nei menu. Questa opzione salvata, attiva per impostazione predefinita, legge la posizione dell’elemento nel menu. Il feedback uno a uno viene salvato ed è attivo per impostazione predefinita. Annuncia il colore attivo all’inizio e quando cambia. Quando si perde una vita, annuncia il numero di vite rimaste. Quando si guadagna una vita, annuncia il colore del giocatore e il nuovo totale, per esempio “Verde, 3 vite”, così entrambi sanno chi è stato più veloce. Questi annunci sono disattivati quando il feedback uno a uno è disattivato. Il limite di tre vite del gioco resta invariato. Questa funzione opera solo durante una partita uno contro uno. Dopo l’ultimo input di calibrazione, il mod dice subito “Fatto!”. Smetti di colpire e attendi il risultato misurato. Se la calibrazione fallisce perché non è stato dato alcun input, dice “Calibrazione fallita.”.
+
 **Formatta il parlato**: Rende più naturale il testo tutto maiuscolo per voce e braille. Nella guida del gioco aggiunge una pausa con tre puntini prima del numero di riga, se il testo termina senza punteggiatura. Il testo visibile resta invariato. Disattivala per leggere il testo così com’è.
 
 ## Documentazione

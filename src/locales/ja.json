@@ -477,5 +477,8 @@
   "VOICE": "音声",
   "VOLUME": "音量",
   "RATE": "読み上げ速度",
-  "PITCH": "音程"
+  "PITCH": "音程",
+  "SPEAK MENU INDEXES": "メニュー内の位置を読み上げる",
+  "Done!": "完了！",
+  "Calibration failed.": "調整に失敗しました。"
 }
