@@ -118,7 +118,7 @@ public sealed partial class BopItAccessMod
             if (!TrimSilenceExperimentAvailable && savedTrimSilence != 0)
             {
                 PlayerPrefs.SetInt(SapiTrimSilencePreferenceKey, 0);
-                PlayerPrefs.Save();
+                SaveModPreferencesAndConfig();
             }
         }
         catch (Exception ex)
@@ -192,7 +192,7 @@ public sealed partial class BopItAccessMod
             try
             {
                 PlayerPrefs.DeleteKey(SapiVoicePreferenceKey);
-                PlayerPrefs.Save();
+                SaveModPreferencesAndConfig();
             }
             catch (Exception ex)
             {
@@ -282,7 +282,7 @@ public sealed partial class BopItAccessMod
         try
         {
             PlayerPrefs.SetInt(SapiTrimSilencePreferenceKey, enabled ? 1 : 0);
-            PlayerPrefs.Save();
+            SaveModPreferencesAndConfig();
         }
         catch (Exception ex)
         {
@@ -348,7 +348,7 @@ public sealed partial class BopItAccessMod
         try
         {
             PlayerPrefs.SetInt(key, value);
-            PlayerPrefs.Save();
+            SaveModPreferencesAndConfig();
         }
         catch (Exception ex)
         {
@@ -369,7 +369,7 @@ public sealed partial class BopItAccessMod
         try
         {
             PlayerPrefs.SetInt(key, value);
-            PlayerPrefs.Save();
+            SaveModPreferencesAndConfig();
         }
         catch (Exception ex)
         {
@@ -398,7 +398,7 @@ public sealed partial class BopItAccessMod
         try
         {
             PlayerPrefs.SetString(key, value);
-            PlayerPrefs.Save();
+            SaveModPreferencesAndConfig();
         }
         catch (Exception ex)
         {

@@ -412,7 +412,7 @@ public sealed partial class BopItAccessMod
         // The operation has already applied its override to the targeted
         // keyboard or controller binding. Persist only that binding.
         PlayerPrefs.SetString(index == 1 ? ScoreGamepadKey : ScoreKeyboardKey, path!);
-        PlayerPrefs.Save();
+        SaveModPreferencesAndConfig();
         ReleaseScoreControlRebinding();
         InputRebindingEvents.RefreshPrompts?.Invoke();
         RefreshScoreControlPrompts();
@@ -459,7 +459,7 @@ public sealed partial class BopItAccessMod
         InputActionRebindingExtensions.RemoveBindingOverride(action, 1);
         PlayerPrefs.DeleteKey(ScoreKeyboardKey);
         PlayerPrefs.DeleteKey(ScoreGamepadKey);
-        PlayerPrefs.Save();
+        SaveModPreferencesAndConfig();
         RefreshScoreControlPrompts();
         WriteStatus("Reset Read Score bindings to T and left stick press.");
     }

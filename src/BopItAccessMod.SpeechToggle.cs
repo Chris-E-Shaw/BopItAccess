@@ -24,6 +24,8 @@ public sealed partial class BopItAccessMod
     {
         if (_speechToggleInitialized)
             return;
+        if (!SettingsConfigAllowsSpeechStartup)
+            return;
 
         // The Unity localization tables can initially report English while
         // Settings.Load is still restoring the player's saved language. Hold
@@ -136,7 +138,7 @@ public sealed partial class BopItAccessMod
         try
         {
             PlayerPrefs.SetInt(SpeechEnabledPreferenceKey, enabled ? 1 : 0);
-            PlayerPrefs.Save();
+            SaveModPreferencesAndConfig();
         }
         catch (Exception ex)
         {

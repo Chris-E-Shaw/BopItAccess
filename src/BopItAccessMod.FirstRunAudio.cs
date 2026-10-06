@@ -82,7 +82,7 @@ public sealed partial class BopItAccessMod
                     (_nativeAudioHadPreviousLog || HasPriorModPreference()))
                 {
                     PlayerPrefs.SetInt(NativeAudioFirstRunStateKey, 2);
-                    PlayerPrefs.Save();
+                    SaveModPreferencesAndConfig();
                     _nativeAudioHandled = true;
                     WriteStatus("Previous Bop It Access installation detected; preserving native audio levels.");
                     return;
@@ -94,7 +94,7 @@ public sealed partial class BopItAccessMod
                     // closes the game while it loads, next launch resumes
                     // instead of mistaking this run's log for an old install.
                     PlayerPrefs.SetInt(NativeAudioFirstRunStateKey, 0);
-                    PlayerPrefs.Save();
+                    SaveModPreferencesAndConfig();
                 }
                 _nativeAudioShouldApply = true;
                 _nativeAudioPreferenceChecked = true;
@@ -128,7 +128,7 @@ public sealed partial class BopItAccessMod
             }
 
             PlayerPrefs.SetInt(NativeAudioFirstRunStateKey, 1);
-            PlayerPrefs.Save();
+            SaveModPreferencesAndConfig();
             _nativeAudioHandled = true;
             WriteStatus("First-run native audio levels set to Music 30, SFX 30, Voice Over 30 and saved.");
         }

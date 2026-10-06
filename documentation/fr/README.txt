@@ -1,4 +1,4 @@
-Bop It Access 0.9.0 - Prism Parole et Braille
+Bop It Access 0.9.5 - Prism Parole et Braille
 
 Qu'est-ce que cela fait
 --------------
@@ -375,3 +375,37 @@ Il est sous licence Mozilla Public License, version 2.0. Cette source
 le référentiel n'inclut pas prism.dll. Source, versions et licence :
 https://github.com/ethindp/prism
 Voir THIRD-PARTY-NOTICES.txt pour les avis de dépendance actuels.
+
+Modifier le fichier des paramètres
+----------------------------------
+Si une langue inconnue, un volume trop élevé ou une voix défectueuse rend les menus difficiles à utiliser, vous pouvez modifier les réglages en dehors du jeu. Après le démarrage, le mod crée automatiquement UserData/BopItAccess.ini dans le dossier de Bop It!, à partir de vos réglages actuels. Ce fichier texte s’ouvre avec un éditeur comme le Bloc-notes.
+
+Le fichier contient la langue du jeu, les volumes de musique, d’effets et de voix, les vibrations, le plein écran, la résolution et la latence audio ; les préférences de parole, de braille et d’indices du mod ; les profils de voix OneCore et SAPI séparés ; et les commandes du jeu et du mod destinées aux joueurs. Les résolutions disponibles et les voix installées sont indiquées dans les commentaires.
+
+Fermez le jeu avant de modifier le fichier. Trouvez la section concernée et changez la valeur de l’entrée existante, enregistrez, puis relancez le jeu. Les changements sont lus au lancement, pas immédiatement pendant une session. Les réglages modifiés dans les menus mettent automatiquement le fichier à jour.
+
+Les noms des sections et des réglages restent en anglais dans toutes les langues. On et Off sont les valeurs conseillées pour les interrupteurs ; True/False, Yes/No et 1/0 sont également acceptés. Les commentaires expliquent les choix et les plages de valeurs. Une entrée absente ou incorrecte conserve le réglage enregistré correspondant, sans empêcher les autres modifications valides. Les affectations de commandes en double sont refusées.
+
+Les commentaires et les entrées inconnues sont conservés. Si un autre programme modifie le fichier pendant le jeu, le mod cesse d’y enregistrer pour le reste de la session afin de protéger vos modifications. Fermez et relancez le jeu pour les appliquer. Vous pouvez conserver une copie de sauvegarde avant de modifier le fichier.
+
+En cas de problème de voix, indiquez Voice=System default dans la section OneCore ou SAPI. Les voix OneCore utilisent le format nom | langue ; SAPI accepte le nom affiché d’une voix installée ou son identifiant complet du Registre. Le fichier liste les choix disponibles. OutputMode=Auto essaie un lecteur d’écran compatible actif, puis OneCore, puis SAPI.
+
+L’exemple ci-dessous rétablit l’anglais, un volume de jeu plus faible et la parole automatique avec les voix par défaut du système. Modifiez les entrées correspondantes déjà présentes dans votre fichier ; cet extrait sert de référence et ne doit pas être ajouté comme un bloc supplémentaire. Conservez vos autres réglages.
+
+[Game]
+Language=en
+MusicVolume=30
+SfxVolume=30
+VoiceOverVolume=30
+
+[Mod]
+SpeechOutput=On
+OutputMode=Auto
+
+[OneCore]
+Voice=System default
+
+[SAPI]
+Voice=System default
+
+L’action Désinstaller de l’installeur et les Applications installées de Windows suppriment aussi UserData/BopItAccess.ini et son fichier .tmp, y compris pour les anciennes installations manuelles.

@@ -185,7 +185,7 @@ public sealed partial class BopItAccessMod
 
         _fpsLimit = FpsLimitChoices[next];
         PlayerPrefs.SetInt(FpsLimitPreference, _fpsLimit);
-        PlayerPrefs.Save();
+        SaveModPreferencesAndConfig();
         _fpsSettingsSlider?.SetValue(L(FpsLimitText(_fpsLimit)));
         // Apply on the same frame so the displayed value matches the cap.
         QualitySettings.vSyncCount = 0;

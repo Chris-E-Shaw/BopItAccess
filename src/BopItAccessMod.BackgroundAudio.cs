@@ -259,7 +259,7 @@ public sealed partial class BopItAccessMod
         _muteAudioInBackground = !_muteAudioInBackground;
         PlayerPrefs.SetInt(BackgroundAudioPreference,
             _muteAudioInBackground ? 1 : 0);
-        PlayerPrefs.Save();
+        SaveModPreferencesAndConfig();
         ApplyBackgroundAudioFocus(Application.isFocused);
         WriteStatus("Mute audio in background changed to " +
             (_muteAudioInBackground ? "On." : "Off."));

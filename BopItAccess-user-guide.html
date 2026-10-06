@@ -74,6 +74,7 @@
       <li><a href="#languages">Languages</a></li>
       <li><a href="#in-game-guide">Read the guide in game</a></li>
       <li><a href="#speech-options">Mod Settings menu</a></li>
+      <li><a href="#settings-file">Editing the settings file</a></li>
       <li><a href="#menu-guide">Menu guide</a></li>
       <li><a href="#main-menu">Main menu</a></li>
       <li><a href="#play-menu">Play menu</a></li>
@@ -291,6 +292,32 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
       </tbody>
     </table></div>
     <p>Hints are kept quiet during active gameplay and the beat-timing part of audio calibration, when speech could cover an important sound. Even if you switch speech off, the mod can still announce how to turn it back on at startup or when you make that change.</p>
+  </section>
+
+  <section id="settings-file">
+    <h2>Editing the settings file</h2>
+    <p>If a language, loud game audio, or a troublesome voice makes the menus difficult to use, you can change the settings outside the game. After startup, the mod automatically creates UserData/BopItAccess.ini inside your Bop It! game folder, using your current settings. This is a plain-text file you can open with an editor such as Notepad.</p>
+    <p>The file includes the game’s language, music, effects and voice-over volumes, vibration, full screen, resolution and audio latency; mod speech, braille, hint and other preferences; separate OneCore and SAPI voice profiles; and player-facing game and mod input bindings. Available resolutions and installed voices are listed in comments.</p>
+    <p>Close the game before editing. Find the relevant section and change the value of the existing entry, save the file, then launch the game again. Changes are read on launch, not immediately while the game is running. Changes made through the game’s menus update the file automatically.</p>
+    <p>Section and setting names stay in English in every language so they remain consistent. On and Off are the recommended toggle values; True/False, Yes/No and 1/0 are also accepted. The comments beside settings explain their choices and ranges. Missing entries and invalid values leave the corresponding saved setting unchanged; other valid edits still apply. Duplicate input assignments are rejected.</p>
+    <p>Comments and unknown entries are kept. If another program changes the file while the game is running, the mod stops saving to that file for the rest of the session to protect those edits. Close and reopen the game to use them. You can keep a backup before making changes.</p>
+    <p>For a voice problem, set Voice=System default in the OneCore or SAPI section. OneCore voice choices use name | language; SAPI accepts an installed voice’s displayed name or its full registry ID. The file lists available choices. OutputMode=Auto tries a running supported screen reader, then OneCore, then SAPI.</p>
+    <p>The example below restores English, quieter game audio and speech with automatic output and system-default voices. Change the matching entries already in your file; this is a reference excerpt, not an extra block to append. Leave your other settings in place.</p>
+    <pre><code>[Game]
+Language=en
+MusicVolume=30
+SfxVolume=30
+VoiceOverVolume=30
+
+[Mod]
+SpeechOutput=On
+OutputMode=Auto
+
+[OneCore]
+Voice=System default
+
+[SAPI]
+Voice=System default</code></pre>
   </section>
 
   <section id="menu-guide">

@@ -448,7 +448,7 @@ public sealed partial class BopItAccessMod
         // The operation has already applied its override to the targeted
         // keyboard or controller binding. Persist only that binding.
         PlayerPrefs.SetString(index == 1 ? SpeakHintsGamepadKey : SpeakHintsKeyboardKey, path!);
-        PlayerPrefs.Save();
+        SaveModPreferencesAndConfig();
         ReleaseSpeakHintsControlRebinding();
         InputRebindingEvents.RefreshPrompts?.Invoke();
         RefreshSpeakHintsControlPrompts();
@@ -520,7 +520,7 @@ public sealed partial class BopItAccessMod
             InputActionRebindingExtensions.RemoveBindingOverride(action, 1);
             PlayerPrefs.DeleteKey(SpeakHintsKeyboardKey);
             PlayerPrefs.DeleteKey(SpeakHintsGamepadKey);
-            PlayerPrefs.Save();
+            SaveModPreferencesAndConfig();
         }
         finally
         {

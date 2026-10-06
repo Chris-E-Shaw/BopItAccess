@@ -53,6 +53,7 @@ public static class UninstallManager
         cancellationToken.ThrowIfCancellationRequested();
 
         var result = new UninstallResult { RequiresSelfCleanup = true };
+        ValidateSettingsFiles(game);
         bool sharedLoader = manifest.MelonLoaderInstalledByInstaller && HasOtherMods(game);
         if (sharedLoader)
             log("Other mods are present. MelonLoader and shared dependencies will be preserved.");
@@ -123,6 +124,7 @@ public static class UninstallManager
         if (manifest.MelonLoaderInstalledByInstaller && !sharedLoader)
             RemoveOwnedMelonLoaderTree(game, log);
         result.PreferenceWarnings.AddRange(ModPreferenceCleaner.RemoveAcrossProfiles(log));
+        RemoveSettingsFiles(game, log);
 
         foreach (string directory in manifest.CreatedDirectories.OrderByDescending(path => path.Length))
         {
@@ -151,6 +153,7 @@ public static class UninstallManager
         string game = Path.GetFullPath(gameDirectory);
         EnsureGameClosed();
         cancellationToken.ThrowIfCancellationRequested();
+        ValidateSettingsFiles(game);
         string mod = Path.Combine(game, "Mods", "BopItAccess.dll");
         string modLog = Path.Combine(game, "Mods", "BopItAccess.log");
         if (File.Exists(mod)) { File.Delete(mod); log($"Removed {mod}"); }
@@ -190,6 +193,7 @@ public static class UninstallManager
         }
         var result = new UninstallResult { Success = true, RequiresSelfCleanup = false };
         result.PreferenceWarnings.AddRange(ModPreferenceCleaner.RemoveAcrossProfiles(log));
+        RemoveSettingsFiles(game, log);
         RemoveUninstallRegistration(log);
         log("Removed identifiable legacy mod files. Pre-existing MelonLoader and unverified shared files were preserved.");
         return result;
@@ -197,6 +201,38 @@ public static class UninstallManager
 
     internal static bool IsLegacyDocumentationName(string name) =>
         LegacyDocumentationNames.Contains(name, StringComparer.OrdinalIgnoreCase);
+
+    // These mutable preferences are created by the mod after installation,
+    // so they cannot use the manifest's fixed content hashes. Remove only the
+    // mod's own filenames; UserData may also contain settings for other mods.
+    private static string[] ValidateSettingsFiles(string game)
+    {
+        string userData = Path.GetFullPath(Path.Combine(game, "UserData"));
+        if (!InstallTransaction.IsWithin(userData, game) ||
+            (Directory.Exists(userData) &&
+             (File.GetAttributes(userData) & FileAttributes.ReparsePoint) != 0))
+            throw new InvalidDataException("Settings cleanup cannot follow a UserData junction.");
+        string[] paths = { Path.Combine(userData, "BopItAccess.ini"),
+            Path.Combine(userData, "BopItAccess.ini.tmp") };
+        foreach (string path in paths)
+        {
+            if (!InstallTransaction.IsWithin(path, game) ||
+                (File.Exists(path) &&
+                 (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0))
+                throw new InvalidDataException("Settings cleanup encountered a linked config file.");
+        }
+        return paths;
+    }
+
+    private static void RemoveSettingsFiles(string game, Action<string> log)
+    {
+        foreach (string path in ValidateSettingsFiles(game))
+        {
+            if (!File.Exists(path)) continue;
+            File.Delete(path);
+            log($"Removed Bop It Access settings: {path}");
+        }
+    }
 
     internal static bool IsLegacyDocumentationPath(string documentationRoot, string file)
     {

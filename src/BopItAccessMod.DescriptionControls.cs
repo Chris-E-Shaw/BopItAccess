@@ -405,7 +405,7 @@ public sealed partial class BopItAccessMod
         // The operation has already applied its override to the targeted
         // keyboard or controller binding. Persist only that binding.
         PlayerPrefs.SetString(index == 1 ? DescriptionGamepadKey : DescriptionKeyboardKey, path!);
-        PlayerPrefs.Save();
+        SaveModPreferencesAndConfig();
         ReleaseDescriptionControlRebinding();
         InputRebindingEvents.RefreshPrompts?.Invoke();
         RefreshDescriptionControlPrompts();
@@ -425,7 +425,7 @@ public sealed partial class BopItAccessMod
         InputActionRebindingExtensions.RemoveBindingOverride(action, 1);
         PlayerPrefs.DeleteKey(DescriptionKeyboardKey);
         PlayerPrefs.DeleteKey(DescriptionGamepadKey);
-        PlayerPrefs.Save();
+        SaveModPreferencesAndConfig();
         RefreshDescriptionControlPrompts();
         WriteStatus("Reset Read Descriptions bindings to G and left trigger.");
     }

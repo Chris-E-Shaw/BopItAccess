@@ -2,6 +2,40 @@
 
 Bop It Access is an unofficial accessibility mod for the Windows Steam version of **Bop It!**. It uses MelonLoader and [Prism](https://github.com/ethindp/prism) to add speech and braille feedback to menus and game screens. Current features include a first-run welcome screen, an in-game user's guide, spoken title and pause screens, settings and controls, song selection, final scores and leaderboards, achievements, credits, button hints, on-demand tutorial text with current control assignments before a round, and descriptions of the four stages. Version 0.9.0 uses Prism for speech and braille output. The mod follows the game's selected language and includes a guide for every language the game offers.
 
+## Editing the settings file
+
+If a language, loud game audio, or a troublesome voice makes the menus difficult to use, you can change the settings outside the game. After startup, the mod automatically creates UserData/BopItAccess.ini inside your Bop It! game folder, using your current settings. This is a plain-text file you can open with an editor such as Notepad.
+
+The file includes the game’s language, music, effects and voice-over volumes, vibration, full screen, resolution and audio latency; mod speech, braille, hint and other preferences; separate OneCore and SAPI voice profiles; and player-facing game and mod input bindings. Available resolutions and installed voices are listed in comments.
+
+Close the game before editing. Find the relevant section and change the value of the existing entry, save the file, then launch the game again. Changes are read on launch, not immediately while the game is running. Changes made through the game’s menus update the file automatically.
+
+Section and setting names stay in English in every language so they remain consistent. On and Off are the recommended toggle values; True/False, Yes/No and 1/0 are also accepted. The comments beside settings explain their choices and ranges. Missing entries and invalid values leave the corresponding saved setting unchanged; other valid edits still apply. Duplicate input assignments are rejected.
+
+Comments and unknown entries are kept. If another program changes the file while the game is running, the mod stops saving to that file for the rest of the session to protect those edits. Close and reopen the game to use them. You can keep a backup before making changes.
+
+For a voice problem, set Voice=System default in the OneCore or SAPI section. OneCore voice choices use name | language; SAPI accepts an installed voice’s displayed name or its full registry ID. The file lists available choices. OutputMode=Auto tries a running supported screen reader, then OneCore, then SAPI.
+
+The example below restores English, quieter game audio and speech with automatic output and system-default voices. Change the matching entries already in your file; this is a reference excerpt, not an extra block to append. Leave your other settings in place.
+
+```ini
+[Game]
+Language=en
+MusicVolume=30
+SfxVolume=30
+VoiceOverVolume=30
+
+[Mod]
+SpeechOutput=On
+OutputMode=Auto
+
+[OneCore]
+Voice=System default
+
+[SAPI]
+Voice=System default
+```
+
 ## Project status
 
 This project is in early development. The GitHub repository contains source code and technical documentation. **There are no GitHub releases yet.** The source now also contains a Windows installer project. Until a release is published, its **Install** button explains that no release is available; **Install alpha** builds the latest main-branch commit from source.
@@ -23,7 +57,7 @@ The installer source is in [`installer/`](installer/). It is a self-contained, x
 
 The installer searches Steam libraries across available drives, and its **Browse** button accepts another game folder. **Install** uses the latest GitHub release ZIP when one exists. **Install alpha** warns before downloading the current main-branch source, compiling it on the player's computer, and installing that build. The alpha path may launch Bop It! once to let MelonLoader generate game-specific build references, then waits for the game to close before compiling. The installer downloads checksum-verified MelonLoader 0.7.3, Prism 0.18.3, and a portable .NET 6 SDK when they are missing. The SDK stays in the game's `dotnet` folder after uninstall; it includes the .NET 6 targeting pack. Existing suitable dependencies are reused.
 
-Installed files are recorded in an ownership manifest so updates preserve pre-existing files and an aborted installation can reverse its own changes. **Uninstall** and Windows **Installed Apps** use the same uninstall code. The supplied `installer/uninstall.ps1` launches an accessible uninstall window from Installed Apps, then removes the uninstall launcher and manifest after successful removal. Existing unrelated mods and their shared MelonLoader files are preserved.
+Installed files are recorded in an ownership manifest so updates preserve pre-existing files and an aborted installation can reverse its own changes. **Uninstall** and Windows **Installed Apps** use the same uninstall code. The supplied `installer/uninstall.ps1` launches an accessible uninstall window from Installed Apps, then removes the uninstall launcher and manifest after successful removal. Existing unrelated mods and their shared MelonLoader files are preserved. The installer’s Uninstall action and Windows Installed Apps also remove UserData/BopItAccess.ini and its .tmp file, including for older manual installations.
 
 For an older hand-installed copy that has no ownership manifest, uninstall removes identifiable Bop It Access files and leaves shared files whose origin cannot be proved. Uninstall also removes only `BopItAccess.*` preference values from each local Windows user profile, including profiles that are signed out. The game's own preferences remain. If Windows denies access to a profile, the installer records a warning in its status log and reports that cleanup was incomplete.
 

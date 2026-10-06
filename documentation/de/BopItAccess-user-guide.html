@@ -75,6 +75,7 @@
 <li><a href="#languages">Sprachen</a></li>
 <li><a href="#in-game-guide">Lesen Sie die Anleitung im Spiel</a></li>
 <li><a href="#speech-options">Mod-Einstellungen-Menü</a></li>
+      <li><a href="#settings-file">Die Einstellungsdatei bearbeiten</a></li>
 <li><a href="#menu-guide">Menüführung</a></li>
 <li><a href="#main-menu">Hauptmenü</a></li>
 <li><a href="#play-menu">Play-Menü</a></li>
@@ -279,6 +280,33 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 </table></div>
 <p>Hinweise werden während des aktiven Spielens und im Beat-Timing-Teil der Audiokalibrierung geheim gehalten, wenn Sprache einen wichtigen Ton überdecken könnte. Selbst wenn Sie die Sprachausgabe ausschalten, kann der Mod beim Start oder wenn Sie diese Änderung vornehmen, immer noch ansagen, wie er sie wieder einschalten kann.</p>
 </section>
+
+  <section id="settings-file">
+    <h2>Die Einstellungsdatei bearbeiten</h2>
+    <p>Wenn eine fremde Sprache, lauter Spielton oder eine problematische Stimme die Menüs schwer bedienbar machen, kannst du Einstellungen außerhalb des Spiels ändern. Nach dem Start erstellt der Mod automatisch UserData/BopItAccess.ini im Bop It!-Spielordner aus deinen aktuellen Einstellungen. Diese Textdatei lässt sich etwa mit dem Windows-Editor öffnen.</p>
+    <p>Die Datei enthält die Sprache, Musik-, Effekt- und Sprachausgabelautstärke, Vibration, Vollbild, Auflösung und Audiolatenz des Spiels; Sprach-, Braille-, Hinweis- und weitere Mod-Einstellungen; getrennte OneCore- und SAPI-Stimmprofile; sowie die für Spieler vorgesehenen Spiel- und Mod-Tastenbelegungen. Verfügbare Auflösungen und installierte Stimmen stehen in Kommentaren.</p>
+    <p>Schließe das Spiel vor dem Bearbeiten. Suche den passenden Abschnitt, ändere den Wert des vorhandenen Eintrags, speichere die Datei und starte das Spiel erneut. Änderungen werden beim Start eingelesen, nicht sofort während einer laufenden Sitzung. Änderungen über die Spielmenüs aktualisieren die Datei automatisch.</p>
+    <p>Abschnitts- und Einstellungsnamen bleiben in allen Sprachen Englisch. Für Schalter werden On und Off empfohlen; auch True/False, Yes/No und 1/0 werden akzeptiert. Kommentare erklären die Auswahlmöglichkeiten und Wertebereiche. Fehlende oder ungültige Einträge lassen die jeweilige gespeicherte Einstellung unverändert; andere gültige Änderungen werden trotzdem angewendet. Doppelte Tastenbelegungen werden abgelehnt.</p>
+    <p>Kommentare und unbekannte Einträge bleiben erhalten. Ändert ein anderes Programm die Datei bei laufendem Spiel, schreibt der Mod für den Rest der Sitzung nicht mehr hinein, um diese Änderungen zu schützen. Schließe und starte das Spiel erneut, um sie zu übernehmen. Du kannst vor Änderungen eine Sicherungskopie anlegen.</p>
+    <p>Bei Stimmproblemen setze Voice=System default im Abschnitt OneCore oder SAPI. OneCore-Stimmen verwenden Name | Sprache; SAPI akzeptiert den angezeigten Namen einer installierten Stimme oder deren vollständige Registrierungs-ID. Die Datei nennt die verfügbaren Möglichkeiten. OutputMode=Auto versucht einen laufenden unterstützten Screenreader, danach OneCore und zuletzt SAPI.</p>
+    <p>Das folgende Beispiel stellt Englisch, leiseren Spielton und automatische Sprachausgabe mit den Systemstimmen wieder her. Ändere die entsprechenden Einträge, die bereits in deiner Datei stehen. Dies ist ein Beispielausschnitt und kein zusätzlicher Block zum Anhängen. Behalte deine anderen Einstellungen bei.</p>
+    <pre><code>[Game]
+Language=en
+MusicVolume=30
+SfxVolume=30
+VoiceOverVolume=30
+
+[Mod]
+SpeechOutput=On
+OutputMode=Auto
+
+[OneCore]
+Voice=System default
+
+[SAPI]
+Voice=System default</code></pre>
+  </section>
+
 <section id="menu-guide">
 <h2>Menüführung</h2>
 <p>Die folgenden Tabellen zeigen den Weg, den Sie wahrscheinlich durch das Spiel nehmen werden. In normalen Menüs bewegen Sie den Fokus mit „Auf/Ab“, aktivieren Sie das fokussierte Element mit der Eingabetaste oder Space (oder bestätigen Sie mit dem Controller) und verwenden Sie die Rücktaste (oder die Rücktaste des Controllers), um zurückzukehren. Einige Bildschirme verwenden andere Steuerelemente. diese werden bei Bedarf erläutert. Wenn eine Auswahl in Ihrem aktuellen Status nicht verfügbar ist, wird sie möglicherweise vom Spiel ausgeblendet.</p>

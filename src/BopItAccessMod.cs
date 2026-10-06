@@ -9,7 +9,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.4", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.5", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -70,6 +70,7 @@ public sealed partial class BopItAccessMod : MelonMod
     public override void OnInitializeMelon()
     {
         PrepareFirstRunNativeAudioDefaults();
+        PrepareSettingsConfig();
         WriteStatus("Mod loaded; starting the Prism speech thread.");
         MelonLogger.Msg("Starting Prism speech and braille support on a background thread...");
         _speechThread = new Thread(InitializePrismAndAnnounce)
@@ -102,6 +103,7 @@ public sealed partial class BopItAccessMod : MelonMod
             // Focus can move after OnUpdate. Dispatch due hints only after
             // the frame's focus and value announcements have reset the timer.
             UpdateRepeatButtonHints();
+            UpdateSettingsConfigExport();
         }
     }
 
@@ -1045,6 +1047,7 @@ public sealed partial class BopItAccessMod : MelonMod
             }
 
             PreparePrismBackendOnWorker();
+            CaptureConfigVoiceChoicesOnWorker();
 
             WaitHandle[] signals = { _shutdownRequested.WaitHandle, _speechRequested };
             while (WaitHandle.WaitAny(signals) != 0)
@@ -1186,6 +1189,7 @@ public sealed partial class BopItAccessMod : MelonMod
 
     public override void OnDeinitializeMelon()
     {
+        FlushSettingsConfig(force: true);
         WriteStatus("Mod shutdown requested.");
         SetGuideMusicFilter(false);
         StopBackgroundAudio();

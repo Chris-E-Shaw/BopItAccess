@@ -494,7 +494,7 @@ public sealed partial class BopItAccessMod
     private void CommitWelcomeDismissal()
     {
         PlayerPrefs.SetInt(WelcomeDismissedPreferenceKey, 1);
-        PlayerPrefs.Save();
+        SaveModPreferencesAndConfig();
         _welcomeSuppressedUntilRestart = true;
         WriteStatus("Welcome screen dismissed after the selected destination opened.");
     }
@@ -504,7 +504,7 @@ public sealed partial class BopItAccessMod
         try
         {
             PlayerPrefs.SetInt(WelcomeDismissedPreferenceKey, 0);
-            PlayerPrefs.Save();
+            SaveModPreferencesAndConfig();
             _welcomeSuppressedUntilRestart = true;
             WriteStatus("Welcome screen reset for next game launch.");
             return true;

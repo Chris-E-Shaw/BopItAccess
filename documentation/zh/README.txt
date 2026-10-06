@@ -1,4 +1,4 @@
-Bop It Access 0.9.0 - Prism 语音和盲文
+Bop It Access 0.9.5 - Prism 语音和盲文
 
 这是做什么的
 --------------
@@ -375,3 +375,37 @@ Prism 是 Ethan Dupuy 和贡献者的开源辅助功能库。
 存储库不包括 prism.dll。来源、版本和许可证：
 https://github.com/ethindp/prism
 有关当前依赖项通知，请参阅 THIRD-PARTY-NOTICES.txt。
+
+编辑设置文件
+------
+如果陌生语言、过大的游戏音量或有问题的语音让菜单难以操作，你可以在游戏外修改设置。启动完成后，模组会根据当前设置，在 Bop It! 游戏文件夹内自动创建 UserData/BopItAccess.ini。这是普通文本文件，可以用记事本等编辑器打开。
+
+文件包含游戏语言、音乐音量、音效音量、语音提示音量、振动、全屏、分辨率和音频延迟；模组的语音、盲文、提示等设置；分别保存的 OneCore 和 SAPI 语音设置；以及面向玩家的游戏和模组操作绑定。可用分辨率和已安装语音会列在注释中。
+
+编辑前请关闭游戏。找到对应分区，修改已有条目的值，保存文件，然后重新启动游戏。修改在启动时读取，不会在游戏运行期间立即生效。通过游戏菜单修改的设置会自动同步到文件。
+
+无论使用哪种语言，分区名称和设置名称都保持英文。开关建议使用 On 和 Off，也支持 True/False、Yes/No 和 1/0。注释会说明选项和范围。缺失或无效的条目会保留对应的已保存设置，其他有效修改仍会生效。重复的操作绑定会被拒绝。
+
+注释和未知条目会保留。如果其他程序在游戏运行期间修改文件，模组会在本次会话剩余时间内停止自动写入，以保护这些编辑。请关闭并重新启动游戏，让修改生效。编辑前也可以保留备份。
+
+如果某个语音有问题，请在 OneCore 或 SAPI 分区中设置 Voice=System default。OneCore 使用名称 | 语言格式；SAPI 支持已安装语音的显示名称或完整注册表 ID。文件中会列出可用选项。OutputMode=Auto 会依次尝试正在运行的受支持屏幕阅读器、OneCore 和 SAPI。
+
+下面的示例会恢复英语、较低的游戏音量，以及使用系统默认语音的自动语音输出。请修改文件中已经存在的对应条目；这只是参考节选，不是要追加到文件末尾的新分区。其他设置请保持不变。
+
+[Game]
+Language=en
+MusicVolume=30
+SfxVolume=30
+VoiceOverVolume=30
+
+[Mod]
+SpeechOutput=On
+OutputMode=Auto
+
+[OneCore]
+Voice=System default
+
+[SAPI]
+Voice=System default
+
+通过安装程序的卸载操作或 Windows“已安装的应用”卸载时，也会删除 UserData/BopItAccess.ini 及其 .tmp 文件，包括旧版手动安装。

@@ -30,7 +30,7 @@ public sealed partial class BopItAccessMod
         try
         {
             PlayerPrefs.SetInt(BrailleOutputPreferenceKey, enabled ? 1 : 0);
-            PlayerPrefs.Save();
+            SaveModPreferencesAndConfig();
         }
         catch (Exception ex)
         {

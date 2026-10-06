@@ -2,6 +2,42 @@
 
 Bop It Access é um mod de acessibilidade não oficial para a versão Windows Steam de **Bop It!**. Ele usa MelonLoader e [Prism](https://github.com/ethindp/prism) para adicionar feedback de fala e braille aos menus e telas do jogo. Os recursos atuais incluem uma tela de boas-vindas de primeira execução, um guia do usuário no jogo, título falado e telas de pausa, configurações e controles, seleção de músicas, pontuações finais e tabelas de classificação, conquistas, créditos, dicas de botões, texto tutorial sob demanda com atribuições de controle atuais antes de uma rodada e descrições dos quatro estágios. A versão 0.9.0 usa Prism para saída de fala e braille. O mod segue o idioma selecionado do jogo e inclui um guia para cada idioma que o jogo oferece.
 
+## Editar o arquivo de configurações
+
+Se um idioma desconhecido, o áudio muito alto ou uma voz problemática dificultarem o uso dos menus, você pode mudar as configurações fora do jogo. Depois da inicialização, o mod cria automaticamente UserData/BopItAccess.ini na pasta de Bop It!, usando suas configurações atuais. É um arquivo de texto que pode ser aberto em um editor como o Bloco de Notas.
+
+O arquivo inclui idioma, volumes de música, efeitos e voz, vibração, tela cheia, resolução e latência de áudio do jogo; preferências de fala, braille, dicas e outras opções do mod; perfis de voz separados para OneCore e SAPI; e atribuições dos controles do jogo e do mod destinados aos jogadores. As resoluções disponíveis e as vozes instaladas aparecem nos comentários.
+
+Feche o jogo antes de editar. Encontre a seção adequada e mude o valor da entrada existente, salve o arquivo e inicie o jogo novamente. As alterações são lidas na inicialização, não imediatamente durante uma sessão. Mudanças feitas nos menus atualizam o arquivo automaticamente.
+
+Os nomes das seções e configurações permanecem em inglês em todos os idiomas. On e Off são recomendados para ligar e desligar opções; True/False, Yes/No e 1/0 também são aceitos. Os comentários explicam as opções e os intervalos. Uma entrada ausente ou inválida mantém a configuração salva correspondente; as outras alterações válidas ainda são aplicadas. Atribuições de controles duplicadas são rejeitadas.
+
+Comentários e entradas desconhecidas são preservados. Se outro programa modificar o arquivo enquanto o jogo estiver aberto, o mod para de salvá-lo pelo restante da sessão para proteger essas alterações. Feche e reabra o jogo para aplicá-las. Você pode guardar uma cópia de segurança antes de editar.
+
+Se uma voz apresentar problemas, defina Voice=System default na seção OneCore ou SAPI. As vozes OneCore usam nome | idioma; SAPI aceita o nome exibido de uma voz instalada ou seu identificador completo do Registro. O arquivo lista as opções disponíveis. OutputMode=Auto tenta um leitor de tela compatível em execução, depois OneCore e finalmente SAPI.
+
+O exemplo abaixo restaura o inglês, um áudio de jogo mais baixo e a saída de fala automática com as vozes padrão do sistema. Mude as entradas correspondentes que já estão no seu arquivo; este trecho serve de referência, não é outro bloco para acrescentar ao final. Preserve suas outras configurações.
+
+```ini
+[Game]
+Language=en
+MusicVolume=30
+SfxVolume=30
+VoiceOverVolume=30
+
+[Mod]
+SpeechOutput=On
+OutputMode=Auto
+
+[OneCore]
+Voice=System default
+
+[SAPI]
+Voice=System default
+```
+
+A opção Desinstalar do instalador e os Aplicativos instalados do Windows também removem UserData/BopItAccess.ini e seu arquivo .tmp, inclusive em instalações manuais antigas.
+
 ## Status do projeto
 
 Este projeto está em desenvolvimento inicial. Este repositório contém código-fonte e documentação técnica. **Não há compilações compiladas ou versões GitHub aqui ainda.** Para usar o mod deste repositório, construa-o a partir do código-fonte e forneça o tempo de execução Prism descrito abaixo.

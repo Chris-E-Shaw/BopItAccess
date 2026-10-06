@@ -39,13 +39,14 @@ public sealed partial class BopItAccessMod
 
     public override void OnUpdate()
     {
+        UpdateFirstRunNativeAudioDefaults();
+        UpdateSettingsConfigStartup();
         BeginMenuInputDiagnosticFrame();
         UpdateGameLocale();
         RefreshLocalizedControlRows();
         UpdateWelcomeScreen();
         UpdateGuideUi();
         UpdateGuideMusicFilter();
-        UpdateFirstRunNativeAudioDefaults();
         UpdateBackgroundAudio();
         UpdateFpsLimitSetting();
         InitializeSpeechToggleOnMainThread();

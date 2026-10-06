@@ -470,7 +470,7 @@ public sealed partial class BopItAccessMod
         // The operation has already applied its override to the targeted
         // keyboard or controller binding. Persist only that binding.
         PlayerPrefs.SetString(index == 1 ? ToggleSpeechGamepadKey : ToggleSpeechKeyboardKey, path!);
-        PlayerPrefs.Save();
+        SaveModPreferencesAndConfig();
         ReleaseToggleSpeechControlRebinding();
         InputRebindingEvents.RefreshPrompts?.Invoke();
         RefreshToggleSpeechControlPrompts();
@@ -540,7 +540,7 @@ public sealed partial class BopItAccessMod
             InputActionRebindingExtensions.RemoveBindingOverride(action, 1);
             PlayerPrefs.DeleteKey(ToggleSpeechKeyboardKey);
             PlayerPrefs.DeleteKey(ToggleSpeechGamepadKey);
-            PlayerPrefs.Save();
+            SaveModPreferencesAndConfig();
         }
         finally
         {

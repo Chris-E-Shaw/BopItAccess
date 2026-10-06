@@ -75,6 +75,7 @@
 <li><a href="#languages">Idiomas</a></li>
 <li><a href="#in-game-guide">Lee la guía en el juego.</a></li>
 <li><a href="#speech-options">Menú de configuración de modificación</a></li>
+      <li><a href="#settings-file">Editar el archivo de configuración</a></li>
 <li><a href="#menu-guide">Guía de menú</a></li>
 <li><a href="#main-menu">Menú principal</a></li>
 <li><a href="#play-menu">Menú de reproducción</a></li>
@@ -279,6 +280,33 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 </table></div>
 <p>Las pistas se mantienen en silencio durante el juego activo y la parte de sincronización del ritmo de la calibración del audio, cuando el habla podría cubrir un sonido importante. Incluso si desactivas la voz, el mod aún puede anunciar cómo volver a activarla al inicio o cuando realizas ese cambio.</p>
 </section>
+
+  <section id="settings-file">
+    <h2>Editar el archivo de configuración</h2>
+    <p>Si un idioma desconocido, el audio demasiado alto o una voz problemática dificultan usar los menús, puedes cambiar la configuración fuera del juego. Después del inicio, el mod crea automáticamente UserData/BopItAccess.ini en la carpeta de Bop It!, usando tu configuración actual. Es un archivo de texto que puedes abrir con un editor como el Bloc de notas.</p>
+    <p>El archivo incluye idioma, volúmenes de música, efectos y voz, vibración, pantalla completa, resolución y latencia de audio del juego; preferencias de voz, braille, pistas y otras opciones del mod; perfiles de voz separados para OneCore y SAPI; y asignaciones de controles del juego y del mod destinados a los jugadores. Las resoluciones disponibles y las voces instaladas se muestran en los comentarios.</p>
+    <p>Cierra el juego antes de editar. Busca la sección adecuada y cambia el valor de la entrada existente, guarda el archivo y vuelve a abrir el juego. Los cambios se leen al iniciar, no de inmediato durante una sesión. Los cambios realizados en los menús actualizan el archivo automáticamente.</p>
+    <p>Los nombres de secciones y opciones permanecen en inglés en todos los idiomas. Se recomiendan On y Off para activar o desactivar opciones; también se aceptan True/False, Yes/No y 1/0. Los comentarios explican las opciones y los rangos. Una entrada ausente o no válida conserva la opción guardada correspondiente; los demás cambios válidos se aplican. Las asignaciones de controles duplicadas se rechazan.</p>
+    <p>Los comentarios y las entradas desconocidas se conservan. Si otro programa modifica el archivo mientras el juego está abierto, el mod deja de guardarlo por el resto de la sesión para proteger esos cambios. Cierra y vuelve a abrir el juego para aplicarlos. Puedes guardar una copia de respaldo antes de editar.</p>
+    <p>Si una voz falla, escribe Voice=System default en la sección OneCore o SAPI. Las voces OneCore usan nombre | idioma; SAPI acepta el nombre mostrado de una voz instalada o su identificador completo del Registro. El archivo enumera las opciones disponibles. OutputMode=Auto intenta usar un lector de pantalla compatible activo, después OneCore y finalmente SAPI.</p>
+    <p>El siguiente ejemplo restaura el inglés, un audio de juego más bajo y la voz automática con las voces predeterminadas del sistema. Cambia las entradas correspondientes que ya existen en tu archivo; este fragmento es una referencia, no otro bloque para agregar al final. Conserva las demás opciones.</p>
+    <pre><code>[Game]
+Language=en
+MusicVolume=30
+SfxVolume=30
+VoiceOverVolume=30
+
+[Mod]
+SpeechOutput=On
+OutputMode=Auto
+
+[OneCore]
+Voice=System default
+
+[SAPI]
+Voice=System default</code></pre>
+  </section>
+
 <section id="menu-guide">
 <h2>Guía de menú</h2>
 <p>Las siguientes tablas siguen el camino que probablemente seguirás a lo largo del juego. En menús normales, mueva el foco con Arriba/Abajo, active el elemento enfocado con Enter o Space (o confirme el controlador) y use Retroceso (o retroceso del controlador) para regresar. Algunas pantallas utilizan otros controles; se explican cuando es necesario. Si una opción no está disponible en tu estado actual, el juego puede ocultarla.</p>

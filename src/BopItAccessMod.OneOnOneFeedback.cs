@@ -49,7 +49,7 @@ public sealed partial class BopItAccessMod
         try
         {
             PlayerPrefs.SetInt(OneOnOneFeedbackPreferenceKey, enabled ? 1 : 0);
-            PlayerPrefs.Save();
+            SaveModPreferencesAndConfig();
         }
         catch (Exception ex)
         {
