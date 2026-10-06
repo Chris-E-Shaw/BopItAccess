@@ -90,25 +90,18 @@ public sealed partial class BopItAccessMod
             if (currentValues.TryGetValue(item.Key, out string? current) &&
                 string.Equals(current, wanted.Length == 0 ? "None" : wanted, StringComparison.OrdinalIgnoreCase))
                 continue;
-            // The game's defaults intentionally share controls across different
-            // contexts (for example Bop and UI Submit). Restoring a default
-            // must retain those native relationships. New mappings use the
-            // existing duplicate guard, including all five mod-owned actions.
-            if (!useDefault && !string.IsNullOrEmpty(path) &&
-                (IsBindingAssignedElsewhere(manager, item.Action, item.Index, path, out string owner) ||
-                 ConfigModHasLayoutConflict(manager, item.Action, item.Index, path, out owner)))
+            // Check the effective requested path even for an individual default
+            // restoration. Native context/default sharing is handled by the same
+            // policy used in Controls; dormant original paths are not reserved.
+            if (!string.IsNullOrEmpty(wanted) &&
+                (IsBindingAssignedElsewhere(manager, item.Action, item.Index, wanted, out string owner) ||
+                 ConfigModHasLayoutConflict(manager, item.Action, item.Index, wanted, out owner)))
             {
                 WriteStatus("Config ignored " + item.Key + ": input is already assigned to " + owner + ".");
                 continue;
             }
-            if (accepted.Any(candidate => !string.IsNullOrEmpty(path) &&
-                    !string.IsNullOrEmpty(candidate.Path) &&
-                    string.Equals(ConfigModConflictPath(candidate.Path), ConfigModConflictPath(path),
-                        StringComparison.OrdinalIgnoreCase)))
-            {
-                WriteStatus("Config ignored " + item.Key + ": duplicates another requested mapping.");
-                continue;
-            }
+            // Each accepted change is mirrored below before the next item,
+            // so these same live checks also cover earlier requested changes.
             // Gameplay and leaderboard inputs keep the game's own reserved
             // controls/prompt checks. UI navigation itself contains reserved
             // menu controls and is validated by the known control path parser.
@@ -145,7 +138,7 @@ public sealed partial class BopItAccessMod
             string json = PlayerPrefs.HasKey(preference) ? PlayerPrefs.GetString(preference) : beforeJson;
             try
             {
-                JsonObject document = JsonNode.Parse(json) as JsonObject ?? new JsonObject();
+                JsonObject document = ParseNativeBindingOverrideDocument(json);
                 JsonArray entries = document["bindings"] as JsonArray ?? new JsonArray();
                 if (document["bindings"] == null)
                     document["bindings"] = entries;
@@ -181,8 +174,8 @@ public sealed partial class BopItAccessMod
             try
             {
                 var overrides = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
-                JsonObject? document = JsonNode.Parse(PlayerPrefs.GetString(preference)) as JsonObject;
-                if (document?["bindings"] is JsonArray entries)
+                JsonObject document = ParseNativeBindingOverrideDocument(PlayerPrefs.GetString(preference));
+                if (document["bindings"] is JsonArray entries)
                     foreach (JsonNode? node in entries)
                     {
                         string? id = node?["id"]?.GetValue<string>();
@@ -207,6 +200,20 @@ public sealed partial class BopItAccessMod
             result[item.Key] = string.IsNullOrEmpty(path) ? "None" : path;
         }
         return result;
+    }
+
+    // Unity saves an empty string when there are no binding overrides. It is
+    // a valid default-only profile, not malformed JSON. Preserve diagnostics
+    // and existing data for nonblank documents with an invalid shape.
+    private static JsonObject ParseNativeBindingOverrideDocument(string? json)
+    {
+        if (string.IsNullOrWhiteSpace(json))
+            return new JsonObject();
+        JsonObject document = JsonNode.Parse(json) as JsonObject ??
+            throw new System.Text.Json.JsonException("Binding overrides must be a JSON object.");
+        if (document["bindings"] is JsonNode bindings && bindings is not JsonArray)
+            throw new System.Text.Json.JsonException("Binding overrides must contain a bindings array.");
+        return document;
     }
 
     private static IEnumerable<ConfigNativeBinding> ConfigNativeBindingRows(InputActionAsset asset)

@@ -10,8 +10,8 @@ public sealed partial class BopItAccessMod
     private long _nextNativeBindingGuardErrorAt;
 
     // Interactive rebinds apply their candidate override before reporting
-    // completion. Ignore only that exact binding, then inspect the active
-    // native asset and every accessibility action before saving the change.
+    // completion. Compare current assignments in compatible contexts, then
+    // inspect every accessibility action before saving the change.
     private bool IsBindingAssignedElsewhere(InputRebindingManager manager,
         InputAction targetAction, int targetBindingIndex, string? candidatePath,
         out string owner)
@@ -58,23 +58,50 @@ public sealed partial class BopItAccessMod
     private static bool ActionHasConflictingBinding(InputAction action,
         InputAction targetAction, int targetBindingIndex, string candidatePath)
     {
-        bool sameAction = action.id == targetAction.id;
+        if (BindingActionsCanShareInput(action, targetAction))
+            return false;
         for (int i = 0; i < action.bindings.Count; i++)
         {
-            if (sameAction && i == targetBindingIndex)
-                continue;
-
             InputBinding binding = action.bindings[i];
             if (binding.isComposite || BindingIsModifierChordPart(action, i))
                 continue;
-            // Reserve defaults as well as active overrides. Reset to Default
-            // must not recreate a duplicate after a different action moved.
-            if (DescriptionPathsMatch(binding.effectivePath, candidatePath) ||
-                DescriptionPathsMatch(binding.path, candidatePath))
+            // An overridden or unbound original path is available for reuse.
+            // The game's deliberate native default sharing remains valid.
+            if (DescriptionPathsMatch(binding.effectivePath, candidatePath) &&
+                !IsNativeDefaultBindingSharing(targetAction, targetBindingIndex,
+                    action, binding, binding.effectivePath, candidatePath))
                 return true;
         }
         return false;
     }
+
+    private static bool BindingActionsCanShareInput(InputAction first, InputAction second) =>
+        first.id == second.id ||
+        (IsGameplayBindingAction(first) && IsUiNavigationBindingAction(second)) ||
+        (IsGameplayBindingAction(second) && IsUiNavigationBindingAction(first));
+
+    private static bool IsGameplayBindingAction(InputAction action) =>
+        string.Equals(action.actionMap?.name, "Gameplay", StringComparison.OrdinalIgnoreCase);
+
+    private static bool IsUiNavigationBindingAction(InputAction action) =>
+        string.Equals(action.actionMap?.name, "UI", StringComparison.OrdinalIgnoreCase) &&
+        (string.Equals(action.name, "Navigate", StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(action.name, "Submit", StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsNativeBindingAction(InputAction action) =>
+        action.actionMap?.name is string map &&
+        (map.Equals("Gameplay", StringComparison.OrdinalIgnoreCase) ||
+         map.Equals("UI", StringComparison.OrdinalIgnoreCase) ||
+         map.Equals("Leaderboard", StringComparison.OrdinalIgnoreCase));
+
+    private static bool IsNativeDefaultBindingSharing(InputAction target, int targetIndex,
+        InputAction other, InputBinding otherBinding, string? otherEffectivePath,
+        string candidatePath) =>
+        IsNativeBindingAction(target) && IsNativeBindingAction(other) &&
+        targetIndex >= 0 && targetIndex < target.bindings.Count &&
+        DescriptionPathsMatch(target.bindings[targetIndex].path, candidatePath) &&
+        DescriptionPathsMatch(otherBinding.path, candidatePath) &&
+        DescriptionPathsMatch(otherEffectivePath, candidatePath);
 
     private static bool BindingIsModifierChordPart(InputAction action, int index)
     {
@@ -191,15 +218,14 @@ public sealed partial class BopItAccessMod
                 conflictOwner = owner;
                 break;
             }
-            // Reset to Default and the game's intentional default sharing
-            // remain valid. A new assignment must be compared with the old
+            // Bulk Reset to Default removes overrides. A new assignment,
+            // including a captured original key, must be compared with the old
             // snapshot: the native callback may already have unbound its
             // competitor, so the live asset alone cannot detect the conflict.
             if (!string.IsNullOrEmpty(binding.overridePath) &&
-                !DescriptionPathsMatch(binding.overridePath, binding.path) &&
                 !DescriptionPathsMatch(binding.overridePath,
                     item.Previous ?? binding.path) &&
-                NativeBaselineHasConflict(asset, item.Action,
+                NativeBaselineHasConflict(asset, item.Action, item.Index,
                     binding.overridePath, out owner))
             {
                 conflictOwner = owner;
@@ -245,7 +271,7 @@ public sealed partial class BopItAccessMod
     }
 
     private bool NativeBaselineHasConflict(InputActionAsset asset,
-        InputAction targetAction, string candidatePath, out string owner)
+        InputAction targetAction, int targetIndex, string candidatePath, out string owner)
     {
         owner = string.Empty;
         foreach (InputActionMap map in asset.actionMaps)
@@ -254,7 +280,7 @@ public sealed partial class BopItAccessMod
             {
                 // Device-specific variants of the same action may share an
                 // input. They invoke the same game function.
-                if (action.id == targetAction.id)
+                if (BindingActionsCanShareInput(action, targetAction))
                     continue;
                 for (int index = 0; index < action.bindings.Count; index++)
                 {
@@ -264,8 +290,10 @@ public sealed partial class BopItAccessMod
                     string? previous = _nativeBindingGuardSnapshot.TryGetValue(
                         NativeBindingKey(action, index), out string? saved)
                         ? saved : binding.overridePath;
-                    if (!DescriptionPathsMatch(previous ?? binding.path, candidatePath) &&
-                        !DescriptionPathsMatch(binding.path, candidatePath))
+                    string? previousEffectivePath = previous ?? binding.path;
+                    if (!DescriptionPathsMatch(previousEffectivePath, candidatePath) ||
+                        IsNativeDefaultBindingSharing(targetAction, targetIndex,
+                            action, binding, previousEffectivePath, candidatePath))
                         continue;
                     owner = SpokenBindingOwner(action.name);
                     return true;
@@ -303,8 +331,7 @@ public sealed partial class BopItAccessMod
             for (int index = 0; index < action.bindings.Count; index++)
             {
                 InputBinding binding = action.bindings[index];
-                if (!DescriptionPathsMatch(binding.effectivePath, candidatePath) &&
-                    !DescriptionPathsMatch(binding.path, candidatePath))
+                if (!DescriptionPathsMatch(binding.effectivePath, candidatePath))
                     continue;
                 owner = SpokenBindingOwner(action.name);
                 return true;
