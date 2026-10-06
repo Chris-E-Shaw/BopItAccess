@@ -1,4 +1,4 @@
-Bop It Access 0.9.10 - Prism Sprache und Blindenschrift
+Bop It Access 0.9.11 - Prism Sprache und Blindenschrift
 
 Was das bewirkt
 --------------
@@ -158,13 +158,13 @@ Hinzugefügte Steuerelemente, die Zeilen binden, warten ebenfalls auf die Eröff
 freigegeben, bevor eine erneute Bindungsanfrage angenommen wird.
 
 In Play liest der Mod „Solo“, „Party“, „Pass It“ und „One on One“, wenn er fokussiert ist.
-Auf dem folgenden Songauswahlbildschirm wird das aktuelle Thema angekündigt
-(Shapes, Space, City oder Office) und ob der Extremmodus aktiviert ist. Verdrehen zu
-Wenn Sie das Lied ändern, wird nur das neue Thema gesprochen. Ziehen, um den Schwierigkeitsgrad zu ändern, spricht
-nur der neue Extremzustand. Die Bildschirmeinführung erklärt auch die DREHEN,
-ZIEHEN, KLOPFEN und Zurück-Aktionen.
-Diese vollständige Einführung wird immer dann wiederholt, wenn ein Modus und das Lied ausgewählt wird
-Der Bildschirm wird erneut mit dem aktuellen Thema und dem Extremzustand geöffnet.
+Auf dem folgenden Songauswahlbildschirm nennt der Mod das aktuelle Thema
+(Shapes, Space, City oder Office) und die Schwierigkeit: Klassisch oder Extrem.
+DREHEN ändert den Song; gesprochen wird nur das neue Thema. ZIEHEN ändert
+die Schwierigkeit; gesprochen wird nur Klassisch oder Extrem. Die Einführung
+erklärt außerdem DREHEN, ZIEHEN, KLOPFEN und Zurück. Sie wird bei jeder
+Modusauswahl und jedem erneuten Öffnen dieses Bildschirms wiederholt und
+nennt dabei das aktuelle Thema und die aktuelle Schwierigkeit.
 Drücken Sie auf diesem Bildschirm SPEAK HINTS (standardmäßig H oder drücken Sie den rechten Stick), um zu hören
 Lesen Sie den nativen Tutorialtext des aktuellen Modus und der Schwierigkeit, bevor Sie beginnen. Jeder
 Die benannte Aktion in dieser Referenz umfasst die aktuell zugewiesene Tastatur oder
@@ -322,7 +322,7 @@ Nachricht, um die Einleitung noch einmal zu hören. Wählen Sie „Mod-Einstellu
 Anleitung oder Weiter zum Spiel. Speak Hints benennt seine aktuelle Tastatur und
 Controller-Zuweisungen in der Willkommensnachricht unabhängig vom Hinweistyp.
 Öffnen Sie Play und wechseln Sie zwischen den vier Modi. Wählen Sie eines aus, um zur Songauswahl zu gelangen.
-DREHEN, um durch die Themen zu blättern, und ZIEHEN, um den Extremmodus ein- oder auszuschalten. Die
+DREHEN, um durch die Themen zu blättern, und ZIEHEN, um Klassisch oder Extrem zu wählen. Die
 Mod kündigt jede Änderung an. Drücken Sie G oder LT, um die aktuell ausgewählte Stufe anzuhören
 Beschreibung. Drücken Sie H oder drücken Sie den rechten Stick, um den Tutorialtext des Modus zu hören.
 aktuell zugewiesene Aktionssteuerungen und Schaltflächenhinweise. KLOPFEN startet den gewählten Modus;

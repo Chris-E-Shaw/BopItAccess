@@ -147,6 +147,7 @@
 <h2>Hinweise und Einschränkungen</h2>
 <ul>
 <li><strong>Beschreibungen werden vor der Runde erbeten.</strong> Der Mod erzählt absichtlich keine Szenerie während des aktiven Spiels. Ein Spieler muss die verbalen Befehle des Spiels hören und darauf reagieren; Eine zusätzliche Erzählung könnte einen Befehl abdecken und die Runde beenden.</li>
+<li><strong>Die Bühnenbeschreibungen müssen noch visuell geprüft werden.</strong> Die Beschreibungen aller vier Bühnen wurden noch nicht von einer sehenden Person auf ihre Genauigkeit überprüft. Eine visuelle Prüfung und Bestätigung steht noch aus.</li>
 <li>Auto bevorzugt einen laufenden Screenreader, dann OneCore und zuletzt SAPI. Installierte Stimmen und Ihr System können die Reaktionszeit beeinflussen. Der Mod installiert keine zusätzlichen Stimmen.</li>
 <li><strong>Einige native Steuerelemente sind noch behoben.</strong> Der Mod erweitert das Steuerungsmenü des Spiels erheblich, macht jedoch nicht jede Spieleingabe neu zuordenbar.</li>
 <li><strong>Die Bildrate beeinflusst die Eingabeabfrage.</strong> Der FPS-Limiter kann die Systemlast stark reduzieren. Animationen werden nicht absichtlich verlangsamt oder das Spiel-Timing verändert, aber das Spiel prüft bei niedrigeren FPS seltener Frame-basierte Eingaben. Eine höhere Einstellung kann insbesondere bei schnellen Runden zu einem genaueren Eingabe-Timing führen.</li>
@@ -352,7 +353,7 @@ Voice=System default</code></pre>
 </section>
 <section id="song-menu">
 <h3>Song- und Schwierigkeitsgradauswahl</h3>
-<p>Nachdem Sie einen beliebigen Modus ausgewählt haben, wählen Sie einen von vier Songs/Stufen und entscheiden, ob Sie den Schwierigkeitsgrad „Extrem“ verwenden möchten. Der Mod kündigt jedes Mal, wenn dieser Bildschirm geöffnet wird, den aktuellen Song und den Extreme-Status an. Wenn man einen von beiden ändert, spricht man von seinem neuen Wert. Benutzen <strong>DREHEN</strong> das Lied ändern, <strong>ZIEHEN</strong> Klassisch/Extrem ändern, <strong>KLOPFEN</strong> beginnen, und <strong>Zurück</strong> zurückkehren. Sie können drücken <strong>G</strong> oder <strong>linker Abzug</strong> um die Beschreibung der ausgewählten Etappe zu hören. Drücken Sie <strong>H</strong> oder <strong>Rechten Stick drücken</strong> um Tastenhinweise zu hören, gefolgt von der Tutorial-Referenz für den aktuellen Modus und Schwierigkeitsgrad. Es benennt die aktuell zugewiesene Steuerung jeder Aktion, einschließlich beider KLOPFEN-Eingaben in One-on-One. Lesen Sie diese, bevor Sie beginnen: Der Mod hält die zeitgesteuerte Tutorial-Einblendung während des aktiven Spiels still, sodass ein gesprochener Spielbefehl nicht abgedeckt wird. Aus dem gleichen Grund stoppt das Starten der Wiedergabe die Menüausgabe.</p>
+<p>Nachdem Sie einen Modus ausgewählt haben, wählen Sie einen von vier Songs beziehungsweise Bühnen und die Schwierigkeit Klassisch oder Extrem. Beim Öffnen dieses Bildschirms nennt der Mod den aktuellen Song und die Schwierigkeit. Bei Änderungen wird nur der neue Wert gesprochen; die Schwierigkeit wird als Klassisch oder Extrem angesagt. Nutzen Sie <strong>DREHEN</strong> das Lied ändern, <strong>ZIEHEN</strong> Klassisch/Extrem ändern, <strong>KLOPFEN</strong> beginnen, und <strong>Zurück</strong> zurückkehren. Sie können drücken <strong>G</strong> oder <strong>linker Abzug</strong> um die Beschreibung der ausgewählten Etappe zu hören. Drücken Sie <strong>H</strong> oder <strong>Rechten Stick drücken</strong> um Tastenhinweise zu hören, gefolgt von der Tutorial-Referenz für den aktuellen Modus und Schwierigkeitsgrad. Es benennt die aktuell zugewiesene Steuerung jeder Aktion, einschließlich beider KLOPFEN-Eingaben in One-on-One. Lesen Sie diese, bevor Sie beginnen: Der Mod hält die zeitgesteuerte Tutorial-Einblendung während des aktiven Spiels still, sodass ein gesprochener Spielbefehl nicht abgedeckt wird. Aus dem gleichen Grund stoppt das Starten der Wiedergabe die Menüausgabe.</p>
 <div class="table-scroll"><table>
 <caption>Auswahlmöglichkeiten und Aktionen bei der Songauswahl</caption>
 <thead><tr><th scope="col">Artikel</th><th scope="col">Was es bewirkt</th></tr></thead>
@@ -361,7 +362,7 @@ Voice=System default</code></pre>
 <tr><th scope="row">Space</th><td>Wählen Sie die farbenfrohe Galaxienbühne und ihre Musik.</td></tr>
 <tr><th scope="row">City</th><td>Wählen Sie die animierte Stadtbühne und ihre Musik.</td></tr>
 <tr><th scope="row">Office</th><td>Wählen Sie die skurrile Arbeitsplatzbühne und ihre Musik.</td></tr>
-<tr><th scope="row">Extrem Ein/Aus</th><td>Schalten Sie „Extreme“ ein, um KREISEN und SCHNIPSEN zu den klassischen KLOPFEN/DREHEN/ZIEHEN-Befehlen hinzuzufügen, oder deaktivieren Sie sie für „Classic“.</td></tr>
+<tr><th scope="row">Klassisch / Extrem</th><td>Wählen Sie Klassisch für KLOPFEN, DREHEN und ZIEHEN oder Extrem, um zusätzlich KREISEN und SCHNIPSEN zu verwenden. Der Mod nennt die ausgewählte Schwierigkeit.</td></tr>
 <tr><th scope="row">Start / KLOPFEN</th><td>Beginnen Sie mit dem ausgewählten Modus, Lied und Schwierigkeitsgrad.</td></tr>
 <tr><th scope="row">Zurück</th><td>Kehren Sie zurück, ohne die Runde zu beginnen.</td></tr>
 </tbody>
@@ -598,7 +599,7 @@ Voice=System default</code></pre>
 </section>
 </main>
 <footer>
-<p class="small">Bop It Access Benutzerhandbuch. Aktuelle Funktionen spiegeln die Quelle in der Version 0.9.10 wider; Geplante Artikel sind deutlich gekennzeichnet. <a href="#contents">Zurück zum Inhalt</a>.</p>
+<p class="small">Bop It Access Benutzerhandbuch. Aktuelle Funktionen spiegeln die Quelle in der Version 0.9.11 wider; Geplante Artikel sind deutlich gekennzeichnet. <a href="#contents">Zurück zum Inhalt</a>.</p>
 </footer>
 </body>
 </html>

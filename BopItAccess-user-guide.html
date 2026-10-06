@@ -153,6 +153,7 @@
     <h2>Notes and limitations</h2>
     <ul>
       <li><strong>Descriptions are requested before the round.</strong> The mod intentionally does not narrate scenery during active gameplay. A player must hear and react to the game's verbal commands; extra narration could cover a command and end the round.</li>
+      <li><strong>Stage descriptions still need visual review.</strong> The descriptions of all four stages have not been verified for accuracy by a sighted user or player. They still need visual review and confirmation.</li>
       <li><strong>OneCore and SAPI are available speech engines.</strong> Auto prefers a supported running screen reader, then OneCore, then SAPI. Your installed voices and system can affect response time. For non-English speech, choose a voice for the active engine that supports your selected game language; the mod does not install additional voices.</li>
       <li><strong>Some native controls are still fixed.</strong> The mod greatly expands the game's Controls menu, but it does not make every game input remappable.</li>
       <li><strong>Frame rate affects input polling.</strong> The FPS limiter can sharply reduce system load. It does not deliberately slow animations or change game timing, but the game checks frame-based input less often at lower FPS. A higher setting can give more accurate input timing, especially in fast rounds.</li>
@@ -363,7 +364,7 @@ Voice=System default</code></pre>
 
   <section id="song-menu">
     <h3>Song and difficulty selection</h3>
-    <p>After choosing any mode, you choose one of four songs/stages and decide whether to use Extreme difficulty. The mod announces the current song and Extreme state every time this screen opens. Changing either one speaks its new value. Use <strong>Twist</strong> to change the song, <strong>Pull</strong> to change Classic/Extreme, <strong>Bop</strong> to begin, and <strong>Back</strong> to return. You may press <strong>G</strong> or <strong>left trigger</strong> to hear the selected stage's description. Press <strong>H</strong> or <strong>right stick press</strong> to hear button hints followed by the tutorial reference for the current mode and difficulty. It names each action's current assigned control, including both Bop inputs in One-on-One. Read these before starting: the mod keeps the timed tutorial overlay quiet during active play so it does not cover a spoken game command. Starting play stops menu speech for the same reason.</p>
+    <p>After choosing any mode, choose one of four songs/stages and either Classic or Extreme difficulty. The mod announces the current song and difficulty whenever this screen opens. Changing either one speaks only its new value; difficulty is announced as Classic or Extreme. Use <strong>Twist</strong> to change the song, <strong>Pull</strong> to change Classic/Extreme, <strong>Bop</strong> to begin, and <strong>Back</strong> to return. You may press <strong>G</strong> or <strong>left trigger</strong> to hear the selected stage's description. Press <strong>H</strong> or <strong>right stick press</strong> to hear button hints followed by the tutorial reference for the current mode and difficulty. It names each action's current assigned control, including both Bop inputs in One-on-One. Read these before starting: the mod keeps the timed tutorial overlay quiet during active play so it does not cover a spoken game command. Starting play stops menu speech for the same reason.</p>
     <div class="table-scroll"><table>
       <caption>Song-selection choices and actions</caption>
       <thead><tr><th scope="col">Item</th><th scope="col">What it does</th></tr></thead>
@@ -372,7 +373,7 @@ Voice=System default</code></pre>
         <tr><th scope="row">Space</th><td>Choose the colourful galaxy stage and its music.</td></tr>
         <tr><th scope="row">City</th><td>Choose the animated city stage and its music.</td></tr>
         <tr><th scope="row">Office</th><td>Choose the whimsical workplace stage and its music.</td></tr>
-        <tr><th scope="row">Extreme On / Off</th><td>Turn Extreme on to add Spin and Flick to the Classic Bop/Twist/Pull commands, or off for Classic.</td></tr>
+        <tr><th scope="row">Classic / Extreme</th><td>Choose Classic for Bop, Twist, and Pull, or Extreme to also add Spin and Flick. The mod speaks the selected difficulty by name.</td></tr>
         <tr><th scope="row">Start / Bop</th><td>Begin the selected mode, song, and difficulty.</td></tr>
         <tr><th scope="row">Back</th><td>Return without starting the round.</td></tr>
       </tbody>
@@ -626,7 +627,7 @@ Voice=System default</code></pre>
   </section>
 </main>
 <footer>
-  <p class="small">Bop It Access user's guide. Current features reflect version 0.9.10. <a href="#contents">Back to contents</a>.</p>
+  <p class="small">Bop It Access user's guide. Current features reflect version 0.9.11. <a href="#contents">Back to contents</a>.</p>
 </footer>
 </body>
 </html>

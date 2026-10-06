@@ -1,4 +1,4 @@
-Bop It Access 0.9.10 - Prism Habla y Braille
+Bop It Access 0.9.11 - Prism Habla y Braille
 
 ¿Qué hace esto?
 --------------
@@ -158,13 +158,13 @@ Las filas de enlace de controles agregadas también esperan a que se realice la 
 liberado antes de aceptar una solicitud de nueva vinculación.
 
 Dentro de Play, el mod lee Solo, Party, Pass It y One on One cuando está enfocado.
-En la siguiente pantalla de selección de canción, anuncia el tema actual.
-(Shapes, Space, City o Office) y si el modo Extremo está activado. Girando hacia
-cambiar la cancion habla solo el nuevo tema. Tirar para cambiar la dificultad habla.
-sólo el nuevo estado Extremo. La introducción de la pantalla también explica el RETORCER,
-TIRAR, GOLPEAR y acciones Atrás.
-Esta introducción completa se repite cada vez que se selecciona un modo y la canción
-La pantalla se abre nuevamente, con el tema actual y el estado Extremo.
+En la siguiente pantalla de selección de canción, el mod anuncia el tema
+(Shapes, Space, City u Office) y la dificultad: Clásico o Extremo. RETORCER
+cambia la canción y anuncia solo el nuevo tema. TIRAR cambia la dificultad
+y anuncia solo Clásico o Extremo. La introducción también explica RETORCER,
+TIRAR, GOLPEAR y Atrás. Esta introducción se repite cada vez que se elige
+un modo y se abre la pantalla de canción, con el tema y la dificultad
+actuales.
 Presiona HABLAR CONSEJOS (H o presiona el joystick derecho de forma predeterminada) en esta pantalla para escuchar
 el modo actual y el texto del tutorial nativo de dificultad antes de comenzar. cada uno
 La acción nombrada en esa referencia incluye su teclado actualmente asignado o
@@ -322,7 +322,7 @@ mensaje para escuchar la introducción nuevamente. Elija Abrir configuración de
 Guía o Continuar al juego. Speak Hints nombra su teclado actual y
 asignaciones de controlador en el mensaje de bienvenida independientemente del tipo de sugerencia.
 Abre Play y muévete entre los cuatro modos. Elija uno para llegar a la selección de canciones.
-RETORCER para recorrer los temas y TIRAR para activar o desactivar el modo Extremo. el
+RETORCER para recorrer los temas y TIRAR para elegir Clásico o Extremo. el
 mod anuncia cada cambio. Presione G o LT para escuchar la etapa seleccionada actualmente
 descripción. Presiona H o presiona el joystick derecho para escuchar el texto del tutorial del modo.
 controles de acción asignados actualmente y sugerencias de botones. GOLPEAR inicia el modo elegido;

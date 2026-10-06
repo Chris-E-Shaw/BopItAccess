@@ -1,4 +1,4 @@
-Bop It Access 0.9.10 - Prism Fala e Braille
+Bop It Access 0.9.11 - Prism Fala e Braille
 
 O que isso faz
 --------------
@@ -158,13 +158,13 @@ linhas de ligação de controles adicionados também aguardam que a entrada de a
 liberado antes de aceitar uma solicitação de religação.
 
 Dentro do Play, o mod diz Solo, Party, Pass It e One on One quando focado.
-Na tela seguinte de seleção de músicas, anuncia o tema atual
-(Shapes, Space, City ou Office) e se o modo Extremo está ativado. Torcendo para
-mudar a música fala apenas o novo tema. Puxar para mudar a dificuldade fala
-apenas o novo estado extremo. A introdução da tela também explica o GIRAR,
-PUXAR, BATER e ações Voltar.
-Esta introdução completa é repetida sempre que um modo é selecionado e a música
-a tela abre novamente, com o tema atual e o estado Extremo.
+Na tela seguinte de seleção de música, o mod anuncia o tema atual
+(Shapes, Space, City ou Office) e a dificuldade: Clássico ou Extremo. GIRAR
+altera a música e anuncia apenas o novo tema. PUXAR altera a dificuldade
+e anuncia apenas Clássico ou Extremo. A introdução também explica GIRAR,
+PUXAR, BATER e Voltar. Ela se repete sempre que um modo é escolhido
+e a tela de música é aberta, com o tema e a dificuldade
+atuais.
 Pressione SPEAK HINTS (H ou pressione o botão direito por padrão) nesta tela para ouvir
 o modo atual e o texto do tutorial nativo da dificuldade antes de começar. Cada
 a ação nomeada nessa referência inclui o teclado ou teclado atualmente atribuído
@@ -322,7 +322,7 @@ mensagem para ouvir a introdução novamente. Escolha Abrir configurações do m
 Guia ou Continue para o jogo. Speak Hints nomeia seu teclado atual e
 atribuições de controlador na mensagem de boas-vindas, independentemente do tipo de dicas.
 Abra o Play e navegue entre os quatro modos. Escolha um para acessar a seleção de músicas.
-GIRAR para percorrer os temas e PUXAR para ativar ou desativar o modo Extremo. O
+GIRAR para percorrer os temas e PUXAR para escolher Clássico ou Extremo. O
 mod anuncia cada mudança. Pressione G ou LT para ouvir o estágio atualmente selecionado
 descrição. Pressione H ou pressione o botão direito para ouvir o texto do tutorial do modo,
 controles de ação atribuídos atualmente e dicas de botões. BATER inicia o modo escolhido;

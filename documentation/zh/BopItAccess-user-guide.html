@@ -147,6 +147,7 @@
 <h2>注意事项与限制</h2>
 <ul>
 <li><strong>在回合开始前要求提供描述。</strong> 该模组故意不在游戏进行过程中叙述场景。玩家必须听到游戏的口头命令并做出反应；额外的旁白可以涵盖命令并结束回合。</li>
+<li><strong>舞台描述仍需目视审核。</strong> 四个舞台的描述均未经过有视力的用户或玩家核实其准确性，仍需要对照实际画面进行审核和确认。</li>
 <li>自动模式依次优先使用运行中的屏幕阅读器、OneCore 和 SAPI。已安装的语音和系统会影响响应速度。模组不会安装额外语音。</li>
 <li><strong>一些本机控件仍然是固定的。</strong> 该模组极大地扩展了游戏的控制菜单，但它并没有使每个游戏输入都可以重新映射。</li>
 <li><strong>帧速率影响输入轮询。</strong> FPS限制器可以大幅降低系统负载。它不会故意减慢动画速度或改变游戏时间，但游戏在较低 FPS 时检查基于帧的输入的频率较低。较高的设置可以提供更准确的输入计时，尤其是在快速回合中。</li>
@@ -352,7 +353,7 @@ Voice=System default</code></pre>
 </section>
 <section id="song-menu">
 <h3>选择歌曲和难度</h3>
-<p>选择任何模式后，您可以选择四首歌曲/阶段之一，并决定是否使用极限难度。每次此屏幕打开时，模组都会宣布当前歌曲和极限状态。改变其中任何一个都说明了它的新价值。使用 <strong>扭转</strong> 改变歌曲， <strong>拉动</strong> 更改经典/极限， <strong>拍打</strong> 开始，并且 <strong>返回</strong> 返回。您可以按 <strong>G</strong> 或 <strong>左扳机</strong> 听取所选阶段的描述。新闻 <strong>H</strong> 或 <strong>右摇杆按下</strong> 听到按钮提示，然后是当前模式和难度的教程参考。它命名每个操作当前分配的控件，包括一对一中的两个 拍打 输入。在开始之前阅读这些内容：该模组在活动游戏期间保持定时教程覆盖安静，因此它不会覆盖口头游戏命令。出于同样的原因，开始播放会停止菜单语音。</p>
+<p>选择模式后，请从四首歌曲或舞台中选择一个，并选择经典或极限难度。每次打开此界面，模组都会读出当前歌曲和难度。更改其中任何一项时，只读出新值；难度会读作经典或极限。使用 <strong>扭转</strong> 改变歌曲， <strong>拉动</strong> 更改经典/极限， <strong>拍打</strong> 开始，并且 <strong>返回</strong> 返回。您可以按 <strong>G</strong> 或 <strong>左扳机</strong> 听取所选阶段的描述。新闻 <strong>H</strong> 或 <strong>右摇杆按下</strong> 听到按钮提示，然后是当前模式和难度的教程参考。它命名每个操作当前分配的控件，包括一对一中的两个 拍打 输入。在开始之前阅读这些内容：该模组在活动游戏期间保持定时教程覆盖安静，因此它不会覆盖口头游戏命令。出于同样的原因，开始播放会停止菜单语音。</p>
 <div class="table-scroll"><table>
 <caption>歌曲选择选择和动作</caption>
 <thead><tr><th scope="col">项目</th><th scope="col">它的作用</th></tr></thead>
@@ -361,7 +362,7 @@ Voice=System default</code></pre>
 <tr><th scope="row">Space</th><td>选择色彩缤纷的银河舞台及其音乐。</td></tr>
 <tr><th scope="row">City</th><td>选择动画城市舞台及其音乐。</td></tr>
 <tr><th scope="row">Office</th><td>选择异想天开的工作场所舞台及其音乐。</td></tr>
-<tr><th scope="row">极限开/关</th><td>打开 Extreme 可将 转动 和 拨动 添加到 Classic 拍打/扭转/拉动 命令，或关闭 Classic。</td></tr>
+<tr><th scope="row">经典 / 极限</th><td>经典难度使用拍打、扭转和拉动。极限难度还会加入转动和拨动。模组会读出所选难度的名称。</td></tr>
 <tr><th scope="row">开始/拍打</th><td>开始选择的模式、歌曲和难度。</td></tr>
 <tr><th scope="row">后退</th><td>返回而不开始回合。</td></tr>
 </tbody>
@@ -598,7 +599,7 @@ Voice=System default</code></pre>
 </section>
 </main>
 <footer>
-<p class="small">Bop It Access 用户指南。当前功能反映版本 0.9.10 的来源；计划项目有明确标记。 <a href="#contents">返回内容</a>.</p>
+<p class="small">Bop It Access 用户指南。当前功能反映版本 0.9.11 的来源；计划项目有明确标记。 <a href="#contents">返回内容</a>.</p>
 </footer>
 </body>
 </html>

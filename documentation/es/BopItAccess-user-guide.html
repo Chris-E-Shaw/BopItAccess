@@ -147,6 +147,7 @@
 <h2>Notas y limitaciones</h2>
 <ul>
 <li><strong>Se solicitan descripciones antes de la ronda.</strong> El mod intencionalmente no narra escenarios durante el juego activo. Un jugador debe escuchar y reaccionar a las órdenes verbales del juego; Una narración adicional podría cubrir una orden y finalizar la ronda.</li>
+<li><strong>Las descripciones de los escenarios todavía necesitan revisión visual.</strong> Ninguna persona o jugador con visión ha verificado la exactitud de las descripciones de los cuatro escenarios. Aún necesitan revisión visual y confirmación.</li>
 <li>Auto prefiere un lector de pantalla en ejecución, después OneCore y, por último, SAPI. Las voces instaladas y el sistema pueden afectar la respuesta. El mod no instala voces adicionales.</li>
 <li><strong>Algunos controles nativos todavía están arreglados.</strong> El mod amplía enormemente el menú de controles del juego, pero no hace que todas las entradas del juego sean reasignables.</li>
 <li><strong>La velocidad de cuadros afecta el sondeo de entrada.</strong> El limitador de FPS puede reducir drásticamente la carga del sistema. No ralentiza deliberadamente las animaciones ni cambia el tiempo del juego, pero el juego comprueba la entrada basada en fotogramas con menos frecuencia a FPS más bajos. Una configuración más alta puede brindar una sincronización de entrada más precisa, especialmente en rondas rápidas.</li>
@@ -215,7 +216,7 @@ hide_console = true</code></pre><p>El mod no restablece estas opciones en cada i
 <tr><th scope="row">Leer fila de la tabla de clasificación</th><td>Habla una fila de puntuación a la vez.</td><td>Página arriba / Página abajo</td><td>Arriba/Abajo cuando ningún filtro de clasificación tiene foco</td><td>Sin fila separada</td></tr>
 <tr><th scope="row">Pasar página de logros</th><td>Muestra la página del libro anterior o siguiente.</td><td>Flechas izquierda/derecha</td><td>Parachoques izquierdo/derecho</td><td>Sin fila separada</td></tr>
 <tr><th scope="row">Leer logro o línea de crédito</th><td>Revise las entradas habladas en una página o en los créditos.</td><td>Flechas arriba/abajo o W/S</td><td>Menú arriba/abajo</td><td>Sin fila separada</td></tr>
-<tr><th scope="row">Leer descripciones</th><td>Di la descripción visual de la etapa actual solo en la pantalla de la canción.</td><td>GRAMO</td><td>Gatillo izquierdo (LT)</td><td>si</td></tr>
+<tr><th scope="row">Leer descripciones</th><td>Di la descripción visual de la etapa actual solo en la pantalla de la canción.</td><td>G</td><td>Gatillo izquierdo (LT)</td><td>si</td></tr>
 <tr><th scope="row">Leer partitura</th><td>Repite la puntuación final, o el ganador en Uno contra Uno, solo en la pantalla de resultados.</td><td>t</td><td>Presionar el joystick izquierdo</td><td>si</td></tr>
 <tr><th scope="row">Alternar voz</th><td>Desactive o vuelva a activar todo el habla mod normal; la configuración se guarda.</td><td>F8</td><td>Seleccionar / Atrás / Ver</td><td>si</td></tr>
 <tr><th scope="row">Hablar sugerencias</th><td>Lea las sugerencias de los botones de la pantalla actual cuando estén disponibles. Sobre la selección de canciones, lea también la referencia del tutorial con el control asignado actual de cada acción para el modo y la dificultad seleccionados, incluidas ambas entradas GOLPEAR en Uno a Uno.</td><td>h</td><td>Presionar el joystick derecho</td><td>si</td></tr>
@@ -352,7 +353,7 @@ Voice=System default</code></pre>
 </section>
 <section id="song-menu">
 <h3>Selección de canción y dificultad.</h3>
-<p>Después de elegir cualquier modo, eliges una de las cuatro canciones/etapas y decides si usar la dificultad Extrema. El mod anuncia la canción actual y el estado extremo cada vez que se abre esta pantalla. Cambiar cualquiera de ellos habla de su nuevo valor. uso <strong>RETORCER</strong> para cambiar la canción, <strong>TIRAR</strong> para cambiar Clásico/Extremo, <strong>GOLPEAR</strong> para empezar, y <strong>Atrás</strong> para regresar. Puedes presionar <strong>GRAMO</strong> o <strong>gatillo izquierdo</strong> para escuchar la descripción de la etapa seleccionada. prensa <strong>h</strong> o <strong>presionar el joystick derecho</strong> para escuchar sugerencias de botones seguidas de la referencia del tutorial para el modo y la dificultad actuales. Nombra el control asignado actual de cada acción, incluidas ambas entradas GOLPEAR en Uno a Uno. Lea esto antes de comenzar: el mod mantiene la superposición del tutorial cronometrada en silencio durante el juego activo para que no cubra un comando de juego hablado. Al iniciar la reproducción se detiene la lectura del menú por el mismo motivo.</p>
+<p>Después de elegir un modo, selecciona una de las cuatro canciones o escenarios y la dificultad Clásico o Extremo. Cada vez que se abre esta pantalla, el mod anuncia la canción y la dificultad actuales. Al cambiar cualquiera de ellas, solo se anuncia el nuevo valor; la dificultad se lee como Clásico o Extremo. Usa <strong>RETORCER</strong> para cambiar la canción, <strong>TIRAR</strong> para cambiar Clásico/Extremo, <strong>GOLPEAR</strong> para empezar, y <strong>Atrás</strong> para regresar. Puedes presionar <strong>G</strong> o <strong>gatillo izquierdo</strong> para escuchar la descripción de la etapa seleccionada. prensa <strong>h</strong> o <strong>presionar el joystick derecho</strong> para escuchar sugerencias de botones seguidas de la referencia del tutorial para el modo y la dificultad actuales. Nombra el control asignado actual de cada acción, incluidas ambas entradas GOLPEAR en Uno a Uno. Lea esto antes de comenzar: el mod mantiene la superposición del tutorial cronometrada en silencio durante el juego activo para que no cubra un comando de juego hablado. Al iniciar la reproducción se detiene la lectura del menú por el mismo motivo.</p>
 <div class="table-scroll"><table>
 <caption>Opciones y acciones de selección de canciones.</caption>
 <thead><tr><th scope="col">Artículo</th><th scope="col">que hace</th></tr></thead>
@@ -361,7 +362,7 @@ Voice=System default</code></pre>
 <tr><th scope="row">Space</th><td>Elige el colorido escenario de la galaxia y su música.</td></tr>
 <tr><th scope="row">City</th><td>Elige el escenario animado de la ciudad y su música.</td></tr>
 <tr><th scope="row">Office</th><td>Elija el caprichoso escenario del lugar de trabajo y su música.</td></tr>
-<tr><th scope="row">Encendido/Apagado extremo</th><td>Active Extreme para agregar GIRAR y ATIZAR a los comandos Classic GOLPEAR/RETORCER/TIRAR, o desactívelo para Classic.</td></tr>
+<tr><th scope="row">Clásico / Extremo</th><td>Elige Clásico para GOLPEAR, RETORCER y TIRAR, o Extremo para añadir GIRAR y ATIZAR. El mod anuncia el nombre de la dificultad seleccionada.</td></tr>
 <tr><th scope="row">Inicio / GOLPEAR</th><td>Comienza el modo, la canción y la dificultad seleccionados.</td></tr>
 <tr><th scope="row">Atrás</th><td>Regresar sin comenzar la ronda.</td></tr>
 </tbody>
@@ -598,7 +599,7 @@ Voice=System default</code></pre>
 </section>
 </main>
 <footer>
-<p class="small">Bop It Access guía de usuario. Las características actuales reflejan la fuente en la versión 0.9.10; Los elementos planificados están claramente marcados. <a href="#contents">Volver al contenido</a>.</p>
+<p class="small">Bop It Access guía de usuario. Las características actuales reflejan la fuente en la versión 0.9.11; Los elementos planificados están claramente marcados. <a href="#contents">Volver al contenido</a>.</p>
 </footer>
 </body>
 </html>

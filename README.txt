@@ -1,4 +1,4 @@
-Bop It Access 0.9.10 - Prism Speech and Braille
+Bop It Access 0.9.11 - Prism Speech and Braille
 
 What this does
 --------------
@@ -183,12 +183,12 @@ released before accepting a rebinding request.
 
 Inside Play, the mod reads Solo, Party, Pass It, and One on One when focused.
 On the following song-selection screen, it announces the current theme
-(Shapes, Space, City, or Office) and whether Extreme mode is on. Twisting to
-change the song speaks only the new theme. Pulling to change difficulty speaks
-only the new Extreme state. The screen introduction also explains the Twist,
-Pull, Bop, and Back actions.
-This full introduction is repeated whenever a mode is selected and the song
-screen opens again, with the current theme and Extreme state.
+(Shapes, Space, City, or Office) and difficulty: Classic or Extreme. Twist
+changes the song and speaks only the new theme. Pull changes the difficulty
+and speaks only Classic or Extreme. The screen introduction also explains
+the Twist, Pull, Bop, and Back actions. This full introduction repeats every
+time a mode is selected and the song screen opens, using the current theme
+and difficulty.
 Press SPEAK HINTS (H or right stick press by default) on this screen to hear
 the current mode and difficulty's native tutorial text before starting. Each
 named action in that reference includes its currently assigned keyboard or
@@ -347,7 +347,7 @@ message to hear the introduction again. Choose Open Mod Settings, Read User's
 Guide, or Continue to Game. Speak Hints names its current keyboard and
 controller assignments in the welcome message regardless of Hints Type.
 Open Play and move among the four modes. Choose one to reach song selection.
-Twist to cycle through themes and Pull to switch Extreme mode on or off. The
+Twist to cycle through themes and Pull to choose Classic or Extreme. The
 mod announces each change. Press G or LT to hear the currently selected stage
 description. Press H or right stick press to hear the mode's tutorial text,
 current assigned action controls, and button hints. Bop starts the chosen mode;

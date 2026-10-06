@@ -1,4 +1,4 @@
-Bop It Access 0.9.10 - Prism Voce e Braille
+Bop It Access 0.9.11 - Prism Voce e Braille
 
 Cosa fa questo
 --------------
@@ -158,13 +158,13 @@ aggiunti Controlla anche le righe di associazione in attesa dell'input di apertu
 rilasciato prima di accettare una richiesta di riammissione.
 
 All'interno di Play, la mod legge Solo, Party, Pass It e One on One quando è focalizzata.
-Nella schermata di selezione del brano successiva, annuncia il tema corrente
-(Shapes, Space, City o Office) e se la modalità Estrema è attiva. Torcendo a
-cambia la canzone parla solo del nuovo tema. Tirare per cambiare la difficoltà parla
-solo il nuovo stato Estremo. L'introduzione sullo schermo spiega anche RUOTA,
-Azioni TIRA, COLPISCI e Indietro.
-Questa introduzione completa viene ripetuta ogni volta che viene selezionata una modalità e la canzone
-si apre di nuovo la schermata, con il tema corrente e lo stato Estremo.
+Nella schermata di selezione del brano, il mod annuncia il tema corrente
+(Shapes, Space, City o Office) e la difficoltà: Classico o Estremo. RUOTA
+cambia il brano e annuncia solo il nuovo tema. TIRA cambia la difficoltà
+e annuncia solo Classico o Estremo. L’introduzione spiega anche RUOTA,
+TIRA, COLPISCI e Indietro. Si ripete ogni volta che si sceglie una modalità
+e si apre la schermata del brano, riportando il tema e la difficoltà
+correnti.
 Premi PARLARE SUGGERIMENTI (H o premi la levetta destra per impostazione predefinita) su questa schermata per ascoltare
 la modalità corrente e il testo tutorial nativo della difficoltà prima di iniziare. Ciascuno
 l'azione denominata in quel riferimento include la tastiera attualmente assegnata o
@@ -322,7 +322,7 @@ messaggio per ascoltare di nuovo l'introduzione. Scegli Apri impostazioni mod, L
 Guida o Continua al gioco. Speak Hints nomina la sua tastiera attuale e
 assegnazioni dei controller nel messaggio di benvenuto indipendentemente dal tipo di suggerimenti.
 Apri Play e spostati tra le quattro modalità. Scegline uno per raggiungere la selezione del brano.
-RUOTA per scorrere i temi e TIRA per attivare o disattivare la modalità Estrema. Il
+RUOTA per scorrere i temi e TIRA per scegliere Classico o Estremo. Il
 mod annuncia ogni modifica. Premi G o LT per ascoltare il livello attualmente selezionato
 descrizione. Premi H o premi la levetta destra per ascoltare il testo tutorial della modalità,
 controlli di azione attualmente assegnati e suggerimenti sui pulsanti. COLPISCI avvia la modalità scelta;

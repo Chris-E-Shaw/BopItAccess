@@ -1,4 +1,4 @@
-Bop It Access 0.9.10 - Prism Parole et Braille
+Bop It Access 0.9.11 - Prism Parole et Braille
 
 Qu'est-ce que cela fait
 --------------
@@ -158,13 +158,13 @@ Les lignes de liaison de contrôles ajoutées attendent également que l'entrée
 libéré avant d’accepter une demande de reconsolidation.
 
 Dans Play, le mod lit Solo, Party, Pass It et One on One lorsqu'il est concentré.
-Sur l'écran de sélection de chanson suivant, il annonce le thème actuel
-(Shapes, Space, City ou Office) et si le mode Extrême est activé. Se tordre vers
-changer la chanson ne parle que du nouveau thème. Tirer pour changer la difficulté parle
-seulement le nouvel état Extrême. L'introduction de l'écran explique également le TOURNER,
-TIRER, TAPER et actions Retour.
-Cette introduction complète est répétée chaque fois qu'un mode est sélectionné et que la chanson
-L'écran s'ouvre à nouveau, avec le thème actuel et l'état Extrême.
+Sur l’écran de sélection de chanson, le mod annonce le thème actuel
+(Shapes, Space, City ou Office) et la difficulté : Classique ou Extrême.
+TOURNER change la chanson et annonce seulement le nouveau thème. TIRER
+change la difficulté et annonce seulement Classique ou Extrême. L’introduction
+explique aussi TOURNER, TIRER, TAPER et Retour. Elle est répétée à chaque
+sélection d’un mode et à chaque ouverture de cet écran, avec le thème
+et la difficulté actuels.
 Appuyez sur SPEAK HINTS (H ou stick droit par défaut) sur cet écran pour entendre
 le mode actuel et le texte du didacticiel natif de la difficulté avant de commencer. Chacun
 l'action nommée dans cette référence inclut son clavier ou son
@@ -322,7 +322,7 @@ message pour réentendre l’introduction. Choisissez Ouvrir les paramètres du 
 Guider ou Continuer le jeu. Speak Hints nomme son clavier actuel et
 affectations de contrôleur dans le message de bienvenue, quel que soit le type d'indices.
 Ouvrez Play et déplacez-vous entre les quatre modes. Choisissez-en un pour accéder à la sélection de chansons.
-TOURNER pour parcourir les thèmes et TIRER pour activer ou désactiver le mode Extrême. Le
+TOURNER pour parcourir les thèmes et TIRER pour choisir Classique ou Extrême. Le
 le mod annonce chaque changement. Appuyez sur G ou LT pour entendre l'étape actuellement sélectionnée
 descriptif. Appuyez sur H ou sur le joystick droit pour entendre le texte du didacticiel du mode,
 les contrôles d'action actuellement attribués et les conseils sur les boutons. TAPER démarre le mode choisi ;
