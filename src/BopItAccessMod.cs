@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.9", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.10", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -56,6 +56,7 @@ public sealed partial class BopItAccessMod : MelonMod
 
     public override void OnInitializeMelon()
     {
+        Volatile.Write(ref _activeMenuSelectionAudioMod, this);
         PrepareFirstRunNativeAudioDefaults();
         PrepareSettingsConfig();
         WriteStatus("Mod loaded; starting the Prism speech thread.");
@@ -1091,6 +1092,7 @@ public sealed partial class BopItAccessMod : MelonMod
         _speechRequested.Set();
         ClearNativeHookOwners();
         Interlocked.CompareExchange(ref _activeWelcomeMod, null, this);
+        RunShutdownCleanup("menu selection audio", StopMenuSelectionAudio);
         RunShutdownCleanup("settings save", () => FlushSettingsConfig(force: true));
         RunShutdownCleanup("result listener", DetachResultRankListener);
         RunShutdownCleanup("input resources", CancelAndReleaseOwnedControlResources);
