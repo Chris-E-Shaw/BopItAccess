@@ -112,13 +112,13 @@ public sealed partial class BopItAccessMod
             _lastTrackSelectTheme = theme;
             _lastTrackSelectExtreme = extreme;
             _lastTrackSelectFocusedId = focusedId;
-            WriteStatus($"Song selection screen is visible; theme {theme ?? "unknown"}, extreme {FormatExtreme(extreme) ?? "unknown"}.");
+            WriteStatus($"Song selection screen is visible; theme {theme ?? "unknown"}, difficulty {FormatTrackSelectDifficulty(extreme) ?? "unknown"}.");
 
             string introduction = L("Song selection");
             if (theme != null)
                 introduction += ". " + LocalizeTrackTheme(theme);
             if (extreme.HasValue)
-                introduction += ". " + FormatExtremeSpeech(extreme);
+                introduction += ". " + FormatTrackSelectDifficultySpeech(extreme);
             introduction += ".";
             if (focusedLabel != null && (_indexingEnabled || _readControlTypesEnabled ||
                 !string.Equals(focusedLabel, L("Start"), StringComparison.OrdinalIgnoreCase)))
@@ -144,7 +144,7 @@ public sealed partial class BopItAccessMod
 
         if (extreme.HasValue && extreme != _lastTrackSelectExtreme)
         {
-            string state = FormatExtremeSpeech(extreme)!;
+            string state = FormatTrackSelectDifficultySpeech(extreme)!;
             changed = changed == null ? state : $"{changed}. {state}";
             _lastTrackSelectExtreme = extreme;
         }
@@ -227,13 +227,11 @@ public sealed partial class BopItAccessMod
         return device.Type == Il2CppBopIt.DeviceType.Extreme;
     }
 
-    private static string? FormatExtreme(bool? extreme) =>
-        extreme.HasValue ? (extreme.Value ? "Extreme mode on" : "Extreme mode off") : null;
+    private static string? FormatTrackSelectDifficulty(bool? extreme) =>
+        extreme.HasValue ? (extreme.Value ? "Extreme" : "Classic") : null;
 
-    private static string? FormatExtremeSpeech(bool? extreme) =>
-        extreme.HasValue
-            ? extreme.Value ? L("Extreme mode on") : L("Extreme mode off")
-            : null;
+    private static string? FormatTrackSelectDifficultySpeech(bool? extreme) =>
+        FormatTrackSelectDifficulty(extreme) is string difficulty ? L(difficulty) : null;
 
     private static string LocalizeTrackTheme(string theme) => theme switch
     {

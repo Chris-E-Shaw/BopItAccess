@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.10", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.11", "Bop It Access project")]
 
 namespace BopItAccess;
 
