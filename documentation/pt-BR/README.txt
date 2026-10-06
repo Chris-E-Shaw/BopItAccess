@@ -1,4 +1,4 @@
-Bop It Access 0.9.6 - Prism Fala e Braille
+Bop It Access 0.9.7 - Prism Fala e Braille
 
 O que isso faz
 --------------
@@ -62,7 +62,7 @@ um controle deslizante ou alternância enquanto permanece em foco ainda anuncia 
 
 FORMATAR FALA é uma opção salva nas configurações do mod, ativada por padrão. Usa maiúsculas e minúsculas naturais nos nomes de menu escritos apenas em maiúsculas, preservando palavras com maiúsculas e minúsculas e abreviações como SAPI, NVDA, SFX e FPS. No guia dentro do jogo, quando o número da linha é anunciado e o texto termina sem pontuação, acrescenta três pontos para uma pausa antes do número. A pontuação existente é preservada. Só muda o texto enviado à fala e ao braille; o texto visível do jogo e o guia ficam intactos. Desativar a opção desativa os dois ajustes. Sua preferência anterior de filtro de maiúsculas é mantida.
 
-READ CONTROL TYPES é outro botão de alternância de MOD SETTINGS salvo, ativado por padrão. Quando ativado,
+ANUNCIAR TIPOS DE CONTROLE é outro botão de alternância de MOD SETTINGS salvo, ativado por padrão. Quando ativado,
 o tipo do item em foco segue seu nome e precede seu valor e índice:
 "Controle deslizante de MÚSICA, 30, 1 de 12", "Alternar VIBRAÇÃO, Ligado, 6 de 12" ou
 "Botão PLAY, 1 de 6". Os menus também identificam guias, campos de texto e campos legíveis.

@@ -1,4 +1,4 @@
-Bop It Access 0.9.6 - Prism Habla y Braille
+Bop It Access 0.9.7 - Prism Habla y Braille
 
 ¿Qué hace esto?
 --------------
@@ -62,7 +62,7 @@ un control deslizante o un interruptor mientras permanece enfocado aún anuncia 
 
 DAR FORMATO AL HABLA es una opción guardada en Configuración del mod, activada de forma predeterminada. Usa mayúsculas y minúsculas naturales para los nombres de menú escritos completamente en mayúsculas, conservando palabras con mayúsculas y minúsculas y abreviaturas como SAPI, NVDA, SFX y FPS. En la guía del juego, si se anuncia el número de línea y el texto termina sin puntuación, añade tres puntos para una pausa antes del número. La puntuación existente se conserva. Solo cambia el texto enviado a voz y braille; el texto visible del juego y la guía permanecen intactos. Desactivarla desactiva ambos ajustes. Se conserva la preferencia anterior del filtro de mayúsculas.
 
-LEER TIPOS DE CONTROL es otra opción guardada de CONFIGURACIÓN DE MOD, activada de forma predeterminada. Cuando está habilitado,
+ANUNCIAR TIPOS DE CONTROL es otra opción guardada de CONFIGURACIÓN DE MOD, activada de forma predeterminada. Cuando está habilitado,
 El tipo del elemento enfocado sigue a su nombre y precede a su valor e índice:
 "Control deslizante MÚSICA, 30, 1 de 12", "alternancia de VIBRACIÓN, activado, 6 de 12", o
 "Botón REPRODUCIR, 1 de 6". Los menús también identifican pestañas, campos de texto y elementos legibles.

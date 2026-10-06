@@ -1,4 +1,4 @@
-Bop It Access 0.9.6 - Prism Parole et Braille
+Bop It Access 0.9.7 - Prism Parole et Braille
 
 Qu'est-ce que cela fait
 --------------
@@ -62,7 +62,7 @@ un curseur ou une bascule alors qu'il reste focalisé n'annonce que la nouvelle 
 
 FORMATER LA PAROLE est une option des paramètres du mod, activée par défaut et mémorisée. Elle rend plus naturelle la casse des mots de menu entièrement en majuscules, en conservant les mots à casse mixte et les abréviations comme SAPI, NVDA, SFX et FPS. Dans le guide intégré, si la numérotation est annoncée et que la ligne ne se termine pas par une ponctuation, elle ajoute trois points pour marquer une pause avant le numéro de ligne. La ponctuation existante est conservée. Seuls les textes envoyés à la parole et au braille changent ; les textes visibles du jeu et le guide restent intacts. Désactiver cette option désactive les deux ajustements. Votre ancien choix de filtrage des majuscules est conservé.
 
-READ CONTROL TYPES est une autre bascule MOD SETTINGS enregistrée, activée par défaut. Lorsqu'il est activé,
+ANNONCER LES TYPES DE COMMANDES est une autre bascule MOD SETTINGS enregistrée, activée par défaut. Lorsqu'il est activé,
 le type de l'élément ciblé suit son nom et précède sa valeur et son index :
 "Curseur MUSIQUE, 30, 1 sur 12", "Bascule VIBRATION, activé, 6 sur 12", ou
 "Bouton PLAY, 1 sur 6". Les menus identifient également les onglets, les champs de texte et les

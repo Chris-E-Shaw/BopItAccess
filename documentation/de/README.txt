@@ -1,4 +1,4 @@
-Bop It Access 0.9.6 - Prism Sprache und Blindenschrift
+Bop It Access 0.9.7 - Prism Sprache und Blindenschrift
 
 Was das bewirkt
 --------------
@@ -62,7 +62,7 @@ Ein Schieberegler oder Schalter gibt, solange er fokussiert bleibt, immer noch n
 
 SPRACHE FORMATIEREN ist ein gespeicherter Schalter in den Mod-Einstellungen, standardmäßig Ein. Vollständig großgeschriebene Menüwörter werden mit natürlicher Groß-/Kleinschreibung ausgegeben; gemischte Schreibweisen und Abkürzungen wie SAPI, NVDA, SFX und FPS bleiben erhalten. Wenn im Spielratgeber die Zeilennummer angesagt wird und der Text ohne Satzzeichen endet, werden zuvor drei Punkte für eine Pause eingefügt. Vorhandene Satzzeichen bleiben erhalten. Dies betrifft nur Sprache und Braille; sichtbare Spieltexte und der Ratgeber werden nicht verändert. Aus deaktiviert beide Anpassungen. Die bisherige Einstellung zur Großschreibung bleibt erhalten.
 
-CONTROL TYPES LESEN ist ein weiterer gespeicherter MOD-EINSTELLUNGS-Schalter, der standardmäßig aktiviert ist. Wenn aktiviert,
+STEUERELEMENTTYPEN ANSAGEN ist ein weiterer gespeicherter MOD-EINSTELLUNGS-Schalter, der standardmäßig aktiviert ist. Wenn aktiviert,
 Der Typ des fokussierten Elements folgt seinem Namen und geht seinem Wert und Index voraus:
 „MUSIK-Schieberegler, 30, 1 von 12“, „VIBRATION umschalten, Ein, 6 von 12“ oder
 „PLAY-Taste, 1 von 6“. Menüs identifizieren auch Registerkarten, Textfelder und sind lesbar

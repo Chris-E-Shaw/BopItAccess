@@ -1,4 +1,4 @@
-Bop It Access 0.9.6 - Prism Voce e Braille
+Bop It Access 0.9.7 - Prism Voce e Braille
 
 Cosa fa questo
 --------------
@@ -62,7 +62,7 @@ un cursore o un interruttore mentre rimane focalizzato annuncia ancora solo il n
 
 FORMATTA IL PARLATO è un’opzione salvata nelle Impostazioni mod, attiva per impostazione predefinita. Rende naturale l’uso delle maiuscole nei nomi dei menu tutti maiuscoli, conservando le parole a maiuscole e minuscole e le abbreviazioni come SAPI, NVDA, SFX e FPS. Nella guida del gioco, quando viene letto il numero di riga e il testo termina senza punteggiatura, aggiunge tre puntini per una pausa prima del numero. La punteggiatura esistente viene conservata. Cambia solo il testo inviato alla voce e al braille; il testo visibile del gioco e la guida rimangono invariati. Disattivandola si disattivano entrambe le modifiche. La precedente preferenza per il filtro delle maiuscole viene mantenuta.
 
-LEGGI TIPI DI CONTROLLO è un'altra opzione salvata per le IMPOSTAZIONI MOD, attivata per impostazione predefinita. Quando abilitato,
+ANNUNCIA TIPI DI CONTROLLO è un'altra opzione salvata per le IMPOSTAZIONI MOD, attivata per impostazione predefinita. Quando abilitato,
 il tipo dell'elemento evidenziato segue il nome e precede il valore e l'indice:
 "Slider MUSICA, 30, 1 di 12", "Commutazione VIBRAZIONE, On, 6 di 12", o
 "Pulsante PLAY, 1 di 6". I menu identificano anche schede, campi di testo e leggibili

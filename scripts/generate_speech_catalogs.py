@@ -68,7 +68,7 @@ EXTRA_KEYS = {
     "Are you sure? Press again to confirm.",
     "No scores available.", "The user's guide is unavailable because the game menu is not ready.",
     "SPEECH OUTPUT", "BRAILLE OUTPUT", "MUTE SPEECH IN BACKGROUND",
-    "INDEXING", "FILTER CAPITALISATION", "READ CONTROL TYPES",
+    "INDEXING", "FILTER CAPITALISATION", "SPEAK CONTROL TYPES",
     "SLIDER RANGES", "ONE-ON-ONE FEEDBACK", "HINTS TYPE",
     "AUTO-SPEAK BUTTON HINTS", "BUTTON HINTS DELAY",
     "REPEAT BUTTON HINTS", "REPEAT INTERVAL", "OUTPUT MODE",
@@ -362,6 +362,20 @@ CORE_UI = {
 }
 for _locale, _terms in CORE_UI.items():
     MANUAL[_locale].update(_terms)
+
+CONTROL_TYPE_LABELS = {
+    "fr": "ANNONCER LES TYPES DE COMMANDES",
+    "it": "ANNUNCIA TIPI DI CONTROLLO",
+    "de": "STEUERELEMENTTYPEN ANSAGEN",
+    "es": "ANUNCIAR TIPOS DE CONTROL",
+    "es-MX": "ANUNCIAR TIPOS DE CONTROL",
+    "ja": "操作部品の種類を読み上げる",
+    "ko": "컨트롤 유형 말하기",
+    "zh": "播报控件类型",
+    "pt-BR": "ANUNCIAR TIPOS DE CONTROLE",
+}
+for _locale, _label in CONTROL_TYPE_LABELS.items():
+    MANUAL[_locale]["SPEAK CONTROL TYPES"] = _label
 
 INPUT_NAMES = {
     "fr": ("Barre d'espace", "Entrée", "Bouton Select", "Bouton Start", "Bouton Menu", "Touche Ctrl"),

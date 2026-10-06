@@ -1,4 +1,4 @@
-Bop It Access 0.9.6 - Prism Speech and Braille
+Bop It Access 0.9.7 - Prism Speech and Braille
 
 What this does
 --------------
@@ -78,7 +78,7 @@ punctuation. Existing full stops, commas, and other terminal punctuation remain.
 Turning this toggle Off disables both adjustments and sends the original text.
 Your previous Filter Capitalisation preference carries over.
 
-READ CONTROL TYPES is another saved MOD SETTINGS toggle, On by default. When enabled,
+SPEAK CONTROL TYPES is another saved MOD SETTINGS toggle, On by default. When enabled,
 the focused item's type follows its name and precedes its value and index:
 "MUSIC slider, 30, 1 of 12", "VIBRATION toggle, On, 6 of 12", or
 "PLAY button, 1 of 6". Menus also identify tabs, text fields, and readable

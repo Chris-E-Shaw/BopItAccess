@@ -463,7 +463,7 @@ public sealed partial class BopItAccessMod
                     (UnityAction)OnFilterCapitalisationSubmitted,
                 _filterCapitalisationEnabled);
             _readControlTypesToggle = AddSpeechToggle(settings.vibration, content,
-                "READ CONTROL TYPES",
+                "SPEAK CONTROL TYPES",
                 _readControlTypesSubmitListener ??=
                     (UnityAction)OnReadControlTypesSubmitted,
                 _readControlTypesEnabled);
@@ -532,7 +532,7 @@ public sealed partial class BopItAccessMod
             _speechUiOptions.Add(new("FORMAT SPEECH", "toggle",
                 _filterCapitalisationToggle,
                 () => _filterCapitalisationEnabled ? "On" : "Off"));
-            _speechUiOptions.Add(new("READ CONTROL TYPES", "toggle",
+            _speechUiOptions.Add(new("SPEAK CONTROL TYPES", "toggle",
                 _readControlTypesToggle,
                 () => _readControlTypesEnabled ? "On" : "Off"));
             _speechUiOptions.Add(new("SLIDER RANGES", "toggle", _sliderRangesToggle,
