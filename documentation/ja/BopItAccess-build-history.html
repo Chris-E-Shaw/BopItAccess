@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Bop It Access — 技術的なビルド履歴、v0.1.0–v0.9.8</title>
+<title>Bop It Access — 技術的なビルド履歴、v0.1.0–v0.9.9</title>
 <style>
     :root { color-scheme: light dark; --page: #f6f8fa; --card: #fff; --ink: #1f2328; --muted: #57606a; --line: #d0d7de; --link: #0969da; --accent: #8250df; --code: #eff1f3; }
     @media (prefers-color-scheme: dark) { :root { --page: #0d1117; --card: #161b22; --ink: #e6edf3; --muted: #9198a1; --line: #30363d; --link: #58a6ff; --accent: #bc8cff; --code: #21262d; } }
@@ -42,7 +42,7 @@
 <header>
 <div class="wrap">
 <h1>Bop It Access: 技術的なビルド履歴</h1>
-<p class="intro">v0.1.0からv0.9.8までの55件のModビルドと、独立したインストーラープレビューの時系列記録。各エントリには、範囲を限定した変更の概要と実装の詳細が含まれます。パブリック GitHub リポジトリにはソース コードが含まれていますが、コンパイルされたダウンロードや GitHub リリースはまだありません。</p>
+<p class="intro">v0.1.0からv0.9.9までの56件のModビルドと、独立したインストーラープレビューの時系列記録。各エントリには、範囲を限定した変更の概要と実装の詳細が含まれます。パブリック GitHub リポジトリにはソース コードが含まれていますが、コンパイルされたダウンロードや GitHub リリースはまだありません。</p>
 <p class="note"><strong>Git の出所:</strong> Git は v0.6.12 以降に導入されました。 37 個のソース コミットは、保存されたソース ZIP から再構築されました。 Git の日付は、元のビルド イベントではなく、インポートについて説明しています。 Christopher Shaw がコミットの作成者です。共同作成者のトレーラーには、対応するビルド作業の検証済みモデル レコードが反映されています。最初のビルドは GPT-6 Luna、残りの 36 は GPT-6 Sol です。ローカル インストール パッケージとバージョン タグは、最初の公開版 GitHub の一部ではありません。</p>
 <nav aria-label="ビルドシリーズ"><a href="#foundation">v0.1 ～ v0.4 基礎</a><a href="#series05">v0.5シリーズ</a><a href="#series06">v0.6シリーズ</a><a href="#series07">v0.7シリーズ</a><a href="#series08">v0.8 多言語対応</a><a href="#series09">v0.9 Prism</a><a href="#installer-preview">インストーラープレビュー</a></nav>
 </div>
@@ -110,7 +110,7 @@
 <article class="commit" id="v0-8-1"><div class="meta"><span class="version">v0.8.1</span><span class="kind">fix · docs</span></div><h3>修正(ローカリゼーション): 日本語ガイドとCJKメニューの位置を明確にしました。</h3><ul><li>日本語ガイドはすでに翻訳され、インストールされています。最新のプレーヤーのログには、スペイン語のガイドのみが開かれていることが示されていました。 README に日本語ガイドへの直接リンクを追加し、最初に使用する概念とゲーム メニューとモード名を明確にします。</li><li>日本語と簡体字中国語の数字と自然な位置表現を使用して、インデックス付きのメニュー位置を読み上げます。韓国語では、スラッシュ数の代わりに明示的な位置表現を使用します。数値スライダーの値を変更せずに、行、列、行、表の要約をガイドする形式を適用します。</li><li>警告やエラーが発生しないように .NET 6 mod をコンパイルします。修正されたスピーチとガイドの動作は、ゲーム内プレイヤーのチェックを待っています。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9c388839b240e6fa78bf2c5331824d3289e43111">ソースコミット</a> · コンパイル済みの GitHub リリースはありません</p></article>
 </section>
 <section aria-labelledby="series09-heading" id="series09">
-<h2 id="series09-heading">Prism 音声と点字: v0.9.0–v0.9.8</h2>
+<h2 id="series09-heading">Prism 音声と点字: v0.9.0–v0.9.9</h2>
 <article class="commit" id="v0-9-0"><div class="meta"><span class="version">v0.9.0</span><span class="kind">feat · docs</span></div><h3>feat(スピーチ): スピーチと点字を Prism にルーティングします</h3><ul><li>MOD アナウンスと点字には Prism v0.18.3 ネイティブ API を使用し、Tolk および直接 NVDA 音声パスを置き換えます。スピーチワーカーのフォーカスの中断、連続読み上げ、保護された結果のアナウンス、スピーチオフの回復、およびバックグラウンドのミュート動作を維持します。</li><li>出力モードを自動に拡張、SAPI、OneCore、NVDA、JAWS、UI Automation、ZDSR、ZoomText、 Boy PC Reader、PC Talker、Sense Reader、System Access、および Window-Eyes。自動では、実行中のスクリーン リーダーが選択され、次に SAPI が選択されます。利用できない明示的な選択肢は、利用可能なフォールバックを通知します。既存の保存されたモードの選択と音声出力の変更ショートカットを保持します。</li><li>SAPI の音声、音量、レート、およびピッチのコントロールを Prism まで保持します。 Windows の x64 ビルドおよびインストール ガイダンスを更新します。 <code>prism.dll</code> およびそのライセンス。 Prism は、将来のプラットフォーム作業のための基盤を提供します。このバージョンは Windows x64 MOD のままです。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/f1e46cd3e4bdd5c213abe47d4eab3e2d5d0005cf">ソースコミット</a> · コンパイル済みの GitHub リリースはありません</p></article>
 <article class="commit" id="v0-9-1"><div class="meta"><span class="version">v0.9.1</span><span class="kind">diagnostics</span></div><h3>診断(input): 十字キーによるメニュー操作を記録</h3><ul><li>コントローラーの十字キーとキーボードによるメニュー移動の入力イベント、選択中の項目、そして2フレーム以内にフォーカスが変わったかをログに記録します。読み上げログと照合して、上下の入力が反応しないという報告を調べます。</li><li>メニュー操作と読み上げの動作は変更しません。テスト中に入力の取りこぼしが再発した場合、ログを原因の特定に役立てます。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/4cee5a6392abf2f7ad5c3ba15d3a4a9547e97937">ソースコミット</a> · コンパイル済みの GitHub リリースはありません</p></article>
 <article class="commit" id="v0-9-2"><div class="meta"><span class="version">v0.9.2</span><span class="kind">feat · docs</span></div><h3>feat(音声): OneCore 音声設定と出力方式に応じたメニュー表示</h3><ul><li>自動モードでは、実行中のスクリーンリーダー、OneCore、SAPI の順に選びます。出力モードの一覧でも OneCore を SAPI より前に配置し、手動選択と利用できない場合の代替動作を維持します。</li><li>音声、音量、速度、ピッチの4項目は、実際に動作している Prism の出力方式に合わせて切り替わります。項目名は OneCore または SAPI と表示し、これらの設定に対応しない出力方式では非表示にします。</li><li>Prism から OneCore の音声を名前と言語付きで取得します。OneCore と SAPI の設定は、それぞれのシステム既定の音声を含めて別々に保存し、現在の出力方式に対応する設定を適用します。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/358bf876c94a7b00a0215a1ca50f7c3d62e807e2">ソースコミット</a> · コンパイル済みの GitHub リリースはありません</p></article>
@@ -127,6 +127,13 @@
 <li>反復的な走査、タイムアウト、ファイル・トークン・入れ子・トピック・行の上限でガイド解析を制限し、ページを開けなかった場合はトピック画面を復元します。ウェルカム・リセットの保護を維持し、フォールバックスライダーの範囲を拡張し、古いヒント入力状態を取り除き、フレームごとの繰り返し割り当てとローカライズ処理を減らします。メニューイベントが変わったらガイド音楽フィルターを再適用し、クレジットのフォールバックを 1 回だけ完了させ、ステータスログを 8 メガバイトでローテーションして、1 つの <code>BopItAccess.log.previous</code>を保持します。詳細なコントローラー診断は Debug ビルドに残します。</li>
 <li>.NET 6 x64 Mod を Release と Debug で警告・エラー 0 件でコンパイルします。インストーラープレビュー 0.1.5 を診断 0 件で publish します。Python 作成ファイルは構文コンパイルに合格し、両方の PowerShell スクリプトは構文エラーなしで解析されます。検証は静的レビューとコンパイルのみです。テスト、ゲームの実行、インストーラー・アンインストーラーの実行、性能ベンチマークは行っていません。 <a href="BopItAccess-release-review.html">レビュー報告書全文</a> には、正確な指摘事項、対象ファイル、残る制約を記録しています。応答性や性能の測定済み改善は主張しません。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9fdca03288d817fdb92f043ebfe068b643a9e0a7">ソースコミット</a> · コンパイル済み GitHub リリースなし · <a href="BopItAccess-release-review.html">レビュー報告書全文</a></p></article>
+          <article class="commit" id="v0-9-9"><div class="meta"><span class="version">v0.9.9</span><span class="kind">fix · docs</span></div><h3>fix(controls): 有効なコンテキストで現在の割り当てを検証</h3><ul>
+<li>プレイヤーのログから v0.9.8 の再割り当ての不具合を特定。重複チェックがメニュー移動をゲーム中の専用割り当てとして扱い、変更後も元の入力パスを予約していた。Bop を上矢印キーに割り当てる操作や、Bop を Q に移した後に Twist をスペースキーに割り当てる操作が拒否されていた。</li>
+<li>各割り当てで実際に有効なパスだけを比較。ゲーム中のアクションと <code>UI.Navigate</code>/<code>UI.Submit</code> の間で意図された共有を許可し、同じ論理アクションのデバイス別の違いを除外する。異なるゲームまたは Mod のアクション間の本当の競合は引き続き拒否し、意図的に共有されている標準のネイティブ割り当ては保持する。</li>
+<li>拒否と復元のため、入力取得前の割り当てのスナップショットを保持。Reset to Default の後に保存されたネイティブの変更プロファイルが空の場合は、不正な JSON ではなく変更なしとして扱う。本当の競合や保存失敗が起きた場合は以前の割り当てを維持する。</li>
+<li>設定の読み込みと個別の Default 復元でも、同じ有効な割り当てのチェックを使用する。ネイティブの標準割り当てを復元しても、別のアクションが現在使用している入力を置き換えられないようにする。ゲームの一括 Reset to Default の動作は維持する。</li>
+<li>.NET 6 Mod の Release ビルドを警告・エラーなしでコンパイル。検証はコンパイルと静的レビューのみで、自動テストやゲーム内での再割り当て確認は実施していない。インストーラープレビューは 0.1.5 のまま。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/6ad8c036ce14fa1dbe7af6991d16f4aeec45dfc1">ソースのコミット</a> · コンパイル済みの GitHub リリースなし</p></article>
     </section>
     <section id="installer-preview" aria-labelledby="installer-preview-heading">
       <h2 id="installer-preview-heading">Windows用インストーラーの独立したプレビュー</h2>

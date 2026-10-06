@@ -1,4 +1,4 @@
-Bop It Access 0.9.8 - Prism 음성 및 점자
+Bop It Access 0.9.9 - Prism 음성 및 점자
 
 이것이 무엇을 하는가
 --------------

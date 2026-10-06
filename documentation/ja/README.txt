@@ -1,4 +1,4 @@
-Bop It Access 0.9.8 - Prism 音声と点字
+Bop It Access 0.9.9 - Prism 音声と点字
 
 これが何をするのか
 --------------

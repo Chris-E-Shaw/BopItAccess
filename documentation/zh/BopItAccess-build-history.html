@@ -4,7 +4,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1" name="viewport"/>
-<title>Bop It Access — 技术构建历史，v0.1.0–v0.9.8</title>
+<title>Bop It Access — 技术构建历史，v0.1.0–v0.9.9</title>
 <style>
     :root { color-scheme: light dark; --page: #f6f8fa; --card: #fff; --ink: #1f2328; --muted: #57606a; --line: #d0d7de; --link: #0969da; --accent: #8250df; --code: #eff1f3; }
     @media (prefers-color-scheme: dark) { :root { --page: #0d1117; --card: #161b22; --ink: #e6edf3; --muted: #9198a1; --line: #30363d; --link: #58a6ff; --accent: #bc8cff; --code: #21262d; } }
@@ -42,7 +42,7 @@
 <header>
 <div class="wrap">
 <h1>Bop It Access：技术构建历史</h1>
-<p class="intro">按时间顺序记录从 v0.1.0 到 v0.9.8 的 55 个模组构建版本，以及独立的安装程序预览。每个条目都有范围变更摘要和实施详细信息。公共 GitHub 存储库包含源代码，尚未编译下载或 GitHub 版本。</p>
+<p class="intro">按时间顺序记录从 v0.1.0 到 v0.9.9 的 56 个模组构建版本，以及独立的安装程序预览。每个条目都有范围变更摘要和实施详细信息。公共 GitHub 存储库包含源代码，尚未编译下载或 GitHub 版本。</p>
 <p class="note"><strong>Git 出处：</strong> Git 是在 v0.6.12 之后引入的。 37 个源提交是根据保留的源 ZIP 重建的；他们的 Git 日期描述了导入，而不是原始构建事件。 Christopher Shaw 是提交作者。合著者预告片反映了相应构建工作的经过验证的模型记录：第一个构建为 GPT-6 Luna，其余 36 个构建为 GPT-6 Sol。本地安装包和版本标签不是初始 GitHub 发布的一部分。</p>
 <nav aria-label="打造系列"><a href="#foundation">v0.1–v0.4 基础版</a><a href="#series05">v0.5系列</a><a href="#series06">v0.6系列</a><a href="#series07">v0.7系列</a><a href="#series08">v0.8 多语种</a><a href="#series09">v0.9 Prism</a><a href="#installer-preview">安装程序预览</a></nav>
 </div>
@@ -110,7 +110,7 @@
 <article class="commit" id="v0-8-1"><div class="meta"><span class="version">v0.8.1</span><span class="kind">fix · docs</span></div><h3>修复（本地化）：澄清日语指南和 CJK 菜单位置</h3><ul><li>日语指南已翻译并安装；最新的玩家日志显示只打开了西班牙语指南。在自述文件中添加日语指南的直接链接，并阐明其首次使用概念以及游戏菜单和模式名称。</li><li>使用日语和简体中文数字以及自然的位置措辞说出索引菜单位置。韩语使用明确的位置短语来代替斜线计数。应用格式来指导行、列、行和表摘要，同时保持数字滑块值不变。</li><li>编译 .NET 6 mod，零警告和错误。修改后的语音和引导行为有待游戏内玩家检查。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9c388839b240e6fa78bf2c5331824d3289e43111">源代码提交</a> · 未编译GitHub发布</p></article>
 </section>
 <section aria-labelledby="series09-heading" id="series09">
-<h2 id="series09-heading">Prism 语音和盲文：v0.9.0–v0.9.8</h2>
+<h2 id="series09-heading">Prism 语音和盲文：v0.9.0–v0.9.9</h2>
 <article class="commit" id="v0-9-0"><div class="meta"><span class="version">v0.9.0</span><span class="kind">feat · docs</span></div><h3>壮举（语音）：通过 Prism 路由语音和盲文</h3><ul><li>使用 Prism v0.18.3 本机 API 进行 mod 公告和盲文，替换 Tolk 和直接 NVDA 语音路径。保持语音工作者的注意力中断、顺序阅读、受保护的结果公告、语音关闭恢复和背景静音行为。</li><li>将输出模式扩展为自动、SAPI、OneCore、NVDA、JAWS、UI Automation、ZDSR、ZoomText、 Boy PC Reader、PC Talker、Sense Reader、System Access 和 Window-Eyes。“自动”选择正在运行的屏幕阅读器，然后选择 SAPI；不可用的显式选择宣布可用的后备。保留现有的已保存模式选择和“更改语音输出”快捷方式。</li><li>通过 Prism 保留 SAPI 语音、音量、速率和音调控制。更新 Windows x64 构建和安装指南 <code>prism.dll</code> 及其许可证。 Prism为以后的平台工作提供了基础；该版本仍然是 Windows x64 mod。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/f1e46cd3e4bdd5c213abe47d4eab3e2d5d0005cf">源代码提交</a> · 未编译GitHub发布</p></article>
 <article class="commit" id="v0-9-1"><div class="meta"><span class="version">v0.9.1</span><span class="kind">diagnostics</span></div><h3>诊断（输入）：记录方向键菜单导航</h3><ul><li>在日志中记录手柄方向键和键盘的导航动作边沿、当前选中的菜单项，以及两帧内焦点是否改变。将这些事件与语音日志对照，以调查上下移动偶尔失效的报告。</li><li>此次更新不改变菜单导航或语音行为。如果测试中再次出现按键未响应，日志可帮助定位原因。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/4cee5a6392abf2f7ad5c3ba15d3a4a9547e97937">源代码提交</a> · 暂无已编译的 GitHub 版本</p></article>
 <article class="commit" id="v0-9-2"><div class="meta"><span class="version">v0.9.2</span><span class="kind">feat · docs</span></div><h3>feat(语音)：添加 OneCore 声音设置和动态输出选项</h3><ul><li>自动模式现在依次选择正在运行的屏幕阅读器、OneCore 和 SAPI。输出模式列表将 OneCore 排在 SAPI 之前，同时保留手动选择和不可用时的回退行为。</li><li>语音、音量、语速和音调四项设置会跟随实际启用的 Prism 输出方式，并标注为 OneCore 或 SAPI。当前输出方式不支持这些设置时，菜单会隐藏它们。</li><li>通过 Prism 获取 OneCore 声音的名称和语言。OneCore 与 SAPI 的设置分别保存，包括各自的系统默认声音选项，并在相应输出方式启用时应用。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/358bf876c94a7b00a0215a1ca50f7c3d62e807e2">源代码提交</a> · 暂无已编译的 GitHub 版本</p></article>
@@ -127,6 +127,13 @@
 <li>以迭代遍历、超时及文件/标记/嵌套/主题/行数限制约束指南解析；打开页面失败时恢复主题界面。保留欢迎/重置保护，扩展回退滑块范围，清除过期提示输入状态，并减少重复的每帧分配及本地化工作。菜单事件改变时重新应用指南音乐过滤器，制作人员名单回退仅完成一次，状态日志在 8 兆字节时轮换，并保留一份 <code>BopItAccess.log.previous</code>。详细控制器诊断保留在 Debug 构建中。</li>
 <li>在 Release 和 Debug 中编译 .NET 6 x64 Mod，警告和错误为 0。发布安装程序预览版 0.1.5，诊断为 0。Python 编制文件通过语法编译，两个 PowerShell 脚本均无语法错误。验证仅包括静态审查和编译：未运行测试、游戏、安装/卸载程序或性能基准测试。 <a href="BopItAccess-release-review.html">完整审查报告</a> 记录了准确的发现、文件覆盖范围及剩余限制；不声称响应速度或性能有测量证明的提升。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9fdca03288d817fdb92f043ebfe068b643a9e0a7">源代码提交</a> · 无已编译 GitHub 发布版 · <a href="BopItAccess-release-review.html">完整审查报告</a></p></article>
+          <article class="commit" id="v0-9-9"><div class="meta"><span class="version">v0.9.9</span><span class="kind">fix · docs</span></div><h3>fix(controls)：按当前有效上下文验证按键绑定</h3><ul>
+<li>根据玩家日志定位 v0.9.8 的重新绑定回归问题：重复绑定检查把菜单导航视为游戏操作的独占绑定，并在覆盖绑定后仍保留原始输入路径。因此，把 Bop 绑定到上方向键会被拒绝；将 Bop 改为 Q 后，把 Twist 绑定到已空闲的空格键也会被拒绝。</li>
+<li>仅比较各绑定当前实际生效的路径。允许游戏操作与 <code>UI.Navigate</code>/<code>UI.Submit</code> 之间原本预期的共享，忽略同一逻辑操作的不同设备变体。继续阻止不同游戏或模组操作之间的真正冲突，并保留原生默认绑定中有意设置的共享。</li>
+<li>保留输入捕获前的绑定快照，以便拒绝和回滚。Reset to Default 后保存的原生覆盖配置为空时，将其视为没有覆盖，而不是无效 JSON。遇到真正冲突或保存失败时保留先前的绑定。</li>
+<li>配置导入和单项 Default 恢复也使用同样的有效绑定检查，避免恢复原生默认值时占用已被其他操作实际使用的输入。保留游戏的整体 Reset to Default 行为。</li>
+<li>.NET 6 模组的 Release 构建编译成功，没有警告或错误。验证仅限编译和静态审查；未执行自动测试或游戏内重新绑定检查。安装程序预览版仍为 0.1.5。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/6ad8c036ce14fa1dbe7af6991d16f4aeec45dfc1">源代码提交</a> · 无已编译的 GitHub 发布版本</p></article>
     </section>
     <section id="installer-preview" aria-labelledby="installer-preview-heading">
       <h2 id="installer-preview-heading">独立 Windows 安装程序预览</h2>
