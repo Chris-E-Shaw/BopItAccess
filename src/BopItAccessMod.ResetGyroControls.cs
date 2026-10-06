@@ -14,10 +14,7 @@ public sealed partial class BopItAccessMod
     private InputActionRebindingExtensions.RebindingOperation? _resetGyroRebindOperation;
     private InputAction? _resetGyroRebindAction;
     private InputRebindingManager? _resetGyroRebindManager;
-    private InputActionMap? _resetGyroRebindTargetMap;
-    private InputActionMap? _resetGyroRebindUiMap;
-    private bool _resetGyroRebindTargetMapWasEnabled;
-    private bool _resetGyroRebindUiMapWasEnabled;
+    private ControlRebindInputState? _resetGyroRebindInputState;
     private int _resetGyroRebindIndex;
     private string? _resetGyroRebindOriginalPath;
     private long _nextResetGyroControlErrorAt;
@@ -189,8 +186,6 @@ public sealed partial class BopItAccessMod
                 WriteStatus("Reset Gyro rebinding failed: " + ex);
                 _nextResetGyroControlErrorAt = Environment.TickCount64 + 5000;
             }
-            if (wasRebinding)
-                RestoreResetGyroOriginalOverride();
             CancelResetGyroControlRebinding(false);
             if (wasRebinding)
                 QueueSpeech(L("Rebinding failed"));
@@ -205,7 +200,6 @@ public sealed partial class BopItAccessMod
             _resetGyroControlRow = null;
             if (_resetGyroRebindOperation != null)
             {
-                RestoreResetGyroOriginalOverride();
                 CancelResetGyroControlRebinding(false);
             }
             return;
@@ -217,7 +211,6 @@ public sealed partial class BopItAccessMod
         {
             if (_resetGyroRebindOperation != null)
             {
-                RestoreResetGyroOriginalOverride();
                 CancelResetGyroControlRebinding(false);
             }
             return;
@@ -266,18 +259,12 @@ public sealed partial class BopItAccessMod
 
         string layout = gamepad ? "<Gamepad>" : "<Keyboard>";
         string cancelPath = gamepad ? "<Gamepad>/buttonEast" : "<Keyboard>/escape";
-        InputActionMap? targetMap = action.actionMap;
-        InputActionMap? uiMap = manager.inputActions?.FindActionMap("UI", false);
-        bool targetWasEnabled = targetMap?.enabled ?? false;
-        bool uiWasEnabled = uiMap?.enabled ?? false;
-        if (targetWasEnabled)
-            targetMap!.Disable();
-        if (uiWasEnabled)
-            uiMap!.Disable();
+        ControlRebindInputState? inputState = null;
 
         InputActionRebindingExtensions.RebindingOperation? operation = null;
         try
         {
+            inputState = PauseControlRebindInputs(manager, action);
             operation = InputActionRebindingExtensions.PerformInteractiveRebinding(action, index);
             operation.WithTargetBinding(index)
                 .WithControlsHavingToMatchPath(layout)
@@ -290,21 +277,14 @@ public sealed partial class BopItAccessMod
             _resetGyroRebindOperation = operation;
             _resetGyroRebindAction = action;
             _resetGyroRebindManager = manager;
-            _resetGyroRebindTargetMap = targetMap;
-            _resetGyroRebindUiMap = uiMap;
-            _resetGyroRebindTargetMapWasEnabled = targetWasEnabled;
-            _resetGyroRebindUiMapWasEnabled = uiWasEnabled;
+            _resetGyroRebindInputState = inputState;
             _resetGyroRebindIndex = index;
             _resetGyroRebindOriginalPath = originalPath;
             WriteStatus($"Rebinding Reset Gyro on {device}, binding {index}.");
         }
         catch
         {
-            operation?.Dispose();
-            if (targetWasEnabled)
-                targetMap!.Enable();
-            if (uiWasEnabled)
-                uiMap!.Enable();
+            ReleaseControlRebindingCapture(operation, inputState);
             throw;
         }
     }
@@ -350,16 +330,27 @@ public sealed partial class BopItAccessMod
         // The manager saves native overrides. Keep the gameplay action copy
         // synchronized with the asset used by the Controls panel.
         InputAction? runtime = FindResetGyroAction(manager.playerInput?.actions);
-        if (runtime != null)
+        int runtimeIndex = runtime == null ? -1 : FindResetGyroBindingIndex(runtime,
+            IsGamepadDevice(manager.ActiveDevice ?? manager.deviceTracker?.ActiveDevice ?? string.Empty));
+        string? previousRuntimePath = runtimeIndex < 0 ? null :
+            runtime!.bindings[runtimeIndex].overridePath;
+        try
         {
-            int runtimeIndex = FindResetGyroBindingIndex(runtime,
-                IsGamepadDevice(manager.ActiveDevice ?? manager.deviceTracker?.ActiveDevice ?? string.Empty));
             if (runtimeIndex >= 0)
-                InputActionRebindingExtensions.ApplyBindingOverride(runtime,
+                InputActionRebindingExtensions.ApplyBindingOverride(runtime!,
                     runtimeIndex, path);
+            manager.SaveBindings();
+        }
+        catch
+        {
+            if (runtimeIndex >= 0)
+            {
+                try { RestoreNativeBindingOverride(runtime!, runtimeIndex, previousRuntimePath); }
+                catch (Exception ex) { WriteStatus("Could not restore runtime Reset Gyro binding: " + ex.Message); }
+            }
+            throw;
         }
         ReleaseResetGyroControlRebinding();
-        manager.SaveBindings();
         InputRebindingEvents.RebindCompleted?.Invoke(ResetGyroActionName,
             InputActionRebindingExtensions.GetBindingDisplayString(action, index));
         InputRebindingEvents.RefreshPrompts?.Invoke();
@@ -375,6 +366,11 @@ public sealed partial class BopItAccessMod
     private void CancelResetGyroControlRebinding(bool announce = true)
     {
         bool wasActive = _resetGyroRebindOperation != null;
+        if (wasActive)
+        {
+            try { RestoreResetGyroOriginalOverride(); }
+            catch (Exception ex) { WriteStatus("Could not restore ResetGyro binding: " + ex.Message); }
+        }
         ReleaseResetGyroControlRebinding();
         if (wasActive)
             _lastControlsRebinding = false;
@@ -384,31 +380,15 @@ public sealed partial class BopItAccessMod
 
     private void ReleaseResetGyroControlRebinding()
     {
-        InputActionRebindingExtensions.RebindingOperation? operation =
-            _resetGyroRebindOperation;
-        InputActionMap? targetMap = _resetGyroRebindTargetMap;
-        InputActionMap? uiMap = _resetGyroRebindUiMap;
-        bool targetWasEnabled = _resetGyroRebindTargetMapWasEnabled;
-        bool uiWasEnabled = _resetGyroRebindUiMapWasEnabled;
+        InputActionRebindingExtensions.RebindingOperation? operation = _resetGyroRebindOperation;
+        ControlRebindInputState? inputState = _resetGyroRebindInputState;
         _resetGyroRebindOperation = null;
-        _resetGyroRebindAction = null;
         _resetGyroRebindManager = null;
-        _resetGyroRebindTargetMap = null;
-        _resetGyroRebindUiMap = null;
-        _resetGyroRebindTargetMapWasEnabled = false;
-        _resetGyroRebindUiMapWasEnabled = false;
+        _resetGyroRebindInputState = null;
         _resetGyroRebindIndex = 0;
         _resetGyroRebindOriginalPath = null;
-        if (operation != null)
-        {
-            if (operation.started && !operation.completed && !operation.canceled)
-                operation.Cancel();
-            operation.Dispose();
-        }
-        if (targetMap != null && targetWasEnabled)
-            targetMap.Enable();
-        if (uiMap != null && uiWasEnabled)
-            uiMap.Enable();
+        _resetGyroRebindAction = null;
+        ReleaseControlRebindingCapture(operation, inputState);
     }
 
     private void RestoreResetGyroOriginalOverride()

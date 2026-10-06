@@ -15,8 +15,6 @@ import re
 import time
 from pathlib import Path
 
-import argostranslate.translate
-import requests
 from bs4 import (
     BeautifulSoup,
     Comment,
@@ -31,6 +29,7 @@ ROOT = Path(__file__).resolve().parent.parent
 DOCUMENTS = (
     "BopItAccess-user-guide.html",
     "BopItAccess-build-history.html",
+    "BopItAccess-release-review.html",
     "README.md",
     "README.txt",
     "GIT-WORKFLOW.md",
@@ -282,6 +281,8 @@ class Translator:
                 translated = google_translate([body], self.target,
                     self.locale)[0]
             else:
+                import argostranslate.translate
+
                 protected, originals = protect_terms(body, self.locale)
                 translated = (protected if protected in originals and
                     len(originals) == 1 else argostranslate.translate.translate(
@@ -336,6 +337,10 @@ class Translator:
 
 def google_translate(strings: list[str], target: str,
                      action_locale: str | None = None) -> list[str]:
+    # Offline authoring does not need the Google HTTP client, and Google
+    # authoring does not need an installed Argos model/runtime.
+    import requests
+
     separator = "\n9999999999\n"
     protected: list[str] = []
     replacements: list[dict[str, str]] = []
@@ -366,6 +371,8 @@ def google_translate(strings: list[str], target: str,
                 raise ValueError("Translation response lost its segment boundary")
             for index, result in enumerate(parts):
                 for token, original in replacements[index].items():
+                    if result.count(token) != protected[index].count(token):
+                        raise ValueError("Translation response changed a protected term")
                     result = result.replace(token, original)
                 parts[index] = result.strip()
             return parts

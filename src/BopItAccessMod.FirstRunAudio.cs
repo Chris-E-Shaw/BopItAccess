@@ -21,6 +21,8 @@ public sealed partial class BopItAccessMod
         SliderRangesPreferenceKey, OutputModePreferenceKey,
         SapiVoicePreferenceKey, SapiVolumePreferenceKey,
         SapiRatePreferenceKey, SapiPitchPreferenceKey,
+        OneCoreVoicePreferenceKey, OneCoreVolumePreferenceKey,
+        OneCoreRatePreferenceKey, OneCorePitchPreferenceKey,
         SapiTrimSilencePreferenceKey, LegacyRepeatButtonHintsPreferenceKey,
         ReadButtonHintsPreferenceKey, MuteSpeechInBackgroundPreferenceKey,
         ButtonHintsDelayPreferenceKey, RepeatButtonHintsCountPreferenceKey,
@@ -29,7 +31,8 @@ public sealed partial class BopItAccessMod
         ScoreKeyboardKey, ScoreGamepadKey,
         SpeakHintsKeyboardKey, SpeakHintsGamepadKey,
         ToggleSpeechKeyboardKey, ToggleSpeechGamepadKey,
-        ChangeSpeechOutputKeyboardKey, ChangeSpeechOutputGamepadKey
+        ChangeSpeechOutputKeyboardKey, ChangeSpeechOutputGamepadKey,
+        WelcomeDismissedPreferenceKey
     };
 
     private static BopItAccessMod? _activeNativeAudioMod;
@@ -46,12 +49,20 @@ public sealed partial class BopItAccessMod
         // WriteStatus creates this file, so take the snapshot first. Earlier
         // builds always wrote a log even when their preferences stayed default.
         _nativeAudioHadPreviousLog = File.Exists(StatusLogPath);
-        _activeNativeAudioMod = this;
+        Volatile.Write(ref _activeNativeAudioMod, this);
+    }
+
+    private void ClearNativeHookOwners()
+    {
+        // Harmony callbacks can outlive the final update of a mod instance.
+        // Only clear our own registration, in case another instance replaced it.
+        Interlocked.CompareExchange(ref _activeNativeAudioMod, null, this);
+        Interlocked.CompareExchange(ref _activeCalibrationMod, null, this);
     }
 
     internal static void NoteNativeSettingsLoaded(Settings settings)
     {
-        BopItAccessMod? mod = _activeNativeAudioMod;
+        BopItAccessMod? mod = Volatile.Read(ref _activeNativeAudioMod);
         if (mod == null)
             return;
 

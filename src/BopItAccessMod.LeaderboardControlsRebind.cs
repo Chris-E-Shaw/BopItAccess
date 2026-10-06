@@ -11,13 +11,10 @@ public sealed partial class BopItAccessMod
     private InputActionRebindingExtensions.RebindingOperation? _leaderboardRebindOperation;
     private InputAction? _leaderboardRebindAction;
     private InputRebindingManager? _leaderboardRebindManager;
+    private ControlRebindInputState? _leaderboardRebindInputState;
     private AddedLeaderboardControlRow? _leaderboardRebindRow;
     private int _leaderboardRebindIndex;
     private string? _leaderboardRebindOriginalOverridePath;
-    private InputActionMap? _leaderboardRebindTargetMap;
-    private InputActionMap? _leaderboardRebindUiMap;
-    private bool _leaderboardRebindTargetMapWasEnabled;
-    private bool _leaderboardRebindUiMapWasEnabled;
     private long _nextLeaderboardRebindErrorAt;
     private long _nextLeaderboardRuntimeSyncAt;
 
@@ -45,15 +42,16 @@ public sealed partial class BopItAccessMod
         }
         catch (Exception ex)
         {
+            bool wasRebinding = _leaderboardRebindOperation != null;
             if (Environment.TickCount64 >= _nextLeaderboardRebindErrorAt)
             {
                 WriteStatus("Leaderboard control rebinding failed: " + ex);
                 _nextLeaderboardRebindErrorAt = Environment.TickCount64 + 5000;
             }
 
-            RestoreLeaderboardOriginalOverride();
             CancelLeaderboardControlRebinding(false);
-            QueueSpeech(L("Rebinding failed"));
+            if (wasRebinding)
+                QueueSpeech(L("Rebinding failed"));
         }
     }
 
@@ -116,6 +114,8 @@ public sealed partial class BopItAccessMod
 
     private bool WasControlsSubmitPressed(InputRebindingManager manager)
     {
+        if (manager.IsRebinding || AnyCustomControlRebinding)
+            return false;
         // This is the action ControlRow.Start subscribes to in the game.
         InputAction? submit = manager.playerInput?.actions?.FindAction("Submit", false);
         if (submit == null || !submit.enabled || !submit.WasPerformedThisFrame())
@@ -153,18 +153,12 @@ public sealed partial class BopItAccessMod
         }
 
         string? originalPath = action.bindings[index].overridePath;
-        InputActionMap? targetMap = action.actionMap;
-        InputActionMap? uiMap = manager.inputActions?.FindActionMap("UI", false);
-        bool targetWasEnabled = targetMap?.enabled ?? false;
-        bool uiWasEnabled = uiMap?.enabled ?? false;
-        if (targetWasEnabled)
-            targetMap!.Disable();
-        if (uiWasEnabled)
-            uiMap!.Disable();
+        ControlRebindInputState? inputState = null;
 
         InputActionRebindingExtensions.RebindingOperation? operation = null;
         try
         {
+            inputState = PauseControlRebindInputs(manager, action);
             operation = InputActionRebindingExtensions.PerformInteractiveRebinding(
                 action, index);
             operation.WithTargetBinding(index)
@@ -178,22 +172,15 @@ public sealed partial class BopItAccessMod
             _leaderboardRebindOperation = operation;
             _leaderboardRebindAction = action;
             _leaderboardRebindManager = manager;
+            _leaderboardRebindInputState = inputState;
             _leaderboardRebindRow = row;
             _leaderboardRebindIndex = index;
             _leaderboardRebindOriginalOverridePath = originalPath;
-            _leaderboardRebindTargetMap = targetMap;
-            _leaderboardRebindUiMap = uiMap;
-            _leaderboardRebindTargetMapWasEnabled = targetWasEnabled;
-            _leaderboardRebindUiMapWasEnabled = uiWasEnabled;
             WriteStatus($"Rebinding {row.Part.Label} on {device}, binding {index}.");
         }
         catch
         {
-            operation?.Dispose();
-            if (targetWasEnabled)
-                targetMap!.Enable();
-            if (uiWasEnabled)
-                uiMap!.Enable();
+            ReleaseControlRebindingCapture(operation, inputState);
             throw;
         }
     }
@@ -209,7 +196,7 @@ public sealed partial class BopItAccessMod
 
         if (action == null || manager == null || row == null || string.IsNullOrEmpty(path))
         {
-            ReleaseLeaderboardControlRebinding();
+            CancelLeaderboardControlRebinding(false);
             _lastControlsRebinding = false;
             QueueSpeech(L("Binding unchanged"));
             return;
@@ -256,22 +243,35 @@ public sealed partial class BopItAccessMod
             return;
         }
 
-        ReleaseLeaderboardControlRebinding();
-
         string device = manager.ActiveDevice ?? manager.deviceTracker?.ActiveDevice ?? string.Empty;
         InputAction? runtime = FindLeaderboardAction(manager.playerInput?.actions, row.Part);
-        if (runtime != null)
+        int runtimeIndex = runtime == null ? -1 :
+            FindCompositePartIndex(runtime, device, -1, row.Part.PartName);
+        string? previousRuntimePath = runtimeIndex < 0 ? null :
+            runtime!.bindings[runtimeIndex].overridePath;
+        try
         {
-            int runtimeIndex = FindCompositePartIndex(runtime, device, -1,
-                row.Part.PartName);
             if (runtimeIndex >= 0)
                 InputActionRebindingExtensions.ApplyBindingOverride(
-                    runtime, runtimeIndex, path);
+                    runtime!, runtimeIndex, path);
+
+            // Retain the operation's original source binding until persistence
+            // succeeds, so the outer failure path can still cancel and restore.
+            manager.SaveBindings();
         }
+        catch
+        {
+            if (runtimeIndex >= 0)
+            {
+                try { RestoreNativeBindingOverride(runtime!, runtimeIndex, previousRuntimePath); }
+                catch (Exception ex) { WriteStatus("Could not restore runtime leaderboard binding: " + ex.Message); }
+            }
+            throw;
+        }
+        ReleaseLeaderboardControlRebinding();
 
         // The native manager owns the game's persistent binding overrides.
-        // Save after the targeted operation, including its runtime action copy.
-        manager.SaveBindings();
+        // Its source and runtime action copies have now both been saved.
         WriteStatus($"Rebound {row.Part.Label} to {path}.");
         string spoken = InputActionRebindingExtensions.GetBindingDisplayString(action, index);
         // Native completion sends these after saving; existing menu rows and
@@ -288,44 +288,30 @@ public sealed partial class BopItAccessMod
     private void CancelLeaderboardControlRebinding(bool announce = true)
     {
         bool wasActive = _leaderboardRebindOperation != null;
+        if (wasActive)
+        {
+            try { RestoreLeaderboardOriginalOverride(); }
+            catch (Exception ex) { WriteStatus("Could not restore Leaderboard binding: " + ex.Message); }
+        }
         ReleaseLeaderboardControlRebinding();
         if (wasActive)
             _lastControlsRebinding = false;
         if (wasActive && announce)
-        {
             QueueSpeech(L("Binding unchanged"));
-        }
     }
 
     private void ReleaseLeaderboardControlRebinding()
     {
-        InputActionRebindingExtensions.RebindingOperation? operation =
-            _leaderboardRebindOperation;
-        InputActionMap? targetMap = _leaderboardRebindTargetMap;
-        InputActionMap? uiMap = _leaderboardRebindUiMap;
-        bool reenableTarget = _leaderboardRebindTargetMapWasEnabled;
-        bool reenableUi = _leaderboardRebindUiMapWasEnabled;
+        InputActionRebindingExtensions.RebindingOperation? operation = _leaderboardRebindOperation;
+        ControlRebindInputState? inputState = _leaderboardRebindInputState;
         _leaderboardRebindOperation = null;
-        _leaderboardRebindAction = null;
         _leaderboardRebindManager = null;
-        _leaderboardRebindRow = null;
+        _leaderboardRebindInputState = null;
         _leaderboardRebindIndex = 0;
         _leaderboardRebindOriginalOverridePath = null;
-        _leaderboardRebindTargetMap = null;
-        _leaderboardRebindUiMap = null;
-        _leaderboardRebindTargetMapWasEnabled = false;
-        _leaderboardRebindUiMapWasEnabled = false;
-        if (operation != null)
-        {
-            if (operation.started && !operation.completed && !operation.canceled)
-                operation.Cancel();
-            operation.Dispose();
-        }
-
-        if (targetMap != null && reenableTarget)
-            targetMap.Enable();
-        if (uiMap != null && reenableUi)
-            uiMap.Enable();
+        _leaderboardRebindAction = null;
+        _leaderboardRebindRow = null;
+        ReleaseControlRebindingCapture(operation, inputState);
     }
 
     private static InputAction? FindLeaderboardAction(InputActionAsset? asset,

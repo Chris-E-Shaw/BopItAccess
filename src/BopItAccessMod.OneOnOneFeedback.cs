@@ -144,15 +144,19 @@ public sealed partial class BopItAccessMod
                 return;
             }
 
-            var announcements = new List<string>(3);
-            bool lifeChanged = false;
             // A score of zero ends the round. Leave the winner announcement
             // to the existing game-over reader rather than speaking over it.
             bool ending = yellowLives <= 0 || greenLives <= 0;
+            bool yellowLifeChanged = yellowLives != _oneOnOneLastYellowLives;
+            bool greenLifeChanged = greenLives != _oneOnOneLastGreenLives;
+            bool colourChanged = colour.HasValue && colour != _oneOnOneLastColour;
+            if (!yellowLifeChanged && !greenLifeChanged && !colourChanged)
+                return;
+
+            var announcements = new List<string>(3);
+            bool lifeChanged = false;
             if (!ending)
             {
-                bool yellowLifeChanged = yellowLives != _oneOnOneLastYellowLives;
-                bool greenLifeChanged = greenLives != _oneOnOneLastGreenLives;
                 bool bothLivesChanged = yellowLifeChanged && greenLifeChanged;
                 lifeChanged = yellowLifeChanged || greenLifeChanged;
                 // Shared Bop prompts let either player earn a life. Identify
@@ -174,7 +178,7 @@ public sealed partial class BopItAccessMod
 
             // Bop and Alt Bop are shared actions. Hold the previous definite
             // side through them; guessing a colour there would mislead play.
-            if (colour.HasValue && colour != _oneOnOneLastColour)
+            if (colourChanged && colour.HasValue)
             {
                 announcements.Add(L(colour.Value.ToString()));
                 _oneOnOneLastColour = colour;

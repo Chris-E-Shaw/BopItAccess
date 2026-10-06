@@ -20,6 +20,7 @@ internal static class InstallerNetwork
     private static HttpClient CreateClient()
     {
         var client = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
+        client.MaxResponseContentBufferSize = 1024 * 1024;
         client.DefaultRequestHeaders.UserAgent.ParseAdd("BopItAccessInstaller/0.1 (+https://github.com/Chris-E-Shaw/BopItAccess)");
         client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
         return client;
@@ -27,7 +28,7 @@ internal static class InstallerNetwork
 
     internal static async Task<GitHubRelease?> LatestReleaseAsync(CancellationToken cancellation)
     {
-        using var response = await Client.GetAsync("https://api.github.com/repos/Chris-E-Shaw/BopItAccess/releases/latest", cancellation);
+        using var response = await MetadataAsync("https://api.github.com/repos/Chris-E-Shaw/BopItAccess/releases/latest", cancellation);
         if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
         response.EnsureSuccessStatusCode();
         await using var stream = await response.Content.ReadAsStreamAsync(cancellation);
@@ -48,7 +49,7 @@ internal static class InstallerNetwork
 
     internal static async Task<string> LatestCommitAsync(CancellationToken cancellation)
     {
-        using var response = await Client.GetAsync("https://api.github.com/repos/Chris-E-Shaw/BopItAccess/commits/main", cancellation);
+        using var response = await MetadataAsync("https://api.github.com/repos/Chris-E-Shaw/BopItAccess/commits/main", cancellation);
         response.EnsureSuccessStatusCode();
         await using var stream = await response.Content.ReadAsStreamAsync(cancellation);
         using var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellation);
@@ -60,23 +61,60 @@ internal static class InstallerNetwork
     internal static async Task DownloadAsync(Uri url, string destination, Action<long, long?> progress, CancellationToken cancellation)
     {
         if (url.Scheme != Uri.UriSchemeHttps) throw new InvalidDataException("Downloads must use HTTPS.");
-        using var response = await Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, cancellation);
-        response.EnsureSuccessStatusCode();
-        Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
-        await using var input = await response.Content.ReadAsStreamAsync(cancellation);
-        await using var output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1024 * 128, true);
-        var buffer = new byte[1024 * 128];
-        long completed = 0;
-        var total = response.Content.Headers.ContentLength;
-        int count;
-        while ((count = await input.ReadAsync(buffer, cancellation)) > 0)
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+        deadline.CancelAfter(TimeSpan.FromSeconds(60));
+        try
         {
-            await output.WriteAsync(buffer.AsMemory(0, count), cancellation);
-            completed += count;
-            progress(completed, total);
+            using var response = await Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
+            ValidateHttpsResponse(response);
+            response.EnsureSuccessStatusCode();
+            Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+            await using var input = await response.Content.ReadAsStreamAsync(deadline.Token);
+            await using var output = new FileStream(destination, FileMode.CreateNew, FileAccess.Write, FileShare.None, 1024 * 128, true);
+            var buffer = new byte[1024 * 128];
+            long completed = 0;
+            var total = response.Content.Headers.ContentLength;
+            if (total is > 4L * 1024 * 1024 * 1024) throw new InvalidDataException("Download exceeds four gigabytes.");
+            progress(0, total);
+            int count;
+            while (true)
+            {
+                // Reset an inactivity deadline per chunk; slow downloads can run
+                // as long as needed without leaving a stalled transfer hung forever.
+                deadline.CancelAfter(TimeSpan.FromSeconds(60));
+                count = await input.ReadAsync(buffer, deadline.Token);
+                if (count == 0) break;
+                await output.WriteAsync(buffer.AsMemory(0, count), deadline.Token);
+                completed += count;
+                if (completed > 4L * 1024 * 1024 * 1024) throw new InvalidDataException("Download exceeds four gigabytes.");
+                progress(completed, total);
+            }
+            await output.FlushAsync(deadline.Token);
+            if (total is not null && completed != total.Value) throw new InvalidDataException("Download size did not match the server response.");
+            progress(completed, total ?? completed);
         }
-        await output.FlushAsync(cancellation);
-        if (total is not null && completed != total.Value) throw new InvalidDataException("Download size did not match the server response.");
+        catch (OperationCanceledException ex) when (!cancellation.IsCancellationRequested)
+        { throw new TimeoutException("The download stopped responding for sixty seconds. Check your connection and retry.", ex); }
+    }
+
+    private static async Task<HttpResponseMessage> MetadataAsync(string url, CancellationToken cancellation)
+    {
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
+        deadline.CancelAfter(TimeSpan.FromSeconds(30));
+        try
+        {
+            HttpResponseMessage response = await Client.GetAsync(url, deadline.Token);
+            try { ValidateHttpsResponse(response); return response; }
+            catch { response.Dispose(); throw; }
+        }
+        catch (OperationCanceledException ex) when (!cancellation.IsCancellationRequested)
+        { throw new TimeoutException("GitHub did not respond within thirty seconds. Check your connection and retry.", ex); }
+    }
+
+    private static void ValidateHttpsResponse(HttpResponseMessage response)
+    {
+        if (response.RequestMessage?.RequestUri?.Scheme != Uri.UriSchemeHttps)
+            throw new InvalidDataException("A download redirected to an insecure connection.");
     }
 
     internal static string Sha256(string path) => Hash(path, SHA256.Create());
@@ -102,12 +140,17 @@ internal static class SafeZip
     internal static void Extract(string archivePath, string target, Action<long, long?> progress, CancellationToken cancellation)
     {
         Directory.CreateDirectory(target);
+        if ((File.GetAttributes(target) & FileAttributes.ReparsePoint) != 0)
+            throw new InvalidDataException("Archive extraction cannot use a linked folder.");
         var root = Path.GetFullPath(target).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
         using var archive = ZipFile.OpenRead(archivePath);
         if (archive.Entries.Count > 50000) throw new InvalidDataException("Archive has too many entries.");
         long total = archive.Entries.Sum(e => e.Length);
         if (total > 4L * 1024 * 1024 * 1024) throw new InvalidDataException("Archive is too large when extracted.");
         long done = 0;
+        var destinations = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        var buffer = new byte[1024 * 128];
+        progress(0, total);
         foreach (var entry in archive.Entries)
         {
             cancellation.ThrowIfCancellationRequested();
@@ -119,20 +162,27 @@ internal static class SafeZip
             var dest = Path.GetFullPath(Path.Combine(root, relative));
             if (!dest.StartsWith(root, StringComparison.OrdinalIgnoreCase))
                 throw new InvalidDataException("Archive attempted to escape its extraction directory.");
-            if (entry.FullName.EndsWith('/')) { Directory.CreateDirectory(dest); continue; }
+            if (!destinations.Add(dest)) throw new InvalidDataException("Archive contains a duplicate path.");
+            if (entry.FullName.EndsWith('/') || entry.FullName.EndsWith('\\'))
+            { Directory.CreateDirectory(dest); continue; }
             if (entry.Length > 1024L * 1024 * 1024) throw new InvalidDataException("Archive entry is too large.");
             Directory.CreateDirectory(Path.GetDirectoryName(dest)!);
             using var input = entry.Open();
             using var output = new FileStream(dest, FileMode.Create, FileAccess.Write, FileShare.None);
-            var buffer = new byte[1024 * 128];
+            long entryDone = 0;
             int count;
             while ((count = input.Read(buffer, 0, buffer.Length)) > 0)
             {
                 cancellation.ThrowIfCancellationRequested();
+                entryDone += count;
+                if (entryDone > entry.Length || done + count > total)
+                    throw new InvalidDataException("Archive content exceeds its declared length.");
                 output.Write(buffer, 0, count);
                 done += count;
                 progress(done, total);
             }
+            if (entryDone != entry.Length) throw new InvalidDataException("Archive entry is incomplete.");
         }
+        progress(done, total);
     }
 }

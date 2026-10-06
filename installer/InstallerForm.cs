@@ -18,6 +18,9 @@ internal sealed class InstallerForm : Form
     private readonly TextBox _statusLog = new();
     private InstallerState _state = new(null, false, false, false, false, false, null);
     private CancellationTokenSource? _operationCancellation;
+    private readonly CancellationTokenSource _initializationCancellation = new();
+    private bool _initializationRunning;
+    private bool _closeAfterInitialization;
     private bool _updatingPath;
     private bool _gamePathHasUnappliedEdit;
     private bool _abortRequested;
@@ -187,9 +190,11 @@ internal sealed class InstallerForm : Form
 
     private async Task InitializeAsync()
     {
+        _initializationRunning = true;
         try
         {
-            await Task.Run(_service.InitializeAsync);
+            await Task.Run(() => _service.InitializeAsync(_initializationCancellation.Token));
+            if (_closeAfterInitialization || IsDisposed) return;
             if (_startUninstall)
             {
                 await UninstallRequestedAsync();
@@ -197,9 +202,16 @@ internal sealed class InstallerForm : Form
                     Close();
             }
         }
+        catch (OperationCanceledException) when (_initializationCancellation.IsCancellationRequested) { }
         catch (Exception ex)
         {
-            ShowError("Could not inspect the installation", ex);
+            if (!IsDisposed) ShowError("Could not inspect the installation", ex);
+        }
+        finally
+        {
+            _initializationRunning = false;
+            if (!IsDisposed) UpdateActions();
+            if (_closeAfterInitialization && !IsDisposed) Close();
         }
     }
 
@@ -252,7 +264,8 @@ internal sealed class InstallerForm : Form
         if (_operationCancellation != null || _state.Busy)
             return;
         ApplyGamePath();
-        if (!_state.ValidGamePath)
+        if ((!uninstall && !_state.ValidGamePath) ||
+            (uninstall && !_state.Installed && _service.LastUninstallWarningCount == 0))
         {
             _gamePath.Focus();
             AppendStatus("Select a valid Bop It game folder first.");
@@ -278,7 +291,7 @@ internal sealed class InstallerForm : Form
                 MessageBox.Show(this, message, "Bop It Access Installer",
                     MessageBoxButtons.OK, icon);
                 if (uninstall && _startUninstall)
-                    Environment.ExitCode = 0;
+                    Environment.ExitCode = _service.LastUninstallWarningCount == 0 ? 0 : 1;
             }
         }
         catch (OperationCanceledException)
@@ -305,17 +318,28 @@ internal sealed class InstallerForm : Form
     {
         if (_operationCancellation == null || _abortRequested || !_allowAbort)
             return;
+        CancellationTokenSource operation = _operationCancellation;
         if (!Confirm("Abort the current operation?", "Confirm abort"))
             return;
+        // The modal confirmation pumps UI messages. The operation can finish
+        // and dispose its token while the player is deciding what to do.
+        if (!ReferenceEquals(_operationCancellation, operation)) return;
         _abortRequested = true;
         _abort.Enabled = false;
         _service.RequestAbort();
-        _operationCancellation.Cancel();
+        operation.Cancel();
         AppendStatus("Abort requested.");
     }
 
     private void OnFormClosing(object? sender, FormClosingEventArgs e)
     {
+        if (_initializationRunning)
+        {
+            e.Cancel = true;
+            _closeAfterInitialization = true;
+            _initializationCancellation.Cancel();
+            return;
+        }
         if (_operationCancellation == null)
             return;
         e.Cancel = true;
@@ -344,14 +368,15 @@ internal sealed class InstallerForm : Form
     private void UpdateActions()
     {
         bool busy = _state.Busy || _operationCancellation != null;
+        bool ready = _state.ReadyForOperations && !busy && !_initializationRunning;
         _gamePath.Enabled = !busy;
         _browse.Enabled = !busy;
-        _install.Enabled = !busy && _state.ValidGamePath &&
+        _install.Enabled = ready && _state.ValidGamePath &&
             _state.ReleaseAvailable && !_state.Installed;
-        _installAlpha.Enabled = !busy && _state.ValidGamePath;
-        _update.Enabled = !busy && _state.ValidGamePath &&
+        _installAlpha.Enabled = ready && _state.ValidGamePath;
+        _update.Enabled = ready && _state.ValidGamePath &&
             _state.Installed && _state.UpdateAvailable;
-        _uninstall.Enabled = !busy && _state.ValidGamePath &&
+        _uninstall.Enabled = ready &&
             (_state.Installed || _service.LastUninstallWarningCount > 0);
         _abort.Enabled = busy && _allowAbort && _operationCancellation != null && !_abortRequested;
         if (!busy && _progress.Style == ProgressBarStyle.Marquee)
@@ -409,11 +434,21 @@ internal sealed class InstallerForm : Form
         if (InvokeRequired)
         {
             if (IsHandleCreated)
-                BeginInvoke(action);
+            {
+                try { BeginInvoke((Action)(() => { if (!IsDisposed && !Disposing) action(); })); }
+                catch (InvalidOperationException) when (IsDisposed || Disposing || !IsHandleCreated)
+                { /* The form closed after the worker checked its handle. */ }
+            }
         }
         else
         {
             action();
         }
+    }
+
+    protected override void Dispose(bool disposing)
+    {
+        if (disposing) _initializationCancellation.Dispose();
+        base.Dispose(disposing);
     }
 }

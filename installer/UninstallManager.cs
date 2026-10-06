@@ -48,16 +48,40 @@ public static class UninstallManager
         string expectedManifest = Path.Combine(state, InstallManifest.FileName);
         if (!PathsEqual(manifestPath, expectedManifest))
             throw new InvalidDataException("The manifest path does not match its state directory.");
-        if (!Directory.Exists(game)) throw new DirectoryNotFoundException(game);
         EnsureGameClosed();
         cancellationToken.ThrowIfCancellationRequested();
 
         var result = new UninstallResult { RequiresSelfCleanup = true };
+        if (!manifest.UninstallFilesRemoved && !Directory.Exists(game))
+        {
+            // Directory.Exists also returns false when a drive is disconnected
+            // or access is denied. Do not discard ownership records for a mod
+            // which may still exist when that drive becomes available again.
+            string? gameRoot = Path.GetPathRoot(game);
+            if (string.IsNullOrEmpty(gameRoot) || !Directory.Exists(gameRoot))
+                throw new IOException("The game drive is unavailable. Reconnect it before uninstalling Bop It Access.");
+            bool missing = false;
+            try { File.GetAttributes(game); }
+            catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
+            { missing = true; }
+            if (!missing)
+                throw new IOException("The game folder could not be inspected safely. Restore access before uninstalling Bop It Access.");
+            log("The game folder was already removed. Cleaning the remaining mod preferences and installer records.");
+            manifest.UninstallFilesRemoved = true;
+            InstallManifest.SaveAtomic(manifest, manifestPath);
+        }
+        if (manifest.UninstallFilesRemoved)
+        {
+            log("Retrying remaining mod preference cleanup; installed files were already removed.");
+            FinishPreferenceCleanup(manifest, manifestPath, result, log);
+            return result;
+        }
         var loaderRestorations = new List<LoaderUiDefaults.RestorePlan>();
         ValidateSettingsFiles(game);
+        ValidateModLogs(game, removeMain: !manifest.ModLogExistedBeforeInstall);
         bool sharedLoader = manifest.MelonLoaderInstalledByInstaller && HasOtherMods(game);
         if (sharedLoader)
-            log("Other mods are present. MelonLoader and shared dependencies will be preserved.");
+            log("Other mods are present, or their folders could not be safely inspected. MelonLoader and shared dependencies will be preserved.");
         if (manifest.MelonLoaderInstalledByInstaller && !sharedLoader)
         {
             string melon = Path.Combine(game, "MelonLoader");
@@ -73,19 +97,29 @@ public static class UninstallManager
             if (file.IsLoaderConfiguration) LoaderUiDefaults.ValidatePath(path, game);
             if (ShouldPreserveShared(path, game, sharedLoader, file)) continue;
             if (InstallTransaction.IsWithin(path, state)) continue; // Defer running uninstaller files.
+            string? originalHash = null;
             if (file.OriginalBackupPath is not null)
             {
                 string backup = InstallTransaction.ValidateBackup(file.OriginalBackupPath, state);
                 if (!File.Exists(backup)) result.Conflicts.Add($"Original backup is missing: {backup}");
-                else if (!string.IsNullOrWhiteSpace(file.OriginalSha256) &&
-                    !string.Equals(await InstallTransaction.Sha256Async(backup, cancellationToken),
-                        file.OriginalSha256, StringComparison.OrdinalIgnoreCase))
-                    result.Conflicts.Add($"Original backup changed: {backup}");
+                else
+                {
+                    originalHash = await InstallTransaction.Sha256Async(backup, cancellationToken);
+                    if (!string.IsNullOrWhiteSpace(file.OriginalSha256) &&
+                        !string.Equals(originalHash, file.OriginalSha256, StringComparison.OrdinalIgnoreCase))
+                        result.Conflicts.Add($"Original backup changed: {backup}");
+                }
             }
-            if (!file.IsLoaderConfiguration && File.Exists(path) &&
-                !string.Equals(await InstallTransaction.Sha256Async(path, cancellationToken),
-                    file.Sha256, StringComparison.OrdinalIgnoreCase))
-                result.Conflicts.Add($"Installed file was modified: {path}");
+            if (!file.IsLoaderConfiguration && File.Exists(path))
+            {
+                string currentHash = await InstallTransaction.Sha256Async(path, cancellationToken);
+                // A prior uninstall may have restored this original before a
+                // later file failed. Permit that exact baseline on retry while
+                // continuing to reject every other unexpected file change.
+                if (!string.Equals(currentHash, file.Sha256, StringComparison.OrdinalIgnoreCase) &&
+                    !string.Equals(currentHash, originalHash, StringComparison.OrdinalIgnoreCase))
+                    result.Conflicts.Add($"Installed file was modified: {path}");
+            }
             if (file.IsLoaderConfiguration)
             {
                 try
@@ -137,15 +171,9 @@ public static class UninstallManager
             }
         }
 
-        string modLog = Path.Combine(game, "Mods", "BopItAccess.log");
-        if (!manifest.ModLogExistedBeforeInstall && File.Exists(modLog))
-        {
-            File.Delete(modLog);
-            log("Removed the Bop It Access log.");
-        }
+        RemoveModLogs(game, removeMain: !manifest.ModLogExistedBeforeInstall, log);
         if (manifest.MelonLoaderInstalledByInstaller && !sharedLoader)
             RemoveOwnedMelonLoaderTree(game, log);
-        result.PreferenceWarnings.AddRange(ModPreferenceCleaner.RemoveAcrossProfiles(log));
         RemoveSettingsFiles(game, log);
 
         foreach (string directory in manifest.CreatedDirectories.OrderByDescending(path => path.Length))
@@ -158,9 +186,11 @@ public static class UninstallManager
                 log($"Removed empty installer-created folder: {full}");
             }
         }
-        RemoveUninstallRegistration(log);
-        log("Bop It Access files were removed. The launcher will remove its own files on exit.");
-        result.Success = true;
+        // Persist the file-removal checkpoint before profile cleanup can report
+        // warnings. Future retries must not hash/delete restored original files.
+        manifest.UninstallFilesRemoved = true;
+        InstallManifest.SaveAtomic(manifest, manifestPath);
+        FinishPreferenceCleanup(manifest, manifestPath, result, log);
         return result;
     }
 
@@ -176,10 +206,10 @@ public static class UninstallManager
         EnsureGameClosed();
         cancellationToken.ThrowIfCancellationRequested();
         ValidateSettingsFiles(game);
+        ValidateModLogs(game, removeMain: true);
         string mod = Path.Combine(game, "Mods", "BopItAccess.dll");
-        string modLog = Path.Combine(game, "Mods", "BopItAccess.log");
         if (File.Exists(mod)) { File.Delete(mod); log($"Removed {mod}"); }
-        if (File.Exists(modLog)) { File.Delete(modLog); log($"Removed {modLog}"); }
+        RemoveModLogs(game, removeMain: true, log);
 
         string prism = Path.Combine(game, "prism.dll");
         if (File.Exists(prism) &&
@@ -224,6 +254,49 @@ public static class UninstallManager
     internal static bool IsLegacyDocumentationName(string name) =>
         LegacyDocumentationNames.Contains(name, StringComparer.OrdinalIgnoreCase);
 
+    private static void FinishPreferenceCleanup(InstallManifest manifest, string manifestPath,
+        UninstallResult result, Action<string> log)
+    {
+        result.PreferenceWarnings.AddRange(ModPreferenceCleaner.RemoveAcrossProfiles(log));
+        manifest.UninstallCompleted = result.PreferenceWarnings.Count == 0;
+        InstallManifest.SaveAtomic(manifest, manifestPath);
+        if (manifest.UninstallCompleted)
+        {
+            RemoveUninstallRegistration(log);
+            log("Bop It Access was removed. The launcher will remove its own files on exit.");
+        }
+        else
+            log("Mod files were removed. The uninstall launcher and Windows entry remain so preference cleanup can be retried.");
+        result.Success = true;
+    }
+
+    private static void RemoveModLogs(string game, bool removeMain, Action<string> log)
+    {
+        foreach (string path in ValidateModLogs(game, removeMain))
+        {
+            if (!File.Exists(path)) continue;
+            File.Delete(path);
+            log("Removed Bop It Access log: " + path);
+        }
+    }
+
+    private static IReadOnlyList<string> ValidateModLogs(string game, bool removeMain)
+    {
+        string[] names = removeMain
+            ? new[] { "BopItAccess.log", "BopItAccess.log.previous" }
+            : new[] { "BopItAccess.log.previous" };
+        var paths = new List<string>();
+        foreach (string name in names)
+        {
+            string path = InstallTransaction.ValidateAgainstRoots(Path.Combine(game, "Mods", name),
+                game, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "BopItAccess"));
+            if (File.Exists(path) && (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0)
+                throw new InvalidDataException("Mod log cleanup cannot follow a linked file: " + path);
+            paths.Add(path);
+        }
+        return paths;
+    }
+
     // These mutable preferences are created by the mod after installation,
     // so they cannot use the manifest's fixed content hashes. Remove only the
     // mod's own filenames; UserData may also contain settings for other mods.
@@ -234,9 +307,24 @@ public static class UninstallManager
             (Directory.Exists(userData) &&
              (File.GetAttributes(userData) & FileAttributes.ReparsePoint) != 0))
             throw new InvalidDataException("Settings cleanup cannot follow a UserData junction.");
-        string[] paths = { Path.Combine(userData, "BopItAccess.ini"),
+        var paths = new List<string> { Path.Combine(userData, "BopItAccess.ini"),
             Path.Combine(userData, "BopItAccess.ini.tmp"),
             Path.Combine(userData, "Loader.cfg.bopitaccess-uninstall.tmp") };
+        if (Directory.Exists(userData))
+        {
+            const string prefix = "BopItAccess.ini.";
+            const string suffix = ".tmp";
+            foreach (string candidate in Directory.EnumerateFiles(userData,
+                         "BopItAccess.ini.*.tmp", SearchOption.TopDirectoryOnly))
+            {
+                string name = Path.GetFileName(candidate);
+                if (name.Length == prefix.Length + 32 + suffix.Length &&
+                    name.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) &&
+                    name.EndsWith(suffix, StringComparison.OrdinalIgnoreCase) &&
+                    Guid.TryParseExact(name.Substring(prefix.Length, 32), "N", out _))
+                    paths.Add(candidate);
+            }
+        }
         foreach (string path in paths)
         {
             if (!InstallTransaction.IsWithin(path, game) ||
@@ -244,7 +332,7 @@ public static class UninstallManager
                  (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0))
                 throw new InvalidDataException("Settings cleanup encountered a linked config file.");
         }
-        return paths;
+        return paths.ToArray();
     }
 
     private static void RemoveSettingsFiles(string game, Action<string> log)
@@ -269,13 +357,34 @@ public static class UninstallManager
 
     internal static bool HasOtherMods(string game)
     {
-        string mods = Path.Combine(game, "Mods");
-        if (Directory.Exists(mods) && Directory.EnumerateFiles(mods, "*.dll", SearchOption.TopDirectoryOnly)
-                .Any(path => !Path.GetFileName(path).Equals("BopItAccess.dll", StringComparison.OrdinalIgnoreCase)))
+        try
+        {
+            foreach (string root in new[] { Path.Combine(game, "Mods"), Path.Combine(game, "Plugins") })
+            {
+                if (!Directory.Exists(root)) continue;
+                var pending = new Stack<string>();
+                pending.Push(root);
+                while (pending.Count > 0)
+                {
+                    string folder = pending.Pop();
+                    if ((File.GetAttributes(folder) & FileAttributes.ReparsePoint) != 0) return true;
+                    foreach (string entry in Directory.EnumerateFileSystemEntries(folder))
+                    {
+                        FileAttributes attributes = File.GetAttributes(entry);
+                        if ((attributes & FileAttributes.ReparsePoint) != 0) return true;
+                        if ((attributes & FileAttributes.Directory) != 0) pending.Push(entry);
+                        else if (Path.GetExtension(entry).Equals(".dll", StringComparison.OrdinalIgnoreCase) &&
+                            !PathsEqual(entry, Path.Combine(game, "Mods", "BopItAccess.dll"))) return true;
+                    }
+                }
+            }
+            return false;
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            // An unreadable folder cannot establish that the loader is unused.
             return true;
-        string plugins = Path.Combine(game, "Plugins");
-        return Directory.Exists(plugins) &&
-            Directory.EnumerateFiles(plugins, "*.dll", SearchOption.AllDirectories).Any();
+        }
     }
 
     private static bool ShouldPreserveShared(string path, string game, bool sharedLoader,
@@ -350,7 +459,10 @@ public static class UninstallManager
 
     private static void EnsureGameClosed()
     {
-        if (Process.GetProcessesByName("BopIt!").Length > 0)
+        Process[] processes = Process.GetProcessesByName("BopIt!");
+        bool running = processes.Length > 0;
+        foreach (Process process in processes) process.Dispose();
+        if (running)
             throw new InvalidOperationException("Close Bop It! before removing the mod.");
     }
 

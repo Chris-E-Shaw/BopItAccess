@@ -15,6 +15,10 @@ namespace BopItAccess;
 
 public sealed partial class BopItAccessMod
 {
+    private const int MaximumGuideBytes = 4 * 1024 * 1024;
+    private const int MaximumGuideNodes = 50000;
+    private const int MaximumGuideDepth = 128;
+    private const int MaximumGuideLines = 20000;
     private const string GuideFileName = "BopItAccess-user-guide.html";
     private readonly List<GuideTopic> _guideTopics = new();
     private readonly List<SettingsButton> _guideTopicRows = new();
@@ -302,24 +306,49 @@ public sealed partial class BopItAccessMod
             _mainMenu.panels.Count == 0 ||
             _mainMenu.panels.Peek().GetInstanceID() != _guideTopicsPanel.GetInstanceID())
             return;
-        _guideTopicIndex = index;
-        _guideLineIndex = 0;
-        _guideColumnIndex = 0;
-        _guideLastLineDirection = 1;
-        _guideTopicsPanel.lastSelectedButton = _guideTopicRows[index].gameObject;
-        _guideTopicsPanel.Hide();
-        _guidePageRoot.SetActive(true);
-        _guidePagePanel.lastSelectedButton = null;
-        _guidePagePanel.firstSelectedButton = _guideRepeatRow?.gameObject;
-        if (_guidePageTitle != null)
-            SetClonedLabel(_guidePageTitle, _guideTopics[index].Title);
-        RefreshGuidePageText();
-        _guidePagePanel.Show();
-        _mainMenu.panels.Push(_guidePagePanel);
-        _guidePageOpen = true;
-        _guideLastPageFocus = null;
-        GuideGateOpeningInput();
-        WriteStatus("Opened guide topic: " + _guideTopics[index].Title + ".");
+        try
+        {
+            _guideTopicIndex = index;
+            _guideLineIndex = 0;
+            _guideColumnIndex = 0;
+            _guideLastLineDirection = 1;
+            _guideTopicsPanel.lastSelectedButton = _guideTopicRows[index].gameObject;
+            _guideTopicsPanel.Hide();
+            _guidePageRoot.SetActive(true);
+            _guidePagePanel.lastSelectedButton = null;
+            _guidePagePanel.firstSelectedButton = _guideRepeatRow?.gameObject;
+            if (_guidePageTitle != null)
+                SetClonedLabel(_guidePageTitle, _guideTopics[index].Title);
+            RefreshGuidePageText();
+            _guidePagePanel.Show();
+            _mainMenu.panels.Push(_guidePagePanel);
+            _guidePageOpen = true;
+            _guideLastPageFocus = null;
+            GuideGateOpeningInput();
+            WriteStatus("Opened guide topic: " + _guideTopics[index].Title + ".");
+        }
+        catch (Exception ex)
+        {
+            _guidePageOpen = false;
+            WriteStatus("Guide topic could not be opened: " + ex);
+            try
+            {
+                if (_mainMenu.panels.Count > 0 && _mainMenu.panels.Peek() == _guidePagePanel)
+                    _mainMenu.panels.Pop();
+                if (_guidePagePanel != null)
+                    _guidePagePanel.Hide();
+                if (_guidePageRoot != null)
+                    _guidePageRoot.SetActive(false);
+                _guideTopicsPanel.Show();
+                GuideGateOpeningInput();
+            }
+            catch (Exception recoveryError)
+            {
+                WriteStatus("Guide topic recovery failed: " + recoveryError.Message);
+                CloseGuideAfterPanelExit();
+            }
+            QueueSpeech(L("The user's guide could not be displayed."));
+        }
     }
 
     private void OnGuideTopicSubmitted()
@@ -330,6 +359,7 @@ public sealed partial class BopItAccessMod
         for (int i = 0; i < _guideTopicRows.Count; i++)
         {
             SettingsButton row = _guideTopicRows[i];
+            if (row == null) continue;
             if (selected.GetInstanceID() == row.gameObject.GetInstanceID() ||
                 selected.transform.IsChildOf(row.transform))
             {
@@ -361,6 +391,12 @@ public sealed partial class BopItAccessMod
                 return;
             }
             Panel top = _mainMenu.panels.Peek();
+            if (top == null || _guideTopicRows.Count == 0 ||
+                _guideTopicIndex < 0 || _guideTopicIndex >= _guideTopicRows.Count)
+            {
+                CloseGuideAfterPanelExit();
+                return;
+            }
             if (_guidePageOpen && _guidePagePanel != null &&
                 top.GetInstanceID() == _guideTopicsPanel.GetInstanceID())
             {
@@ -418,8 +454,8 @@ public sealed partial class BopItAccessMod
         _guideOpen = false;
         _guidePageOpen = false;
         _guideInputReady = false;
-        _guideTopicsRoot?.SetActive(false);
-        _guidePageRoot?.SetActive(false);
+        if (_guideTopicsRoot != null) _guideTopicsRoot.SetActive(false);
+        if (_guidePageRoot != null) _guidePageRoot.SetActive(false);
         _guideLastTopicRowId = 0;
         _guideLastPageFocus = null;
         SetGuideMusicFilter(false);
@@ -459,6 +495,7 @@ public sealed partial class BopItAccessMod
         for (int i = 0; i < _guideTopicRows.Count; i++)
         {
             SettingsButton row = _guideTopicRows[i];
+            if (row == null) continue;
             if (!focus.transform.IsChildOf(row.transform) &&
                 focus.GetInstanceID() != row.gameObject.GetInstanceID())
                 continue;
@@ -623,8 +660,8 @@ public sealed partial class BopItAccessMod
 
     private void DestroyGuidePanels()
     {
-        _guideTopicsRoot?.SetActive(false);
-        _guidePageRoot?.SetActive(false);
+        if (_guideTopicsRoot != null) _guideTopicsRoot.SetActive(false);
+        if (_guidePageRoot != null) _guidePageRoot.SetActive(false);
         if (_guideTopicsRoot != null)
             UnityEngine.Object.Destroy(_guideTopicsRoot);
         if (_guidePageRoot != null)
@@ -665,14 +702,27 @@ public sealed partial class BopItAccessMod
 
     private static readonly Regex GuideHtmlTokens = new(
         @"<!--.*?-->|<![^>]*>|<(?<close>/)?(?<tag>[A-Za-z][A-Za-z0-9-]*)(?<attrs>[^>]*)>|(?<text>[^<]+)",
-        RegexOptions.Compiled | RegexOptions.Singleline);
-    private static readonly Regex GuideSpace = new(@"\s+", RegexOptions.Compiled);
+        RegexOptions.Compiled | RegexOptions.Singleline, TimeSpan.FromSeconds(2));
+    private static readonly Regex GuideSpace = new(@"\s+", RegexOptions.Compiled, TimeSpan.FromSeconds(2));
 
     private List<GuideTopic> ReadGuideDocument(string path)
     {
         if (!File.Exists(path))
             throw new FileNotFoundException("Guide HTML is missing.", path);
-        string html = File.ReadAllText(path);
+        using FileStream file = File.OpenRead(path);
+        if (file.Length > MaximumGuideBytes)
+            throw new FormatException("Guide HTML exceeds the four-megabyte size limit.");
+        using var reader = new StreamReader(file);
+        var source = new System.Text.StringBuilder();
+        char[] buffer = new char[8192];
+        int read;
+        while ((read = reader.Read(buffer, 0, buffer.Length)) > 0)
+        {
+            if (source.Length + read > MaximumGuideBytes)
+                throw new FormatException("Guide HTML grew beyond its size limit while reading.");
+            source.Append(buffer, 0, read);
+        }
+        string html = source.ToString();
         GuideHtmlNode document = ParseGuideHtml(html);
         GuideHtmlNode? contents = FindGuideNode(document, node =>
             node.Name == "nav" &&
@@ -684,6 +734,12 @@ public sealed partial class BopItAccessMod
         if (contents == null)
             throw new FormatException("Guide table of contents was not found.");
 
+        var sections = new Dictionary<string, GuideHtmlNode>(StringComparer.Ordinal);
+        foreach (GuideHtmlNode node in GuideDescendants(document))
+            if (node.Name == "section" && GuideAttribute(node, "id") is string sectionId)
+                sections.TryAdd(sectionId, node);
+        var seenTopics = new HashSet<string>(StringComparer.Ordinal);
+        int lineCount = 0;
         var topics = new List<GuideTopic>();
         foreach (GuideHtmlNode link in GuideDescendants(contents).Where(node =>
                      node.Name == "a"))
@@ -692,16 +748,18 @@ public sealed partial class BopItAccessMod
             if (href == null || !href.StartsWith('#'))
                 continue;
             string id = WebUtility.HtmlDecode(href[1..]);
-            GuideHtmlNode? section = FindGuideNode(document, node =>
-                node.Name == "section" && string.Equals(
-                    GuideAttribute(node, "id"), id, StringComparison.Ordinal));
-            if (section == null)
+            if (!seenTopics.Add(id) || !sections.TryGetValue(id, out GuideHtmlNode? section))
                 continue;
+            if (topics.Count >= 256)
+                throw new FormatException("Guide table of contents exceeds 256 topics.");
             string title = GuideText(link);
             if (title.Length == 0)
                 continue;
             var lines = new List<GuideLine>();
             AppendGuideLines(section, lines);
+            lineCount += lines.Count;
+            if (lineCount > MaximumGuideLines)
+                throw new FormatException("Guide exceeds the supported number of reading lines.");
             topics.Add(new GuideTopic(title, lines));
         }
         return topics;
@@ -712,8 +770,11 @@ public sealed partial class BopItAccessMod
         GuideHtmlNode root = new("document");
         var stack = new Stack<GuideHtmlNode>();
         stack.Push(root);
+        int nodes = 0;
         foreach (Match token in GuideHtmlTokens.Matches(html))
         {
+            if (++nodes > MaximumGuideNodes)
+                throw new FormatException("Guide HTML exceeds its node limit.");
             if (token.Groups["text"].Success)
             {
                 stack.Peek().Children.Add(new GuideHtmlNode("#text", value:
@@ -725,6 +786,10 @@ public sealed partial class BopItAccessMod
             string tag = token.Groups["tag"].Value.ToLowerInvariant();
             if (token.Groups["close"].Success)
             {
+                // Ignore unmatched closing tags instead of discarding the
+                // whole surrounding document (for example stray </span>).
+                if (!stack.Any(node => node.Name == tag))
+                    continue;
                 while (stack.Count > 1 && stack.Peek().Name != tag)
                     stack.Pop();
                 if (stack.Count > 1)
@@ -737,7 +802,11 @@ public sealed partial class BopItAccessMod
             if (!attributes.TrimEnd().EndsWith('/') &&
                 tag is not ("br" or "hr" or "img" or "input" or "meta" or
                     "link" or "source" or "area" or "wbr"))
+            {
+                if (stack.Count >= MaximumGuideDepth)
+                    throw new FormatException("Guide HTML is nested too deeply.");
                 stack.Push(node);
+            }
         }
         return root;
     }
@@ -745,35 +814,35 @@ public sealed partial class BopItAccessMod
     private static string? GuideAttribute(GuideHtmlNode node, string name)
     {
         Match match = Regex.Match(node.Attributes,
-            @"\b" + Regex.Escape(name) +
+            @"(?:^|\s)" + Regex.Escape(name) +
             @"\s*=\s*(?:""(?<value>[^""]*)""|'(?<value>[^']*)'|(?<value>[^\s>]+))",
-            RegexOptions.IgnoreCase);
+            RegexOptions.IgnoreCase, TimeSpan.FromSeconds(2));
         return match.Success ? WebUtility.HtmlDecode(match.Groups["value"].Value)
             : null;
     }
 
     private static GuideHtmlNode? FindGuideNode(GuideHtmlNode root,
-        Func<GuideHtmlNode, bool> predicate)
-    {
-        if (predicate(root))
-            return root;
-        foreach (GuideHtmlNode child in root.Children)
-        {
-            GuideHtmlNode? found = FindGuideNode(child, predicate);
-            if (found != null)
-                return found;
-        }
-        return null;
-    }
+        Func<GuideHtmlNode, bool> predicate) => predicate(root)
+            ? root : GuideDescendants(root).FirstOrDefault(predicate);
 
     private static IEnumerable<GuideHtmlNode> GuideDescendants(GuideHtmlNode root)
     {
-        foreach (GuideHtmlNode child in root.Children)
+        var pending = new Stack<GuideHtmlNode>();
+        PushGuideChildren(root, pending);
+        while (pending.Count > 0)
         {
-            yield return child;
-            foreach (GuideHtmlNode descendant in GuideDescendants(child))
-                yield return descendant;
+            GuideHtmlNode node = pending.Pop();
+            yield return node;
+            PushGuideChildren(node, pending);
         }
+    }
+
+    private static void PushGuideChildren(GuideHtmlNode node,
+        Stack<GuideHtmlNode> pending)
+    {
+        // Reverse push preserves HTML reading order without recursion.
+        for (int i = node.Children.Count - 1; i >= 0; i--)
+            pending.Push(node.Children[i]);
     }
 
     private static string GuideText(GuideHtmlNode node)
@@ -783,41 +852,45 @@ public sealed partial class BopItAccessMod
         return GuideSpace.Replace(WebUtility.HtmlDecode(raw.ToString()), " ").Trim();
     }
 
-    private static void AppendGuideText(GuideHtmlNode node,
+    private static void AppendGuideText(GuideHtmlNode root,
         System.Text.StringBuilder text)
     {
-        if (node.Name == "#text")
+        var pending = new Stack<GuideHtmlNode>();
+        pending.Push(root);
+        while (pending.Count > 0)
         {
-            text.Append(node.Value);
-            return;
+            GuideHtmlNode node = pending.Pop();
+            if (node.Name == "#text")
+                text.Append(node.Value);
+            else if (node.Name == "br")
+                text.Append(' ');
+            else if (node.Name == "img")
+                text.Append(GuideAttribute(node, "alt") ?? string.Empty);
+            PushGuideChildren(node, pending);
         }
-        if (node.Name == "br")
-            text.Append(' ');
-        if (node.Name == "img")
-            text.Append(GuideAttribute(node, "alt") ?? string.Empty);
-        foreach (GuideHtmlNode child in node.Children)
-            AppendGuideText(child, text);
     }
 
-    private void AppendGuideLines(GuideHtmlNode node,
-        List<GuideLine> lines)
+    private void AppendGuideLines(GuideHtmlNode root, List<GuideLine> lines)
     {
-        if (node.Name == "table")
+        var pending = new Stack<GuideHtmlNode>();
+        pending.Push(root);
+        while (pending.Count > 0)
         {
-            AppendGuideTable(node, lines);
-            return;
+            GuideHtmlNode node = pending.Pop();
+            if (node.Name == "table")
+                AppendGuideTable(node, lines);
+            else if (node.Name is "h2" or "h3" or "h4" or "p" or "li" or "pre" or "blockquote")
+            {
+                string value = GuideText(node);
+                if (value.Length > 0)
+                    AppendGuideWrappedText(node.Name == "li"
+                        ? L("Bullet") + ". " + value : value, lines);
+            }
+            else
+                PushGuideChildren(node, pending);
+            if (lines.Count > MaximumGuideLines)
+                throw new FormatException("Guide topic exceeds its reading-line limit.");
         }
-        if (node.Name is "h2" or "h3" or "h4" or "p" or "li" or "pre" or
-            "blockquote")
-        {
-            string value = GuideText(node);
-            if (value.Length > 0)
-                AppendGuideWrappedText(node.Name == "li"
-                    ? L("Bullet") + ". " + value : value, lines);
-            return;
-        }
-        foreach (GuideHtmlNode child in node.Children)
-            AppendGuideLines(child, lines);
     }
 
     private void AppendGuideWrappedText(string text,
@@ -845,7 +918,7 @@ public sealed partial class BopItAccessMod
                 }
                 if (elements >= textElementsPerLine)
                 {
-                    lines.Add(new GuideLine(currentCjk.ToString().TrimEnd()));
+                    AddGuideLine(lines, new GuideLine(currentCjk.ToString().TrimEnd()));
                     currentCjk.Clear();
                     elements = 0;
                     if (element == " ")
@@ -855,26 +928,57 @@ public sealed partial class BopItAccessMod
                 elements++;
             }
             if (currentCjk.Length > 0)
-                lines.Add(new GuideLine(currentCjk.ToString().TrimEnd()));
+                AddGuideLine(lines, new GuideLine(currentCjk.ToString().TrimEnd()));
             return;
         }
         int lineLength = CurrentGameLocale == "ko" ? 60 : 120;
         var current = new System.Text.StringBuilder();
-        foreach (Match word in Regex.Matches(text, @"\S+"))
+        int offset = 0;
+        while (offset < text.Length)
         {
-            string value = word.Value;
-            if (current.Length > 0 &&
-                current.Length + 1 + value.Length > lineLength)
+            while (offset < text.Length && char.IsWhiteSpace(text[offset])) offset++;
+            int start = offset;
+            while (offset < text.Length && !char.IsWhiteSpace(text[offset])) offset++;
+            if (offset == start) break;
+            string value = text[start..offset];
+            if (current.Length > 0 && current.Length + 1 + value.Length > lineLength)
             {
-                lines.Add(new GuideLine(current.ToString()));
+                AddGuideLine(lines, new GuideLine(current.ToString()));
                 current.Clear();
             }
-            if (current.Length > 0)
-                current.Append(' ');
-            current.Append(value);
+            if (value.Length > lineLength)
+            {
+                // Long URLs or unspaced text must not create a huge native
+                // text row. Split on grapheme boundaries, preserving content.
+                TextElementEnumerator iterator = StringInfo.GetTextElementEnumerator(value);
+                int elements = 0;
+                while (iterator.MoveNext())
+                {
+                    if (elements == lineLength)
+                    {
+                        AddGuideLine(lines, new GuideLine(current.ToString()));
+                        current.Clear();
+                        elements = 0;
+                    }
+                    current.Append(iterator.GetTextElement());
+                    elements++;
+                }
+            }
+            else
+            {
+                if (current.Length > 0) current.Append(' ');
+                current.Append(value);
+            }
         }
         if (current.Length > 0)
-            lines.Add(new GuideLine(current.ToString()));
+            AddGuideLine(lines, new GuideLine(current.ToString()));
+    }
+
+    private static void AddGuideLine(List<GuideLine> lines, GuideLine line)
+    {
+        if (lines.Count >= MaximumGuideLines)
+            throw new FormatException("Guide topic exceeds its reading-line limit.");
+        lines.Add(line);
     }
 
     private void AppendGuideTable(GuideHtmlNode table,
@@ -916,12 +1020,12 @@ public sealed partial class BopItAccessMod
             ? string.Format(CultureInfo.CurrentCulture,
                 L("End of table: {0}."), caption)
             : L("End of table.");
-        lines.Add(new GuideLine(entry, TableCaption: caption,
+        AddGuideLine(lines, new GuideLine(entry, TableCaption: caption,
             IsTableMarker: true, ReverseTableText: exit));
         for (int index = 0; index < dataRows.Count; index++)
-            lines.Add(new GuideLine("", dataRows[index], headers, caption,
+            AddGuideLine(lines, new GuideLine("", dataRows[index], headers, caption,
                 index + 1, dataRows.Count));
-        lines.Add(new GuideLine(exit, TableCaption: caption,
+        AddGuideLine(lines, new GuideLine(exit, TableCaption: caption,
             IsTableMarker: true, ReverseTableText: entry));
     }
 }

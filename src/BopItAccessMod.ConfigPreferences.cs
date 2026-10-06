@@ -619,12 +619,17 @@ public sealed partial class BopItAccessMod
         // The enum fallback keeps configuration valid during device startup.
         InputControl? connected = InputSystem.FindControl("<Keyboard>/" + leaf);
         if (connected != null)
-            return "<Keyboard>/" + connected.name.ToLowerInvariant();
-        if ((leaf.Length == 1 && leaf[0] is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9') ||
-            Enum.GetNames(typeof(Key)).Any(name => name != "None" &&
-                name.Equals(leaf, StringComparison.OrdinalIgnoreCase)))
-            return "<Keyboard>/" + (leaf.StartsWith("Digit", StringComparison.OrdinalIgnoreCase)
-                && leaf.Length == 6 ? leaf[5..] : leaf.ToLowerInvariant());
-        return null;
+            leaf = connected.name;
+        // Connected keyboards also expose synthetic controls such as anyKey.
+        // Those are not single-key assignments and can make global shortcuts
+        // fire on every press. Require a real Key enum value in either case.
+        string enumName = leaf.Length == 1 && char.IsDigit(leaf[0])
+            ? "Digit" + leaf : leaf;
+        if (!Enum.TryParse(enumName, true, out Key physicalKey) || physicalKey == Key.None ||
+            !Enum.IsDefined(typeof(Key), physicalKey))
+            return null;
+        string canonicalKey = physicalKey.ToString();
+        return "<Keyboard>/" + (canonicalKey.StartsWith("Digit", StringComparison.Ordinal) &&
+            canonicalKey.Length == 6 ? canonicalKey[5..] : canonicalKey.ToLowerInvariant());
     }
 }

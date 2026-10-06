@@ -18,6 +18,7 @@ $expectedCanonical = [IO.Path]::GetFullPath($expectedStateDirectory).TrimEnd('\'
 if (-not [string]::Equals($actualCanonical, $expectedCanonical, [StringComparison]::OrdinalIgnoreCase)) {
     throw 'The uninstaller script is outside the expected Bop It Access state directory.'
 }
+if (-not (Test-Path -LiteralPath $stateDirectory -PathType Container)) { exit 0 }
 $stateInfo = Get-Item -LiteralPath $stateDirectory -Force
 if (($stateInfo.Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
     throw 'The Bop It Access state directory is a reparse point. Refusing recursive cleanup.'
@@ -62,17 +63,62 @@ else {
     }
 }
 
-# PowerShell has loaded the script by this point, so its file can be removed
-# together with the stable EXE and installer state. Retry briefly for antivirus
-# scanners that release the just-closed executable a moment later.
-for ($attempt = 0; $attempt -lt 5; $attempt++) {
-    try {
-        Remove-Item -LiteralPath $stateDirectory -Recurse -Force
-        exit 0
+# Another installer may have opened between the UI closing and this helper
+# acquiring its cleanup turn. Never delete state underneath a running installer
+# or a newer installation which has reused this folder.
+$cleanupMutex = [Threading.Mutex]::new($false, 'Global\BopItAccessInstaller')
+$cleanupLocked = $false
+try {
+    try { $cleanupLocked = $cleanupMutex.WaitOne(0) }
+    catch [Threading.AbandonedMutexException] { $cleanupLocked = $true }
+    if (-not $cleanupLocked) { exit 0 }
+    if (-not (Test-Path -LiteralPath $stateDirectory -PathType Container)) { exit 0 }
+    $manifestPath = Join-Path $stateDirectory 'install-manifest.json'
+    $cleanupManifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
+    $completedProperty = $cleanupManifest.PSObject.Properties['UninstallCompleted']
+    $removedProperty = $cleanupManifest.PSObject.Properties['UninstallFilesRemoved']
+    if ($null -eq $completedProperty -or $null -eq $removedProperty -or
+        $completedProperty.Value -isnot [bool] -or -not $completedProperty.Value -or
+        $removedProperty.Value -isnot [bool] -or -not $removedProperty.Value) {
+        throw 'Uninstall cleanup has not completed. The launcher and retry records will be preserved.'
     }
-    catch {
-        Start-Sleep -Milliseconds 300
+    $manifestState = [IO.Path]::GetFullPath([string]$cleanupManifest.StateDirectory).TrimEnd('\')
+    if (-not [string]::Equals($manifestState, $expectedCanonical, [StringComparison]::OrdinalIgnoreCase)) {
+        throw 'The cleanup manifest refers to another state folder.'
     }
-}
+    # Inspect every descendant before recursive deletion without following
+    # junctions or symbolic links in the installer-owned state tree.
+    $pendingFolders = [Collections.Generic.Stack[string]]::new()
+    $pendingFolders.Push($actualCanonical)
+    while ($pendingFolders.Count -gt 0) {
+        $currentFolder = $pendingFolders.Pop()
+        foreach ($entry in [IO.Directory]::EnumerateFileSystemEntries($currentFolder)) {
+            $attributes = [IO.File]::GetAttributes($entry)
+            if (($attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+                throw "Uninstall cleanup encountered a linked file or folder: $entry"
+            }
+            if (($attributes -band [IO.FileAttributes]::Directory) -ne 0) {
+                $pendingFolders.Push($entry)
+            }
+        }
+    }
 
-throw "Bop It Access was removed, but its uninstall launcher folder could not be cleaned: $stateDirectory"
+    # PowerShell has loaded the script by this point, so its file can be removed
+    # together with the stable EXE and installer state. Retry briefly for antivirus
+    # scanners that release the just-closed executable a moment later.
+    for ($attempt = 0; $attempt -lt 5; $attempt++) {
+        try {
+            Remove-Item -LiteralPath $stateDirectory -Recurse -Force
+            exit 0
+        }
+        catch {
+            Start-Sleep -Milliseconds 300
+        }
+    }
+
+    throw "Bop It Access was removed, but its uninstall launcher folder could not be cleaned: $stateDirectory"
+}
+finally {
+    if ($cleanupLocked) { $cleanupMutex.ReleaseMutex() }
+    $cleanupMutex.Dispose()
+}

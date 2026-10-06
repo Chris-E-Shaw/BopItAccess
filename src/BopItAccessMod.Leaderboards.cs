@@ -17,6 +17,7 @@ public sealed partial class BopItAccessMod
     private string? _leaderboardContext;
     private string? _leaderboardRowsSignature;
     private List<string> _leaderboardCachedRows = new();
+    private string _leaderboardCachedRowsSignature = string.Empty;
     private long _nextLeaderboardRowsPollAt;
     private int _leaderboardRowIndex;
     private int _leaderboardSelectedId;
@@ -115,21 +116,22 @@ public sealed partial class BopItAccessMod
         }
 
         long now = Environment.TickCount64;
-        string context = ReadCombinedLeaderboardContext(panel);
         string? track = ReadLeaderboardTrack(panel.TitleImage, panel.LeaderboardManager, panel.app);
         string? device = ReadLeaderboardDevice(panel.deviceContainer, panel.LeaderboardManager);
         string group = ReadLeaderboardGroup(panel);
         string date = ReadLeaderboardDate(panel);
+        string context = ReadCombinedLeaderboardContext(panel, track, device, group, date);
         (int focusedId, string? focusedText, int focusedIndex, int focusedCount) =
             ReadLeaderboardFocusedItem(panel.transform);
         bool focusChanged = focusedId != _leaderboardSelectedId;
         if (now >= _nextLeaderboardRowsPollAt || _leaderboardContext == null)
         {
             _leaderboardCachedRows = ReadCombinedLeaderboardRows(panel);
+            _leaderboardCachedRowsSignature = string.Join("\n", _leaderboardCachedRows);
             _nextLeaderboardRowsPollAt = now + 100;
         }
         List<string> rows = _leaderboardCachedRows;
-        string rowSignature = string.Join("\n", rows);
+        string rowSignature = _leaderboardCachedRowsSignature;
         bool loading = IsLeaderboardLoading(panel.loader);
         bool contextChanged = !string.Equals(context, _leaderboardContext, StringComparison.Ordinal);
         bool rowsChanged = !string.Equals(rowSignature, _leaderboardRowsSignature, StringComparison.Ordinal);
@@ -285,10 +287,11 @@ public sealed partial class BopItAccessMod
         if (now >= _nextLeaderboardRowsPollAt || _leaderboardContext == null)
         {
             _leaderboardCachedRows = ReadPartyLeaderboardRows(panel);
+            _leaderboardCachedRowsSignature = string.Join("\n", _leaderboardCachedRows);
             _nextLeaderboardRowsPollAt = now + 100;
         }
         List<string> rows = _leaderboardCachedRows;
-        string rowSignature = string.Join("\n", rows);
+        string rowSignature = _leaderboardCachedRowsSignature;
         bool loading = IsLeaderboardLoading(panel.loader);
         bool contextChanged = !string.Equals(context, _leaderboardContext, StringComparison.Ordinal);
         bool rowsChanged = !string.Equals(rowSignature, _leaderboardRowsSignature, StringComparison.Ordinal);
@@ -393,14 +396,11 @@ public sealed partial class BopItAccessMod
         return true;
     }
 
-    private static string ReadCombinedLeaderboardContext(CombinedLeaderboardPanel panel)
+    private static string ReadCombinedLeaderboardContext(CombinedLeaderboardPanel panel,
+        string? track, string? device, string group, string date)
     {
         string location = panel.Mode == CombinedLeaderboardMode.Game
             ? L("Solo leaderboard") : L("Leaderboards");
-        string? track = ReadLeaderboardTrack(panel.TitleImage, panel.LeaderboardManager, panel.app);
-        string? device = ReadLeaderboardDevice(panel.deviceContainer, panel.LeaderboardManager);
-        string group = ReadLeaderboardGroup(panel);
-        string date = ReadLeaderboardDate(panel);
         string offline = panel.LeaderboardManager != null &&
             !panel.LeaderboardManager.isOnline ? L("offline") : string.Empty;
         return string.Join(L(", "), new[] { location, L(track ?? string.Empty),
@@ -794,6 +794,7 @@ public sealed partial class BopItAccessMod
         _leaderboardContext = null;
         _leaderboardRowsSignature = null;
         _leaderboardCachedRows.Clear();
+        _leaderboardCachedRowsSignature = string.Empty;
         _nextLeaderboardRowsPollAt = 0;
         _leaderboardRowIndex = 0;
         _leaderboardSelectedId = 0;

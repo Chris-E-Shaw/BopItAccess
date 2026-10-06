@@ -33,7 +33,7 @@ public sealed partial class BopItAccessMod
     // True means this panel owns the current screen, even when it has no selected button.
     private bool ReadCalibrationFocus()
     {
-        _activeCalibrationMod = this;
+        Volatile.Write(ref _activeCalibrationMod, this);
         if (_calibrationPanel == null)
         {
             long now = Environment.TickCount64;
@@ -183,7 +183,7 @@ public sealed partial class BopItAccessMod
 
     internal static void NoteCalibrationStarted(CalibratePanel panel)
     {
-        BopItAccessMod? mod = _activeCalibrationMod;
+        BopItAccessMod? mod = Volatile.Read(ref _activeCalibrationMod);
         if (mod == null || !mod.IsObservedCalibrationPanel(panel))
             return;
         Volatile.Write(ref mod._calibrationFinalBeatObserved, 0);
@@ -197,7 +197,7 @@ public sealed partial class BopItAccessMod
     internal static void NoteCalibrationMarker(CalibratePanel panel,
         Il2CppFMOD.Studio.TIMELINE_MARKER_PROPERTIES marker)
     {
-        BopItAccessMod? mod = _activeCalibrationMod;
+        BopItAccessMod? mod = Volatile.Read(ref _activeCalibrationMod);
         if (mod == null || !mod.IsObservedCalibrationPanel(panel) ||
             panel.State != CalibrateState.Calibrate)
             return;
@@ -236,7 +236,7 @@ public sealed partial class BopItAccessMod
     internal static void NoteCalibrationInput(CalibratePanel panel,
         CalibrateState previousState, int previousCount)
     {
-        BopItAccessMod? mod = _activeCalibrationMod;
+        BopItAccessMod? mod = Volatile.Read(ref _activeCalibrationMod);
         if (mod == null || !mod.IsObservedCalibrationPanel(panel) ||
             previousState != CalibrateState.Calibrate ||
             panel.playerInputTimes == null || panel.playerInputTimes.Count <= previousCount)
@@ -253,7 +253,7 @@ public sealed partial class BopItAccessMod
 
     internal static void NoteCalibrationEnded(CalibratePanel panel)
     {
-        BopItAccessMod? mod = _activeCalibrationMod;
+        BopItAccessMod? mod = Volatile.Read(ref _activeCalibrationMod);
         if (mod == null || !mod.IsObservedCalibrationPanel(panel) ||
             panel.State != CalibrateState.Calibrate)
             return;

@@ -16,9 +16,7 @@ public sealed partial class BopItAccessMod
     private AddedToggleSpeechControlRow? _toggleSpeechControlRow;
     private InputActionRebindingExtensions.RebindingOperation? _toggleSpeechRebindOperation;
     private InputRebindingManager? _toggleSpeechRebindManager;
-    private InputActionMap? _toggleSpeechRebindUiMap;
-    private bool _toggleSpeechRebindUiMapWasEnabled;
-    private bool _toggleSpeechRebindActionWasEnabled;
+    private ControlRebindInputState? _toggleSpeechRebindInputState;
     private int _toggleSpeechRebindIndex;
     private string? _toggleSpeechRebindOriginalPath;
     private long _nextToggleSpeechControlErrorAt;
@@ -269,7 +267,7 @@ public sealed partial class BopItAccessMod
                 LocalizeBindingDisplay(binding));
             if (rebinding)
                 message += L(".") + " " + L("Listening for input");
-            QueueSpeech(WithControlsIntroduction(message));
+            QueueFocusSpeech(WithControlsIntroduction(message));
             return;
         }
 
@@ -317,8 +315,6 @@ public sealed partial class BopItAccessMod
             }
             try
             {
-                if (wasRebinding)
-                    RestoreToggleSpeechOriginalOverride();
                 CancelToggleSpeechControlRebinding(false);
             }
             catch (Exception cleanup)
@@ -342,7 +338,6 @@ public sealed partial class BopItAccessMod
             _toggleSpeechControlRow = null;
             if (_toggleSpeechRebindOperation != null)
             {
-                RestoreToggleSpeechOriginalOverride();
                 CancelToggleSpeechControlRebinding(false);
             }
             return;
@@ -355,7 +350,6 @@ public sealed partial class BopItAccessMod
         {
             if (_toggleSpeechRebindOperation != null)
             {
-                RestoreToggleSpeechOriginalOverride();
                 CancelToggleSpeechControlRebinding(false);
             }
             return;
@@ -406,17 +400,12 @@ public sealed partial class BopItAccessMod
         string layout = gamepad ? "<Gamepad>" : "<Keyboard>";
         string cancelPath = gamepad ? "<Gamepad>/buttonEast" : "<Keyboard>/escape";
         string? original = action.bindings[index].overridePath;
-        InputActionMap? uiMap = manager.inputActions?.FindActionMap("UI", false);
-        bool uiWasEnabled = uiMap?.enabled ?? false;
-        bool actionWasEnabled = action.enabled;
-        if (actionWasEnabled)
-            action.Disable();
-        if (uiWasEnabled)
-            uiMap!.Disable();
+        ControlRebindInputState? inputState = null;
 
         InputActionRebindingExtensions.RebindingOperation? operation = null;
         try
         {
+            inputState = PauseControlRebindInputs(manager, action);
             operation = InputActionRebindingExtensions.PerformInteractiveRebinding(action, index);
             operation.WithTargetBinding(index)
                 .WithControlsHavingToMatchPath(layout)
@@ -428,20 +417,14 @@ public sealed partial class BopItAccessMod
                 .Start();
             _toggleSpeechRebindOperation = operation;
             _toggleSpeechRebindManager = manager;
-            _toggleSpeechRebindUiMap = uiMap;
-            _toggleSpeechRebindUiMapWasEnabled = uiWasEnabled;
-            _toggleSpeechRebindActionWasEnabled = actionWasEnabled;
+            _toggleSpeechRebindInputState = inputState;
             _toggleSpeechRebindIndex = index;
             _toggleSpeechRebindOriginalPath = original;
             WriteStatus($"Rebinding Toggle Speech on {device}, binding {index}.");
         }
         catch
         {
-            operation?.Dispose();
-            if (uiWasEnabled)
-                uiMap!.Enable();
-            if (actionWasEnabled)
-                action.Enable();
+            ReleaseControlRebindingCapture(operation, inputState);
             throw;
         }
     }
@@ -475,8 +458,7 @@ public sealed partial class BopItAccessMod
 
         // The operation has already applied its override to the targeted
         // keyboard or controller binding. Persist only that binding.
-        PlayerPrefs.SetString(index == 1 ? ToggleSpeechGamepadKey : ToggleSpeechKeyboardKey, path!);
-        SaveModPreferencesAndConfig();
+        SaveReboundModControlPreference(index == 1 ? ToggleSpeechGamepadKey : ToggleSpeechKeyboardKey, path!);
         ReleaseToggleSpeechControlRebinding();
         InputRebindingEvents.RefreshPrompts?.Invoke();
         RefreshToggleSpeechControlPrompts();
@@ -488,49 +470,6 @@ public sealed partial class BopItAccessMod
         QueueControlAssignmentSpeech(_lastControlsBinding, "Toggle Speech");
         if (!_speechEnabled)
             AnnounceSpeechToggleRecoveryNow();
-    }
-
-    private bool IsToggleSpeechBindingInUse(InputRebindingManager manager,
-        string path)
-    {
-        // The toggle operates on every screen, so sharing a binding with
-        // another mod control would make that action mute speech as well.
-        InputAction[] modActions =
-            { EnsureDescriptionAction(), EnsureScoreAction(), EnsureSpeakHintsAction() };
-        foreach (InputAction action in modActions)
-        {
-            for (int i = 0; i < action.bindings.Count; i++)
-            {
-                if (ToggleSpeechPathsMatch(action.bindings[i].effectivePath, path))
-                    return true;
-            }
-        }
-
-        string[] essential = { "Bop", "Twist", "Pull", "Spin", "Flick",
-            "Submit", "Back", "Cancel", "ChangeGroup", "ChangeDateRange",
-            "ResetGyro", "AutoPlay", "DebugMenu", "Menu", "Navigate" };
-        // The active PlayerInput asset can carry the player's native binding
-        // overrides. Check it as well as the source asset before accepting a
-        // global toggle binding.
-        InputActionAsset?[] assets =
-            { manager.playerInput?.actions, manager.inputActions };
-        foreach (InputActionAsset? asset in assets)
-        {
-            if (asset == null)
-                continue;
-            foreach (string name in essential)
-            {
-                InputAction? action = asset.FindAction(name, false);
-                if (action == null)
-                    continue;
-                for (int i = 0; i < action.bindings.Count; i++)
-                {
-                    if (ToggleSpeechPathsMatch(action.bindings[i].effectivePath, path))
-                        return true;
-                }
-            }
-        }
-        return false;
     }
 
     private void ResetToggleSpeechControlBindings()
@@ -564,6 +503,11 @@ public sealed partial class BopItAccessMod
     private void CancelToggleSpeechControlRebinding(bool announce = true)
     {
         bool wasActive = _toggleSpeechRebindOperation != null;
+        if (wasActive)
+        {
+            try { RestoreToggleSpeechOriginalOverride(); }
+            catch (Exception ex) { WriteStatus("Could not restore ToggleSpeech binding: " + ex.Message); }
+        }
         ReleaseToggleSpeechControlRebinding();
         if (wasActive)
             _lastControlsRebinding = false;
@@ -574,28 +518,13 @@ public sealed partial class BopItAccessMod
     private void ReleaseToggleSpeechControlRebinding()
     {
         InputActionRebindingExtensions.RebindingOperation? operation = _toggleSpeechRebindOperation;
-        InputActionMap? uiMap = _toggleSpeechRebindUiMap;
-        bool uiWasEnabled = _toggleSpeechRebindUiMapWasEnabled;
-        bool actionWasEnabled = _toggleSpeechRebindActionWasEnabled;
+        ControlRebindInputState? inputState = _toggleSpeechRebindInputState;
         _toggleSpeechRebindOperation = null;
         _toggleSpeechRebindManager = null;
-        _toggleSpeechRebindUiMap = null;
-        _toggleSpeechRebindUiMapWasEnabled = false;
-        _toggleSpeechRebindActionWasEnabled = false;
+        _toggleSpeechRebindInputState = null;
         _toggleSpeechRebindIndex = 0;
         _toggleSpeechRebindOriginalPath = null;
-        if (operation != null)
-        {
-            if (operation.started && !operation.completed && !operation.canceled)
-                operation.Cancel();
-            operation.Dispose();
-        }
-        if (uiMap != null && uiWasEnabled)
-            uiMap.Enable();
-        if (_toggleSpeechAction != null && actionWasEnabled)
-            _toggleSpeechAction.Enable();
-        if (operation != null)
-            _toggleSpeechSuppressPressThroughFrame = Time.frameCount + 1;
+        ReleaseControlRebindingCapture(operation, inputState);
     }
 
     private void RestoreToggleSpeechOriginalOverride()
@@ -622,18 +551,6 @@ public sealed partial class BopItAccessMod
         {
             WriteStatus("Could not refresh Toggle Speech prompt: " + ex.Message);
         }
-    }
-
-    private static bool ToggleSpeechPathsMatch(string? a, string? b)
-    {
-        if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b))
-            return false;
-        if (string.Equals(a, b, StringComparison.OrdinalIgnoreCase))
-            return true;
-        string? controlA = InputSystem.FindControl(a)?.path;
-        string? controlB = InputSystem.FindControl(b)?.path;
-        return controlA != null && controlB != null &&
-            string.Equals(controlA, controlB, StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed record AddedToggleSpeechControlRow(

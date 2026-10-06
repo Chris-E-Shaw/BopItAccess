@@ -88,8 +88,11 @@ public sealed partial class BopItAccessMod
                 }
                 MainMenuUIManager? main = _mainMenu ??
                     UnityEngine.Object.FindFirstObjectByType<MainMenuUIManager>();
-                _settingsConfigBindingManager ??= main?.controlsPanel?
-                    .GetComponentInChildren<InputRebindingManager>(true);
+                // Unity's destroyed-object check is different from ??=;
+                // reacquire a panel manager if its previous scene was unloaded.
+                if (_settingsConfigBindingManager == null)
+                    _settingsConfigBindingManager = main?.controlsPanel?
+                        .GetComponentInChildren<InputRebindingManager>(true);
                 InputRebindingManager? manager = _settingsConfigBindingManager;
                 if (manager == null) return;
                 if (!NativeConfigBindingsReady(manager))

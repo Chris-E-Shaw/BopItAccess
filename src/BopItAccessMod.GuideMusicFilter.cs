@@ -27,6 +27,11 @@ public sealed partial class BopItAccessMod
             return;
         }
 
+        RestoreGuideMusicFilter();
+    }
+
+    private void RestoreGuideMusicFilter()
+    {
         if (!_guideMusicFilterApplied)
             return;
         try
@@ -51,10 +56,10 @@ public sealed partial class BopItAccessMod
 
     private void UpdateGuideMusicFilter()
     {
-        if (!_guideMusicFilterRequested || _guideMusicFilterApplied ||
-            Environment.TickCount64 < _nextGuideMusicFilterAttemptAt)
+        long now = Environment.TickCount64;
+        if (!_guideMusicFilterRequested || now < _nextGuideMusicFilterAttemptAt)
             return;
-        _nextGuideMusicFilterAttemptAt = Environment.TickCount64 + 1000;
+        _nextGuideMusicFilterAttemptAt = now + 1000;
 
         try
         {
@@ -65,6 +70,15 @@ public sealed partial class BopItAccessMod
             EventInstance instance = music.menuMusicInstance;
             if (!instance.isValid())
                 return;
+
+            // A scene or menu music transition may replace the FMOD event
+            // while the guide remains open. Reapply the filter to that event.
+            if (_guideMusicFilterApplied)
+            {
+                if (_guideFilteredMusicInstance.Equals(instance))
+                    return;
+                RestoreGuideMusicFilter();
+            }
 
             PARAMETER_ID parameter = music.filterParamID;
             RESULT read = instance.getParameterByID(parameter,

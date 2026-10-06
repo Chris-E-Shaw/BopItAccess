@@ -629,6 +629,8 @@ def main() -> None:
                         default=ROOT / "tools" / "argos-packages")
     parser.add_argument("--finalize-only", action="store_true",
                         help="Apply curated score terms to existing JSON files")
+    parser.add_argument("--retranslate", action="store_true",
+                        help="Replace existing draft translations instead of preserving them")
     args = parser.parse_args()
     destination = ROOT / "src" / "locales"
     if args.finalize_only:
@@ -650,7 +652,12 @@ def main() -> None:
         translation = argostranslate.translate.get_translation_from_codes(
             "en", LOCALES[locale])
         terms = glossary.get(locale, {})
-        catalog = {}
+        path = destination / f"{locale}.json"
+        # Adding new speech keys must not downgrade previously reviewed
+        # translations to a fresh offline draft. Explicit regeneration is
+        # still available for deliberate authoring experiments.
+        catalog = (json.loads(path.read_text(encoding="utf-8"))
+                   if path.exists() and not args.retranslate else {})
         for index, source in enumerate(sorted(keys | set(terms))):
             result = MANUAL[locale].get(source)
             if result is None:
@@ -660,6 +667,8 @@ def main() -> None:
                     result = STAGE_PROSE[locale][stage]
             if result is None:
                 result = native_value(source, terms)
+            if result is None:
+                result = catalog.get(source)
             if result is None:
                 if source in {"SAPI", "OneCore", "NVDA", "JAWS",
                               "UI Automation", "ZDSR", "ZoomText",
@@ -676,7 +685,6 @@ def main() -> None:
             if index % 75 == 0:
                 print(locale, index, "/", len(keys | set(terms)), flush=True)
         finalize_catalog(locale, catalog)
-        path = destination / f"{locale}.json"
         path.write_bytes((json.dumps(catalog, ensure_ascii=False,
             indent=2) + "\n").encode("utf-8"))
         print(f"{locale}: wrote {len(catalog)} strings to {path}", flush=True)

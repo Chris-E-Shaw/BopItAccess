@@ -39,6 +39,8 @@ public sealed partial class BopItAccessMod
 
     public override void OnUpdate()
     {
+        if (_modStopping)
+            return;
         UpdateFirstRunNativeAudioDefaults();
         UpdateSettingsConfigStartup();
         BeginMenuInputDiagnosticFrame();
@@ -564,10 +566,6 @@ public sealed partial class BopItAccessMod
 
     private void RemoveAddedLeaderboardControls()
     {
-        if (_resetGyroRebindOperation != null)
-            RestoreResetGyroOriginalOverride();
-        if (_changeSpeechOutputRebindOperation != null)
-            RestoreChangeSpeechOutputOriginalOverride();
         CancelDescriptionControlRebinding(false);
         CancelResetGyroControlRebinding(false);
         CancelScoreControlRebinding(false);

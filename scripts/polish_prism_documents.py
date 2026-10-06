@@ -1,13 +1,15 @@
-"""Review the short Prism instructions that machine translation fragments around HTML tags.
+"""Legacy v0.9 migration for short Prism installation instructions.
 
-Run after translate_documents.py. The backend names and file locations here are
-deliberately written as complete sentences, so split HTML or Markdown tokens
-cannot change the meaning of an installation instruction.
+This preserves the original migration text for historical authoring. Its
+backend descriptions and positional replacements predate later OneCore and
+installer changes. Do not use it to update current project documents.
+An explicit --legacy-migration flag is required to run the archived workflow.
 """
 
 from __future__ import annotations
 
 import html
+import argparse
 import re
 from pathlib import Path
 
@@ -204,6 +206,12 @@ def polish_locale(locale: str) -> None:
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--legacy-migration", action="store_true",
+                        help="Apply historical v0.9 text, replacing current documentation")
+    args = parser.parse_args()
+    if not args.legacy_migration:
+        parser.error("This archived migration requires --legacy-migration; it is not a current documentation updater")
     for language in COPY:
         polish_locale(language)
         print(f"{language}: polished Prism documentation", flush=True)

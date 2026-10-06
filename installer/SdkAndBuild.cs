@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Collections.Concurrent;
 
 namespace BopItAccess.Installer;
 
@@ -13,16 +12,31 @@ internal static class SdkAndBuild
         };
         var envRoot = Environment.GetEnvironmentVariable("DOTNET_ROOT");
         if (!string.IsNullOrWhiteSpace(envRoot)) locations.Add(envRoot);
+        var x64Root = Environment.GetEnvironmentVariable("DOTNET_ROOT_X64");
+        if (!string.IsNullOrWhiteSpace(x64Root)) locations.Add(x64Root);
         foreach (var location in locations)
             if (HasSdk(location)) return Path.Combine(location, "dotnet.exe");
         return null;
     }
 
-    private static bool HasSdk(string root) =>
-        File.Exists(Path.Combine(root, "dotnet.exe")) &&
-        Directory.Exists(Path.Combine(root, "sdk", "6.0.428")) &&
-        Directory.Exists(Path.Combine(root, "packs", "Microsoft.NETCore.App.Ref")) &&
-        Directory.EnumerateDirectories(Path.Combine(root, "packs", "Microsoft.NETCore.App.Ref"), "6.0.*").Any();
+    private static bool HasSdk(string root)
+    {
+        try
+        {
+            string sdks = Path.Combine(root, "sdk");
+            string packs = Path.Combine(root, "packs", "Microsoft.NETCore.App.Ref");
+            string runtimes = Path.Combine(root, "shared", "Microsoft.NETCore.App");
+            return File.Exists(Path.Combine(root, "dotnet.exe")) && Directory.Exists(sdks) &&
+                Directory.EnumerateDirectories(sdks).Any(path =>
+                    Version.TryParse(Path.GetFileName(path), out Version? version) && version.Major >= 6) &&
+                Directory.Exists(packs) && Directory.EnumerateDirectories(packs, "6.0.*")
+                    .Any(path => File.Exists(Path.Combine(path, "ref", "net6.0", "System.Runtime.dll"))) &&
+                Directory.Exists(runtimes) && Directory.EnumerateDirectories(runtimes, "6.0.*")
+                    .Any(path => File.Exists(Path.Combine(path, "System.Private.CoreLib.dll")));
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or ArgumentException)
+        { return false; }
+    }
 
     internal static async Task<(string Dotnet, bool AddedPortableSdk)> EnsureSdkAsync(
         string gamePath, string tempRoot, Action<string> log,
@@ -31,13 +45,13 @@ internal static class SdkAndBuild
         var portableRoot = Path.Combine(gamePath, "dotnet");
         if (HasSdk(portableRoot))
         {
-            log("Verified portable .NET 6 SDK and targeting pack in the game folder.");
+            log("Verified a compatible portable SDK with the .NET 6 runtime and targeting pack in the game folder.");
             return (Path.Combine(portableRoot, "dotnet.exe"), false);
         }
         var installed = FindInstalledSdk();
         if (installed is not null)
         {
-            log($"Verified installed .NET 6 SDK and targeting pack: {installed}");
+            log($"Verified an installed compatible SDK with the .NET 6 runtime and targeting pack: {installed}");
             return (installed, false);
         }
         if (Directory.Exists(portableRoot))
@@ -101,12 +115,17 @@ internal static class SdkAndBuild
         info.Environment["DOTNET_ROOT"] = Path.GetDirectoryName(dotnet)!;
         info.Environment["DOTNET_CLI_TELEMETRY_OPTOUT"] = "1";
         using var process = Process.Start(info) ?? throw new InvalidOperationException("Could not start the .NET compiler.");
-        var output = new ConcurrentQueue<string>();
+        var output = new Queue<string>(4);
+        var outputLock = new object();
         async Task DrainAsync(StreamReader reader)
         {
             while (await reader.ReadLineAsync(cancellation) is { } line)
             {
-                output.Enqueue(line);
+                lock (outputLock)
+                {
+                    if (output.Count == 4) output.Dequeue();
+                    output.Enqueue(line);
+                }
                 log("Build: " + line);
             }
         }
@@ -117,12 +136,16 @@ internal static class SdkAndBuild
         }
         catch (OperationCanceledException)
         {
-            if (!process.HasExited) process.Kill(entireProcessTree: true);
+            try { if (!process.HasExited) process.Kill(entireProcessTree: true); }
+            catch (InvalidOperationException) when (process.HasExited) { }
+            // Kill signals termination; wait for it before rollback/temp
+            // cleanup touches compiler-owned outputs and open file handles.
+            await process.WaitForExitAsync(CancellationToken.None);
             throw;
         }
         if (process.ExitCode != 0)
             throw new InvalidOperationException("Source build failed. Review the build messages in the status log. " +
-                string.Join(" ", output.TakeLast(4)));
+                string.Join(" ", output));
         var dll = Path.Combine(sourceRoot, "src", "bin", "Release", "net6.0", "BopItAccess.dll");
         if (!File.Exists(dll)) throw new FileNotFoundException("The compiler succeeded but did not produce BopItAccess.dll.", dll);
         log("Source build completed.");

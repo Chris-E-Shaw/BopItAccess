@@ -268,9 +268,15 @@ public sealed partial class BopItAccessMod
         if (label == null)
             return (control.GetInstanceID(), null, null, -1, 0);
 
+        int focusedId = control.GetInstanceID();
+        string type = ReadTrackSelectControlType(control);
+        // The index is spoken only on panel entry or a focus change. The
+        // visible label can still change on the same control, so read it above.
+        if (_trackSelectWasVisible && focusedId == _lastTrackSelectFocusedId)
+            return (focusedId, label, type, -1, 0);
+
         int index = -1;
         int count = 0;
-        int focusedId = control.GetInstanceID();
         foreach (Selectable candidate in panel.GetComponentsInChildren<Selectable>(true))
         {
             if (!candidate.gameObject.activeInHierarchy || !candidate.interactable ||
@@ -282,7 +288,7 @@ public sealed partial class BopItAccessMod
             count++;
         }
 
-        return (focusedId, label, ReadTrackSelectControlType(control), index, count);
+        return (focusedId, label, type, index, count);
     }
 
     private static string ReadTrackSelectControlType(Selectable control)

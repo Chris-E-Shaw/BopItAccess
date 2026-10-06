@@ -11,7 +11,7 @@ public sealed partial class BopItAccessMod
         { "Automatic", "Keyboard", "Controller", "Both" };
     private string _hintsType = "Automatic";
     private HintDevice _lastHintInputDevice = HintDevice.Keyboard;
-    private readonly Dictionary<string, bool> _hintAnalogWasActive = new();
+    private readonly Dictionary<InputControl, bool> _hintAnalogWasActive = new();
 
     private enum HintDevice { Keyboard, Controller, Both }
 
@@ -107,15 +107,14 @@ public sealed partial class BopItAccessMod
             AxisControl axis => Math.Abs(axis.ReadValue()) > 0.4f,
             _ => false
         };
-        string path = control.path;
-        bool previous = _hintAnalogWasActive.TryGetValue(path, out bool wasActive) &&
+        bool previous = _hintAnalogWasActive.TryGetValue(control, out bool wasActive) &&
             wasActive;
-        _hintAnalogWasActive[path] = active;
+        _hintAnalogWasActive[control] = active;
         return active && !previous;
     }
 
     private string FormatHintPress(string keyboard, string controller,
-        string purpose, string controllerVerb = "press")
+        string purpose)
     {
         // The binding comes first so a listener hears the control before its
         // effect. The hint's purpose then explains what that input does.
@@ -133,19 +132,6 @@ public sealed partial class BopItAccessMod
         };
     }
 
-    private string FormatHintUse(string keyboard, string controller, string purpose)
-    {
-        string action = L(purpose.Trim().TrimEnd('.'));
-        string keyboardName = LocalizeBindingDisplay(keyboard);
-        string controllerName = LocalizeBindingDisplay(controller);
-        return EffectiveHintDevice switch
-        {
-            HintDevice.Keyboard => LF("{0}, {1}.",
-                keyboardName, action),
-            HintDevice.Controller => LF("{0}, {1}.",
-                controllerName, action),
-            _ => LF("{0} on keyboard; {1} on controller, {2}.",
-                keyboardName, controllerName, action)
-        };
-    }
+    private string FormatHintUse(string keyboard, string controller, string purpose) =>
+        FormatHintPress(keyboard, controller, purpose);
 }

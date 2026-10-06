@@ -16,9 +16,7 @@ public sealed partial class BopItAccessMod
     private AddedScoreControlRow? _scoreControlRow;
     private InputActionRebindingExtensions.RebindingOperation? _scoreRebindOperation;
     private InputRebindingManager? _scoreRebindManager;
-    private InputActionMap? _scoreRebindUiMap;
-    private bool _scoreRebindUiMapWasEnabled;
-    private bool _scoreRebindActionWasEnabled;
+    private ControlRebindInputState? _scoreRebindInputState;
     private int _scoreRebindIndex;
     private string? _scoreRebindOriginalPath;
     private long _nextScoreControlErrorAt;
@@ -259,8 +257,6 @@ public sealed partial class BopItAccessMod
             }
             try
             {
-                if (wasRebinding)
-                    RestoreScoreOriginalOverride();
                 CancelScoreControlRebinding(false);
             }
             catch (Exception cleanup)
@@ -284,7 +280,6 @@ public sealed partial class BopItAccessMod
             _scoreControlRow = null;
             if (_scoreRebindOperation != null)
             {
-                RestoreScoreOriginalOverride();
                 CancelScoreControlRebinding(false);
             }
             return;
@@ -297,7 +292,6 @@ public sealed partial class BopItAccessMod
         {
             if (_scoreRebindOperation != null)
             {
-                RestoreScoreOriginalOverride();
                 CancelScoreControlRebinding(false);
             }
             return;
@@ -348,17 +342,12 @@ public sealed partial class BopItAccessMod
         string layout = gamepad ? "<Gamepad>" : "<Keyboard>";
         string cancelPath = gamepad ? "<Gamepad>/buttonEast" : "<Keyboard>/escape";
         string? original = action.bindings[index].overridePath;
-        InputActionMap? uiMap = manager.inputActions?.FindActionMap("UI", false);
-        bool uiWasEnabled = uiMap?.enabled ?? false;
-        bool actionWasEnabled = action.enabled;
-        if (actionWasEnabled)
-            action.Disable();
-        if (uiWasEnabled)
-            uiMap!.Disable();
+        ControlRebindInputState? inputState = null;
 
         InputActionRebindingExtensions.RebindingOperation? operation = null;
         try
         {
+            inputState = PauseControlRebindInputs(manager, action);
             operation = InputActionRebindingExtensions.PerformInteractiveRebinding(action, index);
             operation.WithTargetBinding(index)
                 .WithControlsHavingToMatchPath(layout)
@@ -370,20 +359,14 @@ public sealed partial class BopItAccessMod
                 .Start();
             _scoreRebindOperation = operation;
             _scoreRebindManager = manager;
-            _scoreRebindUiMap = uiMap;
-            _scoreRebindUiMapWasEnabled = uiWasEnabled;
-            _scoreRebindActionWasEnabled = actionWasEnabled;
+            _scoreRebindInputState = inputState;
             _scoreRebindIndex = index;
             _scoreRebindOriginalPath = original;
             WriteStatus($"Rebinding Read Score on {device}, binding {index}.");
         }
         catch
         {
-            operation?.Dispose();
-            if (uiWasEnabled)
-                uiMap!.Enable();
-            if (actionWasEnabled)
-                action.Enable();
+            ReleaseControlRebindingCapture(operation, inputState);
             throw;
         }
     }
@@ -417,8 +400,7 @@ public sealed partial class BopItAccessMod
 
         // The operation has already applied its override to the targeted
         // keyboard or controller binding. Persist only that binding.
-        PlayerPrefs.SetString(index == 1 ? ScoreGamepadKey : ScoreKeyboardKey, path!);
-        SaveModPreferencesAndConfig();
+        SaveReboundModControlPreference(index == 1 ? ScoreGamepadKey : ScoreKeyboardKey, path!);
         ReleaseScoreControlRebinding();
         InputRebindingEvents.RefreshPrompts?.Invoke();
         RefreshScoreControlPrompts();
@@ -428,33 +410,6 @@ public sealed partial class BopItAccessMod
         _controlsBindingChangedDuringRebind = false;
         WriteStatus($"Rebound Read Score to {path}.");
         QueueControlAssignmentSpeech(_lastControlsBinding, "Read Score");
-    }
-
-    private bool IsEssentialNativeScoreBinding(InputRebindingManager manager,
-        string path)
-    {
-        InputAction speakHints = EnsureSpeakHintsAction();
-        for (int i = 0; i < speakHints.bindings.Count; i++)
-            if (ScorePathsMatch(speakHints.bindings[i].effectivePath, path))
-                return true;
-
-        InputActionAsset? asset = manager.inputActions ?? manager.playerInput?.actions;
-        if (asset == null)
-            return false;
-        string[] essential = { "Bop", "Twist", "Pull", "Spin", "Flick",
-            "Submit", "Back", "Cancel" };
-        foreach (string name in essential)
-        {
-            InputAction? action = asset.FindAction(name, false);
-            if (action == null)
-                continue;
-            for (int i = 0; i < action.bindings.Count; i++)
-            {
-                if (ScorePathsMatch(action.bindings[i].effectivePath, path))
-                    return true;
-            }
-        }
-        return false;
     }
 
     private void ResetScoreControlBindings()
@@ -472,6 +427,11 @@ public sealed partial class BopItAccessMod
     private void CancelScoreControlRebinding(bool announce = true)
     {
         bool wasActive = _scoreRebindOperation != null;
+        if (wasActive)
+        {
+            try { RestoreScoreOriginalOverride(); }
+            catch (Exception ex) { WriteStatus("Could not restore Score binding: " + ex.Message); }
+        }
         ReleaseScoreControlRebinding();
         if (wasActive)
             _lastControlsRebinding = false;
@@ -482,26 +442,13 @@ public sealed partial class BopItAccessMod
     private void ReleaseScoreControlRebinding()
     {
         InputActionRebindingExtensions.RebindingOperation? operation = _scoreRebindOperation;
-        InputActionMap? uiMap = _scoreRebindUiMap;
-        bool uiWasEnabled = _scoreRebindUiMapWasEnabled;
-        bool actionWasEnabled = _scoreRebindActionWasEnabled;
+        ControlRebindInputState? inputState = _scoreRebindInputState;
         _scoreRebindOperation = null;
         _scoreRebindManager = null;
-        _scoreRebindUiMap = null;
-        _scoreRebindUiMapWasEnabled = false;
-        _scoreRebindActionWasEnabled = false;
+        _scoreRebindInputState = null;
         _scoreRebindIndex = 0;
         _scoreRebindOriginalPath = null;
-        if (operation != null)
-        {
-            if (operation.started && !operation.completed && !operation.canceled)
-                operation.Cancel();
-            operation.Dispose();
-        }
-        if (uiMap != null && uiWasEnabled)
-            uiMap.Enable();
-        if (_scoreAction != null && actionWasEnabled)
-            _scoreAction.Enable();
+        ReleaseControlRebindingCapture(operation, inputState);
     }
 
     private void RestoreScoreOriginalOverride()
@@ -528,18 +475,6 @@ public sealed partial class BopItAccessMod
         {
             WriteStatus("Could not refresh Read Score prompt: " + ex.Message);
         }
-    }
-
-    private static bool ScorePathsMatch(string? a, string? b)
-    {
-        if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b))
-            return false;
-        if (string.Equals(a, b, StringComparison.OrdinalIgnoreCase))
-            return true;
-        string? controlA = InputSystem.FindControl(a)?.path;
-        string? controlB = InputSystem.FindControl(b)?.path;
-        return controlA != null && controlB != null &&
-            string.Equals(controlA, controlB, StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed record AddedScoreControlRow(

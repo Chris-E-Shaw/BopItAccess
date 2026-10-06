@@ -16,9 +16,7 @@ public sealed partial class BopItAccessMod
     private AddedSpeakHintsControlRow? _speakHintsControlRow;
     private InputActionRebindingExtensions.RebindingOperation? _speakHintsRebindOperation;
     private InputRebindingManager? _speakHintsRebindManager;
-    private InputActionMap? _speakHintsRebindUiMap;
-    private bool _speakHintsRebindUiMapWasEnabled;
-    private bool _speakHintsRebindActionWasEnabled;
+    private ControlRebindInputState? _speakHintsRebindInputState;
     private int _speakHintsRebindIndex;
     private string? _speakHintsRebindOriginalPath;
     private long _nextSpeakHintsControlErrorAt;
@@ -295,8 +293,6 @@ public sealed partial class BopItAccessMod
             }
             try
             {
-                if (wasRebinding)
-                    RestoreSpeakHintsOriginalOverride();
                 CancelSpeakHintsControlRebinding(false);
             }
             catch (Exception cleanup)
@@ -320,7 +316,6 @@ public sealed partial class BopItAccessMod
             _speakHintsControlRow = null;
             if (_speakHintsRebindOperation != null)
             {
-                RestoreSpeakHintsOriginalOverride();
                 CancelSpeakHintsControlRebinding(false);
             }
             return;
@@ -333,7 +328,6 @@ public sealed partial class BopItAccessMod
         {
             if (_speakHintsRebindOperation != null)
             {
-                RestoreSpeakHintsOriginalOverride();
                 CancelSpeakHintsControlRebinding(false);
             }
             return;
@@ -384,17 +378,12 @@ public sealed partial class BopItAccessMod
         string layout = gamepad ? "<Gamepad>" : "<Keyboard>";
         string cancelPath = gamepad ? "<Gamepad>/buttonEast" : "<Keyboard>/escape";
         string? original = action.bindings[index].overridePath;
-        InputActionMap? uiMap = manager.inputActions?.FindActionMap("UI", false);
-        bool uiWasEnabled = uiMap?.enabled ?? false;
-        bool actionWasEnabled = action.enabled;
-        if (actionWasEnabled)
-            action.Disable();
-        if (uiWasEnabled)
-            uiMap!.Disable();
+        ControlRebindInputState? inputState = null;
 
         InputActionRebindingExtensions.RebindingOperation? operation = null;
         try
         {
+            inputState = PauseControlRebindInputs(manager, action);
             operation = InputActionRebindingExtensions.PerformInteractiveRebinding(action, index);
             operation.WithTargetBinding(index)
                 .WithControlsHavingToMatchPath(layout)
@@ -406,20 +395,14 @@ public sealed partial class BopItAccessMod
                 .Start();
             _speakHintsRebindOperation = operation;
             _speakHintsRebindManager = manager;
-            _speakHintsRebindUiMap = uiMap;
-            _speakHintsRebindUiMapWasEnabled = uiWasEnabled;
-            _speakHintsRebindActionWasEnabled = actionWasEnabled;
+            _speakHintsRebindInputState = inputState;
             _speakHintsRebindIndex = index;
             _speakHintsRebindOriginalPath = original;
             WriteStatus($"Rebinding Speak Hints on {device}, binding {index}.");
         }
         catch
         {
-            operation?.Dispose();
-            if (uiWasEnabled)
-                uiMap!.Enable();
-            if (actionWasEnabled)
-                action.Enable();
+            ReleaseControlRebindingCapture(operation, inputState);
             throw;
         }
     }
@@ -453,8 +436,7 @@ public sealed partial class BopItAccessMod
 
         // The operation has already applied its override to the targeted
         // keyboard or controller binding. Persist only that binding.
-        PlayerPrefs.SetString(index == 1 ? SpeakHintsGamepadKey : SpeakHintsKeyboardKey, path!);
-        SaveModPreferencesAndConfig();
+        SaveReboundModControlPreference(index == 1 ? SpeakHintsGamepadKey : SpeakHintsKeyboardKey, path!);
         ReleaseSpeakHintsControlRebinding();
         InputRebindingEvents.RefreshPrompts?.Invoke();
         RefreshSpeakHintsControlPrompts();
@@ -464,53 +446,6 @@ public sealed partial class BopItAccessMod
         _controlsBindingChangedDuringRebind = false;
         WriteStatus($"Rebound Speak Hints to {path}.");
         QueueControlAssignmentSpeech(_lastControlsBinding, "Speak Hints");
-    }
-
-    private bool IsSpeakHintsBindingInUse(InputRebindingManager manager,
-        string path)
-    {
-        InputAction[] modActions =
-            { EnsureDescriptionAction(), EnsureScoreAction(), EnsureToggleSpeechAction() };
-        foreach (InputAction action in modActions)
-        {
-            for (int i = 0; i < action.bindings.Count; i++)
-            {
-                if (SpeakHintsPathsMatch(action.bindings[i].effectivePath, path))
-                    return true;
-            }
-        }
-
-        string[] nativeNames = { "Bop", "Twist", "Pull", "Spin", "Flick",
-            "AltBop", "Submit", "Back", "Cancel", "Navigate",
-            "ChangeGroup", "ChangeDateRange", "ChangeDevice",
-            "FlipAchievementPages", "DebugMenu", "ResetGyro", "AutoPlay",
-            "Menu" };
-        InputActionAsset?[] assets =
-            { manager.playerInput?.actions, manager.inputActions };
-        foreach (InputActionAsset? asset in assets)
-        {
-            if (asset == null)
-                continue;
-            foreach (string name in nativeNames)
-            {
-                InputAction? action = asset.FindAction(name, false);
-                if (action == null)
-                    continue;
-                for (int i = 0; i < action.bindings.Count; i++)
-                {
-                    InputBinding binding = action.bindings[i];
-                    if (!SpeakHintsPathsMatch(binding.effectivePath, path))
-                        continue;
-                    // The default right stick press is only the button part
-                    // of the native Right Shoulder + stick DebugMenu chord.
-                    if (name == "DebugMenu" && binding.isPartOfComposite &&
-                        SpeakHintsPathsMatch(path, "<Gamepad>/rightStickPress"))
-                        continue;
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private void ResetSpeakHintsControlBindings()
@@ -540,6 +475,11 @@ public sealed partial class BopItAccessMod
     private void CancelSpeakHintsControlRebinding(bool announce = true)
     {
         bool wasActive = _speakHintsRebindOperation != null;
+        if (wasActive)
+        {
+            try { RestoreSpeakHintsOriginalOverride(); }
+            catch (Exception ex) { WriteStatus("Could not restore SpeakHints binding: " + ex.Message); }
+        }
         ReleaseSpeakHintsControlRebinding();
         if (wasActive)
             _lastControlsRebinding = false;
@@ -550,28 +490,13 @@ public sealed partial class BopItAccessMod
     private void ReleaseSpeakHintsControlRebinding()
     {
         InputActionRebindingExtensions.RebindingOperation? operation = _speakHintsRebindOperation;
-        InputActionMap? uiMap = _speakHintsRebindUiMap;
-        bool uiWasEnabled = _speakHintsRebindUiMapWasEnabled;
-        bool actionWasEnabled = _speakHintsRebindActionWasEnabled;
+        ControlRebindInputState? inputState = _speakHintsRebindInputState;
         _speakHintsRebindOperation = null;
         _speakHintsRebindManager = null;
-        _speakHintsRebindUiMap = null;
-        _speakHintsRebindUiMapWasEnabled = false;
-        _speakHintsRebindActionWasEnabled = false;
+        _speakHintsRebindInputState = null;
         _speakHintsRebindIndex = 0;
         _speakHintsRebindOriginalPath = null;
-        if (operation != null)
-        {
-            if (operation.started && !operation.completed && !operation.canceled)
-                operation.Cancel();
-            operation.Dispose();
-        }
-        if (uiMap != null && uiWasEnabled)
-            uiMap.Enable();
-        if (_speakHintsAction != null && actionWasEnabled)
-            _speakHintsAction.Enable();
-        if (operation != null)
-            _speakHintsSuppressPressThroughFrame = Time.frameCount + 1;
+        ReleaseControlRebindingCapture(operation, inputState);
     }
 
     private void RestoreSpeakHintsOriginalOverride()
@@ -598,18 +523,6 @@ public sealed partial class BopItAccessMod
         {
             WriteStatus("Could not refresh Speak Hints prompt: " + ex.Message);
         }
-    }
-
-    private static bool SpeakHintsPathsMatch(string? a, string? b)
-    {
-        if (string.IsNullOrEmpty(a) || string.IsNullOrEmpty(b))
-            return false;
-        if (string.Equals(a, b, StringComparison.OrdinalIgnoreCase))
-            return true;
-        string? controlA = InputSystem.FindControl(a)?.path;
-        string? controlB = InputSystem.FindControl(b)?.path;
-        return controlA != null && controlB != null &&
-            string.Equals(controlA, controlB, StringComparison.OrdinalIgnoreCase);
     }
 
     private sealed record AddedSpeakHintsControlRow(

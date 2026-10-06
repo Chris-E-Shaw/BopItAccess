@@ -90,7 +90,7 @@ public sealed partial class BopItAccessMod
             _speechMenuRoot.activeInHierarchy && IsHintPanelVisible(_speechMenuPanel))
         {
             string action = _speechUiOptions.FirstOrDefault(option =>
-                option.Row.GetInstanceID() == _lastSpeechMenuRowId)?.ControlType ?? "button";
+                option.Row != null && option.Row.GetInstanceID() == _lastSpeechMenuRowId)?.ControlType ?? "button";
             return ("Speech:" + action,
                 WithGlobalControlHints(MenuHintForControl(action, "Settings")));
         }
@@ -111,22 +111,10 @@ public sealed partial class BopItAccessMod
         if (IsHintPanelVisible(main?.controlsPanel))
         {
             bool rebinding = _controlsRebindingManager?.IsRebinding == true ||
-                _leaderboardRebindOperation != null ||
-                _descriptionRebindOperation != null ||
-                _scoreRebindOperation != null ||
-                _speakHintsRebindOperation != null ||
-                _toggleSpeechRebindOperation != null ||
-                _resetGyroRebindOperation != null ||
-                _changeSpeechOutputRebindOperation != null;
+                AnyCustomControlRebinding;
             if (rebinding)
             {
-                bool custom = _leaderboardRebindOperation != null ||
-                    _descriptionRebindOperation != null ||
-                    _scoreRebindOperation != null ||
-                    _speakHintsRebindOperation != null ||
-                    _toggleSpeechRebindOperation != null ||
-                    _resetGyroRebindOperation != null ||
-                    _changeSpeechOutputRebindOperation != null;
+                bool custom = AnyCustomControlRebinding;
                 string device = _controlsRebindingManager?.ActiveDevice ??
                     _controlsRebindingManager?.deviceTracker?.ActiveDevice ??
                     string.Empty;
@@ -285,7 +273,7 @@ public sealed partial class BopItAccessMod
             string songHint = HintNativeAction("Twist", "change song",
                 "Left Arrow", "top face button");
             string difficultyHint = HintNativeAction("Pull", "change difficulty",
-                "Right Arrow", "right stick", true);
+                "Right Arrow", "right stick");
             string descriptionHint = ReadDescriptionsBindingInstruction();
             string startHint = HintNativeAction("Bop", "start game",
                 "Space", "confirm button");
@@ -349,7 +337,7 @@ public sealed partial class BopItAccessMod
         string songHint = HintNativeAction("Twist", "change song",
             "Left Arrow", "top face button");
         string difficultyHint = HintNativeAction("Pull",
-            "change difficulty", "Right Arrow", "right stick", true);
+            "change difficulty", "Right Arrow", "right stick");
         string groupHint = LeaderboardAxisHint("ChangeGroup");
         string dateHint = LeaderboardAxisHint("ChangeDateRange");
         string continueHint = result ? UiSubmitHint("continue") : string.Empty;
@@ -455,12 +443,7 @@ public sealed partial class BopItAccessMod
 
     private string WithGlobalControlHints(string hint)
     {
-        if (_controlsRebindingManager?.IsRebinding == true ||
-            _leaderboardRebindOperation != null || _descriptionRebindOperation != null ||
-            _scoreRebindOperation != null || _speakHintsRebindOperation != null ||
-            _toggleSpeechRebindOperation != null ||
-            _resetGyroRebindOperation != null ||
-            _changeSpeechOutputRebindOperation != null)
+        if (_controlsRebindingManager?.IsRebinding == true || AnyCustomControlRebinding)
             return hint;
 
         EnsureGlobalButtonHintControlsRegistered();

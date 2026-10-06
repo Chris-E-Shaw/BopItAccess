@@ -71,7 +71,7 @@ public sealed partial class BopItAccessMod
     // the signal that startup and the title screen are fully behind us.
     private void UpdateWelcomeScreen(bool forceProbe = false)
     {
-        _activeWelcomeMod = this;
+        Volatile.Write(ref _activeWelcomeMod, this);
         if (_welcomeOpen)
         {
             RefreshWelcomeLocalizedLabels();
@@ -560,8 +560,16 @@ public sealed partial class BopItAccessMod
         return true;
     }
 
-    internal static bool AllowWelcomeBack(MainMenuUIManager main) =>
-        _activeWelcomeMod?.ShouldBlockWelcomeBack(main) != true;
+    internal static bool AllowWelcomeBack(MainMenuUIManager main)
+    {
+        try { return Volatile.Read(ref _activeWelcomeMod)?.ShouldBlockWelcomeBack(main) != true; }
+        catch (Exception ex)
+        {
+            // A failed mod hook must not disable the game's Back action.
+            WriteStatus("Welcome Back hook failed; allowing native Back: " + ex.Message);
+            return true;
+        }
+    }
 }
 
 [HarmonyPatch(typeof(MainMenuUIManager), "GoBack")]

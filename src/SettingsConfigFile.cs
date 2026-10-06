@@ -10,6 +10,7 @@ namespace BopItAccess;
 internal sealed class SettingsConfigFile
 {
     internal const string FileName = "BopItAccess.ini";
+    private const int MaximumFileBytes = 1024 * 1024;
     private const string ChoicesBegin = "# BEGIN BOP IT ACCESS AVAILABLE CHOICES";
     private const string ChoicesEnd = "# END BOP IT ACCESS AVAILABLE CHOICES";
     private static readonly JsonSerializerOptions QuotedValues = new()
@@ -56,10 +57,7 @@ internal sealed class SettingsConfigFile
     {
         if (!File.Exists(path))
             return new(new(), null, report);
-        var info = new FileInfo(path);
-        if (info.Length > 1024 * 1024)
-            throw new InvalidDataException("The settings file is larger than one megabyte.");
-        byte[] bytes = File.ReadAllBytes(path);
+        byte[] bytes = ReadBoundedBytes(path);
         using var stream = new MemoryStream(bytes);
         using var reader = new StreamReader(stream, new UTF8Encoding(false, true),
             detectEncodingFromByteOrderMarks: true);
@@ -150,9 +148,12 @@ internal sealed class SettingsConfigFile
         if (!File.Exists(path)) return Fingerprint == null;
         // Do not allocate unbounded memory if an external editor replaces
         // this small settings document with an unexpectedly large file.
-        if (new FileInfo(path).Length > 1024 * 1024) return false;
-        return string.Equals(Fingerprint, Hash(File.ReadAllBytes(path)),
-            StringComparison.Ordinal);
+        try
+        {
+            return string.Equals(Fingerprint, Hash(ReadBoundedBytes(path)),
+                StringComparison.Ordinal);
+        }
+        catch (InvalidDataException) { return false; }
     }
 
     internal bool HasSameText(string text) =>
@@ -162,11 +163,15 @@ internal sealed class SettingsConfigFile
     {
         if (!MatchesDisk(path)) throw new ConfigChangedOutsideGameException();
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        string temporary = path + ".tmp";
+        // Independent game processes must not truncate or remove another
+        // writer's temporary file while it is preparing an atomic replacement.
+        string temporary = path + "." + Guid.NewGuid().ToString("N") + ".tmp";
         try
         {
             byte[] bytes = new UTF8Encoding(false).GetBytes(text);
-            using (var stream = new FileStream(temporary, FileMode.Create, FileAccess.Write, FileShare.None))
+            if (bytes.Length > MaximumFileBytes)
+                throw new InvalidDataException("The settings file is larger than one megabyte.");
+            using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
             {
                 stream.Write(bytes);
                 stream.Flush(flushToDisk: true);
@@ -219,6 +224,23 @@ internal sealed class SettingsConfigFile
     }
 
     private static string SingleLine(string text) => text.Replace('\r', ' ').Replace('\n', ' ');
+    private static byte[] ReadBoundedBytes(string path)
+    {
+        // Check the opened file's length, not a separate FileInfo snapshot.
+        // Holding this handle also rejects simultaneous writes on Windows.
+        using var stream = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        if (stream.Length > MaximumFileBytes)
+            throw new InvalidDataException("The settings file is larger than one megabyte.");
+        byte[] bytes = new byte[checked((int)stream.Length)];
+        int read = 0;
+        while (read < bytes.Length)
+        {
+            int count = stream.Read(bytes, read, bytes.Length - read);
+            if (count == 0) break;
+            read += count;
+        }
+        return read == bytes.Length ? bytes : bytes[..read];
+    }
     private static string Hash(byte[] bytes) => Convert.ToHexString(SHA256.HashData(bytes));
 }
 

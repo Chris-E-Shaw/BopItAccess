@@ -24,6 +24,7 @@ public sealed partial class BopItAccessMod
     // Hold focus announcements while that initial score is being dispatched.
     private long _gameOverScoreDispatchPendingUntil;
     private readonly List<string> _deferredGameOverResultUpdates = new();
+    private readonly List<string> _gameOverResultChanges = new(2);
     private string? _deferredGameOverMenuUpdate;
 
     // The final score belongs to the kill-screen panel. Its displayed TMP
@@ -156,12 +157,12 @@ public sealed partial class BopItAccessMod
 
         if (soloVisible)
         {
-            var resultChanges = new List<string>(1);
+            _gameOverResultChanges.Clear();
             string? menuChange = null;
             if (GetFreshResultRank() == 1 && solo!.isHighScore && !_lastSoloHighScore)
             {
                 _lastSoloHighScore = true;
-                resultChanges.Add(L("New high score."));
+                _gameOverResultChanges.Add(L("New high score."));
             }
 
             (int focusedId, string? label) = GetFocusedSoloResultButton(solo!);
@@ -172,12 +173,12 @@ public sealed partial class BopItAccessMod
                     menuChange = label;
             }
 
-            AnnounceGameOverUpdates(resultChanges, menuChange, "Solo");
+            AnnounceGameOverUpdates(_gameOverResultChanges, menuChange, "Solo");
         }
         else
         {
             WithFriendsKillScreenPanel currentFriends = friends!;
-            var resultChanges = new List<string>(2);
+            _gameOverResultChanges.Clear();
             string? menuChange = null;
             string? prompts = ReadFriendsPrompts(currentFriends, mode!.Value);
             if (prompts != null && !string.Equals(prompts, _lastGameOverPrompts, StringComparison.Ordinal))
@@ -204,17 +205,17 @@ public sealed partial class BopItAccessMod
             if (winner != null && !string.Equals(winner, _lastGameOverWinner, StringComparison.Ordinal))
             {
                 _lastGameOverWinner = winner;
-                resultChanges.Add(L(winner) + ".");
+                _gameOverResultChanges.Add(L(winner) + ".");
             }
 
             int rank = ReadFriendsRank(currentFriends, mode!.Value);
             if (rank > 0 && GetFreshResultRank() == rank && rank != _lastGameOverRank)
             {
                 _lastGameOverRank = rank;
-                resultChanges.Add(LF("Rank: {0}.", rank));
+                _gameOverResultChanges.Add(LF("Rank: {0}.", rank));
             }
 
-            AnnounceGameOverUpdates(resultChanges, menuChange, "With-friends");
+            AnnounceGameOverUpdates(_gameOverResultChanges, menuChange, "With-friends");
         }
 
         // Handle a manual repeat after focus updates, so a focus change in
@@ -296,10 +297,28 @@ public sealed partial class BopItAccessMod
             Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
             return;
         }
-        if (accepted)
-            ExtendGameOverScoreProtection(EstimateGameOverScoreSpeechMs(score));
+        if (!accepted)
+        {
+            // Do not hold menu focus for a score that never reached output.
+            // A newer score can have replaced this worker batch meanwhile;
+            // its pending deadline belongs to that newer request.
+            lock (_speechLock)
+            {
+                if (_pendingPrioritySpeech == null)
+                {
+                    Volatile.Write(ref _gameOverScoreSpeechProtectedUntil, 0);
+                    Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
+                }
+            }
+            return;
+        }
+        ExtendGameOverScoreProtection(EstimateGameOverScoreSpeechMs(score));
         // Publish the deadline before releasing the hold on menu focus.
-        Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
+        lock (_speechLock)
+        {
+            if (_pendingPrioritySpeech == null)
+                Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
+        }
     }
 
     private void ExtendGameOverScoreProtectionForSapiPlayback(int pcmByteLength)
@@ -388,14 +407,17 @@ public sealed partial class BopItAccessMod
         if (button == null || !button.transform.IsChildOf(panel.transform))
             return (0, null);
 
-        List<(Button Button, string Label)> choices = GetAvailableSoloResultButtons(panel);
-        for (int index = 0; index < choices.Count; index++)
-        {
-            if (choices[index].Button.GetInstanceID() == button.GetInstanceID())
-                return (button.GetInstanceID(),
-                    WithMenuIndex(WithControlType(L(choices[index].Label), "button"),
-                        index, choices.Count));
-        }
+        bool replayAvailable = IsAvailableSoloResultButton(panel, panel.replayButton);
+        bool leaderboardAvailable = IsAvailableSoloResultButton(panel, panel.leaderboardButton);
+        int count = (replayAvailable ? 1 : 0) + (leaderboardAvailable ? 1 : 0);
+        if (replayAvailable && button.GetInstanceID() == panel.replayButton!.GetInstanceID())
+            return (button.GetInstanceID(),
+                WithMenuIndex(WithControlType(L("Replay"), "button"), 0, count));
+        if (leaderboardAvailable &&
+            button.GetInstanceID() == panel.leaderboardButton!.GetInstanceID())
+            return (button.GetInstanceID(),
+                WithMenuIndex(WithControlType(L("Leaderboard"), "button"),
+                    replayAvailable ? 1 : 0, count));
         return (0, null);
     }
 
@@ -406,17 +428,6 @@ public sealed partial class BopItAccessMod
         return WithMenuIndex(WithControlType(L("Replay"), "button"), 0, 2) + ". " +
             WithMenuIndex(WithControlType(L("Leaderboard"), "button"), 1, 2) +
             ". " + L("Back") + ".";
-    }
-
-    private static List<(Button Button, string Label)> GetAvailableSoloResultButtons(
-        SoloKillScreenPanel panel)
-    {
-        var choices = new List<(Button Button, string Label)>(2);
-        if (IsAvailableSoloResultButton(panel, panel.replayButton))
-            choices.Add((panel.replayButton!, "Replay"));
-        if (IsAvailableSoloResultButton(panel, panel.leaderboardButton))
-            choices.Add((panel.leaderboardButton!, "Leaderboard"));
-        return choices;
     }
 
     private static bool IsAvailableSoloResultButton(SoloKillScreenPanel panel, Button? button) =>

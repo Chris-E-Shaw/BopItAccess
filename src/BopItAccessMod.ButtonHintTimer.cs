@@ -410,6 +410,8 @@ public sealed partial class BopItAccessMod
         return false;
     }
 
+    private readonly HashSet<InputControl> _assignedHintControlSet = new();
+
     private void RefreshAssignedButtonHintControls()
     {
         long now = Environment.TickCount64;
@@ -419,7 +421,8 @@ public sealed partial class BopItAccessMod
         try
         {
             _assignedButtonHintControls.Clear();
-            var seen = new HashSet<InputControl>();
+            HashSet<InputControl> seen = _assignedHintControlSet;
+            seen.Clear();
             InputRebindingManager? manager = _controlsRebindingManager;
             if (manager == null)
             {
@@ -447,6 +450,9 @@ public sealed partial class BopItAccessMod
             AddAssignedControls(_toggleSpeechAction, seen);
             AddAssignedControls(_speakHintsAction, seen);
             AddAssignedControls(_changeSpeechOutputAction, seen);
+            foreach (InputControl stale in _hintAnalogWasActive.Keys
+                         .Where(control => !seen.Contains(control)).ToArray())
+                _hintAnalogWasActive.Remove(stale);
         }
         catch (Exception ex)
         {
@@ -472,7 +478,7 @@ public sealed partial class BopItAccessMod
     private void AddAssignedControls(InputAction? action,
         HashSet<InputControl> seen)
     {
-        if (action == null)
+        if (action == null || !action.enabled)
             return;
         foreach (InputControl control in action.controls)
         {

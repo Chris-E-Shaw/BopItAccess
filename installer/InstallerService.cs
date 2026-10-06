@@ -7,7 +7,7 @@ namespace BopItAccess.Installer;
 internal sealed record InstallerProgress(string Step, long Completed, long? Total);
 internal sealed record InstallerState(string? GamePath, bool ValidGamePath, bool Installed,
     bool ReleaseAvailable, bool UpdateAvailable, bool Busy, string? Message,
-    long PathRevision = 0);
+    long PathRevision = 0, bool ReadyForOperations = false);
 
 internal sealed class InstallerService
 {
@@ -23,47 +23,70 @@ internal sealed class InstallerService
     private bool _userSelectedGamePath;
     private GitHubRelease? _release;
     private bool _busy;
+    private bool _initializing = true;
+    private bool _initialized;
+    private int _operationActive;
+    private readonly bool _launchedForUninstall;
+    private readonly object _progressLock = new();
+    private string? _lastProgressStep;
+    private long _lastProgressAt;
     private CancellationTokenSource? _abort;
     internal int LastUninstallWarningCount { get; private set; }
 
-    internal async Task InitializeAsync()
+    internal InstallerService(bool launchedForUninstall = false) =>
+        _launchedForUninstall = launchedForUninstall;
+
+    internal async Task InitializeAsync(CancellationToken cancellation = default)
     {
-        await InstallTransaction.RecoverInterruptedAsync(_stateDirectory, Log);
-        Log("Searching Steam libraries across available drives.");
-        var found = await Task.Run(GameLocator.FindInstallations);
-        var manifest = ReadManifest();
-        string? detectedPath = manifest is not null && GameLocator.IsGameDirectory(manifest.GameDirectory)
-            ? Path.GetFullPath(manifest.GameDirectory)
-            : found.Count > 0 ? found[0] : null;
-        string? selectedPath;
-        bool manuallySelected;
-        lock (_gamePathLock)
-        {
-            manuallySelected = _userSelectedGamePath;
-            if (!manuallySelected)
-            {
-                _gamePath = detectedPath;
-                _gamePathRevision++;
-            }
-            selectedPath = _gamePath;
-        }
-        Log(manuallySelected ? "Keeping the game folder selected by the user."
-            : selectedPath is null ? "Bop It! was not found. Use Browse to select its game folder."
-            : $"Found Bop It! at {selectedPath}.");
-        PublishState();
         try
         {
-            Log("Checking GitHub for the latest Bop It Access release.");
-            _release = await InstallerNetwork.LatestReleaseAsync(CancellationToken.None);
-            Log(_release is null
-                ? "No downloadable release is published yet. Install alpha is available from the latest source commit."
-                : $"Latest release: {_release.Tag} ({_release.AssetName}).");
+            await InstallTransaction.RecoverInterruptedAsync(_stateDirectory, Log);
+            cancellation.ThrowIfCancellationRequested();
+            Log("Searching Steam libraries across available drives.");
+            var found = await Task.Run(() => GameLocator.FindInstallations(cancellation), cancellation);
+            var manifest = ReadManifest();
+            string? detectedPath = manifest is not null
+                ? Path.GetFullPath(manifest.GameDirectory)
+                : found.Count > 0 ? found[0] : null;
+            string? selectedPath;
+            bool manuallySelected;
+            lock (_gamePathLock)
+            {
+                manuallySelected = _userSelectedGamePath;
+                if (!manuallySelected)
+                {
+                    _gamePath = detectedPath;
+                    _gamePathRevision++;
+                }
+                selectedPath = _gamePath;
+            }
+            Log(manuallySelected ? "Keeping the game folder selected by the user."
+                : selectedPath is null ? "Bop It! was not found. Use Browse to select its game folder."
+                : $"Found Bop It! at {selectedPath}.");
+            PublishState();
+            if (!_launchedForUninstall)
+            {
+                try
+                {
+                    Log("Checking GitHub for the latest Bop It Access release.");
+                    _release = await InstallerNetwork.LatestReleaseAsync(cancellation);
+                    Log(_release is null
+                        ? "No downloadable release is published yet. Install alpha is available from the latest source commit."
+                        : $"Latest release: {_release.Tag} ({_release.AssetName}).");
+                }
+                catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { throw; }
+                catch (Exception ex)
+                {
+                    Log("Could not check GitHub releases: " + ex.Message);
+                }
+            }
+            _initialized = true;
         }
-        catch (Exception ex)
+        finally
         {
-            Log("Could not check GitHub releases: " + ex.Message);
+            _initializing = false;
+            PublishState();
         }
-        PublishState();
     }
 
     internal void SetGamePath(string path)
@@ -90,15 +113,23 @@ internal sealed class InstallerService
     internal Task UpdateAsync(CancellationToken cancellation) =>
         RunInstallAsync(alpha: false, cancellation);
 
-    internal void RequestAbort() => _abort?.Cancel();
+    internal void RequestAbort()
+    {
+        try { _abort?.Cancel(); }
+        catch (ObjectDisposedException) { /* The operation finished before the click arrived. */ }
+    }
 
     internal async Task UninstallAsync(CancellationToken cancellation)
     {
-        var game = RequireGame();
+        var manifestPath = Path.Combine(_stateDirectory, InstallManifest.FileName);
+        var manifest = File.Exists(manifestPath) ? InstallManifest.Load(manifestPath) : null;
+        string? selected = GetGamePath();
+        if (manifest != null && selected != null && !PathsEqual(selected, manifest.GameDirectory))
+            throw new InvalidOperationException("The installed-file ledger belongs to another game folder. Select " + manifest.GameDirectory + " before uninstalling.");
+        var game = manifest == null ? RequireGame() : Path.GetFullPath(manifest.GameDirectory);
         LastUninstallWarningCount = 0;
         await RunBusyAsync(async ct =>
         {
-            var manifestPath = Path.Combine(_stateDirectory, "install-manifest.json");
             if (!File.Exists(manifestPath))
             {
                 Log("This mod installation predates the installer. Removing only known mod-owned files.");
@@ -116,8 +147,10 @@ internal sealed class InstallerService
             LastUninstallWarningCount = result.PreferenceWarnings.Count;
             if (LastUninstallWarningCount > 0)
                 Log($"Preference cleanup reported {LastUninstallWarningCount} warning(s). Review the status log.");
-            Log("Uninstall completed. The .NET SDK remains installed, as requested.");
-            ScheduleStandaloneCleanup();
+            Log(LastUninstallWarningCount == 0
+                ? "Uninstall completed. The .NET SDK remains installed, as requested."
+                : "Mod file removal finished, but preference cleanup is incomplete. Use Uninstall to retry. The .NET SDK remains installed.");
+            if (LastUninstallWarningCount == 0) ScheduleStandaloneCleanup();
             PublishState();
         }, cancellation);
     }
@@ -127,6 +160,12 @@ internal sealed class InstallerService
         var game = RequireGame();
         await RunBusyAsync(async ct =>
         {
+            string existingManifest = Path.Combine(_stateDirectory, InstallManifest.FileName);
+            var existing = File.Exists(existingManifest) ? InstallManifest.Load(existingManifest) : null;
+            if (existing != null && !PathsEqual(existing.GameDirectory, game))
+                throw new InvalidOperationException("The installer already manages another game folder: " + existing.GameDirectory);
+            if (existing?.UninstallFilesRemoved == true)
+                throw new InvalidOperationException("Finish the pending uninstall preference cleanup before installing again.");
             if (!alpha && _release is null)
                 throw new InvalidOperationException("No GitHub release package exists yet. Use Install alpha until the first release is published.");
             if (IsGameRunning())
@@ -225,12 +264,7 @@ internal sealed class InstallerService
                 string dll;
                 if (alpha)
                 {
-                    if (transaction.MelonLoaderInstalledByInstaller)
-                    {
-                        transaction.TrackGeneratedTree(Path.Combine(game, "MelonLoader", "Il2CppAssemblies"));
-                        transaction.TrackGeneratedTree(Path.Combine(game, "MelonLoader", "Logs"));
-                    }
-                    await EnsureProxiesAsync(game, ct);
+                    await EnsureProxiesAsync(game, transaction, ct);
                     dll = await SdkAndBuild.BuildAsync(dotnet, sourceRoot, game, Log, Progress, ct);
                 }
                 else dll = FindReleaseDll(sourceRoot);
@@ -289,7 +323,9 @@ internal sealed class InstallerService
 
     private async Task RunBusyAsync(Func<CancellationToken, Task> body, CancellationToken cancellation)
     {
-        if (_busy) throw new InvalidOperationException("Another installer operation is already running.");
+        if (!_initialized) throw new InvalidOperationException("Wait for the initial installation checks to finish before starting an operation.");
+        if (Interlocked.CompareExchange(ref _operationActive, 1, 0) != 0)
+            throw new InvalidOperationException("Another installer operation is already running.");
         _busy = true;
         _abort = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         PublishState();
@@ -299,6 +335,7 @@ internal sealed class InstallerService
             _abort.Dispose();
             _abort = null;
             _busy = false;
+            Volatile.Write(ref _operationActive, 0);
             PublishState();
         }
     }
@@ -328,18 +365,22 @@ internal sealed class InstallerService
         }
         var valid = GameLocator.IsGameDirectory(gamePath);
         var manifest = ReadManifest();
-        var installed = valid && ((manifest is not null &&
-            string.Equals(Path.GetFullPath(manifest.GameDirectory), Path.GetFullPath(gamePath!), StringComparison.OrdinalIgnoreCase)) ||
-            File.Exists(Path.Combine(gamePath!, "Mods", "BopItAccess.dll")));
-        var update = installed && _release is not null &&
+        var installed = gamePath != null && ((manifest is not null &&
+            PathsEqual(manifest.GameDirectory, gamePath)) ||
+            (valid && File.Exists(Path.Combine(gamePath, "Mods", "BopItAccess.dll"))));
+        var update = installed && manifest?.UninstallFilesRemoved != true && _release is not null &&
             !string.Equals(manifest?.SourceReference, _release.Tag, StringComparison.OrdinalIgnoreCase);
-        string? message = !valid ? "Choose a valid Bop It! game folder."
+        string? message = _initializing ? "Checking the installation and Steam libraries."
+            : !_initialized ? "Initial checks could not finish. Review the status log, then reopen the installer."
+            : installed && manifest?.UninstallFilesRemoved == true ? "Mod files were removed. Uninstall can retry remaining preference cleanup."
+            : !valid && installed ? "The base game is missing; Uninstall can still remove the mod and its settings."
+            : !valid ? "Choose a valid Bop It! game folder."
             : _busy ? "Installer is working. Review the status log for each step."
             : _release is null ? "No GitHub release is published yet. Install alpha builds the latest source."
             : installed ? (update ? $"An update ({_release.Tag}) is available." : "Bop It Access is installed.")
             : $"Ready to install release {_release.Tag}.";
         StateChanged?.Invoke(new InstallerState(gamePath, valid, installed, _release is not null,
-            update, _busy, message, pathRevision));
+            update, _busy || _initializing, message, pathRevision, _initialized));
     }
 
     private InstallManifest? ReadManifest()
@@ -354,7 +395,7 @@ internal sealed class InstallerService
     {
         var current = Environment.ProcessPath;
         var stable = Path.Combine(_stateDirectory, "BopItAccess.Uninstaller.exe");
-        if (string.Equals(current, stable, StringComparison.OrdinalIgnoreCase))
+        if (_launchedForUninstall && string.Equals(current, stable, StringComparison.OrdinalIgnoreCase))
             return; // Apps & Features launcher waits for this process, then cleans the state folder.
         var script = Path.Combine(_stateDirectory, "uninstall.ps1");
         if (!File.Exists(script)) return;
@@ -369,15 +410,34 @@ internal sealed class InstallerService
         foreach (var argument in new[] { "-NoProfile", "-ExecutionPolicy", "Bypass", "-WindowStyle", "Hidden",
                      "-File", script, "-CleanupOnly", "-ProcessId", Environment.ProcessId.ToString() })
             info.ArgumentList.Add(argument);
-        Process.Start(info);
+        using var cleanup = Process.Start(info) ?? throw new IOException("Could not start the final uninstall cleanup process.");
         Log("Scheduled cleanup of the installer launcher after this window closes.");
     }
 
     private void Log(string message) => StatusChanged?.Invoke(message);
-    private void Progress(string step, long done, long? total) =>
+    private void Progress(string step, long done, long? total)
+    {
+        long now = Environment.TickCount64;
+        lock (_progressLock)
+        {
+            bool completed = total is >= 0 && done >= total.Value;
+            if (_lastProgressStep == step && !completed && now - _lastProgressAt < 100) return;
+            _lastProgressStep = step;
+            _lastProgressAt = now;
+        }
         ProgressChanged?.Invoke(new InstallerProgress(step, done, total));
+    }
 
-    private static bool IsGameRunning() => Process.GetProcessesByName("BopIt!").Any();
+    private static bool IsGameRunning()
+    {
+        Process[] processes = Process.GetProcessesByName("BopIt!");
+        try { return processes.Length > 0; }
+        finally { foreach (Process process in processes) process.Dispose(); }
+    }
+
+    private static bool PathsEqual(string first, string second) => string.Equals(
+        Path.GetFullPath(first).TrimEnd(Path.DirectorySeparatorChar),
+        Path.GetFullPath(second).TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase);
 
     private async Task CloseGameBeforeRollbackAsync()
     {
@@ -508,7 +568,7 @@ internal sealed class InstallerService
         Log("Registered an Apps & Features uninstall entry using the supplied uninstaller script.");
     }
 
-    private async Task EnsureProxiesAsync(string game, CancellationToken cancellation)
+    private async Task EnsureProxiesAsync(string game, InstallTransaction transaction, CancellationToken cancellation)
     {
         string[] required = { "Assembly-CSharp.dll", "Il2Cppmscorlib.dll", "UnityEngine.CoreModule.dll",
             "Unity.Localization.dll", "UnityEngine.AudioModule.dll", "Il2CppFMODUnity.dll",
@@ -518,6 +578,8 @@ internal sealed class InstallerService
         bool ready() => required.All(name => File.Exists(Path.Combine(directory, name)) &&
             new FileInfo(Path.Combine(directory, name)).Length > 0);
         if (ready()) { Log("Verified all game-generated build proxy assemblies."); return; }
+        transaction.TrackGeneratedTree(directory, cancellation);
+        transaction.TrackGeneratedTree(Path.Combine(game, "MelonLoader", "Logs"), cancellation);
 
         Log("Launching Bop It! once so MelonLoader can generate build references from this copy of the game. If the game does not open, launch it through Steam.");
         Progress("Generating game build references", 0, null);

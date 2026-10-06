@@ -106,10 +106,10 @@ public sealed partial class BopItAccessMod
         return words.ToString();
     }
 
-    // Native ControlRow rebinding does not know about mod-owned actions. Keep
-    // an idle baseline so a native rebind that duplicates one can be undone
-    // after the game's own completion callback, without patching that fragile
-    // callback or interfering with its ordinary controls.
+    // Native ControlRow rebinding can clear another gameplay binding before
+    // reporting completion and does not know about mod-owned actions. Keep
+    // an idle baseline so conflicts can be rejected without losing either
+    // binding or patching the game's fragile completion callback.
     private void UpdateNativeBindingConflictGuard()
     {
         try
@@ -191,6 +191,20 @@ public sealed partial class BopItAccessMod
                 conflictOwner = owner;
                 break;
             }
+            // Reset to Default and the game's intentional default sharing
+            // remain valid. A new assignment must be compared with the old
+            // snapshot: the native callback may already have unbound its
+            // competitor, so the live asset alone cannot detect the conflict.
+            if (!string.IsNullOrEmpty(binding.overridePath) &&
+                !DescriptionPathsMatch(binding.overridePath, binding.path) &&
+                !DescriptionPathsMatch(binding.overridePath,
+                    item.Previous ?? binding.path) &&
+                NativeBaselineHasConflict(asset, item.Action,
+                    binding.overridePath, out owner))
+            {
+                conflictOwner = owner;
+                break;
+            }
         }
 
         if (conflictOwner == null)
@@ -228,6 +242,37 @@ public sealed partial class BopItAccessMod
                         action.bindings[index].overridePath;
             }
         }
+    }
+
+    private bool NativeBaselineHasConflict(InputActionAsset asset,
+        InputAction targetAction, string candidatePath, out string owner)
+    {
+        owner = string.Empty;
+        foreach (InputActionMap map in asset.actionMaps)
+        {
+            foreach (InputAction action in map.actions)
+            {
+                // Device-specific variants of the same action may share an
+                // input. They invoke the same game function.
+                if (action.id == targetAction.id)
+                    continue;
+                for (int index = 0; index < action.bindings.Count; index++)
+                {
+                    InputBinding binding = action.bindings[index];
+                    if (binding.isComposite || BindingIsModifierChordPart(action, index))
+                        continue;
+                    string? previous = _nativeBindingGuardSnapshot.TryGetValue(
+                        NativeBindingKey(action, index), out string? saved)
+                        ? saved : binding.overridePath;
+                    if (!DescriptionPathsMatch(previous ?? binding.path, candidatePath) &&
+                        !DescriptionPathsMatch(binding.path, candidatePath))
+                        continue;
+                    owner = SpokenBindingOwner(action.name);
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private static string NativeBindingKey(InputAction action, int index) =>

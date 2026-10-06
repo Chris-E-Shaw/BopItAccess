@@ -1,4 +1,3 @@
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -9,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.7", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.8", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -20,6 +19,8 @@ public sealed partial class BopItAccessMod : MelonMod
     private readonly AutoResetEvent _speechRequested = new(false);
     private readonly object _speechLock = new();
     private Thread? _speechThread;
+    private volatile bool _modStopping;
+    private long _nextSpeechWorkerErrorAt;
     private string? _pendingSpeech;
     private long _pendingSpeechQueuedAt;
     private string? _pendingPrioritySpeech;
@@ -35,37 +36,23 @@ public sealed partial class BopItAccessMod : MelonMod
     private SettingOption[]? _settingsOptions;
     private int _lastFocusedButtonId;
     private string? _lastFocusedMenuLabel;
-    private int _lastObservedSelectionId;
     private int _lastFocusedSettingRowId;
     private int _lastObservedSettingsSelectionId;
     private string? _lastSettingsValue;
     private long _nextMenuSearchAt;
     private long _nextSettingsSearchAt;
     private long _nextFocusErrorLogAt;
+    private long _nextModalFocusErrorLogAt;
     private long _nextSettingsErrorLogAt;
-    private long _nextCalibrationErrorLogAt;
-    private long _nextControlsErrorLogAt;
-    private long _nextTrackSelectErrorLogAt;
-    private long _nextPlayModesErrorLogAt;
-    private long _nextGameOverErrorLogAt;
-    private long _nextLeaderboardsErrorLogAt;
-    private long _nextAchievementsErrorLogAt;
-    private long _nextCreditsErrorLogAt;
     private bool _mainMenuWasVisible;
     private bool _settingsWasVisible;
     private static readonly object StatusLogLock = new();
     private static readonly Regex TmpTagPattern = new("<[^>]*>", RegexOptions.Compiled);
     private static readonly Regex WhitespacePattern = new("\\s+", RegexOptions.Compiled);
 
-    private static string StatusLogPath
-    {
-        get
-        {
-            string gameDirectory = Path.GetDirectoryName(Environment.ProcessPath ?? string.Empty)
-                ?? Environment.CurrentDirectory;
-            return Path.Combine(gameDirectory, "Mods", "BopItAccess.log");
-        }
-    }
+    private static readonly string StatusLogPath = Path.Combine(
+        Path.GetDirectoryName(Environment.ProcessPath ?? string.Empty) ??
+        Environment.CurrentDirectory, "Mods", "BopItAccess.log");
 
     public override void OnInitializeMelon()
     {
@@ -92,6 +79,8 @@ public sealed partial class BopItAccessMod : MelonMod
 
     public override void OnLateUpdate()
     {
+        if (_modStopping)
+            return;
         try
         {
             UpdateGameLocale();
@@ -126,7 +115,7 @@ public sealed partial class BopItAccessMod : MelonMod
         }
         catch (Exception ex)
         {
-            WriteStatus("Guide or welcome focus check failed: " + ex);
+            LogModalFocusError("Guide or welcome", ex);
         }
 
         bool titleVisible = false;
@@ -161,7 +150,7 @@ public sealed partial class BopItAccessMod : MelonMod
         }
         catch (Exception ex)
         {
-            WriteStatus("Mod Settings focus check failed: " + ex);
+            LogModalFocusError("Mod Settings", ex);
             ResetSpeechMenuFocus();
         }
         if (speechMenuVisible)
@@ -172,241 +161,32 @@ public sealed partial class BopItAccessMod : MelonMod
             return;
         }
 
-        bool calibrationVisible = false;
-        try
+        bool panelClaimed = false;
+        foreach (FocusRoute route in FocusRoutes)
         {
-            calibrationVisible = ReadCalibrationFocus();
-        }
-        catch (Exception ex)
-        {
-            long now = Environment.TickCount64;
-            if (now >= _nextCalibrationErrorLogAt)
+            if (panelClaimed)
             {
-                WriteStatus($"Audio calibration speech check failed: {ex}");
-                MelonLogger.Warning($"Audio calibration speech check failed: {ex.Message}");
-                _nextCalibrationErrorLogAt = now + 5000;
+                route.Reset();
+                continue;
             }
-
-            ResetCalibrationFocus();
-        }
-
-        bool controlsVisible = false;
-        if (!calibrationVisible)
-        {
             try
             {
-                controlsVisible = ReadControlsFocus();
+                panelClaimed = route.Read();
             }
             catch (Exception ex)
             {
                 long now = Environment.TickCount64;
-                if (now >= _nextControlsErrorLogAt)
+                if (now >= route.NextErrorLogAt)
                 {
-                    WriteStatus($"Controls speech check failed: {ex}");
-                    MelonLogger.Warning($"Controls speech check failed: {ex.Message}");
-                    _nextControlsErrorLogAt = now + 5000;
+                    WriteStatus(route.Name + " speech check failed: " + ex);
+                    MelonLogger.Warning(route.Name + " speech check failed: " + ex.Message);
+                    route.NextErrorLogAt = now + 5000;
                 }
-
-                ResetControlsFocus();
+                route.Recover?.Invoke();
+                route.Reset();
             }
         }
-        else
-        {
-            ResetControlsFocus();
-        }
-
-        bool leaderboardsVisible = false;
-        if (!calibrationVisible && !controlsVisible)
-        {
-            try
-            {
-                leaderboardsVisible = ReadLeaderboardsFocus();
-            }
-            catch (Exception ex)
-            {
-                long now = Environment.TickCount64;
-                if (now >= _nextLeaderboardsErrorLogAt)
-                {
-                    WriteStatus($"Leaderboard speech check failed: {ex}");
-                    MelonLogger.Warning($"Leaderboard speech check failed: {ex.Message}");
-                    _nextLeaderboardsErrorLogAt = now + 5000;
-                }
-
-                _leaderboardMainMenu = null;
-                _leaderboardGameUi = null;
-                ResetLeaderboardsFocus();
-            }
-        }
-        else
-        {
-            ResetLeaderboardsFocus();
-        }
-
-        bool achievementsVisible = false;
-        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible)
-        {
-            try
-            {
-                achievementsVisible = ReadAchievementsFocus();
-            }
-            catch (Exception ex)
-            {
-                long now = Environment.TickCount64;
-                if (now >= _nextAchievementsErrorLogAt)
-                {
-                    WriteStatus($"Achievements speech check failed: {ex}");
-                    MelonLogger.Warning($"Achievements speech check failed: {ex.Message}");
-                    _nextAchievementsErrorLogAt = now + 5000;
-                }
-
-                _achievementsPanel = null;
-                ResetAchievementsFocus();
-            }
-        }
-        else
-        {
-            ResetAchievementsFocus();
-        }
-
-        bool creditsVisible = false;
-        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible && !achievementsVisible)
-        {
-            try
-            {
-                creditsVisible = ReadCreditsFocus();
-            }
-            catch (Exception ex)
-            {
-                long now = Environment.TickCount64;
-                if (now >= _nextCreditsErrorLogAt)
-                {
-                    WriteStatus($"Credits speech check failed: {ex}");
-                    MelonLogger.Warning($"Credits speech check failed: {ex.Message}");
-                    _nextCreditsErrorLogAt = now + 5000;
-                }
-
-                ResetCreditsFocus();
-            }
-        }
-        else
-        {
-            ResetCreditsFocus();
-        }
-
-        bool pauseMenuVisible = false;
-        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible &&
-            !achievementsVisible && !creditsVisible)
-        {
-            try
-            {
-                pauseMenuVisible = ReadPauseMenuFocus();
-            }
-            catch (Exception ex)
-            {
-                long now = Environment.TickCount64;
-                if (now >= _nextPauseMenuErrorLogAt)
-                {
-                    WriteStatus($"Pause menu speech check failed: {ex}");
-                    MelonLogger.Warning($"Pause menu speech check failed: {ex.Message}");
-                    _nextPauseMenuErrorLogAt = now + 5000;
-                }
-
-                _pauseMenuPanel = null;
-                ResetPauseMenuFocus();
-            }
-        }
-        else
-        {
-            ResetPauseMenuFocus();
-        }
-
-        bool gameOverVisible = false;
-        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible &&
-            !achievementsVisible && !creditsVisible && !pauseMenuVisible)
-        {
-            try
-            {
-                gameOverVisible = ReadGameOverFocus();
-            }
-            catch (Exception ex)
-            {
-                long now = Environment.TickCount64;
-                if (now >= _nextGameOverErrorLogAt)
-                {
-                    WriteStatus($"Game over speech check failed: {ex}");
-                    MelonLogger.Warning($"Game over speech check failed: {ex.Message}");
-                    _nextGameOverErrorLogAt = now + 5000;
-                }
-
-                _gameOverUi = null;
-                _gameOverApp = null;
-                ResetGameOverFocus();
-            }
-        }
-        else
-        {
-            ResetGameOverFocus();
-        }
-
-        bool trackSelectVisible = false;
-        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible &&
-            !achievementsVisible && !creditsVisible && !pauseMenuVisible &&
-            !gameOverVisible)
-        {
-            try
-            {
-                trackSelectVisible = ReadTrackSelectFocus();
-            }
-            catch (Exception ex)
-            {
-                long now = Environment.TickCount64;
-                if (now >= _nextTrackSelectErrorLogAt)
-                {
-                    WriteStatus($"Song selection speech check failed: {ex}");
-                    MelonLogger.Warning($"Song selection speech check failed: {ex.Message}");
-                    _nextTrackSelectErrorLogAt = now + 5000;
-                }
-
-                _trackSelectUi = null;
-                _trackSelectApp = null;
-                ResetTrackSelectFocus();
-            }
-        }
-        else
-        {
-            ResetTrackSelectFocus();
-        }
-
-        bool playModesVisible = false;
-        if (!calibrationVisible && !controlsVisible && !leaderboardsVisible &&
-            !achievementsVisible && !creditsVisible && !pauseMenuVisible &&
-            !gameOverVisible && !trackSelectVisible)
-        {
-            try
-            {
-                playModesVisible = ReadPlayModesFocus();
-            }
-            catch (Exception ex)
-            {
-                long now = Environment.TickCount64;
-                if (now >= _nextPlayModesErrorLogAt)
-                {
-                    WriteStatus($"Play mode speech check failed: {ex}");
-                    MelonLogger.Warning($"Play mode speech check failed: {ex.Message}");
-                    _nextPlayModesErrorLogAt = now + 5000;
-                }
-
-                ResetPlayModesFocus();
-            }
-        }
-        else
-        {
-            ResetPlayModesFocus();
-        }
-
-        if (calibrationVisible || controlsVisible || leaderboardsVisible || achievementsVisible ||
-            creditsVisible || pauseMenuVisible || gameOverVisible || trackSelectVisible ||
-            playModesVisible)
+        if (panelClaimed)
         {
             ResetUncoveredPanelFocus();
             ResetSettingsFocus();
@@ -482,6 +262,48 @@ public sealed partial class BopItAccessMod : MelonMod
             _nextMenuSearchAt = now + 1000;
         }
     }
+
+    private void LogModalFocusError(string name, Exception error)
+    {
+        long now = Environment.TickCount64;
+        if (now < _nextModalFocusErrorLogAt)
+            return;
+        _nextModalFocusErrorLogAt = now + 5000;
+        WriteStatus(name + " focus check failed: " + error);
+    }
+
+    private sealed class FocusRoute
+    {
+        internal readonly string Name;
+        internal readonly Func<bool> Read;
+        internal readonly Action Reset;
+        internal readonly Action? Recover;
+        internal long NextErrorLogAt;
+        internal FocusRoute(string name, Func<bool> read, Action reset,
+            Action? recover = null) => (Name, Read, Reset, Recover) =
+                (name, read, reset, recover);
+    }
+
+    private FocusRoute[]? _focusRoutes;
+    // Cache delegates once. Preserve native panel priority and reset readers
+    // hidden by a higher-priority panel so the next visit announces afresh.
+    private FocusRoute[] FocusRoutes => _focusRoutes ??= new[]
+    {
+        new FocusRoute("Audio calibration", ReadCalibrationFocus, ResetCalibrationFocus),
+        new FocusRoute("Controls", ReadControlsFocus, ResetControlsFocus),
+        new FocusRoute("Leaderboard", ReadLeaderboardsFocus, ResetLeaderboardsFocus,
+            () => { _leaderboardMainMenu = null; _leaderboardGameUi = null; }),
+        new FocusRoute("Achievements", ReadAchievementsFocus, ResetAchievementsFocus,
+            () => _achievementsPanel = null),
+        new FocusRoute("Credits", ReadCreditsFocus, ResetCreditsFocus),
+        new FocusRoute("Pause menu", ReadPauseMenuFocus, ResetPauseMenuFocus,
+            () => _pauseMenuPanel = null),
+        new FocusRoute("Game over", ReadGameOverFocus, ResetGameOverFocus,
+            () => { _gameOverUi = null; _gameOverApp = null; }),
+        new FocusRoute("Song selection", ReadTrackSelectFocus, ResetTrackSelectFocus,
+            () => { _trackSelectUi = null; _trackSelectApp = null; }),
+        new FocusRoute("Play mode", ReadPlayModesFocus, ResetPlayModesFocus)
+    };
 
     private bool ReadSettingsFocus()
     {
@@ -765,7 +587,6 @@ public sealed partial class BopItAccessMod : MelonMod
 
         EventSystem? eventSystem = EventSystem.current;
         GameObject? selected = eventSystem == null ? null : eventSystem.currentSelectedGameObject;
-        int selectedId = selected == null ? 0 : selected.GetInstanceID();
         Button? focusedButton = selected == null ? null : selected.GetComponentInParent<Button>();
         if (focusedButton == null)
         {
@@ -788,7 +609,6 @@ public sealed partial class BopItAccessMod : MelonMod
             return;
 
         WriteStatus($"Main menu selected object: {(selected == null ? "none" : selected.name)}.");
-        _lastObservedSelectionId = selectedId;
         _lastFocusedButtonId = focusedButtonId;
         _lastFocusedMenuLabel = label;
         Button?[] menuButtons =
@@ -856,7 +676,6 @@ public sealed partial class BopItAccessMod : MelonMod
     {
         _lastFocusedButtonId = 0;
         _lastFocusedMenuLabel = null;
-        _lastObservedSelectionId = 0;
         _mainMenuWasVisible = false;
     }
 
@@ -1013,7 +832,22 @@ public sealed partial class BopItAccessMod : MelonMod
     {
         try
         {
-            InitializePrismOnWorker();
+            while (!_shutdownRequested.IsSet)
+            {
+                try
+                {
+                    InitializePrismOnWorker();
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    ReportSpeechWorkerError("Prism initialization failed; retrying in five seconds", ex);
+                    if (_shutdownRequested.Wait(5000))
+                        return;
+                }
+            }
+            if (_shutdownRequested.IsSet)
+                return;
 
             // PlayerPrefs and Input Actions must be read on Unity's thread.
             // Wait for the first Update so the persisted OFF state and its
@@ -1040,7 +874,9 @@ public sealed partial class BopItAccessMod : MelonMod
             if (startupGeneration == Interlocked.Read(ref _speechGeneration) &&
                 !_speechSuppressedForBackground)
             {
-                bool queued = OutputSpeechOnWorker(startupAnnouncement, true);
+                bool queued = false;
+                try { queued = OutputSpeechOnWorker(startupAnnouncement, true); }
+                catch (Exception ex) { ReportSpeechWorkerError("Startup announcement failed", ex); }
                 if (queued)
                 {
                     WriteStatus($"Prism accepted the startup announcement '{startupAnnouncement}'.");
@@ -1053,132 +889,160 @@ public sealed partial class BopItAccessMod : MelonMod
                 }
             }
 
-            PreparePrismBackendOnWorker();
-            CaptureConfigVoiceChoicesOnWorker();
+            try
+            {
+                PreparePrismBackendOnWorker();
+                CaptureConfigVoiceChoicesOnWorker();
+            }
+            catch (Exception ex)
+            {
+                ReportSpeechWorkerError("Speech backend preparation failed", ex);
+            }
 
             WaitHandle[] signals = { _shutdownRequested.WaitHandle, _speechRequested };
             while (WaitHandle.WaitAny(signals) != 0)
             {
-                string? priority;
-                string? priorityFollowUp;
-                string? announcement;
-                long announcementQueuedAt;
-                List<string>? sequential;
-                bool interrupt;
-                bool silence;
-                bool description;
-                string? toggleNotice;
-                long generation;
-                lock (_speechLock)
+                string? priority = null;
+                bool priorityDispatchCompleted = false;
+                try
                 {
-                    generation = _speechGeneration;
-                    silence = _silenceRequested;
-                    _silenceRequested = false;
-                    toggleNotice = _pendingToggleSpeechNotice;
-                    _pendingToggleSpeechNotice = null;
-                    priority = _pendingPrioritySpeech;
-                    _pendingPrioritySpeech = null;
-                    priorityFollowUp = _pendingPriorityFollowUpSpeech;
-                    _pendingPriorityFollowUpSpeech = null;
-                    announcement = _pendingSpeech;
-                    announcementQueuedAt = _pendingSpeechQueuedAt;
-                    _pendingSpeech = null;
-                    _pendingSpeechQueuedAt = 0;
-                    description = _pendingSpeechIsDescription;
-                    _pendingSpeechIsDescription = false;
-                    interrupt = _pendingSpeechInterrupt;
-                    sequential = _sequentialSpeech.Count == 0
-                        ? null : new List<string>(_sequentialSpeech);
-                    _sequentialSpeech.Clear();
-                    if (priority != null || priorityFollowUp != null ||
-                        (announcement != null && !description) || sequential != null)
-                        _descriptionSpeechMayBeActive = false;
-                    else if (description)
-                        _descriptionSpeechMayBeActive = true;
-                }
-
-                if (silence)
-                {
-                    bool silenced = SilenceOutputOnWorker();
-                    WriteStatus($"Stopped screen-reader speech: {silenced}.");
-                }
-
-                // An output-mode change must refresh the effective backend
-                // even when speech is disabled or background-muted. The menu
-                // reads this worker-published capability snapshot.
-                string requestedOutputMode;
-                lock (_speechLock)
-                    requestedOutputMode = _outputMode;
-                if (!string.Equals(_prismSelectedMode, requestedOutputMode,
-                        StringComparison.OrdinalIgnoreCase))
-                    ResolvePrismSpeechBackendOnWorker(requestedOutputMode, force: true);
-
-                if (toggleNotice != null &&
-                    generation == Interlocked.Read(ref _speechGeneration))
-                {
-                    bool accepted = OutputSpeechOnWorker(toggleNotice, true);
-                    WriteStatus($"Speech toggle notice '{toggleNotice}' {(accepted ? "accepted" : "rejected")} by output backend.");
-                }
-
-                if (priority != null)
-                {
-                    bool scoreAccepted = _speechEnabled &&
-                        !_speechSuppressedForBackground &&
-                        generation == Interlocked.Read(ref _speechGeneration) &&
-                        OutputSpeechOnWorker(priority, true,
-                            protectedCapture: true);
-                    CompleteGameOverScoreSpeechDispatch(priority, scoreAccepted);
-                    WriteStatus($"Priority speech announcement '{priority}' {(scoreAccepted ? "accepted" : "rejected")} by output backend.");
-                }
-
-                if (priorityFollowUp != null && _speechEnabled &&
-                    !_speechSuppressedForBackground &&
-                    generation == Interlocked.Read(ref _speechGeneration))
-                {
-                    bool menuAccepted = OutputSpeechOnWorker(priorityFollowUp, false);
-                    WriteStatus($"Queued menu announcement '{priorityFollowUp}' {(menuAccepted ? "accepted" : "rejected")} by output backend.");
-                }
-
-                if (announcement != null && _speechEnabled &&
-                    !_speechSuppressedForBackground &&
-                    generation == Interlocked.Read(ref _speechGeneration))
-                {
-                    // A newer focus request may have arrived while a priority
-                    // score or its follow-up occupied the worker. The normal
-                    // pending slot is latest-wins, including this brief gap
-                    // between dequeue and dispatch.
-                    bool superseded;
+                    string? priorityFollowUp;
+                    string? announcement;
+                    long announcementQueuedAt;
+                    List<string>? sequential;
+                    bool interrupt;
+                    bool silence;
+                    bool description;
+                    string? toggleNotice;
+                    long generation;
                     lock (_speechLock)
-                        superseded = _pendingSpeech != null;
-                    if (!superseded)
                     {
-                        // A score sent in this batch always goes first. The
-                        // following menu speech is queued without interruption.
-                        bool followUpInterrupt = toggleNotice == null &&
-                            priority == null && priorityFollowUp == null && interrupt;
-                        long dispatchStartedAt = Environment.TickCount64;
-                        bool accepted = OutputSpeechOnWorker(announcement, followUpInterrupt);
-                        if (accepted)
-                            LogPrismQueueDelayOnWorker(announcementQueuedAt, dispatchStartedAt);
-                        WriteStatus($"Speech announcement '{announcement}' (interrupt {followUpInterrupt}) {(accepted ? "accepted" : "rejected")} by output backend.");
-                    }
-                    else if (description)
-                    {
-                        lock (_speechLock)
+                        generation = _speechGeneration;
+                        silence = _silenceRequested;
+                        _silenceRequested = false;
+                        toggleNotice = _pendingToggleSpeechNotice;
+                        _pendingToggleSpeechNotice = null;
+                        priority = _pendingPrioritySpeech;
+                        _pendingPrioritySpeech = null;
+                        priorityFollowUp = _pendingPriorityFollowUpSpeech;
+                        _pendingPriorityFollowUpSpeech = null;
+                        announcement = _pendingSpeech;
+                        announcementQueuedAt = _pendingSpeechQueuedAt;
+                        _pendingSpeech = null;
+                        _pendingSpeechQueuedAt = 0;
+                        description = _pendingSpeechIsDescription;
+                        _pendingSpeechIsDescription = false;
+                        interrupt = _pendingSpeechInterrupt;
+                        sequential = _sequentialSpeech.Count == 0
+                            ? null : new List<string>(_sequentialSpeech);
+                        _sequentialSpeech.Clear();
+                        if (priority != null || priorityFollowUp != null ||
+                            (announcement != null && !description) || sequential != null)
                             _descriptionSpeechMayBeActive = false;
+                        else if (description)
+                            _descriptionSpeechMayBeActive = true;
+                    }
+
+                    if (silence)
+                    {
+                        bool silenced = SilenceOutputOnWorker();
+                        WriteStatus($"Stopped screen-reader speech: {silenced}.");
+                    }
+
+                    // An output-mode change must refresh the effective backend
+                    // even when speech is disabled or background-muted. The menu
+                    // reads this worker-published capability snapshot.
+                    string requestedOutputMode;
+                    lock (_speechLock)
+                        requestedOutputMode = _outputMode;
+                    if (!string.Equals(_prismSelectedMode, requestedOutputMode,
+                            StringComparison.OrdinalIgnoreCase))
+                        ResolvePrismSpeechBackendOnWorker(requestedOutputMode, force: true);
+
+                    if (toggleNotice != null &&
+                        generation == Interlocked.Read(ref _speechGeneration))
+                    {
+                        bool accepted = OutputSpeechOnWorker(toggleNotice, true);
+                        WriteStatus($"Speech toggle notice '{toggleNotice}' {(accepted ? "accepted" : "rejected")} by output backend.");
+                    }
+
+                    if (priority != null)
+                    {
+                        bool scoreAccepted = _speechEnabled &&
+                            !_speechSuppressedForBackground &&
+                            generation == Interlocked.Read(ref _speechGeneration) &&
+                            OutputSpeechOnWorker(priority, true,
+                                protectedCapture: true);
+                        CompleteGameOverScoreSpeechDispatch(priority, scoreAccepted);
+                        priorityDispatchCompleted = true;
+                        WriteStatus($"Priority speech announcement '{priority}' {(scoreAccepted ? "accepted" : "rejected")} by output backend.");
+                    }
+
+                    if (priorityFollowUp != null && _speechEnabled &&
+                        !_speechSuppressedForBackground &&
+                        generation == Interlocked.Read(ref _speechGeneration))
+                    {
+                        bool menuAccepted = OutputSpeechOnWorker(priorityFollowUp, false);
+                        WriteStatus($"Queued menu announcement '{priorityFollowUp}' {(menuAccepted ? "accepted" : "rejected")} by output backend.");
+                    }
+
+                    if (announcement != null && _speechEnabled &&
+                        !_speechSuppressedForBackground &&
+                        generation == Interlocked.Read(ref _speechGeneration))
+                    {
+                        // A newer focus request may have arrived while a priority
+                        // score or its follow-up occupied the worker. The normal
+                        // pending slot is latest-wins, including this brief gap
+                        // between dequeue and dispatch.
+                        bool superseded;
+                        lock (_speechLock)
+                            superseded = _pendingSpeech != null;
+                        if (!superseded)
+                        {
+                            // A score sent in this batch always goes first. The
+                            // following menu speech is queued without interruption.
+                            bool followUpInterrupt = toggleNotice == null &&
+                                priority == null && priorityFollowUp == null && interrupt;
+                            long dispatchStartedAt = Environment.TickCount64;
+                            bool accepted = OutputSpeechOnWorker(announcement, followUpInterrupt);
+                            if (accepted)
+                                LogPrismQueueDelayOnWorker(announcementQueuedAt, dispatchStartedAt);
+                            WriteStatus($"Speech announcement '{announcement}' (interrupt {followUpInterrupt}) {(accepted ? "accepted" : "rejected")} by output backend.");
+                        }
+                        else if (description)
+                        {
+                            lock (_speechLock)
+                                _descriptionSpeechMayBeActive = false;
+                        }
+                    }
+
+                    if (sequential != null)
+                    {
+                        foreach (string line in sequential)
+                        {
+                            if (!_speechEnabled || _speechSuppressedForBackground ||
+                                generation != Interlocked.Read(ref _speechGeneration))
+                                break;
+                            bool accepted = OutputSpeechOnWorker(line, false);
+                            WriteStatus($"Queued sequential announcement '{line}' {(accepted ? "accepted" : "rejected")} by output backend.");
+                        }
                     }
                 }
-
-                if (sequential != null)
+                catch (Exception ex)
                 {
-                    foreach (string line in sequential)
+                    // A backend error must not end all speech for this session.
+                    // Release a failed automatic-score hold so later menus can speak.
+                    lock (_speechLock)
                     {
-                        if (!_speechEnabled || _speechSuppressedForBackground ||
-                            generation != Interlocked.Read(ref _speechGeneration))
-                            break;
-                        bool accepted = OutputSpeechOnWorker(line, false);
-                        WriteStatus($"Queued sequential announcement '{line}' {(accepted ? "accepted" : "rejected")} by output backend.");
+                        if (priority != null && !priorityDispatchCompleted &&
+                            _pendingPrioritySpeech == null)
+                        {
+                            Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
+                            Volatile.Write(ref _gameOverScoreSpeechProtectedUntil, 0);
+                        }
+                        _descriptionSpeechMayBeActive = false;
                     }
+                    ReportSpeechWorkerError("Speech dispatch failed; continuing with the next request", ex);
                 }
             }
         }
@@ -1189,27 +1053,85 @@ public sealed partial class BopItAccessMod : MelonMod
         }
         finally
         {
-            ShutdownPrismOnWorker();
-            ReleaseSapiOnWorker();
+            try { ShutdownPrismOnWorker(); }
+            catch (Exception ex) { WriteStatus("Prism shutdown failed: " + ex.Message); }
+            try { ReleaseSapiOnWorker(); }
+            catch (Exception ex) { WriteStatus("SAPI shutdown failed: " + ex.Message); }
         }
+    }
+
+    private void ReportSpeechWorkerError(string operation, Exception error)
+    {
+        long now = Environment.TickCount64;
+        if (now < _nextSpeechWorkerErrorAt)
+            return;
+        _nextSpeechWorkerErrorAt = now + 5000;
+        WriteStatus(operation + ": " + error);
+        MelonLogger.Error(operation + ": " + error.Message);
     }
 
     public override void OnDeinitializeMelon()
     {
-        FlushSettingsConfig(force: true);
-        WriteStatus("Mod shutdown requested.");
-        SetGuideMusicFilter(false);
-        StopBackgroundAudio();
+        if (_modStopping)
+            return;
+        _modStopping = true;
+        // Signal before calling external code: a cleanup exception must never
+        // leave the worker running or allow later Unity callbacks to queue work.
         _shutdownRequested.Set();
+        lock (_speechLock)
+        {
+            _speechGeneration++;
+            _sapiRenderSerial++;
+            _pendingSpeech = null;
+            _pendingPrioritySpeech = null;
+            _pendingPriorityFollowUpSpeech = null;
+            _pendingToggleSpeechNotice = null;
+            _sequentialSpeech.Clear();
+        }
+        _speechRequested.Set();
+        ClearNativeHookOwners();
+        Interlocked.CompareExchange(ref _activeWelcomeMod, null, this);
+        RunShutdownCleanup("settings save", () => FlushSettingsConfig(force: true));
+        RunShutdownCleanup("result listener", DetachResultRankListener);
+        RunShutdownCleanup("input resources", CancelAndReleaseOwnedControlResources);
+        RunShutdownCleanup("guide music filter", () => SetGuideMusicFilter(false));
+        RunShutdownCleanup("background audio", StopBackgroundAudio);
+        // Native output may be blocked inside a third-party driver. Do not
+        // hang game exit, or release its context from the wrong thread.
+        if (_speechThread?.IsAlive == true && !_speechThread.Join(500))
+            WriteStatus("Speech worker is still finishing native shutdown.");
+        WriteStatus("Mod shutdown requested.");
     }
 
+    private static void RunShutdownCleanup(string name, Action cleanup)
+    {
+        try { cleanup(); }
+        catch (Exception ex) { WriteStatus("Shutdown " + name + " failed: " + ex.Message); }
+    }
+
+    private const long MaximumStatusLogBytes = 8 * 1024 * 1024;
     private static void WriteStatus(string message)
     {
         try
         {
-            Directory.CreateDirectory(Path.GetDirectoryName(StatusLogPath)!);
             lock (StatusLogLock)
             {
+                string folder = Path.GetDirectoryName(StatusLogPath)!;
+                Directory.CreateDirectory(folder);
+                // Avoid following a substituted log file or Mods directory.
+                if ((File.GetAttributes(folder) & FileAttributes.ReparsePoint) != 0 ||
+                    IsLinkedStatusFile(StatusLogPath))
+                    return;
+                if (File.Exists(StatusLogPath) &&
+                    new FileInfo(StatusLogPath).Length >= MaximumStatusLogBytes)
+                {
+                    string previous = StatusLogPath + ".previous";
+                    if (IsLinkedStatusFile(previous))
+                        return;
+                    File.Move(StatusLogPath, previous, overwrite: true);
+                }
+                if (message.Length > 8192)
+                    message = message[..8192] + " [log entry truncated]";
                 File.AppendAllText(StatusLogPath, $"[{DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}] {message}{Environment.NewLine}");
             }
         }
@@ -1219,4 +1141,6 @@ public sealed partial class BopItAccessMod : MelonMod
         }
     }
 
+    private static bool IsLinkedStatusFile(string path) =>
+        File.Exists(path) && (File.GetAttributes(path) & FileAttributes.ReparsePoint) != 0;
 }

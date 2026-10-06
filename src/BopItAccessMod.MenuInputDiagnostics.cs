@@ -9,6 +9,7 @@ namespace BopItAccess;
 
 public sealed partial class BopItAccessMod
 {
+#if DEBUG
     private sealed class PendingMenuInputDiagnostic
     {
         internal string Input = string.Empty;
@@ -255,4 +256,8 @@ public sealed partial class BopItAccessMod
                 SelectedId = selectedId
             });
     }
+#else
+    private void BeginMenuInputDiagnosticFrame() { }
+    private void FinishMenuInputDiagnosticFrame() { }
+#endif
 }

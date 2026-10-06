@@ -16,9 +16,7 @@ public sealed partial class BopItAccessMod
     private AddedChangeSpeechOutputControlRow? _changeSpeechOutputControlRow;
     private InputActionRebindingExtensions.RebindingOperation? _changeSpeechOutputRebindOperation;
     private InputRebindingManager? _changeSpeechOutputRebindManager;
-    private InputActionMap? _changeSpeechOutputRebindUiMap;
-    private bool _changeSpeechOutputRebindUiMapWasEnabled;
-    private bool _changeSpeechOutputRebindActionWasEnabled;
+    private ControlRebindInputState? _changeSpeechOutputRebindInputState;
     private int _changeSpeechOutputRebindIndex;
     private string? _changeSpeechOutputRebindOriginalPath;
     private long _nextChangeSpeechOutputControlErrorAt;
@@ -288,8 +286,6 @@ public sealed partial class BopItAccessMod
             }
             try
             {
-                if (wasRebinding)
-                    RestoreChangeSpeechOutputOriginalOverride();
                 CancelChangeSpeechOutputControlRebinding(false);
             }
             catch (Exception cleanup)
@@ -313,7 +309,6 @@ public sealed partial class BopItAccessMod
             _changeSpeechOutputControlRow = null;
             if (_changeSpeechOutputRebindOperation != null)
             {
-                RestoreChangeSpeechOutputOriginalOverride();
                 CancelChangeSpeechOutputControlRebinding(false);
             }
             return;
@@ -326,7 +321,6 @@ public sealed partial class BopItAccessMod
         {
             if (_changeSpeechOutputRebindOperation != null)
             {
-                RestoreChangeSpeechOutputOriginalOverride();
                 CancelChangeSpeechOutputControlRebinding(false);
             }
             return;
@@ -377,17 +371,12 @@ public sealed partial class BopItAccessMod
         string layout = gamepad ? "<Gamepad>" : "<Keyboard>";
         string cancelPath = gamepad ? "<Gamepad>/buttonEast" : "<Keyboard>/escape";
         string? original = action.bindings[index].overridePath;
-        InputActionMap? uiMap = manager.inputActions?.FindActionMap("UI", false);
-        bool uiWasEnabled = uiMap?.enabled ?? false;
-        bool actionWasEnabled = action.enabled;
-        if (actionWasEnabled)
-            action.Disable();
-        if (uiWasEnabled)
-            uiMap!.Disable();
+        ControlRebindInputState? inputState = null;
 
         InputActionRebindingExtensions.RebindingOperation? operation = null;
         try
         {
+            inputState = PauseControlRebindInputs(manager, action);
             operation = InputActionRebindingExtensions.PerformInteractiveRebinding(action, index);
             operation.WithTargetBinding(index)
                 .WithControlsHavingToMatchPath(layout)
@@ -399,20 +388,14 @@ public sealed partial class BopItAccessMod
                 .Start();
             _changeSpeechOutputRebindOperation = operation;
             _changeSpeechOutputRebindManager = manager;
-            _changeSpeechOutputRebindUiMap = uiMap;
-            _changeSpeechOutputRebindUiMapWasEnabled = uiWasEnabled;
-            _changeSpeechOutputRebindActionWasEnabled = actionWasEnabled;
+            _changeSpeechOutputRebindInputState = inputState;
             _changeSpeechOutputRebindIndex = index;
             _changeSpeechOutputRebindOriginalPath = original;
             WriteStatus($"Rebinding Change Speech Output on {device}, binding {index}.");
         }
         catch
         {
-            operation?.Dispose();
-            if (uiWasEnabled)
-                uiMap!.Enable();
-            if (actionWasEnabled)
-                action.Enable();
+            ReleaseControlRebindingCapture(operation, inputState);
             throw;
         }
     }
@@ -446,8 +429,7 @@ public sealed partial class BopItAccessMod
 
         // The operation has already applied its override to the targeted
         // keyboard or controller binding. Persist only that binding.
-        PlayerPrefs.SetString(index == 1 ? ChangeSpeechOutputGamepadKey : ChangeSpeechOutputKeyboardKey, path!);
-        SaveModPreferencesAndConfig();
+        SaveReboundModControlPreference(index == 1 ? ChangeSpeechOutputGamepadKey : ChangeSpeechOutputKeyboardKey, path!);
         ReleaseChangeSpeechOutputControlRebinding();
         InputRebindingEvents.RefreshPrompts?.Invoke();
         RefreshChangeSpeechOutputControlPrompts();
@@ -486,6 +468,11 @@ public sealed partial class BopItAccessMod
     private void CancelChangeSpeechOutputControlRebinding(bool announce = true)
     {
         bool wasActive = _changeSpeechOutputRebindOperation != null;
+        if (wasActive)
+        {
+            try { RestoreChangeSpeechOutputOriginalOverride(); }
+            catch (Exception ex) { WriteStatus("Could not restore ChangeSpeechOutput binding: " + ex.Message); }
+        }
         ReleaseChangeSpeechOutputControlRebinding();
         if (wasActive)
             _lastControlsRebinding = false;
@@ -496,28 +483,13 @@ public sealed partial class BopItAccessMod
     private void ReleaseChangeSpeechOutputControlRebinding()
     {
         InputActionRebindingExtensions.RebindingOperation? operation = _changeSpeechOutputRebindOperation;
-        InputActionMap? uiMap = _changeSpeechOutputRebindUiMap;
-        bool uiWasEnabled = _changeSpeechOutputRebindUiMapWasEnabled;
-        bool actionWasEnabled = _changeSpeechOutputRebindActionWasEnabled;
+        ControlRebindInputState? inputState = _changeSpeechOutputRebindInputState;
         _changeSpeechOutputRebindOperation = null;
         _changeSpeechOutputRebindManager = null;
-        _changeSpeechOutputRebindUiMap = null;
-        _changeSpeechOutputRebindUiMapWasEnabled = false;
-        _changeSpeechOutputRebindActionWasEnabled = false;
+        _changeSpeechOutputRebindInputState = null;
         _changeSpeechOutputRebindIndex = 0;
         _changeSpeechOutputRebindOriginalPath = null;
-        if (operation != null)
-        {
-            if (operation.started && !operation.completed && !operation.canceled)
-                operation.Cancel();
-            operation.Dispose();
-        }
-        if (uiMap != null && uiWasEnabled)
-            uiMap.Enable();
-        if (_changeSpeechOutputAction != null && actionWasEnabled)
-            _changeSpeechOutputAction.Enable();
-        if (operation != null)
-            _changeSpeechOutputSuppressPressThroughFrame = Time.frameCount + 1;
+        ReleaseControlRebindingCapture(operation, inputState);
     }
 
     private void RestoreChangeSpeechOutputOriginalOverride()

@@ -77,6 +77,18 @@ public sealed partial class BopItAccessMod
 
         int panelId = panel.GetInstanceID();
         int focusedId = control.GetInstanceID();
+        string? value = ReadUncoveredControlValue(control);
+        if (panelId == _uncoveredPanelId && focusedId == _uncoveredFocusedId)
+        {
+            if (value != null && !string.Equals(value, _uncoveredControlValue,
+                    StringComparison.Ordinal))
+            {
+                _uncoveredControlValue = value;
+                RecordButtonHintUiActivity(now);
+                QueueSpeech(value);
+            }
+            return true;
+        }
         string? label = ReadUncoveredControlLabel(control);
         if (label == null)
             label = CleanSpeechValue(control.gameObject.name);
@@ -84,13 +96,13 @@ public sealed partial class BopItAccessMod
             return false;
 
         string type = control is Toggle ? "toggle" :
-            control is Slider ? "slider" :
+            control is Slider or Scrollbar ? "slider" :
             control is TMP_InputField ? "text field" : "button";
         (int index, int count) = IndexUncoveredControl(panel, focusedId);
-        string? value = ReadUncoveredControlValue(control);
         string focus = WithControlType(label, type);
         if (value != null)
             focus += ", " + value;
+        focus = WithUnitySliderRange(focus, control);
         focus = WithMenuIndex(focus, index, count);
         if (panelId != _uncoveredPanelId)
         {
@@ -110,13 +122,7 @@ public sealed partial class BopItAccessMod
             _uncoveredControlValue = value;
             QueueFocusSpeech(focus);
         }
-        else if (value != null &&
-                 !string.Equals(value, _uncoveredControlValue, StringComparison.Ordinal))
-        {
-            _uncoveredControlValue = value;
-            RecordButtonHintUiActivity(Environment.TickCount64);
-            QueueSpeech(value);
-        }
+
 
         return true;
     }
@@ -182,6 +188,8 @@ public sealed partial class BopItAccessMod
             TMP_InputField field => CleanSpeechValue(field.text) ?? L("Empty"),
             Toggle toggle => toggle.isOn ? L("On") : L("Off"),
             Slider slider => slider.value.ToString("0.##",
+                System.Globalization.CultureInfo.InvariantCulture),
+            Scrollbar scrollbar => scrollbar.value.ToString("0.##",
                 System.Globalization.CultureInfo.InvariantCulture),
             _ => null
         };

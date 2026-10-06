@@ -16,9 +16,7 @@ public sealed partial class BopItAccessMod
     private AddedDescriptionControlRow? _descriptionControlRow;
     private InputActionRebindingExtensions.RebindingOperation? _descriptionRebindOperation;
     private InputRebindingManager? _descriptionRebindManager;
-    private InputActionMap? _descriptionRebindUiMap;
-    private bool _descriptionRebindUiMapWasEnabled;
-    private bool _descriptionRebindActionWasEnabled;
+    private ControlRebindInputState? _descriptionRebindInputState;
     private int _descriptionRebindIndex;
     private string? _descriptionRebindOriginalPath;
     private long _nextDescriptionControlErrorAt;
@@ -258,8 +256,6 @@ public sealed partial class BopItAccessMod
             }
             try
             {
-                if (wasRebinding)
-                    RestoreDescriptionOriginalOverride();
                 CancelDescriptionControlRebinding(false);
             }
             catch (Exception cleanup)
@@ -283,7 +279,6 @@ public sealed partial class BopItAccessMod
             _descriptionControlRow = null;
             if (_descriptionRebindOperation != null)
             {
-                RestoreDescriptionOriginalOverride();
                 CancelDescriptionControlRebinding(false);
             }
             return;
@@ -296,7 +291,6 @@ public sealed partial class BopItAccessMod
         {
             if (_descriptionRebindOperation != null)
             {
-                RestoreDescriptionOriginalOverride();
                 CancelDescriptionControlRebinding(false);
             }
             return;
@@ -347,17 +341,12 @@ public sealed partial class BopItAccessMod
         string layout = gamepad ? "<Gamepad>" : "<Keyboard>";
         string cancelPath = gamepad ? "<Gamepad>/buttonEast" : "<Keyboard>/escape";
         string? original = action.bindings[index].overridePath;
-        InputActionMap? uiMap = manager.inputActions?.FindActionMap("UI", false);
-        bool uiWasEnabled = uiMap?.enabled ?? false;
-        bool actionWasEnabled = action.enabled;
-        if (actionWasEnabled)
-            action.Disable();
-        if (uiWasEnabled)
-            uiMap!.Disable();
+        ControlRebindInputState? inputState = null;
 
         InputActionRebindingExtensions.RebindingOperation? operation = null;
         try
         {
+            inputState = PauseControlRebindInputs(manager, action);
             operation = InputActionRebindingExtensions.PerformInteractiveRebinding(action, index);
             operation.WithTargetBinding(index)
                 .WithControlsHavingToMatchPath(layout)
@@ -369,20 +358,14 @@ public sealed partial class BopItAccessMod
                 .Start();
             _descriptionRebindOperation = operation;
             _descriptionRebindManager = manager;
-            _descriptionRebindUiMap = uiMap;
-            _descriptionRebindUiMapWasEnabled = uiWasEnabled;
-            _descriptionRebindActionWasEnabled = actionWasEnabled;
+            _descriptionRebindInputState = inputState;
             _descriptionRebindIndex = index;
             _descriptionRebindOriginalPath = original;
             WriteStatus($"Rebinding Read Descriptions on {device}, binding {index}.");
         }
         catch
         {
-            operation?.Dispose();
-            if (uiWasEnabled)
-                uiMap!.Enable();
-            if (actionWasEnabled)
-                action.Enable();
+            ReleaseControlRebindingCapture(operation, inputState);
             throw;
         }
     }
@@ -410,8 +393,7 @@ public sealed partial class BopItAccessMod
 
         // The operation has already applied its override to the targeted
         // keyboard or controller binding. Persist only that binding.
-        PlayerPrefs.SetString(index == 1 ? DescriptionGamepadKey : DescriptionKeyboardKey, path!);
-        SaveModPreferencesAndConfig();
+        SaveReboundModControlPreference(index == 1 ? DescriptionGamepadKey : DescriptionKeyboardKey, path!);
         ReleaseDescriptionControlRebinding();
         InputRebindingEvents.RefreshPrompts?.Invoke();
         RefreshDescriptionControlPrompts();
@@ -438,6 +420,11 @@ public sealed partial class BopItAccessMod
     private void CancelDescriptionControlRebinding(bool announce = true)
     {
         bool wasActive = _descriptionRebindOperation != null;
+        if (wasActive)
+        {
+            try { RestoreDescriptionOriginalOverride(); }
+            catch (Exception ex) { WriteStatus("Could not restore Description binding: " + ex.Message); }
+        }
         ReleaseDescriptionControlRebinding();
         if (wasActive)
             _lastControlsRebinding = false;
@@ -448,26 +435,13 @@ public sealed partial class BopItAccessMod
     private void ReleaseDescriptionControlRebinding()
     {
         InputActionRebindingExtensions.RebindingOperation? operation = _descriptionRebindOperation;
-        InputActionMap? uiMap = _descriptionRebindUiMap;
-        bool uiWasEnabled = _descriptionRebindUiMapWasEnabled;
-        bool actionWasEnabled = _descriptionRebindActionWasEnabled;
+        ControlRebindInputState? inputState = _descriptionRebindInputState;
         _descriptionRebindOperation = null;
         _descriptionRebindManager = null;
-        _descriptionRebindUiMap = null;
-        _descriptionRebindUiMapWasEnabled = false;
-        _descriptionRebindActionWasEnabled = false;
+        _descriptionRebindInputState = null;
         _descriptionRebindIndex = 0;
         _descriptionRebindOriginalPath = null;
-        if (operation != null)
-        {
-            if (operation.started && !operation.completed && !operation.canceled)
-                operation.Cancel();
-            operation.Dispose();
-        }
-        if (uiMap != null && uiWasEnabled)
-            uiMap.Enable();
-        if (_descriptionAction != null && actionWasEnabled)
-            _descriptionAction.Enable();
+        ReleaseControlRebindingCapture(operation, inputState);
     }
 
     private void RestoreDescriptionOriginalOverride()
@@ -502,10 +476,15 @@ public sealed partial class BopItAccessMod
             return false;
         if (string.Equals(a, b, StringComparison.OrdinalIgnoreCase))
             return true;
-        string? controlA = InputSystem.FindControl(a)?.path;
-        string? controlB = InputSystem.FindControl(b)?.path;
-        return controlA != null && controlB != null &&
-            string.Equals(controlA, controlB, StringComparison.OrdinalIgnoreCase);
+        if (string.Equals(ConfigModConflictPath(a), ConfigModConflictPath(b),
+                StringComparison.OrdinalIgnoreCase))
+            return true;
+        // A generic path can match every gamepad. Resolving each path to only
+        // its first control misses a duplicate captured on a second controller.
+        InputControl? controlA = InputSystem.FindControl(a);
+        InputControl? controlB = InputSystem.FindControl(b);
+        return (controlB != null && InputControlPath.Matches(a, controlB)) ||
+            (controlA != null && InputControlPath.Matches(b, controlA));
     }
 
     private sealed record AddedDescriptionControlRow(

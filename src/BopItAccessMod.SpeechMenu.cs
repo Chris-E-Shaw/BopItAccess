@@ -1410,6 +1410,7 @@ public sealed partial class BopItAccessMod
             _speechMenuOpen = false;
             _speechMenuInputReady = false;
             CancelRestoreModDefaultsConfirmation();
+            CancelResetWelcomeScreenConfirmation();
             ResetSpeechMenuFocus();
             return false;
         }
@@ -1434,6 +1435,8 @@ public sealed partial class BopItAccessMod
         SpeechUiOption? focused = null;
         foreach (SpeechUiOption option in _speechUiOptions)
         {
+            if (option.Row == null || !option.Row.gameObject.activeInHierarchy)
+                continue;
             if (selectedRow != null && option.Row.GetInstanceID() == selectedRow.GetInstanceID())
             {
                 focused = option;

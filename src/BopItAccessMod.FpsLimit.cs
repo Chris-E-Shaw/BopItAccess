@@ -24,10 +24,21 @@ public sealed partial class BopItAccessMod
     {
         if (!_fpsLimitInitialized)
         {
-            int saved = PlayerPrefs.GetInt(FpsLimitPreference, 60);
-            _fpsLimit = Array.IndexOf(FpsLimitChoices, saved) >= 0 ? saved : 60;
-            _fpsLimitInitialized = true;
-            WriteStatus($"FPS limit: {FpsLimitText(_fpsLimit)}.");
+            try
+            {
+                int saved = PlayerPrefs.GetInt(FpsLimitPreference, 60);
+                _fpsLimit = Array.IndexOf(FpsLimitChoices, saved) >= 0 ? saved : 60;
+                _fpsLimitInitialized = true;
+                WriteStatus($"FPS limit: {FpsLimitText(_fpsLimit)}.");
+            }
+            catch (Exception ex)
+            {
+                if (Environment.TickCount64 >= _nextFpsSettingsErrorLogAt)
+                {
+                    _nextFpsSettingsErrorLogAt = Environment.TickCount64 + 5000;
+                    WriteStatus("Could not read FPS limit preference: " + ex.Message);
+                }
+            }
         }
 
         // Unity's desktop targetFrameRate is ignored while vSync is enabled.
@@ -184,8 +195,15 @@ public sealed partial class BopItAccessMod
             return;
 
         _fpsLimit = FpsLimitChoices[next];
-        PlayerPrefs.SetInt(FpsLimitPreference, _fpsLimit);
-        SaveModPreferencesAndConfig();
+        try
+        {
+            PlayerPrefs.SetInt(FpsLimitPreference, _fpsLimit);
+            SaveModPreferencesAndConfig();
+        }
+        catch (Exception ex)
+        {
+            WriteStatus("Could not save FPS limit preference: " + ex.Message);
+        }
         _fpsSettingsSlider?.SetValue(L(FpsLimitText(_fpsLimit)));
         // Apply on the same frame so the displayed value matches the cap.
         QualitySettings.vSyncCount = 0;

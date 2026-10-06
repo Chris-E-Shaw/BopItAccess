@@ -17,7 +17,8 @@ public sealed partial class BopItAccessMod
     private static string _gameLocale = "en";
     private static readonly ConcurrentDictionary<string, IReadOnlyDictionary<string, string>>
         LocaleCatalogs = new(StringComparer.OrdinalIgnoreCase);
-    private static readonly ConcurrentDictionary<string, (string English, string Translation)[]>
+    private static readonly ConcurrentDictionary<string,
+        IReadOnlyDictionary<char, (string English, string Translation)[]>>
         LocaleFragments = new(StringComparer.OrdinalIgnoreCase);
     private static readonly string[] BindingDisplayTerms =
     {
@@ -47,6 +48,26 @@ public sealed partial class BopItAccessMod
     private long _nextLocaleErrorLogAt;
 
     private static string CurrentGameLocale => Volatile.Read(ref _gameLocale);
+
+    private string? ReadLoadedNativeGameLocale()
+    {
+        try
+        {
+            Settings? settings = _nativeLoadedSettings;
+            return settings == null ? null :
+                NormalizeGameLocale(settings.SettingsData?.Language);
+        }
+        catch (Exception ex)
+        {
+            long now = Environment.TickCount64;
+            if (now >= _nextLocaleErrorLogAt)
+            {
+                _nextLocaleErrorLogAt = now + 5000;
+                WriteStatus("Could not read loaded native language: " + ex.Message);
+            }
+            return null;
+        }
+    }
 
     private static string L(string english)
     {
@@ -139,7 +160,7 @@ public sealed partial class BopItAccessMod
             return exact;
 
         string locale = CurrentGameLocale;
-        (string English, string Translation)[] fragments =
+        IReadOnlyDictionary<char, (string English, string Translation)[]> fragments =
             LocaleFragments.GetOrAdd(locale, key => LocaleCatalogs
                 .GetOrAdd(key, LoadLocaleCatalog)
                 .Where(pair => pair.Key.Length >= 3 &&
@@ -148,8 +169,9 @@ public sealed partial class BopItAccessMod
                         StringComparison.Ordinal))
                 .OrderByDescending(pair => pair.Key.Length)
                 .Select(pair => (pair.Key, pair.Value))
-                .ToArray());
-        if (fragments.Length == 0)
+                .GroupBy(pair => pair.Key[0])
+                .ToDictionary(group => group.Key, group => group.ToArray()));
+        if (fragments.Count == 0)
             return text;
 
         int first = 0;
@@ -179,31 +201,34 @@ public sealed partial class BopItAccessMod
     }
 
     private static bool TryMatchFragment(string text, int position,
-        (string English, string Translation)[] fragments,
+        IReadOnlyDictionary<char, (string English, string Translation)[]> fragments,
         out int length, out string replacement)
     {
-        foreach ((string english, string translation) in fragments)
+        if (fragments.TryGetValue(text[position], out var candidates))
         {
-            // Bop is also the first word of the game's and mod's names.
-            // Fragment fallback must never turn those proper names into a
-            // translated gameplay command.
-            if (english == "Bop" && text.AsSpan(position).StartsWith(
-                    "Bop It".AsSpan(), StringComparison.Ordinal))
-                continue;
-            if (position + english.Length > text.Length ||
-                !text.AsSpan(position).StartsWith(english.AsSpan(),
-                    StringComparison.Ordinal))
-                continue;
-            if (position > 0 && char.IsLetterOrDigit(english[0]) &&
-                char.IsLetterOrDigit(text[position - 1]))
-                continue;
-            int after = position + english.Length;
-            if (after < text.Length && char.IsLetterOrDigit(english[^1]) &&
-                char.IsLetterOrDigit(text[after]))
-                continue;
-            length = english.Length;
-            replacement = translation;
-            return true;
+            foreach ((string english, string translation) in candidates)
+            {
+                // Bop is also the first word of the game's and mod's names.
+                // Fragment fallback must never turn those proper names into a
+                // translated gameplay command.
+                if (english == "Bop" && text.AsSpan(position).StartsWith(
+                        "Bop It".AsSpan(), StringComparison.Ordinal))
+                    continue;
+                if (position + english.Length > text.Length ||
+                    !text.AsSpan(position).StartsWith(english.AsSpan(),
+                        StringComparison.Ordinal))
+                    continue;
+                if (position > 0 && char.IsLetterOrDigit(english[0]) &&
+                    char.IsLetterOrDigit(text[position - 1]))
+                    continue;
+                int after = position + english.Length;
+                if (after < text.Length && char.IsLetterOrDigit(english[^1]) &&
+                    char.IsLetterOrDigit(text[after]))
+                    continue;
+                length = english.Length;
+                replacement = translation;
+                return true;
+            }
         }
         length = 0;
         replacement = string.Empty;
@@ -297,8 +322,7 @@ public sealed partial class BopItAccessMod
         // for language changes made in Settings.
         if (!_speechToggleInitialized && _nativeSettingsLoadObserved)
         {
-            string? savedLocale = NormalizeGameLocale(
-                _nativeLoadedSettings?.SettingsData?.Language);
+            string? savedLocale = ReadLoadedNativeGameLocale();
             if (savedLocale != null)
                 locale = savedLocale;
         }

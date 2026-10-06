@@ -282,6 +282,7 @@ public sealed partial class BopItAccessMod
                 _creditsLines.Count));
             missing++;
         }
+        _creditsSingleFallbackSpoken = true;
         WriteStatus($"{reason}; queued {missing} remaining credit lines.");
     }
 

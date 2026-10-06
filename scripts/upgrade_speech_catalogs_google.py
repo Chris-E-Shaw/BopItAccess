@@ -118,6 +118,7 @@ def main() -> None:
         if rejected:
             cache = (ROOT / "tools" / "translation-cache" /
                      f"google-speech-rejected-{locale}.json")
+            cache.parent.mkdir(parents=True, exist_ok=True)
             cache.write_text(json.dumps(rejected, ensure_ascii=False, indent=2),
                              encoding="utf-8")
 

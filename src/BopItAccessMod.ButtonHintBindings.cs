@@ -50,28 +50,20 @@ public sealed partial class BopItAccessMod
     }
 
     private string HintNativeAction(string name, string purpose,
-        string keyboardFallback, string controllerFallback,
-        bool controllerIsAxis = false) =>
+        string keyboardFallback, string controllerFallback) =>
         HintActionSentence(FindHintAction("Gameplay", name), null, purpose,
-            keyboardFallback, controllerFallback, null,
-            controllerIsAxis ? "axis" : "press");
+            keyboardFallback, controllerFallback);
 
     private string HintActionSentence(InputAction? preferred,
         InputAction? secondary, string purpose, string keyboardFallback,
-        string controllerFallback, string? partName = null,
-        string controllerVerb = "press")
+        string controllerFallback, string? partName = null)
     {
         string keyboard = ReadHintKeyboardBinding(preferred, partName) ??
             ReadHintKeyboardBinding(secondary, partName) ?? keyboardFallback;
         string controller = ReadHintControllerBinding(preferred, partName,
             controllerFallback) ?? ReadHintControllerBinding(secondary,
             partName, controllerFallback) ?? controllerFallback;
-        if (controllerVerb == "axis")
-            controllerVerb = controller.Contains("stick",
-                StringComparison.OrdinalIgnoreCase) &&
-                !controller.Contains("press", StringComparison.OrdinalIgnoreCase)
-                ? "move" : "press";
-        return FormatHintPress(keyboard, controller, purpose, controllerVerb);
+        return FormatHintPress(keyboard, controller, purpose);
     }
 
     private static string? ReadHintKeyboardBinding(InputAction? action,

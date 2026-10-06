@@ -30,11 +30,18 @@ public sealed partial class BopItAccessMod
     {
         if (!_backgroundAudioPreferenceLoaded)
         {
-            _muteAudioInBackground =
-                PlayerPrefs.GetInt(BackgroundAudioPreference, 0) == 1;
-            _backgroundAudioPreferenceLoaded = true;
-            WriteStatus("Mute audio in background: " +
-                (_muteAudioInBackground ? "On." : "Off."));
+            try
+            {
+                _muteAudioInBackground =
+                    PlayerPrefs.GetInt(BackgroundAudioPreference, 0) == 1;
+                _backgroundAudioPreferenceLoaded = true;
+                WriteStatus("Mute audio in background: " +
+                    (_muteAudioInBackground ? "On." : "Off."));
+            }
+            catch (Exception ex)
+            {
+                LogBackgroundAudioError("Could not read background audio preference", ex);
+            }
         }
 
         // Unity can suspend Update when the window loses focus. Its focus
@@ -257,9 +264,16 @@ public sealed partial class BopItAccessMod
     private void OnBackgroundAudioSubmitted()
     {
         _muteAudioInBackground = !_muteAudioInBackground;
-        PlayerPrefs.SetInt(BackgroundAudioPreference,
-            _muteAudioInBackground ? 1 : 0);
-        SaveModPreferencesAndConfig();
+        try
+        {
+            PlayerPrefs.SetInt(BackgroundAudioPreference,
+                _muteAudioInBackground ? 1 : 0);
+            SaveModPreferencesAndConfig();
+        }
+        catch (Exception ex)
+        {
+            LogBackgroundAudioError("Could not save background audio preference", ex);
+        }
         ApplyBackgroundAudioFocus(Application.isFocused);
         WriteStatus("Mute audio in background changed to " +
             (_muteAudioInBackground ? "On." : "Off."));

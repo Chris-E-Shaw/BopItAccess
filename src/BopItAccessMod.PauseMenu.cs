@@ -10,7 +10,6 @@ public sealed partial class BopItAccessMod
 {
     private PauseMenuPanel? _pauseMenuPanel;
     private long _nextPauseMenuSearchAt;
-    private long _nextPauseMenuErrorLogAt;
     private bool _pauseMenuWasVisible;
     private int _lastPauseMenuPanelId;
     private int _lastPauseMenuFocusedId;

@@ -24,6 +24,10 @@ public sealed class InstallManifest
     public List<string> CreatedDirectories { get; set; } = new();
     public bool MelonLoaderInstalledByInstaller { get; set; }
     public bool ModLogExistedBeforeInstall { get; set; }
+    // Keep the launcher and ownership record available when an offline Windows
+    // profile could not be cleaned. A retry must not remove restored files twice.
+    public bool UninstallFilesRemoved { get; set; }
+    public bool UninstallCompleted { get; set; }
     public string? UninstallRegistryKey { get; set; }
 
     public static InstallManifest Load(string path)

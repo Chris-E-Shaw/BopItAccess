@@ -1,4 +1,4 @@
-Bop It Access 0.9.7 - Prism Speech and Braille
+Bop It Access 0.9.8 - Prism Speech and Braille
 
 What this does
 --------------
@@ -426,7 +426,7 @@ Voice=System default
 [SAPI]
 Voice=System default
 
-The installer’s Uninstall action and Windows Installed Apps also remove UserData/BopItAccess.ini and its .tmp file, including for older manual installations.
+Uninstall in the installer and Windows Installed Apps remove the known mod logs, including Mods/BopItAccess.log.previous, UserData/BopItAccess.ini, the older UserData/BopItAccess.ini.tmp, and validated BopItAccess.ini.<GUID>.tmp remnants in UserData. <GUID> means exactly 32 hexadecimal characters without hyphens; unrelated files are preserved. Native game preferences, unrelated mods and the .NET SDK remain. If cleanup is incomplete, the status log reports it. For an installer-managed copy, the Windows entry, uninstall launcher and cleanup checkpoint remain available for retry until cleanup succeeds. Older manual installations have no durable ownership record, so their warnings can be retried in the open installer.
 
 AI Transparency Note
 --------------------

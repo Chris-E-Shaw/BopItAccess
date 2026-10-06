@@ -19,13 +19,14 @@ internal static class GameLocator
         catch { return false; }
     }
 
-    internal static IReadOnlyList<string> FindInstallations()
+    internal static IReadOnlyList<string> FindInstallations(CancellationToken cancellation = default)
     {
         var steamRoots = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var candidates = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
         foreach (var hive in new[] { RegistryHive.CurrentUser, RegistryHive.LocalMachine })
         {
+            cancellation.ThrowIfCancellationRequested();
             foreach (var view in new[] { RegistryView.Registry64, RegistryView.Registry32 })
             {
                 try
@@ -45,6 +46,7 @@ internal static class GameLocator
         AddDirectory(steamRoots, Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "Steam"));
         foreach (var drive in DriveInfo.GetDrives())
         {
+            cancellation.ThrowIfCancellationRequested();
             try
             {
                 if (!drive.IsReady || drive.DriveType is DriveType.CDRom or DriveType.Ram) continue;
@@ -57,6 +59,7 @@ internal static class GameLocator
         // Steam's library file points to nonstandard libraries on any drive.
         foreach (var root in steamRoots.ToArray())
         {
+            cancellation.ThrowIfCancellationRequested();
             var libraries = Path.Combine(root, "steamapps", "libraryfolders.vdf");
             if (!File.Exists(libraries)) continue;
             try
@@ -70,6 +73,7 @@ internal static class GameLocator
 
         foreach (var root in steamRoots)
         {
+            cancellation.ThrowIfCancellationRequested();
             var steamApps = Path.Combine(root, "steamapps");
             var manifest = Path.Combine(steamApps, $"appmanifest_{AppId}.acf");
             if (File.Exists(manifest))

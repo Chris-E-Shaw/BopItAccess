@@ -31,6 +31,169 @@ public sealed partial class BopItAccessMod
     private int _controlsSubmitPanelId;
     private int _controlsSubmitOpenedFrame;
 
+    private bool AnyCustomControlRebinding => _descriptionRebindOperation != null ||
+        _scoreRebindOperation != null || _speakHintsRebindOperation != null ||
+        _toggleSpeechRebindOperation != null || _changeSpeechOutputRebindOperation != null ||
+        _resetGyroRebindOperation != null || _leaderboardRebindOperation != null;
+
+    private void SuppressControlCapturePressThrough()
+    {
+        // A submit or captured binding belongs to one operation only. Wait for
+        // the native submit control to be released before another row can use it.
+        _controlsSubmitReady = false;
+        _controlsSubmitOpenedFrame = Time.frameCount;
+        _toggleSpeechAnyRebindWasActive = true;
+        _speakHintsAnyRebindWasActive = true;
+        _changeSpeechOutputAnyRebindWasActive = true;
+        _toggleSpeechSuppressPressThroughFrame = Time.frameCount + 1;
+        _speakHintsSuppressPressThroughFrame = Time.frameCount + 1;
+        _changeSpeechOutputSuppressPressThroughFrame = Time.frameCount + 1;
+    }
+
+    private ControlRebindInputState PauseControlRebindInputs(
+        InputRebindingManager manager, InputAction target)
+    {
+        SuppressControlCapturePressThrough();
+        return ControlRebindInputState.Capture(manager, target);
+    }
+
+    private void ReleaseControlRebindingCapture(
+        InputActionRebindingExtensions.RebindingOperation? operation,
+        ControlRebindInputState? inputState)
+    {
+        if (operation != null)
+        {
+            // Cancel and Dispose are separate cleanup steps. A damaged or
+            // disconnected capture must not strand the UI with inputs disabled.
+            try
+            {
+                if (operation.started && !operation.completed && !operation.canceled)
+                    operation.Cancel();
+            }
+            catch (Exception ex) { WriteStatus("Could not cancel control capture: " + ex.Message); }
+            try { operation.Dispose(); }
+            catch (Exception ex) { WriteStatus("Could not dispose control capture: " + ex.Message); }
+        }
+        inputState?.Restore();
+        if (operation != null || inputState != null)
+            SuppressControlCapturePressThrough();
+    }
+
+    // PlayerInput can hold a private asset copy. Pause the live UI as well as
+    // its source, and preserve each action's state rather than enabling entire
+    // maps that may contain actions disabled before the capture began.
+    private sealed class ControlRebindInputState
+    {
+        private readonly List<InputAction> _enabledActions = new();
+
+        internal static ControlRebindInputState Capture(
+            InputRebindingManager manager, InputAction target)
+        {
+            var state = new ControlRebindInputState();
+            var seenMaps = new HashSet<IntPtr>();
+            InputActionMap?[] maps =
+            {
+                manager.inputActions?.FindActionMap("UI", false),
+                manager.playerInput?.actions?.FindActionMap("UI", false),
+                target.actionMap,
+                manager.playerInput?.actions?.FindActionMap(target.actionMap?.name ?? string.Empty, false)
+            };
+            try
+            {
+                foreach (InputActionMap? map in maps)
+                {
+                    if (map == null || !seenMaps.Add(map.Pointer))
+                        continue;
+                    foreach (InputAction action in map.actions)
+                    {
+                        if (!action.enabled)
+                            continue;
+                        state._enabledActions.Add(action);
+                        action.Disable();
+                    }
+                }
+                if (target.actionMap == null && target.enabled)
+                {
+                    state._enabledActions.Add(target);
+                    target.Disable();
+                }
+                return state;
+            }
+            catch
+            {
+                state.Restore();
+                throw;
+            }
+        }
+
+        internal void Restore()
+        {
+            foreach (InputAction action in _enabledActions)
+            {
+                try { action.Enable(); }
+                catch (Exception ex) { WriteStatus("Could not restore captured input state: " + ex.Message); }
+            }
+            _enabledActions.Clear();
+        }
+    }
+
+    private static void SaveReboundModControlPreference(string preference, string path)
+    {
+        bool hadPrevious = PlayerPrefs.HasKey(preference);
+        string previous = PlayerPrefs.GetString(preference, string.Empty);
+        try
+        {
+            PlayerPrefs.SetString(preference, path);
+            SaveModPreferencesAndConfig();
+        }
+        catch
+        {
+            // The action override is restored by the caller's failure path;
+            // retain the corresponding saved preference if persistence fails.
+            if (hadPrevious) PlayerPrefs.SetString(preference, previous);
+            else PlayerPrefs.DeleteKey(preference);
+            try { PlayerPrefs.Save(); }
+            catch (Exception ex) { WriteStatus("Could not restore saved control preference: " + ex.Message); }
+            throw;
+        }
+    }
+
+    private void CancelAndReleaseOwnedControlResources()
+    {
+        Action[] cancel =
+        {
+            () => CancelDescriptionControlRebinding(false),
+            () => CancelScoreControlRebinding(false),
+            () => CancelSpeakHintsControlRebinding(false),
+            () => CancelToggleSpeechControlRebinding(false),
+            () => CancelChangeSpeechOutputControlRebinding(false),
+            () => CancelResetGyroControlRebinding(false),
+            () => CancelLeaderboardControlRebinding(false)
+        };
+        foreach (Action cleanup in cancel)
+        {
+            try { cleanup(); }
+            catch (Exception ex) { WriteStatus("Could not finish control capture cleanup: " + ex.Message); }
+        }
+        InputActionAsset?[] owned =
+        {
+            _descriptionActionAsset, _scoreActionAsset, _speakHintsActionAsset,
+            _toggleSpeechActionAsset, _changeSpeechOutputActionAsset
+        };
+        foreach (InputActionAsset? asset in owned)
+        {
+            if (asset == null) continue;
+            try { asset.Disable(); }
+            catch (Exception ex) { WriteStatus("Could not disable mod control asset: " + ex.Message); }
+            try { UnityEngine.Object.Destroy(asset); }
+            catch (Exception ex) { WriteStatus("Could not release mod control asset: " + ex.Message); }
+        }
+        _descriptionAction = _scoreAction = _speakHintsAction = null;
+        _toggleSpeechAction = _changeSpeechOutputAction = null;
+        _descriptionActionAsset = _scoreActionAsset = _speakHintsActionAsset = null;
+        _toggleSpeechActionAsset = _changeSpeechOutputActionAsset = null;
+    }
+
     private void UpdateControlsSubmitGate()
     {
         MainMenuUIManager? main = _mainMenu;
@@ -54,7 +217,8 @@ public sealed partial class BopItAccessMod
             return;
         }
 
-        if (!_controlsSubmitReady && Time.frameCount > _controlsSubmitOpenedFrame &&
+        if (!_controlsSubmitReady && !AnyCustomControlRebinding &&
+            Time.frameCount > _controlsSubmitOpenedFrame &&
             !IsUiSubmitHeld())
             _controlsSubmitReady = true;
     }

@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text.Json;
+using System.Diagnostics;
 
 namespace BopItAccess.Installer;
 
@@ -121,7 +122,7 @@ public sealed class InstallTransaction
     /// game and generates build proxies or logs. Newly generated files can then
     /// be removed during abort or crash recovery without deleting prior files.
     /// </summary>
-    public void TrackGeneratedTree(string path)
+    public void TrackGeneratedTree(string path, CancellationToken cancellation = default)
     {
         ThrowIfFinished();
         string full = ValidateDestination(path);
@@ -134,12 +135,22 @@ public sealed class InstallTransaction
             ? Directory.EnumerateFiles(full, "*", SafeRecursiveEnumeration)
                 .Select(Path.GetFullPath).ToList()
             : new List<string>();
+        var backups = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        foreach (string file in files)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            string source = ValidateDestination(file);
+            string backup = Path.Combine(_transactionDirectory, Guid.NewGuid().ToString("N") + ".generated.bak");
+            File.Copy(source, backup);
+            backups.Add(source, backup);
+        }
         AddAction(new JournalAction
         {
             Kind = "generated-tree",
             Path = full,
             Existed = existed,
-            ExistingFiles = files
+            ExistingFiles = files,
+            ExistingFileBackups = backups
         });
         _log($"Recorded existing files before game-generated build references: {full}");
     }
@@ -404,6 +415,8 @@ public sealed class InstallTransaction
         string journalPath = Path.Combine(state, "transaction.json");
         if (!File.Exists(journalPath)) return Task.CompletedTask;
         TransactionJournal journal = ReadJournal(journalPath);
+        if (!Guid.TryParseExact(journal.Id, "N", out _) || !Path.IsPathFullyQualified(journal.GameDirectory))
+            throw new InvalidDataException("The installer journal has an invalid transaction ID or game directory.");
         if (!PathsEqual(journal.StateDirectory, state))
             throw new InvalidDataException("The installer journal refers to another state directory.");
         string manifestPath = Path.Combine(state, InstallManifest.FileName);
@@ -411,6 +424,10 @@ public sealed class InstallTransaction
             log("Found a committed installation; removing its stale transaction journal.");
         else
         {
+            Process[] running = Process.GetProcessesByName("BopIt!");
+            bool gameRunning = running.Length > 0;
+            foreach (Process process in running) process.Dispose();
+            if (gameRunning) throw new IOException("Close Bop It! and reopen the installer to recover the interrupted installation.");
             RollbackJournal(journal, log);
             log("Recovered and reversed an interrupted installation.");
         }
@@ -478,7 +495,11 @@ public sealed class InstallTransaction
                 string logs = Path.Combine(journal.GameDirectory, "MelonLoader", "Logs");
                 if (!PathsEqual(directory, proxies) && !PathsEqual(directory, logs))
                     throw new InvalidDataException("Unexpected generated-file journal path.");
-                if (!Directory.Exists(directory)) continue;
+                if (!Directory.Exists(directory))
+                {
+                    if (action.ExistingFileBackups.Count == 0) continue;
+                    Directory.CreateDirectory(directory);
+                }
                 var previous = new HashSet<string>(action.ExistingFiles.Select(path =>
                     ValidateAgainstRoots(path, journal.GameDirectory, journal.StateDirectory)),
                     StringComparer.OrdinalIgnoreCase);
@@ -487,6 +508,16 @@ public sealed class InstallTransaction
                     if (previous.Contains(Path.GetFullPath(file))) continue;
                     File.Delete(file);
                     log($"Removed file generated during aborted installation: {file}");
+                }
+                foreach (var saved in action.ExistingFileBackups)
+                {
+                    string destination = ValidateAgainstRoots(saved.Key, journal.GameDirectory, journal.StateDirectory);
+                    if (!IsWithin(destination, directory))
+                        throw new InvalidDataException("Generated-file backup escapes its tracked directory.");
+                    string backup = ValidateBackup(saved.Value, journal.StateDirectory);
+                    if (!File.Exists(backup)) throw new IOException("Generated-file rollback backup missing: " + backup);
+                    Directory.CreateDirectory(Path.GetDirectoryName(destination)!);
+                    File.Copy(backup, destination, overwrite: true);
                 }
                 foreach (string child in Directory.EnumerateDirectories(directory, "*", SafeRecursiveEnumeration)
                              .OrderByDescending(path => path.Length))
@@ -520,6 +551,8 @@ public sealed class InstallTransaction
 
     private static void CleanupTransactionFiles(string journalPath, string transactionDirectory)
     {
+        string state = Path.GetDirectoryName(Path.GetFullPath(journalPath))!;
+        ValidateAgainstRoots(transactionDirectory, state, state);
         if (Directory.Exists(transactionDirectory)) Directory.Delete(transactionDirectory, recursive: true);
         string? transactions = Path.GetDirectoryName(transactionDirectory);
         if (transactions is not null && Directory.Exists(transactions) &&
@@ -533,6 +566,7 @@ public sealed class InstallTransaction
     {
         string originals = Path.Combine(stateDirectory, "originals");
         if (!Directory.Exists(originals)) return;
+        ValidateAgainstRoots(originals, stateDirectory, stateDirectory);
         string manifestPath = Path.Combine(stateDirectory, InstallManifest.FileName);
         var referenced = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         if (File.Exists(manifestPath))
@@ -676,11 +710,11 @@ public sealed class InstallTransaction
             throw new InvalidDataException($"Installer path escapes its game and state directories: {full}");
         // A junction beneath either root could redirect file writes or deletions elsewhere.
         string root = IsWithin(full, gameDirectory) ? gameDirectory : stateDirectory;
-        for (string? ancestor = Path.GetDirectoryName(full);
+        for (string? ancestor = full;
              ancestor is not null && !PathsEqual(ancestor, root);
              ancestor = Path.GetDirectoryName(ancestor))
         {
-            if (Directory.Exists(ancestor) &&
+            if ((File.Exists(ancestor) || Directory.Exists(ancestor)) &&
                 (File.GetAttributes(ancestor) & FileAttributes.ReparsePoint) != 0)
                 throw new InvalidDataException($"Installer path passes through a junction: {ancestor}");
         }
@@ -691,7 +725,7 @@ public sealed class InstallTransaction
     {
         if (string.IsNullOrWhiteSpace(path) || !IsWithin(path, stateDirectory))
             throw new InvalidDataException("A backup path is outside the installer state directory.");
-        return Path.GetFullPath(path);
+        return ValidateAgainstRoots(path, stateDirectory, stateDirectory);
     }
 
     internal static bool IsWithin(string path, string directory)
@@ -734,6 +768,7 @@ public sealed class InstallTransaction
         public string? NewOriginalBackupPath { get; set; }
         public List<RegistryValueBackup> RegistryValues { get; set; } = new();
         public List<string> ExistingFiles { get; set; } = new();
+        public Dictionary<string, string> ExistingFileBackups { get; set; } = new();
     }
 
     private sealed class RegistryValueBackup

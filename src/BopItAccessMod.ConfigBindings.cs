@@ -284,11 +284,12 @@ public sealed partial class BopItAccessMod
         string controlName = match.Groups[2].Value;
         if (item.IsKeyboard)
         {
-            if (!layout.Equals("Keyboard", StringComparison.OrdinalIgnoreCase) ||
-                !Enum.TryParse(controlName.Length == 1 && char.IsDigit(controlName[0])
-                    ? "Digit" + controlName : controlName, true, out Key keyboardKey) ||
-                keyboardKey == Key.None || !Enum.IsDefined(typeof(Key), keyboardKey))
+            if (!layout.Equals("Keyboard", StringComparison.OrdinalIgnoreCase))
                 return false;
+            // Share canonical key handling with mod bindings, including
+            // Digit1 -> 1 and aliases on a connected keyboard.
+            path = ConfigModBindingPath(text, controller: false, defaultPath: string.Empty);
+            return path != null;
         }
         else
         {

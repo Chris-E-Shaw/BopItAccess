@@ -32,6 +32,10 @@ public sealed partial class BopItAccessMod
     private long _nextSlowPrismQueueLogAt;
     private int _prismAppliedSapiSettingsVersion = -1;
     private int _prismAppliedOneCoreSettingsVersion = -1;
+    private int _prismAttemptedSapiSettingsVersion = -1;
+    private int _prismAttemptedOneCoreSettingsVersion = -1;
+    private long _nextPrismSapiSettingsAttemptAt;
+    private long _nextPrismOneCoreSettingsAttemptAt;
     private nuint _prismDefaultSapiVoice;
     private bool _prismDefaultSapiVoiceKnown;
     private nuint _prismDefaultOneCoreVoice;
@@ -43,32 +47,52 @@ public sealed partial class BopItAccessMod
 
     private void InitializePrismOnWorker()
     {
-        _prismContext = PrismNative.CreateContext();
-        if (_prismContext == IntPtr.Zero)
-            throw new InvalidOperationException("Prism could not create a context.");
-
-        WriteStatus("Prism initialized: " + PrismNative.VersionString() + ".");
-        MelonLoader.MelonLogger.Msg("Prism initialized: " + PrismNative.VersionString() + ".");
-        nuint count = PrismNative.RegistryCount(_prismContext);
-        for (nuint i = 0; i < count; i++)
+        // A failed startup can be retried on this worker. Do not accumulate
+        // duplicate registry entries across attempts.
+        _prismBrailleCandidates.Clear();
+        _prismReaderCandidates.Clear();
+        try
         {
-            ulong id = PrismNative.RegistryIdAt(_prismContext, i);
-            if (id != PrismNative.BackendIds.Invalid)
+            _prismContext = PrismNative.CreateContext();
+            if (_prismContext == IntPtr.Zero)
+                throw new InvalidOperationException("Prism could not create a context.");
+
+            string version = PrismNative.VersionString();
+            WriteStatus("Prism initialized: " + version + ".");
+            MelonLoader.MelonLogger.Msg("Prism initialized: " + version + ".");
+            nuint count = PrismNative.RegistryCount(_prismContext);
+            if (count > 1024)
+                throw new InvalidOperationException("Prism reported an invalid backend count.");
+            for (nuint i = 0; i < count; i++)
             {
-                _prismBrailleCandidates.Add(id);
-                if (id != PrismNative.BackendIds.Sapi &&
-                    id != PrismNative.BackendIds.OneCore &&
-                    id != PrismNative.BackendIds.Uia)
-                    _prismReaderCandidates.Add(id);
+                ulong id = PrismNative.RegistryIdAt(_prismContext, i);
+                if (id != PrismNative.BackendIds.Invalid)
+                {
+                    _prismBrailleCandidates.Add(id);
+                    if (id != PrismNative.BackendIds.Sapi &&
+                        id != PrismNative.BackendIds.OneCore &&
+                        id != PrismNative.BackendIds.Uia)
+                        _prismReaderCandidates.Add(id);
+                }
             }
+            _prismBrailleCandidates.Sort((left, right) =>
+                PrismNative.RegistryPriority(_prismContext, right).CompareTo(
+                    PrismNative.RegistryPriority(_prismContext, left)));
+            _prismReaderCandidates.Sort((left, right) =>
+                PrismNative.RegistryPriority(_prismContext, right).CompareTo(
+                    PrismNative.RegistryPriority(_prismContext, left)));
+            WriteStatus("Prism registered " + count + " output backends.");
         }
-        _prismBrailleCandidates.Sort((left, right) =>
-            PrismNative.RegistryPriority(_prismContext, right).CompareTo(
-                PrismNative.RegistryPriority(_prismContext, left)));
-        _prismReaderCandidates.Sort((left, right) =>
-            PrismNative.RegistryPriority(_prismContext, right).CompareTo(
-                PrismNative.RegistryPriority(_prismContext, left)));
-        WriteStatus("Prism registered " + count + " output backends.");
+        catch
+        {
+            // A retry must never inherit a half-initialized context.
+            try { ShutdownPrismOnWorker(); }
+            catch (Exception ex)
+            { WriteStatus("Prism cleanup after failed initialization failed: " + ex); }
+            _prismBrailleCandidates.Clear();
+            _prismReaderCandidates.Clear();
+            throw;
+        }
     }
 
     private void PreparePrismBackendOnWorker()
@@ -192,6 +216,8 @@ public sealed partial class BopItAccessMod
         _prismSpeechBackendId = candidateId;
         _prismAppliedSapiSettingsVersion = -1;
         _prismAppliedOneCoreSettingsVersion = -1;
+        _prismAttemptedSapiSettingsVersion = -1;
+        _prismAttemptedOneCoreSettingsVersion = -1;
         CaptureDefaultPrismVoiceOnWorker(candidate, candidateId);
         PublishPrismSpeechControlsOnWorker();
         WriteStatus("Prism active speech backend: " + PrismSpeechBackendNameOnWorker() +
@@ -212,6 +238,8 @@ public sealed partial class BopItAccessMod
         _nextPrismSelectionAt = Environment.TickCount64 + 1000;
         _prismAppliedSapiSettingsVersion = -1;
         _prismAppliedOneCoreSettingsVersion = -1;
+        _prismAttemptedSapiSettingsVersion = -1;
+        _prismAttemptedOneCoreSettingsVersion = -1;
         CaptureDefaultPrismVoiceOnWorker(candidate, id);
         PublishPrismSpeechControlsOnWorker();
         return true;
@@ -334,24 +362,28 @@ public sealed partial class BopItAccessMod
         IntPtr backend = PrismNative.Acquire(_prismContext, id);
         if (backend == IntPtr.Zero)
             return IntPtr.Zero;
-        PrismNative.BackendFeature features = PrismNative.GetFeatures(backend);
-        if ((features & PrismNative.BackendFeature.SupportsSpeak) == 0 ||
-            (features & PrismNative.BackendFeature.IsSupportedAtRuntime) == 0)
+        try
         {
-            PrismNative.FreeBackend(backend);
-            return IntPtr.Zero;
+            PrismNative.BackendFeature features = PrismNative.GetFeatures(backend);
+            if ((features & PrismNative.BackendFeature.SupportsSpeak) == 0 ||
+                (features & PrismNative.BackendFeature.IsSupportedAtRuntime) == 0)
+                return IntPtr.Zero;
+            PrismNative.Error initialized = PrismNative.InitializeBackend(backend);
+            features = PrismNative.GetFeatures(backend);
+            if ((initialized != PrismNative.Error.Ok &&
+                 initialized != PrismNative.Error.AlreadyInitialized) ||
+                (features & PrismNative.BackendFeature.IsSupportedAtRuntime) == 0 ||
+                (features & PrismNative.BackendFeature.SupportsSpeak) == 0)
+                return IntPtr.Zero;
+            IntPtr selected = backend;
+            backend = IntPtr.Zero;
+            return selected;
         }
-        PrismNative.Error initialized = PrismNative.InitializeBackend(backend);
-        features = PrismNative.GetFeatures(backend);
-        if ((initialized != PrismNative.Error.Ok &&
-             initialized != PrismNative.Error.AlreadyInitialized) ||
-            (features & PrismNative.BackendFeature.IsSupportedAtRuntime) == 0 ||
-            (features & PrismNative.BackendFeature.SupportsSpeak) == 0)
+        finally
         {
-            PrismNative.FreeBackend(backend);
-            return IntPtr.Zero;
+            if (backend != IntPtr.Zero)
+                PrismNative.FreeBackend(backend);
         }
-        return backend;
     }
 
     private string PrismSpeechBackendNameOnWorker() =>
@@ -374,14 +406,21 @@ public sealed partial class BopItAccessMod
         }
         if (_prismAppliedSapiSettingsVersion == version)
             return;
+        long now = Environment.TickCount64;
+        if (_prismAttemptedSapiSettingsVersion == version &&
+            now < _nextPrismSapiSettingsAttemptAt)
+            return;
+        _prismAttemptedSapiSettingsVersion = version;
+        _nextPrismSapiSettingsAttemptAt = now + 5000;
 
+        bool applied = true;
         PrismNative.BackendFeature features = PrismNative.GetFeatures(_prismSpeechBackend);
         if ((features & PrismNative.BackendFeature.SupportsSetVoice) != 0)
         {
             if (string.IsNullOrEmpty(voiceId))
             {
                 if (_prismDefaultSapiVoiceKnown)
-                    LogPrismSettingError("voice", PrismNative.SetVoice(
+                    applied &= LogPrismSettingError("voice", PrismNative.SetVoice(
                         _prismSpeechBackend, _prismDefaultSapiVoice));
             }
             else
@@ -400,7 +439,7 @@ public sealed partial class BopItAccessMod
                             !string.Equals(name?.Trim(), selectedName.Trim(),
                                 StringComparison.OrdinalIgnoreCase))
                             continue;
-                        LogPrismSettingError("voice", PrismNative.SetVoice(
+                        applied &= LogPrismSettingError("voice", PrismNative.SetVoice(
                             _prismSpeechBackend, index));
                         matched = true;
                         break;
@@ -411,15 +450,16 @@ public sealed partial class BopItAccessMod
             }
         }
         if ((features & PrismNative.BackendFeature.SupportsSetVolume) != 0)
-            LogPrismSettingError("volume", PrismNative.SetVolume(
+            applied &= LogPrismSettingError("volume", PrismNative.SetVolume(
                 _prismSpeechBackend, volume / 100f));
         if ((features & PrismNative.BackendFeature.SupportsSetRate) != 0)
-            LogPrismSettingError("rate", PrismNative.SetRate(
+            applied &= LogPrismSettingError("rate", PrismNative.SetRate(
                 _prismSpeechBackend, MapLegacySapiScale(rate)));
         if ((features & PrismNative.BackendFeature.SupportsSetPitch) != 0)
-            LogPrismSettingError("pitch", PrismNative.SetPitch(
+            applied &= LogPrismSettingError("pitch", PrismNative.SetPitch(
                 _prismSpeechBackend, MapLegacySapiScale(pitch)));
-        _prismAppliedSapiSettingsVersion = version;
+        if (applied)
+            _prismAppliedSapiSettingsVersion = version;
     }
 
     private void ApplyPrismOneCoreSettingsOnWorker()
@@ -439,14 +479,21 @@ public sealed partial class BopItAccessMod
         }
         if (_prismAppliedOneCoreSettingsVersion == version)
             return;
+        long now = Environment.TickCount64;
+        if (_prismAttemptedOneCoreSettingsVersion == version &&
+            now < _nextPrismOneCoreSettingsAttemptAt)
+            return;
+        _prismAttemptedOneCoreSettingsVersion = version;
+        _nextPrismOneCoreSettingsAttemptAt = now + 5000;
 
+        bool applied = true;
         PrismNative.BackendFeature features = PrismNative.GetFeatures(_prismSpeechBackend);
         if ((features & PrismNative.BackendFeature.SupportsSetVoice) != 0)
         {
             if (string.IsNullOrEmpty(voiceId))
             {
                 if (_prismDefaultOneCoreVoiceKnown)
-                    LogPrismSettingError("OneCore", "voice", PrismNative.SetVoice(
+                    applied &= LogPrismSettingError("OneCore", "voice", PrismNative.SetVoice(
                         _prismSpeechBackend, _prismDefaultOneCoreVoice));
             }
             else if ((features & (PrismNative.BackendFeature.SupportsCountVoices |
@@ -469,7 +516,7 @@ public sealed partial class BopItAccessMod
                     if (!string.Equals(OneCoreVoiceIdentity(name, language), voiceId,
                             StringComparison.OrdinalIgnoreCase))
                         continue;
-                    LogPrismSettingError("OneCore", "voice", PrismNative.SetVoice(
+                    applied &= LogPrismSettingError("OneCore", "voice", PrismNative.SetVoice(
                         _prismSpeechBackend, index));
                     matched = true;
                     break;
@@ -478,22 +525,23 @@ public sealed partial class BopItAccessMod
                 {
                     LogPrismErrorOnWorker("The saved OneCore voice is no longer available; using the system default.");
                     if (_prismDefaultOneCoreVoiceKnown)
-                        LogPrismSettingError("OneCore", "default voice",
+                        applied &= LogPrismSettingError("OneCore", "default voice",
                             PrismNative.SetVoice(_prismSpeechBackend,
                                 _prismDefaultOneCoreVoice));
                 }
             }
         }
         if ((features & PrismNative.BackendFeature.SupportsSetVolume) != 0)
-            LogPrismSettingError("OneCore", "volume", PrismNative.SetVolume(
+            applied &= LogPrismSettingError("OneCore", "volume", PrismNative.SetVolume(
                 _prismSpeechBackend, volume / 100f));
         if ((features & PrismNative.BackendFeature.SupportsSetRate) != 0)
-            LogPrismSettingError("OneCore", "rate", PrismNative.SetRate(
+            applied &= LogPrismSettingError("OneCore", "rate", PrismNative.SetRate(
                 _prismSpeechBackend, rate / 100f));
         if ((features & PrismNative.BackendFeature.SupportsSetPitch) != 0)
-            LogPrismSettingError("OneCore", "pitch", PrismNative.SetPitch(
+            applied &= LogPrismSettingError("OneCore", "pitch", PrismNative.SetPitch(
                 _prismSpeechBackend, pitch / 100f));
-        _prismAppliedOneCoreSettingsVersion = version;
+        if (applied)
+            _prismAppliedOneCoreSettingsVersion = version;
     }
 
     private static float MapLegacySapiScale(int value)
@@ -510,15 +558,17 @@ public sealed partial class BopItAccessMod
         return 0.5f + (legacyStep + Math.Sign(legacyStep) * 0.01f) / 20f;
     }
 
-    private void LogPrismSettingError(string setting, PrismNative.Error error)
+    private bool LogPrismSettingError(string setting, PrismNative.Error error)
         => LogPrismSettingError("SAPI", setting, error);
 
-    private void LogPrismSettingError(string backend, string setting,
+    private bool LogPrismSettingError(string backend, string setting,
         PrismNative.Error error)
     {
-        if (error != PrismNative.Error.Ok)
-            LogPrismErrorOnWorker("Could not apply Prism " + backend + " " + setting + ": " +
-                PrismNative.ErrorString(error));
+        if (error == PrismNative.Error.Ok)
+            return true;
+        LogPrismErrorOnWorker("Could not apply Prism " + backend + " " + setting + ": " +
+            PrismNative.ErrorString(error));
+        return false;
     }
 
     private void SendPrismBrailleOnWorker(string text)
@@ -572,26 +622,31 @@ public sealed partial class BopItAccessMod
             IntPtr candidate = PrismNative.Acquire(_prismContext, id);
             if (candidate == IntPtr.Zero)
                 continue;
-            PrismNative.BackendFeature features = PrismNative.GetFeatures(candidate);
-            if ((features & PrismNative.BackendFeature.SupportsBraille) == 0 ||
-                (features & PrismNative.BackendFeature.IsSupportedAtRuntime) == 0)
+            try
             {
-                PrismNative.FreeBackend(candidate);
-                continue;
+                PrismNative.BackendFeature features = PrismNative.GetFeatures(candidate);
+                if ((features & PrismNative.BackendFeature.SupportsBraille) == 0 ||
+                    (features & PrismNative.BackendFeature.IsSupportedAtRuntime) == 0)
+                    continue;
+                PrismNative.Error initialized = PrismNative.InitializeBackend(candidate);
+                features = PrismNative.GetFeatures(candidate);
+                if ((initialized == PrismNative.Error.Ok ||
+                     initialized == PrismNative.Error.AlreadyInitialized) &&
+                    (features & PrismNative.BackendFeature.IsSupportedAtRuntime) != 0 &&
+                    (features & PrismNative.BackendFeature.SupportsBraille) != 0)
+                {
+                    _prismBrailleBackend = candidate;
+                    candidate = IntPtr.Zero;
+                    WriteStatus("Prism braille backend: " +
+                        (PrismNative.BackendName(_prismBrailleBackend) ?? "unknown") + ".");
+                    return _prismBrailleBackend;
+                }
             }
-            PrismNative.Error initialized = PrismNative.InitializeBackend(candidate);
-            features = PrismNative.GetFeatures(candidate);
-            if ((initialized == PrismNative.Error.Ok ||
-                 initialized == PrismNative.Error.AlreadyInitialized) &&
-                (features & PrismNative.BackendFeature.IsSupportedAtRuntime) != 0 &&
-                (features & PrismNative.BackendFeature.SupportsBraille) != 0)
+            finally
             {
-                _prismBrailleBackend = candidate;
-                WriteStatus("Prism braille backend: " +
-                    (PrismNative.BackendName(candidate) ?? "unknown") + ".");
-                return candidate;
+                if (candidate != IntPtr.Zero)
+                    PrismNative.FreeBackend(candidate);
             }
-            PrismNative.FreeBackend(candidate);
         }
         return IntPtr.Zero;
     }
@@ -639,6 +694,8 @@ public sealed partial class BopItAccessMod
                 _prismSpeechBackendId = PrismNative.BackendIds.Invalid;
                 _prismAppliedSapiSettingsVersion = -1;
                 _prismAppliedOneCoreSettingsVersion = -1;
+                _prismAttemptedSapiSettingsVersion = -1;
+                _prismAttemptedOneCoreSettingsVersion = -1;
                 PublishPrismSpeechControlsOnWorker();
             }
         }

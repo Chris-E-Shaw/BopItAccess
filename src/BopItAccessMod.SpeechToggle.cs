@@ -35,8 +35,7 @@ public sealed partial class BopItAccessMod
         long now = Environment.TickCount64;
         if (_startupLocaleWaitBeganAt == 0)
             _startupLocaleWaitBeganAt = now;
-        string? savedLocale = NormalizeGameLocale(
-            _nativeLoadedSettings?.SettingsData?.Language);
+        string? savedLocale = ReadLoadedNativeGameLocale();
         bool localeReady = _nativeSettingsLoadObserved &&
             (savedLocale == null || savedLocale == CurrentGameLocale);
         if (!localeReady && now - _startupLocaleWaitBeganAt < 8000)

@@ -15,6 +15,7 @@
          its documentation folder and does not require a rebuilt DLL when the
          guide text changes. -->
     <None Include="..\BopItAccess-user-guide.html" Link="documentation\BopItAccess-user-guide.html" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\BopItAccess-release-review.html" Link="documentation\BopItAccess-release-review.html" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\BopItAccess-build-history.html" Link="documentation\BopItAccess-build-history.html" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\README.md" Link="documentation\README.md" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\README.txt" Link="documentation\README.txt" CopyToOutputDirectory="PreserveNewest" />
