@@ -112,7 +112,9 @@ internal static class OfflineBuildReferences
             "Reference helper build", TimeSpan.FromMinutes(3), dotnet, log, cancellation);
         var helperDll = Path.Combine(helper, "bin", "Release", "net6.0", "BopItAccess.BuildReferenceGenerator.dll");
         ValidateRegularFile(helperDll);
-        ValidateHelperDependencies(helperDll, stagedLoader, cancellation);
+        string helperFramework = FindHelperFramework(dotnet);
+        log("Checking offline helper dependencies against .NET runtime " + helperFramework + ".");
+        ValidateHelperDependencies(helperDll, stagedLoader, helperFramework, cancellation);
         log("Verified all " + HelperReferences.Length + " offline helper dependencies in its runtime manifest and output files.");
 
         var cpp2IlRoot = Path.Combine(temporaryRoot, "cpp2il");
@@ -140,7 +142,11 @@ internal static class OfflineBuildReferences
         var proxies = Path.Combine(references, "MelonLoader", "Il2CppAssemblies");
         Directory.CreateDirectory(proxies);
         progress("Generating temporary interop references", 0, null);
-        await RunProcessAsync(dotnet, helper, new[] { helperDll, gameAssembly, dumped, unityLibraries, proxies },
+        // Use the framework we inspected even if the caller's environment
+        // requests a different roll-forward policy. SDK builds remain unchanged.
+        await RunProcessAsync(dotnet, helper,
+            new[] { "--fx-version", Path.GetFileName(helperFramework), "--roll-forward", "Disable",
+                helperDll, gameAssembly, dumped, unityLibraries, proxies },
             "Interop reference generator", TimeSpan.FromMinutes(8), dotnet, log, cancellation);
         if (!HasCompleteProxies(proxies)) throw new InvalidDataException("Offline generation did not produce all required build references.");
         progress("Generating temporary interop references", 1, 1);
@@ -148,22 +154,13 @@ internal static class OfflineBuildReferences
         return references;
     }
 
-    private static void ValidateHelperDependencies(string helperDll, string loaderLibraries, CancellationToken cancellation)
+    private static void ValidateHelperDependencies(string helperDll, string loaderLibraries, string frameworkDirectory,
+        CancellationToken cancellation)
     {
-        string manifest = Path.ChangeExtension(helperDll, ".deps.json");
-        ValidateRegularFile(manifest);
-        using var input = File.OpenRead(manifest);
-        using var document = JsonDocument.Parse(input);
-        var root = document.RootElement;
-        string target = root.GetProperty("runtimeTarget").GetProperty("name").GetString()
-            ?? throw new InvalidDataException("The offline helper runtime manifest has no target.");
-        var runtimeAssets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var library in root.GetProperty("targets").GetProperty(target).EnumerateObject())
-        {
-            if (!library.Value.TryGetProperty("runtime", out var assets)) continue;
-            foreach (var asset in assets.EnumerateObject()) runtimeAssets.Add(asset.Name);
-        }
+        var runtimeAssets = ReadRuntimeAssets(Path.ChangeExtension(helperDll, ".deps.json"));
+        var frameworkAssets = ReadRuntimeAssets(Path.Combine(frameworkDirectory, "Microsoft.NETCore.App.deps.json"));
         string helperDirectory = Path.GetDirectoryName(helperDll)!;
+        var frameworkIdentities = new Dictionary<string, AssemblyName>(StringComparer.OrdinalIgnoreCase);
         foreach (string name in HelperReferences)
         {
             cancellation.ThrowIfCancellationRequested();
@@ -184,14 +181,77 @@ internal static class OfflineBuildReferences
             var metadata = pe.GetMetadataReader();
             foreach (var handle in metadata.AssemblyReferences)
             {
-                string dependency = metadata.GetString(metadata.GetAssemblyReference(handle).Name) + ".dll";
-                // Framework references are supplied by .NET. Any loader-provided
-                // dependency must be one of the explicitly validated libraries.
-                if (File.Exists(Path.Combine(loaderLibraries, dependency)) &&
-                    !HelperReferences.Contains(Path.GetFileNameWithoutExtension(dependency), StringComparer.OrdinalIgnoreCase))
-                    throw new InvalidDataException("Offline helper has an unregistered loader dependency: " + dependency);
+                var reference = metadata.GetAssemblyReference(handle);
+                string dependency = metadata.GetString(reference.Name);
+                // A loader package can also contain copies of framework DLLs.
+                // Accept the actual compatible .NET provider, not a name prefix
+                // or an assumption based on which folder also contains the file.
+                if (!HelperReferences.Contains(dependency, StringComparer.OrdinalIgnoreCase) &&
+                    !IsFrameworkDependency(metadata, reference, frameworkDirectory, frameworkAssets, frameworkIdentities))
+                    throw new InvalidDataException("Offline helper dependency is neither registered nor supplied by the selected .NET 6 runtime: " +
+                        dependency + ".dll");
             }
         }
+    }
+
+    private static HashSet<string> ReadRuntimeAssets(string manifest)
+    {
+        ValidateRegularFile(manifest);
+        using var input = File.OpenRead(manifest);
+        using var document = JsonDocument.Parse(input);
+        var root = document.RootElement;
+        string target = root.GetProperty("runtimeTarget").GetProperty("name").GetString()
+            ?? throw new InvalidDataException("Runtime dependency manifest has no target: " + manifest);
+        var result = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var library in root.GetProperty("targets").GetProperty(target).EnumerateObject())
+        {
+            if (!library.Value.TryGetProperty("runtime", out var assets)) continue;
+            foreach (var asset in assets.EnumerateObject()) result.Add(asset.Name);
+        }
+        return result;
+    }
+
+    private static string FindHelperFramework(string dotnet)
+    {
+        string shared = Path.Combine(Path.GetDirectoryName(Path.GetFullPath(dotnet))!, "shared", "Microsoft.NETCore.App");
+        var candidates = new List<(Version Version, string Directory)>();
+        if (Directory.Exists(shared))
+            foreach (string directory in Directory.EnumerateDirectories(shared, "6.0.*"))
+                if (Version.TryParse(Path.GetFileName(directory), out var version) && version.Major == 6 && version.Minor == 0)
+                    candidates.Add((version, directory));
+        // The framework-dependent net6.0 helper selects the highest installed
+        // 6.0 patch beneath this dotnet host, independently of the installer SDK.
+        string framework = candidates.OrderByDescending(candidate => candidate.Version)
+            .Select(candidate => candidate.Directory).FirstOrDefault()
+            ?? throw new InvalidDataException("The selected .NET host has no .NET 6 runtime for the offline helper.");
+        ValidateRegularFile(Path.Combine(framework, "System.Private.CoreLib.dll"));
+        ValidateRegularFile(Path.Combine(framework, "coreclr.dll"));
+        return framework;
+    }
+
+    private static bool IsFrameworkDependency(MetadataReader metadata, AssemblyReference reference,
+        string frameworkDirectory, HashSet<string> frameworkAssets, Dictionary<string, AssemblyName> identities)
+    {
+        string name = metadata.GetString(reference.Name);
+        if (Path.GetFileName(name) != name || !frameworkAssets.Contains(name + ".dll")) return false;
+        if (!identities.TryGetValue(name, out var actual))
+        {
+            string path = Path.Combine(frameworkDirectory, name + ".dll");
+            if (!File.Exists(path)) return false;
+            ValidateRegularFile(path);
+            // Reads identity metadata only; it does not load or run the assembly.
+            actual = AssemblyName.GetAssemblyName(path);
+            identities.Add(name, actual);
+        }
+        var requested = new AssemblyName();
+        byte[] key = metadata.GetBlobBytes(reference.PublicKeyOrToken);
+        if ((reference.Flags & AssemblyFlags.PublicKey) != 0) requested.SetPublicKey(key);
+        else requested.SetPublicKeyToken(key);
+        return string.Equals(actual.Name, name, StringComparison.OrdinalIgnoreCase) &&
+            actual.Version is not null && actual.Version >= reference.Version &&
+            string.Equals(actual.CultureName ?? "", metadata.GetString(reference.Culture), StringComparison.OrdinalIgnoreCase) &&
+            (actual.GetPublicKeyToken() ?? Array.Empty<byte>()).AsSpan()
+                .SequenceEqual(requested.GetPublicKeyToken() ?? Array.Empty<byte>());
     }
 
     private static bool CacheMatchesGame(string game, string gameAssembly)
