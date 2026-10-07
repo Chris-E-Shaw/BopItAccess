@@ -1,6 +1,6 @@
 # Installer installation flow
 
-Installer preview **0.1.8** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game.
+Installer preview **0.1.9** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game.
 
 ## Evidence and scope
 
@@ -44,13 +44,24 @@ A build-time target runs after `SplitResourcesByCulture` and requires the three 
 
 The supplied 0.1.7 session completed Cpp2IL with exit code 0, then failed reading `Program.cs.txt` before a deployment transaction existed. That evidence identifies a packaging defect in the background alpha preparation; it does not justify restoring a game pre-run. The single-pass deployment order remains unchanged.
 
+### Helper dependency preparation
+
+Installer 0.1.9 compiles the embedded .NET 6 reference helper before downloading or executing Cpp2IL, the stripped-code plugin or the Unity dependency archive. Its project has explicit private references for all 12 managed dependencies from the staged, verified MelonLoader `net6` directory. This replaces the wildcard content copy, which copied Iced to disk without recording it in `.deps.json`.
+
+The dependencies are AsmResolver, AsmResolver.DotNet, AsmResolver.PE, AsmResolver.PE.File, Il2CppInterop.Generator, Il2CppInterop.Common, Microsoft.Extensions.Logging.Abstractions, System.Diagnostics.DiagnosticSource, Iced, MonoMod.Backports, MonoMod.ILHelpers and Microsoft.Extensions.DependencyInjection.Abstractions. Required DLLs are read from the pinned loader; this does not introduce additional dependency downloads.
+
+Before assembly-tool preparation, check the helper's selected runtime target in `.deps.json`, require every dependency's runtime entry and regular DLL, compare its bytes with the staged loader using SHA-256, inspect managed assembly metadata, and ensure all loader-provided assembly references are represented. Failure reports the missing or mismatched DLL and leaves game files unchanged. Only after that preflight succeeds does Cpp2IL read the game and Il2CppInterop generate proxies.
+
+The supplied 0.1.8 attempt passed template loading, Cpp2IL and helper compilation, then failed to resolve Iced in `Pass16ScanMethodRefs`. It stopped before deployment. This is a different preparation defect from the 0.1.7 embedded-template failure described above. Neither requires starting the game during installation.
+
 ### References without a game launch
 
 `OfflineBuildReferences` accepts the player's own game files and prepares references locally. The current offline alpha route supports the **Unity 2022.3.50f1** game build. A different or unidentifiable Unity version is reported before game-file deployment; there is no fallback that opens the game.
 
 - Reuse complete `MelonLoader/Il2CppAssemblies` proxy DLLs only when the loader's cached `GameAssemblyHash` matches the current `GameAssembly.dll`. Existence alone is insufficient. If the pinned loader was staged separately, copy those matching references into the temporary reference root with the staged loader libraries.
+- If matching references are unavailable, compile and validate the embedded helper against the staged MelonLoader dependency set before downloading or running the assembly tools.
 - If matching references are unavailable, download the checksum-pinned **Cpp2IL 2022.1.0-pre-release.21** Windows tool and `Cpp2IL.Plugin.StrippedCodeRegSupport.dll`, plus the matching official MelonLoader Unity dependency archive. These are build tools and support libraries, not a copy of Bop It!.
-- Run Cpp2IL on the player's installed game to produce temporary dummy assemblies. Compile the embedded reference helper against MelonLoader's supplied Il2CppInterop/AsmResolver libraries, then run Il2CppInterop generation into a temporary `build-references/MelonLoader/Il2CppAssemblies` tree.
+- Run Cpp2IL on the player's installed game to produce temporary dummy assemblies, then use the validated helper to run Il2CppInterop generation into a temporary `build-references/MelonLoader/Il2CppAssemblies` tree.
 - Verify that every required proxy is a managed assembly. Compile `src/BopItAccess.csproj` against that root with the player's selected SDK.
 
 The tools run without visible helper windows and with redirected stdout/stderr, cancellation and bounded deadlines. Their output is recorded in installer diagnostics. Cancellation terminates and waits for owned build processes before cleanup. It does not terminate a manually started game.
@@ -90,3 +101,11 @@ Automatic diagnostic logs are cleared on successful uninstall; files intentional
 Publishing completed with zero warnings or errors. Static PE inspection of the newly built main installer assembly confirmed all three named resources and compared their payloads byte-for-byte with the source files: `uninstall.ps1` (6,021 bytes), `Program.cs.txt` (3,202 bytes), and `BuildReferenceGenerator.csproj.txt` (649 bytes). Static inspection of the final single-file executable’s .NET bundle confirmed its main DLL exactly matches that inspected assembly and that it contains no installer-specific language satellite assembly. The bundle format is 6.0; this is a packaging-format version, not a claim that the installer uses the .NET 6 runtime.
 
 An independent static review found no blocking issues. Validation was limited to compilation and static source/artifact inspection. No automated tests, installer/uninstaller execution, helper execution, offline reference generation or game launch were performed. Actual alpha installation and first manual launch still need a human test. This installer hotfix does not create a new mod build or imply that the mod is installed in any current game directory; the source mod version remains 0.9.11.
+
+## Validation of preview 0.1.9
+
+Installer 0.1.9 and its embedded reference helper compiled with zero warnings and zero errors. The helper was compiled against a freshly downloaded official MelonLoader 0.7.3 archive whose pinned SHA-256 was verified. Static inspection found all 12 dependencies registered in the helper’s selected `.deps.json` runtime target. Every output dependency DLL was byte-for-byte identical to the verified archive; the output contained exactly 13 DLLs, including the helper. Static assembly-reference metadata inspection confirmed that the supplied versions were at least the versions requested by those references. Iced 1.21.0.0 is now registered in the manifest; the generator references Iced 1.17.0.0. This metadata inspection does not execute .NET resolution or any generator pass.
+
+Static inspection of the final single-file executable confirmed its main DLL exactly matches the inspected installer assembly and that no installer-specific language satellite is included. Its three neutral resources match the current source files byte-for-byte: `uninstall.ps1` (6,021 bytes), `Program.cs.txt` (3,202 bytes), and `BuildReferenceGenerator.csproj.txt` (529 bytes after removing the wildcard). The production preflight checks runtime-manifest entries, copied payload hashes, managed metadata and coverage of loader-provided dependency names. It does not compare requested version/token identities; the additional version inspection above was a separate static build review.
+
+Validation is limited to compilation and static source/artifact inspection. No automated tests, helper execution, offline reference generation, installer/uninstaller execution or game launch were performed. Actual alpha installation and the first manual game launch still require human testing. The main mod remains 0.9.11 with 58 mod builds; no GitHub Release is published.

@@ -178,6 +178,13 @@
 <li>Alpha準備の開始時に内蔵テンプレートを確認し、依存ファイルのダウンロード、SDKのインストール、オフライン参照生成の前に不備を検出する。1回の配置処理、手動のゲーム起動、診断記録、所有権の保護を維持する。Modはv0.9.11、Modビルド数は58のまま。GitHub Releaseは公開しない。</li>
 <li>Windows x64自己完結型インストーラー0.1.8を警告・エラーなしで生成。新しいメインアセンブリの静的確認により、3つの内蔵リソースがすべて存在し、ソースファイルとバイト単位で一致することを確認した。確認はコンパイル、静的レビュー、コンパイル済みリソースの調査のみ。自動テスト、オフライン参照生成、インストーラー・アンインストーラーの実行、ゲーム起動は行っていない。Modはv0.9.11のまま。GitHub Releaseは公開しない。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/db95702a3e92940eb1435568604402860555ce2c">ソースコミット</a> · GitHubリリースなし</p></article>
+      <article class="commit" id="installer-0-1-9"><div class="meta"><span class="version">Installer 0.1.9 preview</span><span class="kind">fix · dependencies · docs</span></div><h3>fix(installer): オフラインヘルパーの依存ファイルをすべて登録</h3><ul>
+<li>提供されたインストーラー0.1.8のログでは、内蔵テンプレートの読み込み、Cpp2ILの終了コード0、ヘルパーの警告・エラーなしのコンパイルが確認できる。その後、.NETがIced, Version=1.17.0.0を読み込めず、Pass16ScanMethodRefsでInterop生成が失敗した。ゲームファイルの配置前、準備段階で停止している。</li>
+<li>IcedのDLLはコンテンツとしてコピーされていたが、実行時マニフェストdeps.jsonには含まれていなかった。ワイルドカードによるコンテンツコピーを、12個すべてのマネージ依存ファイルの明示的なprivate参照に置き換える。既存の8個にIced、MonoMod.Backports、MonoMod.ILHelpers、Microsoft.Extensions.DependencyInjection.Abstractionsを追加し、固定バージョンのMelonLoaderのDLLを使用する。</li>
+<li>Cpp2ILのダウンロードや実行前にヘルパーをコンパイルし、実行時マニフェストを確認する。12個すべての依存ファイル、マネージDLLのメタデータ、配置元とバイト単位で同一のコピー、ローダーが提供する依存関係の完全性を必須とする。テンプレートの事前確認、手動起動、診断、所有権の保護を維持する。</li>
+<li>Modはv0.9.11、Modビルド数は58のまま。この修正ではゲームの起動やファイルの配置は行わず、GitHub Releaseも公開しない。</li>
+<li>Windows x64自己完結型インストーラー0.1.9を生成し、ヘルパーを警告・エラーなしでコンパイルした。静的確認により、deps.jsonに12個すべての実行時依存ファイルが登録され、新たに入手したチェックサム検証済みの公式MelonLoaderアーカイブとコピーがバイト単位で一致することを確認した。出力はヘルパーを含む計13個のDLL。単一ファイルのインストーラーには確認済みのメインアセンブリが含まれ、インストーラー独自の言語別サテライトはない。テスト、ヘルパー実行、参照生成、インストール、アンインストール、ゲーム起動は行っていない。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9018a9f41cbb601976027c9c215364473fe7973e">ソースコミット</a> · GitHubリリースなし</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 のローカル ソース アーカイブは、パブリック ソースのコミットを再構築するために使用されました。インストール パッケージはローカルに残り、GitHub リリースではありません。 v0.5.4 の再バインド プレビューと v0.5.18 SAPI トリム実験は、履歴実装として記録されます。後のエントリには、それらがどのように変更されたかが記載されています。</p><p><a href="#history">ビルド履歴に戻る</a></p></div></footer>

@@ -178,6 +178,13 @@
 <li>在Alpha准备开始时检查内置辅助工具模板，在下载依赖项、安装SDK或生成离线引用之前发现问题。保留单次部署流程、手动启动游戏、诊断记录和文件所有权保护。模组仍为v0.9.11，共58个模组构建；未发布GitHub Release。</li>
 <li>生成Windows x64自包含安装程序0.1.8，没有警告或错误。对新生成的主程序集进行静态检查，确认三个内置资源均存在，并与源文件逐字节一致。验证仅包括编译、静态代码审查及已编译资源检查；未进行自动化测试、离线引用生成、安装或卸载程序执行，也未启动游戏。模组仍为v0.9.11；未发布GitHub Release。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/db95702a3e92940eb1435568604402860555ce2c">源代码提交</a> · 没有GitHub发行版</p></article>
+      <article class="commit" id="installer-0-1-9"><div class="meta"><span class="version">Installer 0.1.9 preview</span><span class="kind">fix · dependencies · docs</span></div><h3>fix(installer)：注册离线辅助工具的完整依赖项</h3><ul>
+<li>用户提供的安装程序0.1.8日志显示，内置模板已加载，Cpp2IL以退出码0完成，辅助工具编译时没有警告或错误。随后，.NET无法加载Iced, Version=1.17.0.0，导致Interop生成在Pass16ScanMethodRefs阶段失败。本次尝试在准备阶段停止，尚未部署游戏文件。</li>
+<li>Iced DLL虽然作为内容被复制，但未包含在运行时清单deps.json中。将通配符内容复制替换为全部12个托管依赖项的显式private引用。在原有8个引用之外加入Iced、MonoMod.Backports、MonoMod.ILHelpers及Microsoft.Extensions.DependencyInjection.Abstractions，使用固定版本MelonLoader提供的DLL。</li>
+<li>在下载或运行Cpp2IL之前编译辅助工具并检查其运行时清单。要求全部12个依赖项存在、DLL具有托管程序集元数据、复制文件与暂存源文件逐字节一致，并验证加载器所提供依赖关系的完整性。保留模板预检、手动启动游戏、诊断记录和文件所有权保护。</li>
+<li>模组仍为v0.9.11，共58个模组构建。本次修复未启动游戏或部署文件，也未发布GitHub Release。</li>
+<li>生成Windows x64自包含安装程序0.1.9，并编译辅助工具，没有警告或错误。静态检查确认deps.json已包含全部12个运行时依赖项，复制的DLL与新下载且通过校验和验证的官方MelonLoader压缩包逐字节一致。输出恰好包含13个DLL，包括辅助工具本身。单文件安装程序包含已检查的主程序集，且没有安装程序专用的语言附属程序集。未进行测试、辅助工具执行、引用生成、安装、卸载或游戏启动。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9018a9f41cbb601976027c9c215364473fe7973e">源代码提交</a> · 没有GitHub发行版</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 个本地源档案用于重建公共源提交。安装包保留在本地并且不是 GitHub 版本。 v0.5.4重新绑定预览和v0.5.18 SAPI修剪实验被记录为历史实现；后来的条目说明了它们是如何改变的。</p><p><a href="#history">返回创建历史</a></p></div></footer>

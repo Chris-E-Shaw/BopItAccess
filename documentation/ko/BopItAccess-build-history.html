@@ -178,6 +178,13 @@
 <li>alpha 준비를 시작할 때 포함된 도우미 템플릿을 검사하여 필수 파일 다운로드, SDK 설치 또는 오프라인 참조 생성 전에 오류를 발견합니다. 한 번의 배포 흐름, 수동 게임 실행, 진단 기록 및 소유권 보호를 유지합니다. 모드는 v0.9.11, 모드 빌드 수는 58 그대로입니다. GitHub Release는 게시하지 않습니다.</li>
 <li>Windows x64 독립 실행형 설치 프로그램 0.1.8을 경고 및 오류 없이 생성합니다. 새 기본 어셈블리의 정적 검사를 통해 내장 리소스 세 개가 모두 존재하고 소스 파일과 바이트 단위로 일치함을 확인했습니다. 검증은 컴파일, 정적 검토 및 컴파일된 리소스 검사에 한정됩니다. 자동 테스트, 오프라인 참조 생성, 설치 프로그램/제거 프로그램 실행 또는 게임 실행은 하지 않았습니다. 모드는 v0.9.11 그대로이며 GitHub Release는 게시하지 않습니다.</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/db95702a3e92940eb1435568604402860555ce2c">소스 커밋</a> · GitHub 릴리스 없음</p></article>
+      <article class="commit" id="installer-0-1-9"><div class="meta"><span class="version">Installer 0.1.9 preview</span><span class="kind">fix · dependencies · docs</span></div><h3>fix(installer): 오프라인 도우미의 모든 종속성 등록</h3><ul>
+<li>제공된 설치 프로그램 0.1.8 로그에는 내장 템플릿 로드, Cpp2IL의 종료 코드 0, 경고와 오류 없는 도우미 컴파일이 기록되어 있습니다. 이후 .NET이 Iced, Version=1.17.0.0을 로드할 수 없어 Pass16ScanMethodRefs에서 Interop 생성에 실패했습니다. 게임 파일 배포 전 준비 단계에서 중단되었습니다.</li>
+<li>Iced DLL은 콘텐츠로 복사되었지만 실행 매니페스트 deps.json에는 빠져 있었습니다. 와일드카드 콘텐츠 복사를 12개 관리형 종속성에 대한 명시적 private 참조로 바꿉니다. 기존 8개에 Iced, MonoMod.Backports, MonoMod.ILHelpers, Microsoft.Extensions.DependencyInjection.Abstractions를 추가하고 고정된 MelonLoader 버전의 DLL을 사용합니다.</li>
+<li>Cpp2IL을 다운로드하거나 실행하기 전에 도우미를 컴파일하고 실행 매니페스트를 검사합니다. 12개 종속성 모두, 관리형 DLL 메타데이터, 원본과 바이트 단위로 일치하는 복사본, 로더가 제공하는 종속성의 완전성을 요구합니다. 템플릿 사전 확인, 수동 실행, 진단 기록 및 소유권 보호를 유지합니다.</li>
+<li>모드는 v0.9.11, 모드 빌드 수는 58 그대로입니다. 이번 수정에서는 게임을 실행하거나 파일을 배포하지 않으며 GitHub Release를 게시하지 않습니다.</li>
+<li>Windows x64 독립 실행형 설치 프로그램 0.1.9를 생성하고 도우미를 경고와 오류 없이 컴파일했습니다. 정적 검사에서 deps.json의 12개 실행 종속성 모두와 새로 받은 체크섬 검증 공식 MelonLoader 압축 파일의 DLL 복사본이 바이트 단위로 일치함을 확인했습니다. 출력에는 도우미를 포함해 정확히 13개 DLL이 있습니다. 단일 파일 설치 프로그램은 검사한 기본 어셈블리를 포함하며 설치 프로그램 전용 언어 위성 어셈블리는 없습니다. 테스트, 도우미 실행, 참조 생성, 설치, 제거 또는 게임 실행은 하지 않았습니다.</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9018a9f41cbb601976027c9c215364473fe7973e">소스 커밋</a> · GitHub 릴리스 없음</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37개의 로컬 소스 아카이브가 공개 소스 커밋을 재구성하는 데 사용되었습니다. 설치 패키지는 로컬로 유지되며 GitHub 릴리스가 아닙니다. v0.5.4 리바인딩 미리보기 및 v0.5.18 SAPI 트림 실험은 기록 구현으로 기록됩니다. 이후 항목에는 변경된 방법이 나와 있습니다.</p><p><a href="#history">빌드 기록으로 돌아가기</a></p></div></footer>

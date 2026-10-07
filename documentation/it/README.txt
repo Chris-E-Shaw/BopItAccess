@@ -446,12 +446,12 @@ Dopo una modifica riuscita, il mod annuncia l'input e l'azione a cui è assegnat
 Diagnostica del programma di installazione
 ------------------------------------------
 
-L’anteprima 0.1.8 del programma di installazione salva automaticamente registri diagnostici locali in %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permette di scegliere un file di testo, salva la sessione corrente e continua ad aggiungere nuove voci fino alla chiusura del programma; Copy diagnostics (Alt+C) copia un’istantanea. Scegli Save diagnostics prima della prossima prova di installazione o disinstallazione per conservare l’intera registrazione anche dopo la rimozione dei registri automatici. I registri includono messaggi di stato, fasi di avanzamento e dettagli degli errori. Non viene caricato nulla online. Controlla un registro prima di condividerlo: può contenere nomi utente Windows e percorsi completi delle cartelle. Una disinstallazione completata rimuove i registri automatici; le copie salvate volontariamente altrove restano.
+L’anteprima 0.1.9 del programma di installazione salva automaticamente registri diagnostici locali in %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permette di scegliere un file di testo, salva la sessione corrente e continua ad aggiungere nuove voci fino alla chiusura del programma; Copy diagnostics (Alt+C) copia un’istantanea. Scegli Save diagnostics prima della prossima prova di installazione o disinstallazione per conservare l’intera registrazione anche dopo la rimozione dei registri automatici. I registri includono messaggi di stato, fasi di avanzamento e dettagli degli errori. Non viene caricato nulla online. Controlla un registro prima di condividerlo: può contenere nomi utente Windows e percorsi completi delle cartelle. Una disinstallazione completata rimuove i registri automatici; le copie salvate volontariamente altrove restano.
 
 Procedura di installazione e primo avvio
 ----------------------------------------
 
-L’anteprima 0.1.8 del programma di installazione non avvia mai Bop It! durante l’installazione. Install
+L’anteprima 0.1.9 del programma di installazione non avvia mai Bop It! durante l’installazione. Install
 scarica una versione pubblica compilata quando disponibile. Install alpha scarica il codice più recente,
 chiede conferma e lo compila prima di copiare i file. Alpha riutilizza riferimenti locali completi oppure
 genera riferimenti temporanei dal gioco installato, senza eseguirlo. Dopo la preparazione, il programma copia
@@ -474,4 +474,4 @@ generate le assembly del gioco. Attendi circa un minuto, o più su alcuni sistem
 finché MelonLoader non lo ha caricato. Lascia aperto il gioco e attendi l’annuncio di avvio di Bop It Access,
 poi quello della schermata del titolo o del menu, prima di usare i comandi.
 
-L’anteprima 0.1.8 dell’installer corregge un errore di confezionamento che poteva interrompere Install alpha dopo la generazione dei riferimenti. Verifica i modelli di compilazione inclusi prima di scaricare i prerequisiti o generare i riferimenti. L’ordine di installazione è invariato e l’installer non avvia mai il gioco. Salva i dati diagnostici prima del prossimo tentativo per consentire l’analisi di altri problemi.
+L’anteprima 0.1.9 dell’installer corregge una dipendenza mancante dello strumento di compilazione che poteva interrompere Install alpha. Verifica l’elenco delle dipendenze e i file dello strumento prima di scaricare o eseguire gli strumenti per gli assembly. L’installer non avvia mai il gioco. Salva i dati diagnostici prima del prossimo tentativo.

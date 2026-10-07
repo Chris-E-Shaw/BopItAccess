@@ -446,12 +446,12 @@ Después de un cambio exitoso, el mod anuncia la entrada y la acción a la que e
 Diagnósticos del instalador
 ---------------------------
 
-La versión preliminar 0.1.8 del instalador guarda automáticamente registros de diagnóstico locales en %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permite elegir un archivo de texto, guarda la sesión actual y sigue añadiendo entradas hasta cerrar el instalador; Copy diagnostics (Alt+C) copia una instantánea. Selecciona Save diagnostics antes de la siguiente prueba de instalación o desinstalación para conservar el registro completo aunque se eliminen los registros automáticos. Se registran mensajes de estado, etapas del progreso y detalles de errores. No se sube nada a Internet. Revisa el registro antes de compartirlo: puede contener nombres de usuario de Windows y rutas completas de carpetas. Una desinstalación correcta elimina los registros automáticos; las copias guardadas deliberadamente en otro lugar permanecen.
+La versión preliminar 0.1.9 del instalador guarda automáticamente registros de diagnóstico locales en %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permite elegir un archivo de texto, guarda la sesión actual y sigue añadiendo entradas hasta cerrar el instalador; Copy diagnostics (Alt+C) copia una instantánea. Selecciona Save diagnostics antes de la siguiente prueba de instalación o desinstalación para conservar el registro completo aunque se eliminen los registros automáticos. Se registran mensajes de estado, etapas del progreso y detalles de errores. No se sube nada a Internet. Revisa el registro antes de compartirlo: puede contener nombres de usuario de Windows y rutas completas de carpetas. Una desinstalación correcta elimina los registros automáticos; las copias guardadas deliberadamente en otro lugar permanecen.
 
 Instalación y primer inicio
 ---------------------------
 
-La versión preliminar 0.1.8 del instalador nunca inicia Bop It! durante la instalación. Install descarga una
+La versión preliminar 0.1.9 del instalador nunca inicia Bop It! durante la instalación. Install descarga una
 versión pública compilada cuando existe. Install alpha descarga el código más reciente, pide confirmación y lo
 compila antes de copiar los archivos. Alpha reutiliza referencias locales completas o genera referencias
 temporales de compilación a partir del juego instalado, sin ejecutarlo. Tras prepararlo todo, el instalador
@@ -474,4 +474,4 @@ ensamblados del juego. Espera aproximadamente un minuto, o más en algunos equip
 hasta que MelonLoader lo haya cargado. Deja el juego abierto y espera el anuncio de inicio de Bop It Access, y
 después el de la pantalla de título o el menú, antes de usar los controles.
 
-La versión preliminar 0.1.8 del instalador corrige un error de empaquetado que podía detener Install alpha después de generar las referencias. Comprueba las plantillas de compilación incluidas antes de descargar los requisitos o generar las referencias. El orden de instalación no cambia y el instalador nunca inicia el juego. Guarda los diagnósticos antes del próximo intento para poder investigar cualquier problema restante.
+La versión preliminar 0.1.9 del instalador corrige una dependencia ausente de la herramienta de compilación que podía detener Install alpha. Comprueba la lista de dependencias y los archivos de la herramienta antes de descargar o ejecutar las herramientas de ensamblados. El instalador sigue sin iniciar nunca el juego. Guarda los diagnósticos antes del próximo intento.
