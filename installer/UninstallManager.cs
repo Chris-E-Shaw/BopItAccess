@@ -3,6 +3,12 @@ using System.Diagnostics;
 
 namespace BopItAccess.Installer;
 
+public enum UninstallPreferenceScope
+{
+    CurrentUser,
+    AllUsers
+}
+
 public sealed class UninstallResult
 {
     public bool Success { get; set; }
@@ -13,15 +19,15 @@ public sealed class UninstallResult
 }
 
 /// <summary>
-/// Removes exactly the files recorded as installer-owned and restores files
-/// that were present before installation. The launcher script performs the
+/// Removes installer-owned files and recognisable earlier copies of this mod,
+/// restoring unrelated files that were present before installation. The launcher script performs the
 /// final removal of the running uninstaller and state directory after exit.
 /// </summary>
 public static class UninstallManager
 {
     private static readonly string[] LegacyDocumentationNames =
     {
-        "BopItAccess-user-guide.html", "BopItAccess-build-history.html",
+        "BopItAccess-user-guide.html", "BopItAccess-build-history.html", "BopItAccess-release-review.html",
         "README.md", "README.txt", "GIT-WORKFLOW.md", "THIRD-PARTY-NOTICES.txt"
     };
     private static readonly string[] LegacyLocaleFolders =
@@ -34,7 +40,8 @@ public static class UninstallManager
         "7C7D09C8C7306E8E1A0C46D603CCB2A391C194C77843400C11B746E7DD56A467";
 
     public static async Task<UninstallResult> UninstallAsync(string manifestPath,
-        Action<string> log, CancellationToken cancellationToken = default)
+        UninstallPreferenceScope scope, Action<string> log,
+        CancellationToken cancellationToken = default, string? targetUserSid = null)
     {
         InstallManifest manifest = InstallManifest.Load(manifestPath);
         string game = Path.GetFullPath(manifest.GameDirectory);
@@ -50,6 +57,7 @@ public static class UninstallManager
             throw new InvalidDataException("The manifest path does not match its state directory.");
         EnsureGameClosed();
         cancellationToken.ThrowIfCancellationRequested();
+        SelectPreferenceScope(manifest, scope, targetUserSid, log);
 
         var result = new UninstallResult { RequiresSelfCleanup = true };
         if (!manifest.UninstallFilesRemoved && !Directory.Exists(game))
@@ -77,8 +85,9 @@ public static class UninstallManager
             return result;
         }
         var loaderRestorations = new List<LoaderUiDefaults.RestorePlan>();
+        var baselineHashes = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
         ValidateSettingsFiles(game);
-        ValidateModLogs(game, removeMain: !manifest.ModLogExistedBeforeInstall);
+        ValidateModLogs(game, removeMain: true);
         // A runtime added below a pre-existing loader may also be used by
         // other mods. Sharing is independent of who first installed the loader.
         bool sharedLoader = HasOtherMods(game);
@@ -88,6 +97,8 @@ public static class UninstallManager
         {
             string melon = Path.Combine(game, "MelonLoader");
             try { ValidateOwnedMelonLoaderTree(melon, game); }
+            catch (InvalidDataException ex) { result.Conflicts.Add(ex.Message); }
+            try { ValidateLoaderRemnants(game, manifest); }
             catch (InvalidDataException ex) { result.Conflicts.Add(ex.Message); }
         }
 
@@ -112,6 +123,7 @@ public static class UninstallManager
                         result.Conflicts.Add($"Original backup changed: {backup}");
                 }
             }
+            baselineHashes[path] = originalHash;
             if (!file.IsLoaderConfiguration && File.Exists(path))
             {
                 string currentHash = await InstallTransaction.Sha256Async(path, cancellationToken);
@@ -143,6 +155,9 @@ public static class UninstallManager
         }
 
         cancellationToken.ThrowIfCancellationRequested();
+        // Remember the scope before the first destructive action. A failed
+        // profile cleanup can then retry the same user's request later.
+        InstallManifest.SaveAtomic(manifest, manifestPath);
         // Apply shared-config plans before deleting any mod files. A new read
         // or write failure leaves the installed mod and manifest intact.
         foreach (LoaderUiDefaults.RestorePlan plan in loaderRestorations)
@@ -159,7 +174,11 @@ public static class UninstallManager
                 continue;
             }
             if (file.IsLoaderConfiguration) continue; // Already restored before file removal.
-            if (file.OriginalBackupPath is not null)
+            bool removeEarlierModCopy = IsBopItAccessFile(path, game) ||
+                (!sharedLoader && PathsEqual(path, Path.Combine(game, "prism.dll")) &&
+                 baselineHashes.TryGetValue(path, out string? baselineHash) &&
+                 string.Equals(baselineHash, LegacyPrismSha256, StringComparison.OrdinalIgnoreCase));
+            if (file.OriginalBackupPath is not null && !removeEarlierModCopy)
             {
                 string backup = InstallTransaction.ValidateBackup(file.OriginalBackupPath, state);
                 Directory.CreateDirectory(Path.GetDirectoryName(path)!);
@@ -173,10 +192,13 @@ public static class UninstallManager
             }
         }
 
-        RemoveModLogs(game, removeMain: !manifest.ModLogExistedBeforeInstall, log);
-        if (manifest.MelonLoaderInstalledByInstaller && !sharedLoader)
-            RemoveOwnedMelonLoaderTree(game, log);
+        RemoveModLogs(game, removeMain: true, log);
         RemoveSettingsFiles(game, log);
+        if (manifest.MelonLoaderInstalledByInstaller && !sharedLoader)
+        {
+            RemoveOwnedMelonLoaderTree(game, log);
+            RemoveLoaderRemnants(game, manifest, log);
+        }
 
         foreach (string directory in manifest.CreatedDirectories.OrderByDescending(path => path.Length))
         {
@@ -202,15 +224,20 @@ public static class UninstallManager
     /// whose origin cannot be established. The caller must report that limit.
     /// </summary>
     public static async Task<UninstallResult> UninstallLegacyAsync(string gameDirectory,
-        Action<string> log, CancellationToken cancellationToken = default)
+        UninstallPreferenceScope scope, Action<string> log,
+        CancellationToken cancellationToken = default, string? targetUserSid = null)
     {
         string game = Path.GetFullPath(gameDirectory);
         EnsureGameClosed();
         cancellationToken.ThrowIfCancellationRequested();
+        targetUserSid = ResolvePreferenceUserSid(scope, targetUserSid);
         ValidateSettingsFiles(game);
         ValidateModLogs(game, removeMain: true);
-        string mod = Path.Combine(game, "Mods", "BopItAccess.dll");
+        string state = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "BopItAccess");
+        string mod = InstallTransaction.ValidateAgainstRoots(Path.Combine(game, "Mods", "BopItAccess.dll"), game, state);
+        string launcher = InstallTransaction.ValidateAgainstRoots(Path.Combine(game, "BopItAccess-uninstall.ps1"), game, state);
         if (File.Exists(mod)) { File.Delete(mod); log($"Removed {mod}"); }
+        if (File.Exists(launcher)) { File.Delete(launcher); log("Removed the Bop It Access uninstall shortcut."); }
         RemoveModLogs(game, removeMain: true, log);
 
         string prism = Path.Combine(game, "prism.dll");
@@ -246,7 +273,7 @@ public static class UninstallManager
             if (!Directory.EnumerateFileSystemEntries(docs).Any()) Directory.Delete(docs);
         }
         var result = new UninstallResult { Success = true, RequiresSelfCleanup = false };
-        result.PreferenceWarnings.AddRange(ModPreferenceCleaner.RemoveAcrossProfiles(log));
+        result.PreferenceWarnings.AddRange(ModPreferenceCleaner.RemovePreferences(scope, targetUserSid, log));
         RemoveSettingsFiles(game, log);
         RemoveUninstallRegistration(log);
         log("Removed identifiable legacy mod files. Pre-existing MelonLoader and unverified shared files were preserved.");
@@ -256,20 +283,183 @@ public static class UninstallManager
     internal static bool IsLegacyDocumentationName(string name) =>
         LegacyDocumentationNames.Contains(name, StringComparer.OrdinalIgnoreCase);
 
+    private static bool IsBopItAccessFile(string path, string game)
+    {
+        if (PathsEqual(path, Path.Combine(game, "Mods", "BopItAccess.dll")) ||
+            PathsEqual(path, Path.Combine(game, "BopItAccess-uninstall.ps1")) ||
+            PathsEqual(path, Path.Combine(game, "Mods", "BopItAccess.log")) ||
+            PathsEqual(path, Path.Combine(game, "Mods", "BopItAccess.log.previous")))
+            return true;
+        // Only dedicated mod filenames in its guide folders qualify. Generic
+        // README/licence names may have belonged to someone else beforehand.
+        string name = Path.GetFileName(path);
+        return name.StartsWith("BopItAccess-", StringComparison.OrdinalIgnoreCase) &&
+            IsLegacyDocumentationPath(Path.Combine(game, "documentation"), path);
+    }
+
     private static void FinishPreferenceCleanup(InstallManifest manifest, string manifestPath,
         UninstallResult result, Action<string> log)
     {
-        result.PreferenceWarnings.AddRange(ModPreferenceCleaner.RemoveAcrossProfiles(log));
-        manifest.UninstallCompleted = result.PreferenceWarnings.Count == 0;
-        InstallManifest.SaveAtomic(manifest, manifestPath);
-        if (manifest.UninstallCompleted)
+        if (manifest.UninstallPreferenceScope is null)
+            throw new InvalidDataException("Choose whose mod preferences should be removed before retrying uninstall.");
+        result.PreferenceWarnings.AddRange(ModPreferenceCleaner.RemovePreferences(
+            manifest.UninstallPreferenceScope.Value, manifest.UninstallUserSid, log));
+        if (result.PreferenceWarnings.Count == 0)
         {
+            // Do not grant the launcher permission to delete its retry state
+            // until the Windows entry has also been removed successfully.
             RemoveUninstallRegistration(log);
+            manifest.UninstallCompleted = true;
+            InstallManifest.SaveAtomic(manifest, manifestPath);
             log("Bop It Access was removed. The launcher will remove its own files on exit.");
         }
         else
+        {
+            manifest.UninstallCompleted = false;
+            InstallManifest.SaveAtomic(manifest, manifestPath);
             log("Mod files were removed. The uninstall launcher and Windows entry remain so preference cleanup can be retried.");
+        }
         result.Success = true;
+    }
+
+    private static void SelectPreferenceScope(InstallManifest manifest,
+        UninstallPreferenceScope scope, string? targetUserSid, Action<string> log)
+    {
+        string? selectedSid = ResolvePreferenceUserSid(scope, targetUserSid);
+        if (manifest.UninstallPreferenceScope is not null)
+        {
+            if (manifest.UninstallPreferenceScope == UninstallPreferenceScope.CurrentUser &&
+                string.IsNullOrWhiteSpace(manifest.UninstallUserSid))
+                throw new InvalidDataException("The saved uninstall choice has no Windows user identifier.");
+            ResolvePreferenceUserSid(manifest.UninstallPreferenceScope.Value, manifest.UninstallUserSid);
+            if (manifest.UninstallPreferenceScope != scope ||
+                !string.Equals(manifest.UninstallUserSid, selectedSid, StringComparison.OrdinalIgnoreCase))
+                log("Continuing the previously chosen preference cleanup so a retry does not affect another Windows user.");
+            return;
+        }
+        manifest.UninstallPreferenceScope = scope;
+        manifest.UninstallUserSid = selectedSid;
+        log(scope == UninstallPreferenceScope.AllUsers
+            ? "Removing mod preferences for everyone on this PC."
+            : "Removing mod preferences for the selected Windows user only.");
+    }
+
+    private static string? ResolvePreferenceUserSid(UninstallPreferenceScope scope, string? targetUserSid)
+    {
+        if (scope == UninstallPreferenceScope.AllUsers) return null;
+        if (scope != UninstallPreferenceScope.CurrentUser)
+            throw new ArgumentOutOfRangeException(nameof(scope));
+        return UninstallRequestUser.Resolve(targetUserSid);
+    }
+
+    /// <summary>
+    /// Start a fresh ownership record when reinstalling from the same open UI.
+    /// Call only while holding the installer's global mutex. Keep its running
+    /// launcher and diagnostics; delayed cleanup will reject the new manifest.
+    /// </summary>
+    internal static void ForgetCompletedUninstall(string manifestPath, Action<string> log)
+    {
+        InstallManifest manifest = InstallManifest.Load(manifestPath);
+        string expectedState = Path.Combine(
+            Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "BopItAccess");
+        if (!manifest.UninstallCompleted || !manifest.UninstallFilesRemoved ||
+            !PathsEqual(manifest.StateDirectory, expectedState) ||
+            !PathsEqual(manifestPath, Path.Combine(expectedState, InstallManifest.FileName)) ||
+            !Directory.Exists(expectedState) ||
+            (File.GetAttributes(expectedState) & FileAttributes.ReparsePoint) != 0)
+            throw new InvalidDataException("The previous uninstall has not completed safely.");
+        InstallTransaction.ValidateAgainstRoots(manifestPath, expectedState, expectedState);
+        string completedPath = InstallTransaction.ValidateAgainstRoots(
+            Path.Combine(expectedState, InstallManifest.CompletedUninstallFileName), expectedState, expectedState);
+        if (File.Exists(Path.Combine(expectedState, "transaction.json")))
+            throw new InvalidDataException("Recover the interrupted installation before installing again.");
+        foreach (string name in new[] { "originals", "transactions" })
+        {
+            string folder = Path.Combine(expectedState, name);
+            InstallTransaction.ValidateAgainstRoots(folder, expectedState, expectedState);
+            ValidateUnlinkedTree(folder);
+        }
+        foreach (string name in new[] { "originals", "transactions" })
+        {
+            string folder = Path.Combine(expectedState, name);
+            if (Directory.Exists(folder)) DeleteTreeWithoutReparsePoints(folder);
+        }
+        // Retain a completed-removal checkpoint if a reinstall is then
+        // aborted before commit. The delayed helper prefers a new active
+        // manifest and never cleans state while a transaction is pending.
+        File.Move(manifestPath, completedPath, overwrite: true);
+        log("The previous uninstall is complete. Preparing a fresh installation.");
+    }
+
+    private static IReadOnlyList<string> ValidateLoaderRemnants(string game, InstallManifest manifest)
+    {
+        var files = new List<string>();
+        string userData = Path.Combine(game, "UserData");
+        foreach (string name in new[] { "MelonPreferences.cfg", "Loader.cfg" })
+        {
+            string file = InstallTransaction.ValidateAgainstRoots(Path.Combine(userData, name),
+                game, manifest.StateDirectory);
+            // The user requested complete loader cleanup once it is removed.
+            // These two known loader configs are no longer useful even when
+            // an older copy was restored from a baseline backup above.
+            if (File.Exists(file) && (File.GetAttributes(file) & FileAttributes.ReparsePoint) != 0)
+                throw new InvalidDataException("Loader preference cleanup cannot follow a linked file.");
+            files.Add(file);
+        }
+        foreach (string name in new[] { "Plugins", "UserLibs", "UserData" })
+        {
+            string folder = InstallTransaction.ValidateAgainstRoots(Path.Combine(game, name),
+                game, manifest.StateDirectory);
+            ValidateUnlinkedTree(folder);
+        }
+        return files;
+    }
+
+    private static void RemoveLoaderRemnants(string game, InstallManifest manifest, Action<string> log)
+    {
+        foreach (string file in ValidateLoaderRemnants(game, manifest))
+        {
+            if (!File.Exists(file)) continue;
+            File.Delete(file);
+            log("Removed MelonLoader preferences: " + file);
+        }
+        foreach (string name in new[] { "Plugins", "UserLibs", "UserData" })
+        {
+            string folder = Path.Combine(game, name);
+            if (!Directory.Exists(folder)) continue;
+            RemoveEmptyFolders(folder);
+            if (Directory.Exists(folder))
+                log("Kept unrecognised files in " + name + " to protect files that were not installed by Bop It Access.");
+            else log("Removed the unused " + name + " folder.");
+        }
+    }
+
+    private static void RemoveEmptyFolders(string directory)
+    {
+        if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
+            throw new InvalidDataException("Empty-folder cleanup cannot follow a linked folder.");
+        foreach (string child in Directory.EnumerateDirectories(directory)) RemoveEmptyFolders(child);
+        if (!Directory.EnumerateFileSystemEntries(directory).Any()) Directory.Delete(directory);
+    }
+
+    private static void ValidateUnlinkedTree(string root)
+    {
+        if (!Directory.Exists(root)) return;
+        var pending = new Stack<string>();
+        pending.Push(root);
+        while (pending.Count > 0)
+        {
+            string directory = pending.Pop();
+            if ((File.GetAttributes(directory) & FileAttributes.ReparsePoint) != 0)
+                throw new InvalidDataException("Uninstall cleanup cannot follow a linked folder: " + directory);
+            foreach (string entry in Directory.EnumerateFileSystemEntries(directory))
+            {
+                FileAttributes attributes = File.GetAttributes(entry);
+                if ((attributes & FileAttributes.ReparsePoint) != 0)
+                    throw new InvalidDataException("Uninstall cleanup cannot follow a linked file or folder: " + entry);
+                if ((attributes & FileAttributes.Directory) != 0) pending.Push(entry);
+            }
+        }
     }
 
     private static void RemoveModLogs(string game, bool removeMain, Action<string> log)
@@ -361,7 +551,8 @@ public static class UninstallManager
     {
         try
         {
-            foreach (string root in new[] { Path.Combine(game, "Mods"), Path.Combine(game, "Plugins") })
+            foreach (string root in new[] { Path.Combine(game, "Mods"), Path.Combine(game, "Plugins"),
+                         Path.Combine(game, "UserLibs") })
             {
                 if (!Directory.Exists(root)) continue;
                 var pending = new Stack<string>();

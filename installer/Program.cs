@@ -13,20 +13,23 @@ internal static class Program
         catch (AbandonedMutexException) { acquired = true; }
         if (!acquired)
         {
-            Environment.ExitCode = 1;
-            MessageBox.Show("Bop It Access Installer is already open. Use its existing window.",
-                "Bop It Access Installer", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            if (!InstallerWindowFocus.ActivateExisting())
+                MessageBox.Show("Bop It Access Installer is already open. Use its existing window.",
+                    "Bop It Access Installer", MessageBoxButtons.OK, MessageBoxIcon.Information);
             return;
         }
         bool startUninstall = args.Any(arg =>
             string.Equals(arg, "--uninstall", StringComparison.OrdinalIgnoreCase));
         if (startUninstall) Environment.ExitCode = 1;
         using var diagnostics = new InstallerDiagnostics(startUninstall);
+        string? suppliedUserSid = null;
+        for (int index = 0; index + 1 < args.Length; index++)
+            if (string.Equals(args[index], "--uninstall-user-sid", StringComparison.OrdinalIgnoreCase))
+                suppliedUserSid = args[++index];
         Application.ThreadException += (_, e) =>
         {
             diagnostics.Error("Unexpected UI error", e.Exception);
-            MessageBox.Show("An unexpected installer error occurred: " + e.Exception.Message +
-                "\n\nUse Save diagnostics to keep the details for review.",
+            MessageBox.Show("An unexpected installer error occurred. Choose Show advanced, then Save diagnostics to keep the details for review.",
                 "Bop It Access Installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
         };
         AppDomain.CurrentDomain.UnhandledException += (_, e) =>
@@ -36,14 +39,16 @@ internal static class Program
             diagnostics.Error("Unobserved background task error", e.Exception);
         try
         {
-            using var form = new InstallerForm(new InstallerService(diagnostics, startUninstall), startUninstall);
+            string uninstallUserSid = UninstallRequestUser.Resolve(suppliedUserSid,
+                message => diagnostics.Write("UNINSTALL_USER", message));
+            using var form = new InstallerForm(new InstallerService(diagnostics, startUninstall), startUninstall, uninstallUserSid);
             Application.Run(form);
         }
         catch (Exception ex)
         {
             Environment.ExitCode = 1;
             diagnostics.Error("Installer startup or message loop failed", ex);
-            MessageBox.Show(ex.Message + "\n\nDiagnostic log: " +
+            MessageBox.Show("The installer could not start. Please keep the diagnostic log for review.\n\nDiagnostic log: " +
                 (diagnostics.FilePath ?? "Automatic recording was unavailable."),
                 "Bop It Access Installer", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }

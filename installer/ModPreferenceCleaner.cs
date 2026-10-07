@@ -17,9 +17,15 @@ internal static class ModPreferenceCleaner
     private const uint TokenQuery = 0x0008;
     private const uint SePrivilegeEnabled = 0x0002;
 
-    internal static IReadOnlyList<string> RemoveAcrossProfiles(Action<string> log)
+    internal static IReadOnlyList<string> RemovePreferences(UninstallPreferenceScope scope,
+        string? targetUserSid, Action<string> log)
     {
         ArgumentNullException.ThrowIfNull(log);
+        if (scope is not UninstallPreferenceScope.CurrentUser and not UninstallPreferenceScope.AllUsers)
+            throw new ArgumentOutOfRangeException(nameof(scope));
+        if (scope == UninstallPreferenceScope.CurrentUser &&
+            (string.IsNullOrWhiteSpace(targetUserSid) || !IsHumanProfileSid(targetUserSid)))
+            throw new InvalidDataException("The selected Windows user could not be identified safely.");
         var warnings = new List<string>();
         void Warn(string message)
         {
@@ -43,9 +49,13 @@ internal static class ModPreferenceCleaner
 
             using RegistryKey users = RegistryKey.OpenBaseKey(
                 RegistryHive.Users, RegistryView.Registry64);
+            bool selectedProfileFound = false;
             foreach (string sid in profiles.GetSubKeyNames())
             {
                 if (!IsHumanProfileSid(sid)) continue;
+                if (scope == UninstallPreferenceScope.CurrentUser &&
+                    !sid.Equals(targetUserSid, StringComparison.OrdinalIgnoreCase)) continue;
+                selectedProfileFound = true;
                 try
                 {
                     // A logged-in user's hive is already mounted by Windows.
@@ -159,6 +169,8 @@ internal static class ModPreferenceCleaner
                     Warn($"Could not clean profile {sid}: {ex.Message}");
                 }
             }
+            if (scope == UninstallPreferenceScope.CurrentUser && !selectedProfileFound)
+                Warn("The selected Windows user profile could not be found. Its mod preferences were not removed.");
         }
         catch (Exception ex) when (IsProfileError(ex))
         {

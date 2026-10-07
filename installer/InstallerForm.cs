@@ -6,6 +6,7 @@ internal sealed class InstallerForm : Form
 {
     private readonly InstallerService _service;
     private readonly bool _startUninstall;
+    private readonly string _uninstallUserSid;
     private readonly TextBox _gamePath = new();
     private readonly Button _browse = new();
     private readonly Button _install = new();
@@ -15,6 +16,8 @@ internal sealed class InstallerForm : Form
     private readonly Button _abort = new();
     private readonly Button _saveDiagnostics = new();
     private readonly Button _copyDiagnostics = new();
+    private readonly CheckBox _showAdvanced = new();
+    private readonly Button _quit = new();
     private readonly Label _stateLabel = new();
     private readonly ProgressBar _progress = new();
     private readonly TextBox _statusLog = new();
@@ -30,11 +33,19 @@ internal sealed class InstallerForm : Form
     private bool _allowAbort;
     private bool _reportedDiagnosticFailure;
     private bool _reportedExportFailure;
+    private InstallerGamepad? _gamepad;
+    private Task? _backendTask;
+    private bool _operationIsUninstall;
+    private bool _exitAfterOperation;
+    private bool _quitApproved;
+    private InstallerDialog? _quitDialog;
+    private string? _deferredCompletion;
 
-    internal InstallerForm(InstallerService service, bool startUninstall)
+    internal InstallerForm(InstallerService service, bool startUninstall, string uninstallUserSid)
     {
         _service = service;
         _startUninstall = startUninstall;
+        _uninstallUserSid = uninstallUserSid;
         Text = "Bop It Access Installer";
         StartPosition = FormStartPosition.CenterScreen;
         MinimumSize = new Size(680, 420);
@@ -194,18 +205,40 @@ internal sealed class InstallerForm : Form
         _copyDiagnostics.AutoSize = true;
         _copyDiagnostics.TabIndex = 10;
         _copyDiagnostics.Click += (_, _) => CopyDiagnostics();
-        diagnosticsActions.Controls.AddRange(new Control[] { _saveDiagnostics, _copyDiagnostics });
+        _showAdvanced.Text = "Show ad&vanced";
+        _showAdvanced.AccessibleName = "Show advanced";
+        _showAdvanced.AccessibleDescription = "Show alpha installation and diagnostic tools.";
+        _showAdvanced.AutoSize = true;
+        _showAdvanced.TabIndex = 9;
+        _showAdvanced.CheckedChanged += (_, _) => UpdateAdvancedControls();
+        _saveDiagnostics.TabIndex = 10;
+        _copyDiagnostics.TabIndex = 11;
+        _quit.Text = "&Quit";
+        _quit.AccessibleName = "Quit installer";
+        _quit.AutoSize = true;
+        _quit.TabIndex = 12;
+        _quit.Click += (_, _) => RequestQuit();
+        diagnosticsActions.Controls.AddRange(new Control[] { _showAdvanced, _saveDiagnostics, _copyDiagnostics, _quit });
         logPanel.Controls.Add(diagnosticsActions, 0, 2);
         layout.Controls.Add(logPanel, 0, 3);
 
         _service.StatusChanged += message => OnUiThread(() => AppendStatus(message, record: false));
         _service.ProgressChanged += progress => OnUiThread(() => ShowProgress(progress));
         _service.StateChanged += state => OnUiThread(() => ShowState(state));
-        Shown += async (_, _) => await InitializeAsync();
+        Shown += async (_, _) =>
+        {
+            InstallerWindowFocus.Activate(this);
+            _gamePath.Focus();
+            _gamepad = new InstallerGamepad(this, RequestQuit,
+                () => _showAdvanced.Checked = !_showAdvanced.Checked,
+                () => { if (_operationCancellation != null && _allowAbort) RequestAbortWithConfirmation(); else RequestQuit(); });
+            const string welcome = "Welcome to the Bop It Access Installer! Check the game folder, then choose Install. Use Browse to choose a different folder. Show advanced provides alpha installation and diagnostic tools. You can review all messages in the status log. With a compatible controller, use the D-pad to navigate and A to activate; the bumpers move between fields.";
+            AppendStatus(welcome);
+            InstallerFeedback.Announce(this, welcome, important: true);
+            await InitializeAsync();
+        };
         FormClosing += OnFormClosing;
-        AppendStatus(_service.Diagnostics.FilePath is string diagnosticPath
-            ? "Diagnostic log for this session: " + diagnosticPath
-            : "Automatic diagnostic recording is unavailable. Save diagnostics can save this session's in-memory record.");
+        UpdateAdvancedControls();
         UpdateActions();
     }
 
@@ -229,11 +262,7 @@ internal sealed class InstallerForm : Form
             _initializationFinished = true;
             UpdateActions();
             if (_startUninstall)
-            {
                 await UninstallRequestedAsync();
-                if (_service.LastUninstallWarningCount == 0)
-                    Close();
-            }
         }
         catch (OperationCanceledException) when (_initializationCancellation.IsCancellationRequested) { }
         catch (Exception ex)
@@ -245,7 +274,7 @@ internal sealed class InstallerForm : Form
             _initializationRunning = false;
             _initializationFinished = true;
             if (!IsDisposed) UpdateActions();
-            if (_closeAfterInitialization && !IsDisposed) Close();
+            if (_closeAfterInitialization && !IsDisposed) { _quitApproved = true; Close(); }
         }
     }
 
@@ -288,7 +317,15 @@ internal sealed class InstallerForm : Form
         if (!Confirm("Uninstall Bop It Access from the selected game folder?",
                 "Confirm uninstall"))
             return;
-        await RunOperationAsync(_service.UninstallAsync,
+        string account = UninstallRequestUser.ResolveName(_uninstallUserSid);
+        using var scopeDialog = new InstallerDialog("Uninstall preferences",
+            "Mod files in this game folder will be removed for everyone. Shared support needed by other mods will be kept. Choose whose Windows preference settings to remove. " +
+            $"Uninstall for me removes preferences for {account}. Uninstall for everyone removes preferences from all local Windows profiles. The .NET SDK remains installed.",
+            new[] { ("Uninstall for &me", DialogResult.Yes), ("Uninstall for &everyone", DialogResult.No), ("&Cancel", DialogResult.Cancel) }, DialogResult.Cancel);
+        DialogResult choice = scopeDialog.ShowDialog(this);
+        if (choice is not (DialogResult.Yes or DialogResult.No)) return;
+        var scope = choice == DialogResult.Yes ? UninstallPreferenceScope.CurrentUser : UninstallPreferenceScope.AllUsers;
+        await RunOperationAsync(ct => _service.UninstallAsync(scope, ct, _uninstallUserSid),
             "Bop It Access was uninstalled.", uninstall: true);
     }
 
@@ -308,46 +345,58 @@ internal sealed class InstallerForm : Form
 
         _abortRequested = false;
         _allowAbort = !uninstall;
-        _operationCancellation = new CancellationTokenSource();
-        bool succeeded = false;
+        _service.PrepareOperation();
+        var cancellation = new CancellationTokenSource();
+        _operationCancellation = cancellation;
+        _operationIsUninstall = uninstall;
+        _exitAfterOperation = false;
+        _deferredCompletion = null;
+        string? completion = null;
+        bool failed = false;
         UpdateActions();
         try
         {
-            await Task.Run(() => operation(_operationCancellation.Token), _operationCancellation.Token);
-            if (!_abortRequested && !_operationCancellation.IsCancellationRequested)
-            {
-                succeeded = true;
-                var message = uninstall && _service.LastUninstallWarningCount > 0
-                    ? $"Bop It Access files were removed, but cleanup reported {_service.LastUninstallWarningCount} warning(s). Review the status log now. You can run Uninstall again to retry the remaining steps."
-                    : successMessage;
-                if (!uninstall)
-                    message += " Launch Bop It! manually when you are ready. On the first launch, MelonLoader may download tools and generate assemblies for a minute or longer before speech starts. Wait for the mod's startup announcement and then the menu.";
-                var icon = uninstall && _service.LastUninstallWarningCount > 0
-                    ? MessageBoxIcon.Warning : MessageBoxIcon.Information;
-                MessageBox.Show(this, message, "Bop It Access Installer",
-                    MessageBoxButtons.OK, icon);
-                if (uninstall && _startUninstall)
-                    Environment.ExitCode = _service.LastUninstallWarningCount == 0 ? 0 : 1;
-            }
+            _backendTask = Task.Run(() => operation(cancellation.Token), cancellation.Token);
+            await _backendTask;
+            // Normal return means installation committed or uninstall finished.
+            // A cancel request during post-commit cleanup cannot undo success.
+            completion = uninstall && _service.LastUninstallWarningCount > 0
+                ? "Bop It Access was removed, but some cleanup could not finish. Review the status log. You can choose Uninstall again to retry."
+                : successMessage;
+            if (!uninstall)
+                completion += " Launch Bop It! manually when you are ready. On the first launch, setup may take a minute or longer before speech starts. Wait for the startup announcement and then the menu.";
+            if (uninstall && _startUninstall)
+                Environment.ExitCode = _service.LastUninstallWarningCount == 0 ? 0 : 1;
         }
         catch (OperationCanceledException)
         {
-            AppendStatus("Operation aborted.");
+            completion = "Installation aborted. Mod changes have been undone. Shared Microsoft .NET components remain installed.";
+            AppendStatus(completion);
         }
         catch (Exception ex)
         {
-            ShowError("Operation failed", ex);
+            failed = true;
+            _exitAfterOperation = false;
+            _service.Diagnostics.Error("Operation failed", ex);
+            completion = InstallerFeedback.FailureStatus(ex) + " Choose Show advanced, then Save diagnostics to keep the details for review.";
+            AppendStatus(completion);
         }
         finally
         {
-            _operationCancellation.Dispose();
+            cancellation.Dispose();
             _operationCancellation = null;
             _abortRequested = false;
             _allowAbort = false;
             UpdateActions();
-            if (uninstall && succeeded && !_startUninstall && _service.LastUninstallWarningCount == 0)
+            if (_exitAfterOperation && !failed && _quitDialog == null)
+            {
+                _quitApproved = true;
                 Close();
+            }
         }
+        if (IsDisposed || _quitApproved || completion == null) return;
+        if (_quitDialog != null) _deferredCompletion = completion;
+        else InstallerDialog.ShowMessage(this, completion);
     }
 
     private void RequestAbortWithConfirmation()
@@ -359,33 +408,84 @@ internal sealed class InstallerForm : Form
             return;
         // The modal confirmation pumps UI messages. The operation can finish
         // and dispose its token while the player is deciding what to do.
-        if (!ReferenceEquals(_operationCancellation, operation)) return;
+        if (!ReferenceEquals(_operationCancellation, operation) || _backendTask?.IsCompleted != false || _service.IsInstallationCommitted) return;
         _abortRequested = true;
         _abort.Enabled = false;
         _service.RequestAbort();
         operation.Cancel();
-        AppendStatus("Abort requested.");
+        AppendStatus("Stopping installation and undoing changes. Please wait.");
+    }
+
+    private void RequestQuit()
+    {
+        if (_quitApproved || _quitDialog != null || _exitAfterOperation || _closeAfterInitialization || IsDisposed) return;
+        if (_operationCancellation != null)
+        {
+            Task? pending = _backendTask;
+            bool uninstall = _operationIsUninstall;
+            string QuitMessage()
+            {
+                if (pending?.IsCompleted == true || (!uninstall && _service.IsInstallationCommitted))
+                    return pending?.IsCompletedSuccessfully == true || (!uninstall && _service.IsInstallationCommitted)
+                        ? (uninstall ? "Uninstallation has finished. Quit the installer?" : "Installation has finished. Quit the installer? No completed installation will be aborted.")
+                        : "The operation has stopped. Quit the installer?";
+                return uninstall
+                    ? "Uninstallation is in progress. If you choose Quit, the installer will close after removal finishes. Continue?"
+                    : "Installation is in progress. If you choose Quit, installation will be aborted and its changes undone before the installer closes. Continue?";
+            }
+            using var dialog = new InstallerDialog("Quit installer", QuitMessage(),
+                new[] { ("&Quit", DialogResult.Yes), ("&Keep open", DialogResult.No) }, DialogResult.No, QuitMessage);
+            _quitDialog = dialog;
+            DialogResult choice;
+            try { choice = dialog.ShowDialog(this); }
+            finally { _quitDialog = null; }
+            if (choice != DialogResult.Yes)
+            {
+                if (_deferredCompletion is string deferred) { _deferredCompletion = null; InstallerDialog.ShowMessage(this, deferred); }
+                return;
+            }
+            if (_operationCancellation != null && _backendTask?.IsCompleted == false)
+            {
+                _exitAfterOperation = true;
+                if (_allowAbort && !_abortRequested && !_service.IsInstallationCommitted)
+                {
+                    _abortRequested = true;
+                    _service.RequestAbort();
+                    _operationCancellation.Cancel();
+                    AppendStatus("Stopping installation and undoing changes before closing. Please wait.");
+                }
+                else AppendStatus("The installer will close when the current operation finishes.");
+                UpdateActions();
+                return;
+            }
+            // A completed backend must finish its UI bookkeeping before disposal.
+            if (_operationCancellation != null) { _exitAfterOperation = true; return; }
+        }
+        if (_initializationRunning)
+        {
+            _closeAfterInitialization = true;
+            _initializationCancellation.Cancel();
+            AppendStatus("Closing the installer. Please wait for the current check to stop.");
+            return;
+        }
+        _quitApproved = true;
+        Close();
     }
 
     private void OnFormClosing(object? sender, FormClosingEventArgs e)
     {
-        if (_initializationRunning)
-        {
-            e.Cancel = true;
-            _closeAfterInitialization = true;
-            _initializationCancellation.Cancel();
-            return;
-        }
-        if (_operationCancellation == null)
-            return;
+        if (_quitApproved) return;
         e.Cancel = true;
-        if (_allowAbort) RequestAbortWithConfirmation();
+        // Let the current close event finish before opening a modal dialog or
+        // closing again. The title-bar X and Alt+F4 use the same Quit flow.
+        BeginInvoke((Action)RequestQuit);
     }
 
     private void ShowState(InstallerState state)
     {
         if (state.PathRevision < _state.PathRevision)
             return;
+        bool newUpdate = state.UpdateAvailable && !_state.UpdateAvailable;
         _state = state;
         if (!_gamePathHasUnappliedEdit && !string.Equals(_gamePath.Text, state.GamePath,
                 StringComparison.OrdinalIgnoreCase))
@@ -399,6 +499,7 @@ internal sealed class InstallerForm : Form
                 state.ValidGamePath ? "Ready to install." :
                     "Select the Bop It game folder.");
         UpdateActions();
+        if (newUpdate) InstallerFeedback.Announce(this, "A new Bop It Access release is available. Choose Update to install it.", important: true);
     }
 
     private void UpdateActions()
@@ -414,10 +515,10 @@ internal sealed class InstallerForm : Form
             _state.Installed && _state.UpdateAvailable;
         _uninstall.Enabled = ready &&
             (_state.Installed || _service.LastUninstallWarningCount > 0);
-        _abort.Enabled = busy && _allowAbort && _operationCancellation != null && !_abortRequested;
+        _abort.Enabled = busy && _allowAbort && _operationCancellation != null && !_abortRequested && !_service.IsInstallationCommitted;
         _saveDiagnostics.Enabled = _initializationFinished;
-        if (!busy && _progress.Style == ProgressBarStyle.Marquee)
-            _progress.Style = ProgressBarStyle.Blocks;
+        _quit.Enabled = !_exitAfterOperation && !_closeAfterInitialization;
+        _abort.Enabled &= !_exitAfterOperation;
     }
 
     private void ShowProgress(InstallerProgress progress)
@@ -428,13 +529,17 @@ internal sealed class InstallerForm : Form
                 _progress.Style = ProgressBarStyle.Blocks;
             long percentage = Math.Clamp(progress.Completed * 100 / progress.Total.Value,
                 0, 100);
-            _progress.Value = (int)percentage;
-        }
-        else if (_state.Busy || _operationCancellation != null)
-        {
-            _progress.Style = ProgressBarStyle.Marquee;
+            if (_progress.Value != (int)percentage) _progress.Value = (int)percentage;
+            if (percentage == 100) UpdateActions();
         }
         _stateLabel.Text = progress.Step;
+    }
+
+    private void UpdateAdvancedControls()
+    {
+        _installAlpha.Visible = _showAdvanced.Checked;
+        _saveDiagnostics.Visible = _showAdvanced.Checked;
+        _copyDiagnostics.Visible = _showAdvanced.Checked;
     }
 
     private void AppendStatus(string message, bool record = true)
@@ -454,14 +559,12 @@ internal sealed class InstallerForm : Form
         if (!_reportedDiagnosticFailure && _service.Diagnostics.PersistenceFailure is string failure)
         {
             _reportedDiagnosticFailure = true;
-            AppendStatus("Automatic diagnostic recording could not continue: " + failure +
-                ". Save diagnostics can still save the in-memory record.", record: false);
+            AppendStatus("Automatic diagnostic recording could not continue. Choose Show advanced, then Save diagnostics to save the current record.", record: false);
         }
         if (!_reportedExportFailure && _service.Diagnostics.ExportFailure is string exportFailure)
         {
             _reportedExportFailure = true;
-            AppendStatus("The diagnostic copy could not continue recording: " + exportFailure +
-                ". Save diagnostics can select another file.", record: false);
+            AppendStatus("The saved diagnostic copy could not continue recording. Choose Save diagnostics to select another file.", record: false);
         }
     }
 
@@ -481,8 +584,8 @@ internal sealed class InstallerForm : Form
         {
             _service.Diagnostics.SaveRecording(dialog.FileName);
             _reportedExportFailure = false;
-            AppendStatus("Saving diagnostic copy: " + dialog.FileName +
-                ". This file will keep recording until the installer closes.");
+            AppendStatus("Diagnostics saved. This copy will keep recording until the installer closes.");
+            InstallerFeedback.Announce(_saveDiagnostics, "Diagnostics saved.", important: true);
         }
         catch (Exception ex) { ShowError("Could not save diagnostics", ex); }
     }
@@ -493,6 +596,7 @@ internal sealed class InstallerForm : Form
         {
             Clipboard.SetText(_service.Diagnostics.Snapshot());
             AppendStatus("Copied this session's diagnostics to the clipboard.");
+            InstallerFeedback.Announce(_copyDiagnostics, "Diagnostics copied to the clipboard.", important: true);
         }
         catch (Exception ex) { ShowError("Could not copy diagnostics", ex); }
     }
@@ -500,15 +604,13 @@ internal sealed class InstallerForm : Form
     private void ShowError(string caption, Exception ex)
     {
         _service.Diagnostics.Error(caption, ex);
-        AppendStatus($"{caption}: {ex.Message}");
-        MessageBox.Show(this, ex.Message, caption, MessageBoxButtons.OK,
-            MessageBoxIcon.Error);
+        string message = caption + ". " + InstallerFeedback.FailureStatus(ex) + " Choose Show advanced, then Save diagnostics to keep the details for review.";
+        AppendStatus(message);
+        InstallerDialog.ShowMessage(this, message, caption);
     }
 
     private bool Confirm(string question, string caption) =>
-        MessageBox.Show(this, question, caption, MessageBoxButtons.YesNo,
-            MessageBoxIcon.Question, MessageBoxDefaultButton.Button2) ==
-        DialogResult.Yes;
+        InstallerDialog.Confirm(this, question, caption);
 
     private void OnUiThread(Action action)
     {
@@ -531,7 +633,7 @@ internal sealed class InstallerForm : Form
 
     protected override void Dispose(bool disposing)
     {
-        if (disposing) _initializationCancellation.Dispose();
+        if (disposing) { _gamepad?.Dispose(); _initializationCancellation.Dispose(); }
         base.Dispose(disposing);
     }
 }

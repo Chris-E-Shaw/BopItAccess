@@ -27,9 +27,16 @@ internal sealed class InstallerService
     private bool _initializing = true;
     private bool _initialized;
     private int _operationActive;
+    private int _installationCommitted;
+    internal bool IsInstallationCommitted => Volatile.Read(ref _installationCommitted) != 0;
+    internal void PrepareOperation() => Volatile.Write(ref _installationCommitted, 0);
     private readonly bool _launchedForUninstall;
     private readonly object _progressLock = new();
+    private readonly OverallInstallerProgress _overallProgress = new();
+    private readonly object _statusLock = new();
+    private string? _lastUserStatus;
     private string? _lastProgressStep;
+    private bool _lastProgressCompleted;
     private long _lastProgressAt;
     private InstallerState? _lastRecordedState;
     private CancellationTokenSource? _abort;
@@ -46,6 +53,12 @@ internal sealed class InstallerService
         try
         {
             await InstallTransaction.RecoverInterruptedAsync(_stateDirectory, Log);
+            // A previous window may have closed while a reinstall was still
+            // being rolled back. Resume its final helper cleanup on this exit.
+            if (!File.Exists(Path.Combine(_stateDirectory, InstallManifest.FileName)) &&
+                !File.Exists(Path.Combine(_stateDirectory, "transaction.json")) &&
+                File.Exists(Path.Combine(_stateDirectory, InstallManifest.CompletedUninstallFileName)))
+                ScheduleStandaloneCleanup();
             cancellation.ThrowIfCancellationRequested();
             Log("Searching Steam libraries across available drives.");
             var found = await Task.Run(() => GameLocator.FindInstallations(cancellation), cancellation);
@@ -131,7 +144,8 @@ internal sealed class InstallerService
         catch (ObjectDisposedException) { /* The operation finished before the click arrived. */ }
     }
 
-    internal async Task UninstallAsync(CancellationToken cancellation)
+    internal async Task UninstallAsync(UninstallPreferenceScope scope, CancellationToken cancellation,
+        string? targetUserSid = null)
     {
         var manifestPath = Path.Combine(_stateDirectory, InstallManifest.FileName);
         var manifest = File.Exists(manifestPath) ? InstallManifest.Load(manifestPath) : null;
@@ -143,10 +157,11 @@ internal sealed class InstallerService
         LastUninstallWarningCount = 0;
         await RunBusyAsync("Uninstall", async ct =>
         {
+            SetPhase("Removing Bop It Access", 5, 90);
             if (!File.Exists(manifestPath))
             {
                 Log("This mod installation predates the installer. Removing only known mod-owned files.");
-                var legacyResult = await UninstallManager.UninstallLegacyAsync(game, Log, ct);
+                var legacyResult = await UninstallManager.UninstallLegacyAsync(game, scope, Log, ct, targetUserSid);
                 LastUninstallWarningCount = legacyResult.PreferenceWarnings.Count;
                 if (LastUninstallWarningCount == 0)
                 {
@@ -160,11 +175,16 @@ internal sealed class InstallerService
                 }
                 if (LastUninstallWarningCount > 0)
                     Log($"Cleanup reported {LastUninstallWarningCount} warning(s). Review the status log.");
+                if (LastUninstallWarningCount == 0)
+                {
+                    PublishUserStatus("Bop It Access has been uninstalled. Shared Microsoft .NET components remain installed.");
+                    SetPhase("Uninstallation complete", 100, 100);
+                }
                 PublishState();
                 return;
             }
             Log("Reading the installed-file ledger.");
-            var result = await UninstallManager.UninstallAsync(manifestPath, Log, ct);
+            var result = await UninstallManager.UninstallAsync(manifestPath, scope, Log, ct, targetUserSid);
             if (!result.Success)
                 throw new InvalidOperationException("Uninstall stopped because installed files or backups were changed. Review the conflicts in the status log; no files were removed.");
             LastUninstallWarningCount = result.PreferenceWarnings.Count;
@@ -173,7 +193,11 @@ internal sealed class InstallerService
             Log(LastUninstallWarningCount == 0
                 ? "Uninstall completed. Existing shared .NET installations and SDKs remain untouched."
                 : "Mod file removal finished, but preference cleanup is incomplete. Use Uninstall to retry. Existing shared .NET installations and SDKs remain untouched.");
-            if (LastUninstallWarningCount == 0) ScheduleStandaloneCleanup();
+            if (LastUninstallWarningCount == 0)
+            {
+                ScheduleStandaloneCleanup();
+                SetPhase("Uninstallation complete", 100, 100);
+            }
             PublishState();
         }, cancellation);
     }
@@ -185,6 +209,11 @@ internal sealed class InstallerService
         {
             string existingManifest = Path.Combine(_stateDirectory, InstallManifest.FileName);
             var existing = File.Exists(existingManifest) ? InstallManifest.Load(existingManifest) : null;
+            if (existing?.UninstallCompleted == true)
+            {
+                UninstallManager.ForgetCompletedUninstall(existingManifest, Log);
+                existing = null;
+            }
             if (existing != null && !PathsEqual(existing.GameDirectory, game))
                 throw new InvalidOperationException("The installer already manages another game folder: " + existing.GameDirectory);
             if (existing?.UninstallFilesRemoved == true)
@@ -206,7 +235,9 @@ internal sealed class InstallerService
                     OfflineBuildReferences.ValidateEmbeddedTemplates();
                     Log("Verified both embedded offline build helper templates.");
                 }
+                SetPhase("Checking Microsoft .NET components", 3, 25);
                 var dependencies = await SdkAndBuild.EnsureDependenciesAsync(alpha, game, temp, Log, Progress, ct);
+                SetPhase("Preparing MelonLoader", 25, 33);
                 Log("Verifying MelonLoader 0.7.3 Open-Beta.");
                 bool melonWasPresent = Directory.Exists(Path.Combine(game, "MelonLoader")) ||
                     File.Exists(Path.Combine(game, "version.dll"));
@@ -225,6 +256,7 @@ internal sealed class InstallerService
                 }
                 else Log("MelonLoader 0.7.3 Open-Beta is already installed.");
 
+                SetPhase("Preparing Prism speech support", 33, 39);
                 Log("Verifying official Prism 0.18.3 for Windows x64.");
                 string? prismDll = null;
                 var installedPrism = Path.Combine(game, "prism.dll");
@@ -244,6 +276,7 @@ internal sealed class InstallerService
 
                 string sourceRoot;
                 string reference;
+                SetPhase(alpha ? "Downloading the latest alpha version" : "Downloading Bop It Access", 39, 45);
                 if (alpha)
                 {
                     Log("Checking the latest commit on the main branch.");
@@ -274,8 +307,10 @@ internal sealed class InstallerService
                 string dll;
                 if (alpha)
                 {
+                    SetPhase("Preparing the alpha version", 45, 68);
                     var references = await OfflineBuildReferences.PrepareAsync(dependencies.Dotnet!, game,
                         melonRoot ?? game, temp, Log, Progress, ct);
+                    SetPhase("Building Bop It Access", 68, 80);
                     dll = await SdkAndBuild.BuildAsync(dependencies.Dotnet!, sourceRoot, references, Log, Progress, ct);
                 }
                 else dll = FindReleaseDll(sourceRoot);
@@ -288,6 +323,7 @@ internal sealed class InstallerService
                 if (IsGameRunning())
                     throw new InvalidOperationException("Bop It! was opened during preparation. Close it before installing. The installer has not changed the game files.");
                 transaction = new InstallTransaction(game, _stateDirectory, Log);
+                SetPhase("Installing MelonLoader", 80, 86);
                 if (melonRoot is not null)
                 {
                     Log("Installing MelonLoader files into the game folder.");
@@ -296,11 +332,13 @@ internal sealed class InstallerService
                 }
                 var mods = Path.Combine(game, "Mods");
                 transaction.CreateDirectory(mods);
+                SetPhase("Installing Bop It Access", 86, 87);
                 Log("Installing BopItAccess.dll immediately after MelonLoader.");
                 await transaction.InstallFileAsync(dll, Path.Combine(mods, "BopItAccess.dll"), ct);
 
                 if (dependencies.RuntimeSource is not null)
                 {
+                    SetPhase("Installing Microsoft .NET runtime", 87, 89);
                     Log("Installing the required runtime in MelonLoader's Dependencies folder.");
                     await InstallTreeAsync(transaction, dependencies.RuntimeSource,
                         Path.Combine(game, "MelonLoader", "Dependencies", "dotnet"), ct);
@@ -308,11 +346,13 @@ internal sealed class InstallerService
 
                 if (prismDll is not null)
                 {
+                    SetPhase("Installing Prism speech support", 89, 90);
                     Log("Installing verified Prism speech library.");
                     await transaction.InstallFileAsync(prismDll, installedPrism, ct);
                 }
 
                 // Prepare loader UI preferences for the player's first launch.
+                SetPhase("Installing settings and documentation", 90, 95);
                 await LoaderUiDefaults.ApplyAsync(transaction, temp, Log, ct);
                 await InstallDocumentationAsync(transaction, sourceRoot, game, ct);
                 var prismNotices = Path.Combine(game, "documentation", "THIRD-PARTY-LICENSES", "Prism");
@@ -323,11 +363,15 @@ internal sealed class InstallerService
                 await transaction.InstallFileAsync(noticeFile, Path.Combine(prismNotices, "NOTICE"), ct);
                 await InstallTreeAsync(transaction, licenses, Path.Combine(prismNotices, "LICENSES"), ct);
                 Log("Installed Prism and bundled third-party license notices.");
+                SetPhase("Setting up Windows uninstall support", 95, 98);
                 await InstallUninstallerAsync(transaction, temp, displayVersion, ct);
                 ct.ThrowIfCancellationRequested();
                 Log("Committing the installation ledger.");
+                SetPhase("Finishing installation", 98, 99);
                 await transaction.CommitAsync(displayVersion, alpha ? "alpha" : "release", reference, ct);
                 committed = true;
+                Volatile.Write(ref _installationCommitted, 1);
+                SetPhase("Installation complete", 100, 100);
                 Log("Bop It Access installation completed successfully. Launch Bop It! manually when ready. On its first launch, MelonLoader may download tools and generate assemblies for a minute or longer before mod speech starts.");
             }
             catch (Exception ex)
@@ -360,6 +404,9 @@ internal sealed class InstallerService
         if (Interlocked.CompareExchange(ref _operationActive, 1, 0) != 0)
             throw new InvalidOperationException("Another installer operation is already running.");
         _busy = true;
+        Volatile.Write(ref _installationCommitted, 0);
+        ProgressChanged?.Invoke(_overallProgress.Begin(operation == "Uninstall"
+            ? "Preparing uninstallation" : "Preparing installation"));
         long started = Environment.TickCount64;
         Diagnostics.Write("OPERATION", "Started " + operation + ".");
         _abort = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
@@ -449,7 +496,7 @@ internal sealed class InstallerService
         {
             var manifest = InstallManifest.Load(path);
             Diagnostics.ProtectGameDirectory(manifest.GameDirectory);
-            return manifest;
+            return manifest.UninstallCompleted ? null : manifest;
         }
         catch (Exception ex)
         {
@@ -485,20 +532,48 @@ internal sealed class InstallerService
     private void Log(string message)
     {
         Diagnostics.Write("STATUS", message);
+        if (InstallerFeedback.UserStatus(message) is { } friendly)
+            PublishUserStatus(friendly);
+    }
+
+    private void PublishUserStatus(string message)
+    {
+        lock (_statusLock)
+        {
+            if (string.Equals(_lastUserStatus, message, StringComparison.Ordinal)) return;
+            _lastUserStatus = message;
+        }
         StatusChanged?.Invoke(message);
+    }
+
+    private void SetPhase(string phase, int start, int end)
+    {
+        if (_overallProgress.SetPhase(phase, start, end) is { } progress)
+            ProgressChanged?.Invoke(progress);
     }
     private void Progress(string step, long done, long? total)
     {
         long now = Environment.TickCount64;
+        bool changed;
+        bool finished;
         lock (_progressLock)
         {
             bool completed = total is >= 0 && done >= total.Value;
             if (_lastProgressStep == step && !completed && now - _lastProgressAt < 100) return;
+            changed = !string.Equals(_lastProgressStep, step, StringComparison.Ordinal);
+            finished = completed && (changed || !_lastProgressCompleted);
             _lastProgressStep = step;
+            _lastProgressCompleted = completed;
             _lastProgressAt = now;
         }
         Diagnostics.Progress(step, done, total);
-        ProgressChanged?.Invoke(new InstallerProgress(step, done, total));
+        if ((changed || finished) && InstallerFeedback.ProgressStatus(step, finished) is { } message)
+        {
+            Diagnostics.Write("USER-STATUS", message);
+            PublishUserStatus(message);
+        }
+        if (_overallProgress.Report(step, done, total) is { } progress)
+            ProgressChanged?.Invoke(progress);
     }
 
     private static bool IsGameRunning()
@@ -641,6 +716,8 @@ internal sealed class InstallerService
             await stream.CopyToAsync(output, cancellation);
         var stableScript = Path.Combine(_stateDirectory, "uninstall.ps1");
         await transaction.InstallFileAsync(script, stableScript, cancellation);
+        await transaction.InstallFileAsync(script,
+            Path.Combine(transaction.GameDirectory, "BopItAccess-uninstall.ps1"), cancellation);
         transaction.RegisterUninstall(stableScript, reference);
         Log("Registered an Apps & Features uninstall entry using the supplied uninstaller script.");
     }

@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <None Include="..\configuration\Loader.cfg" Link="UserData\Loader.cfg" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\installer\uninstall.ps1" Link="BopItAccess-uninstall.ps1" CopyToOutputDirectory="PreserveNewest" />
     <!-- Keep the guide with every local build; the game reads this HTML from
          its documentation folder and does not require a rebuilt DLL when the
          guide text changes. -->

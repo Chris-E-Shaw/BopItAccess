@@ -10,6 +10,7 @@ public sealed class InstallManifest
 {
     public const int CurrentSchemaVersion = 1;
     public const string FileName = "install-manifest.json";
+    public const string CompletedUninstallFileName = "uninstall-completed.json";
 
     public int SchemaVersion { get; set; } = CurrentSchemaVersion;
     public string GameDirectory { get; set; } = string.Empty;
@@ -28,6 +29,9 @@ public sealed class InstallManifest
     // profile could not be cleaned. A retry must not remove restored files twice.
     public bool UninstallFilesRemoved { get; set; }
     public bool UninstallCompleted { get; set; }
+    // Retain the user's explicit preference-cleanup choice if removal needs a retry.
+    public UninstallPreferenceScope? UninstallPreferenceScope { get; set; }
+    public string? UninstallUserSid { get; set; }
     public string? UninstallRegistryKey { get; set; }
 
     public static InstallManifest Load(string path)

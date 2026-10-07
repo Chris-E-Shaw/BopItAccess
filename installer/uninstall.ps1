@@ -4,11 +4,24 @@
 # backups, and itself. This script is copied to ProgramData\BopItAccess.
 param(
     [switch]$CleanupOnly,
-    [int]$ProcessId = 0
+    [int]$ProcessId = 0,
+    [string]$UninstallUserSid = ''
 )
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = 'Stop'
+
+# Preserve the user who requested removal, including when UAC uses another
+# administrator's account. The UI still asks for confirmation and preference
+# scope; this identifier only gives "Uninstall for me" its correct target.
+if ([string]::IsNullOrWhiteSpace($UninstallUserSid)) {
+    $UninstallUserSid = [Security.Principal.WindowsIdentity]::GetCurrent().User.Value
+}
+$validatedSid = [Security.Principal.SecurityIdentifier]::new($UninstallUserSid)
+if (-not [string]::Equals($validatedSid.Value, $UninstallUserSid, [StringComparison]::OrdinalIgnoreCase) -or
+    ($UninstallUserSid -notlike 'S-1-5-21-*' -and $UninstallUserSid -notlike 'S-1-12-1-*')) {
+    throw 'The Windows user requesting uninstallation could not be identified safely.'
+}
 
 $scriptPath = $PSCommandPath
 $stateDirectory = Split-Path -Parent $scriptPath
@@ -16,7 +29,28 @@ $expectedStateDirectory = Join-Path ([Environment]::GetFolderPath('CommonApplica
 $actualCanonical = [IO.Path]::GetFullPath($stateDirectory).TrimEnd('\')
 $expectedCanonical = [IO.Path]::GetFullPath($expectedStateDirectory).TrimEnd('\')
 if (-not [string]::Equals($actualCanonical, $expectedCanonical, [StringComparison]::OrdinalIgnoreCase)) {
-    throw 'The uninstaller script is outside the expected Bop It Access state directory.'
+    # Builds also supply this shortcut in the game folder. Delegate to the
+    # installed Apps & Features launcher rather than assuming an EXE is beside
+    # this document, and never perform recursive cleanup from the game folder.
+    if ($CleanupOnly -or [IO.Path]::GetFileName($scriptPath) -ne 'BopItAccess-uninstall.ps1' -or
+        -not (Test-Path -LiteralPath (Join-Path $stateDirectory 'BopIt!.exe') -PathType Leaf) -or
+        -not (Test-Path -LiteralPath (Join-Path $stateDirectory 'BopIt!_Data') -PathType Container)) {
+        throw 'The uninstaller shortcut is outside the Bop It! game folder.'
+    }
+    $installedScript = Join-Path $expectedStateDirectory 'uninstall.ps1'
+    if (-not (Test-Path -LiteralPath $installedScript -PathType Leaf)) {
+        throw 'The installed uninstaller is missing. Open the latest Bop It Access installer and choose Uninstall.'
+    }
+    foreach ($itemPath in @($expectedStateDirectory, $installedScript)) {
+        if (((Get-Item -LiteralPath $itemPath -Force).Attributes -band [IO.FileAttributes]::ReparsePoint) -ne 0) {
+            throw 'The installed uninstaller points to a linked file or folder.'
+        }
+    }
+    $launcherShell = Join-Path $PSHOME 'powershell.exe'
+    $launcherArguments = @('-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden',
+        '-File', ('"' + $installedScript + '"'), '-UninstallUserSid', $UninstallUserSid)
+    Start-Process -FilePath $launcherShell -ArgumentList $launcherArguments -WindowStyle Hidden
+    exit 0
 }
 if (-not (Test-Path -LiteralPath $stateDirectory -PathType Container)) { exit 0 }
 $stateInfo = Get-Item -LiteralPath $stateDirectory -Force
@@ -33,7 +67,7 @@ if (-not $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administra
     # Elevate this script so the final ProgramData and HKLM cleanup can succeed.
     $arguments = @(
         '-NoProfile', '-ExecutionPolicy', 'Bypass', '-WindowStyle', 'Hidden',
-        '-File', ('"' + $scriptPath + '"')
+        '-File', ('"' + $scriptPath + '"'), '-UninstallUserSid', $UninstallUserSid
     )
     if ($CleanupOnly) {
         $arguments += '-CleanupOnly'
@@ -55,9 +89,10 @@ else {
         throw "The Bop It Access uninstaller is missing: $installerPath"
     }
 
-    # This is an interactive, screen-reader-accessible window. The EXE returns
-    # 0 only after the user confirms and the uninstall backend succeeds.
-    $uninstaller = Start-Process -FilePath $installerPath -ArgumentList '--uninstall' -PassThru -Wait -WindowStyle Normal
+    # The accessible UI first confirms removal, then asks "Uninstall for me"
+    # or "Uninstall for everyone". No preference scope is silently selected
+    # by this script. It stays open after completion until the user chooses Quit.
+    $uninstaller = Start-Process -FilePath $installerPath -ArgumentList @('--uninstall', '--uninstall-user-sid', $UninstallUserSid) -PassThru -Wait -WindowStyle Normal
     if ($uninstaller.ExitCode -ne 0) {
         exit $uninstaller.ExitCode
     }
@@ -73,7 +108,13 @@ try {
     catch [Threading.AbandonedMutexException] { $cleanupLocked = $true }
     if (-not $cleanupLocked) { exit 0 }
     if (-not (Test-Path -LiteralPath $stateDirectory -PathType Container)) { exit 0 }
+    # A reinstall may be interrupted after the completed uninstall record was
+    # moved aside. Keep its rollback journal until startup recovery finishes.
+    if (Test-Path -LiteralPath (Join-Path $stateDirectory 'transaction.json') -PathType Leaf) { exit 0 }
     $manifestPath = Join-Path $stateDirectory 'install-manifest.json'
+    if (-not (Test-Path -LiteralPath $manifestPath -PathType Leaf)) {
+        $manifestPath = Join-Path $stateDirectory 'uninstall-completed.json'
+    }
     $cleanupManifest = Get-Content -LiteralPath $manifestPath -Raw | ConvertFrom-Json
     $completedProperty = $cleanupManifest.PSObject.Properties['UninstallCompleted']
     $removedProperty = $cleanupManifest.PSObject.Properties['UninstallFilesRemoved']
