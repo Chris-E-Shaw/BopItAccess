@@ -5,7 +5,7 @@ namespace BopItAccess.Installer;
 
 internal static class GameLocator
 {
-    private const string AppId = "3214360";
+    internal const string AppId = "3214360";
 
     internal static bool IsGameDirectory(string? path)
     {

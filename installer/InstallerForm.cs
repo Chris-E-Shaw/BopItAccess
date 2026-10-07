@@ -14,6 +14,7 @@ internal sealed class InstallerForm : Form
     private readonly Button _update = new();
     private readonly Button _uninstall = new();
     private readonly Button _abort = new();
+    private readonly Button _play = new();
     private readonly Button _saveDiagnostics = new();
     private readonly Button _copyDiagnostics = new();
     private readonly CheckBox _showAdvanced = new();
@@ -141,8 +142,13 @@ internal sealed class InstallerForm : Form
         _abort.AccessibleName = "Abort the current operation";
         _abort.TabIndex = 7;
         _abort.Click += (_, _) => RequestAbortWithConfirmation();
+        _play.Text = "&Play Bop It! The Video Game";
+        _play.AccessibleName = "Play Bop It! The Video Game";
+        _play.AutoSize = true;
+        _play.TabIndex = 8;
+        _play.Click += (_, _) => PlayGame();
         actions.Controls.AddRange(new Control[]
-            { _install, _installAlpha, _update, _uninstall, _abort });
+            { _install, _installAlpha, _update, _uninstall, _abort, _play });
         layout.Controls.Add(actions, 0, 1);
 
         _stateLabel.AutoSize = true;
@@ -519,6 +525,27 @@ internal sealed class InstallerForm : Form
         _saveDiagnostics.Enabled = _initializationFinished;
         _quit.Enabled = !_exitAfterOperation && !_closeAfterInitialization;
         _abort.Enabled &= !_exitAfterOperation;
+        bool playable = _service.CanPlayGame;
+        _play.Visible = playable;
+        _play.Enabled = playable && ready;
+    }
+
+    private void PlayGame()
+    {
+        if (_state.Busy || _operationCancellation != null || _initializationRunning) return;
+        ApplyGamePath();
+        try
+        {
+            _service.PlayGame();
+            AppendStatus("Opening Bop It! through Steam. The game may take a minute or longer to prepare the mod on its first launch.");
+        }
+        catch (Exception ex)
+        {
+            _service.Diagnostics.Error("User-requested Steam game launch failed", ex);
+            const string message = "Could not start Bop It! through Steam. Make sure Steam is installed and available, then try again. Show advanced provides diagnostics if you need help.";
+            AppendStatus(message);
+            InstallerDialog.ShowMessage(this, message);
+        }
     }
 
     private void ShowProgress(InstallerProgress progress)

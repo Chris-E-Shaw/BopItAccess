@@ -30,6 +30,33 @@ internal sealed class InstallerService
     private int _installationCommitted;
     internal bool IsInstallationCommitted => Volatile.Read(ref _installationCommitted) != 0;
     internal void PrepareOperation() => Volatile.Write(ref _installationCommitted, 0);
+    internal bool CanPlayGame
+    {
+        get
+        {
+            string? game = GetGamePath();
+            if (!GameLocator.IsGameDirectory(game)) return false;
+            var manifest = ReadManifest();
+            if (manifest != null && (manifest.UninstallFilesRemoved ||
+                !PathsEqual(manifest.GameDirectory, game!))) return false;
+            if (File.Exists(Path.Combine(_stateDirectory, "transaction.json"))) return false;
+            return File.Exists(Path.Combine(game!, "Mods", "BopItAccess.dll")) &&
+                File.Exists(Path.Combine(game!, "version.dll")) &&
+                File.Exists(Path.Combine(game!, "MelonLoader", "net6", "MelonLoader.dll")) &&
+                File.Exists(Path.Combine(game!, "prism.dll"));
+        }
+    }
+
+    // This action is reachable only from the explicit Play button. Installation
+    // and its build tools never launch the game.
+    internal void PlayGame()
+    {
+        if (_busy || _initializing || !_initialized || !CanPlayGame)
+            throw new InvalidOperationException("A complete Bop It Access installation is needed before playing.");
+        var info = new ProcessStartInfo("steam://rungameid/" + GameLocator.AppId) { UseShellExecute = true };
+        using var launched = Process.Start(info);
+        Diagnostics.Write("LAUNCH", "The user requested game launch through Steam.");
+    }
     private readonly bool _launchedForUninstall;
     private readonly object _progressLock = new();
     private readonly OverallInstallerProgress _overallProgress = new();
