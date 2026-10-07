@@ -185,6 +185,13 @@
 <li>模组仍为v0.9.11，共58个模组构建。本次修复未启动游戏或部署文件，也未发布GitHub Release。</li>
 <li>生成Windows x64自包含安装程序0.1.9，并编译辅助工具，没有警告或错误。静态检查确认deps.json已包含全部12个运行时依赖项，复制的DLL与新下载且通过校验和验证的官方MelonLoader压缩包逐字节一致。输出恰好包含13个DLL，包括辅助工具本身。单文件安装程序包含已检查的主程序集，且没有安装程序专用的语言附属程序集。未进行测试、辅助工具执行、引用生成、安装、卸载或游戏启动。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9018a9f41cbb601976027c9c215364473fe7973e">源代码提交</a> · 没有GitHub发行版</p></article>
+      <article class="commit" id="installer-0-1-10"><div class="meta"><span class="version">Installer 0.1.10 preview</span><span class="kind">fix · dependencies · docs</span></div><h3>fix(installer)：识别兼容的共享运行时依赖项</h3><ul>
+<li>用户提供的安装程序0.1.9日志显示，辅助工具编译完成，没有警告或错误，退出码为0。随后新增的依赖检查拒绝了System.Runtime.CompilerServices.Unsafe.dll。这是误报：MelonLoader官方完整压缩包也包含该库，但.NET 6已提供兼容的程序集。本次尝试在Cpp2IL及游戏文件部署之前停止。</li>
+<li>定位所选dotnet.exe目录下最新的稳定.NET 6.0补丁版本。要求框架清单中包含相关库，并检查程序集名称、版本、区域性和公钥标记，接受兼容的引用，包括MelonLoader也包含的库。通过--fx-version和--roll-forward Disable将辅助工具的执行固定到已检查的版本。不能仅因名称以System开头就免于检查。System.Diagnostics.DiagnosticSource 10仍是显式private依赖项；框架提供的版本6无法满足其引用。</li>
+<li>保留全部12个显式private依赖项、运行时清单检查，以及文件逐字节一致性检查。静态检查通过校验和验证的MelonLoader官方完整压缩包及所选框架，覆盖重复的Unsafe库，而非仅检查精简的加载器子集。</li>
+<li>模组仍为v0.9.11，共58个模组构建。保留手动启动游戏、诊断日志及部署保护。没有发布GitHub Release。</li>
+<li>编译Windows x64自包含安装程序0.1.10，没有警告或错误。对已验证的MelonLoader官方完整压缩包进行静态检查，覆盖顶层47个DLL，以及12个private依赖项的全部73条引用关系。其中19条由显式辅助工具库满足，54条由兼容的框架库满足，没有缺失或不兼容的引用。辅助工具输出仍恰好包含13个DLL。仅检查最终单文件包及内置模板，没有执行它们。未进行测试、辅助工具执行、引用生成、安装、卸载或游戏启动。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/79c7d86116ea20f096fcfe15e63f0f67b2ad21d0">源代码提交</a> · 没有GitHub发行版</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 个本地源档案用于重建公共源提交。安装包保留在本地并且不是 GitHub 版本。 v0.5.4重新绑定预览和v0.5.18 SAPI修剪实验被记录为历史实现；后来的条目说明了它们是如何改变的。</p><p><a href="#history">返回创建历史</a></p></div></footer>

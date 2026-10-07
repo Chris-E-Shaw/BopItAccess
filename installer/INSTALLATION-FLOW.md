@@ -1,6 +1,6 @@
 # Installer installation flow
 
-Installer preview **0.1.9** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game.
+Installer preview **0.1.10** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game.
 
 ## Evidence and scope
 
@@ -46,11 +46,11 @@ The supplied 0.1.7 session completed Cpp2IL with exit code 0, then failed readin
 
 ### Helper dependency preparation
 
-Installer 0.1.9 compiles the embedded .NET 6 reference helper before downloading or executing Cpp2IL, the stripped-code plugin or the Unity dependency archive. Its project has explicit private references for all 12 managed dependencies from the staged, verified MelonLoader `net6` directory. This replaces the wildcard content copy, which copied Iced to disk without recording it in `.deps.json`.
+Installer 0.1.10 compiles the embedded .NET 6 reference helper before downloading or executing Cpp2IL, the stripped-code plugin or the Unity dependency archive. Its project has explicit private references for all 12 managed dependencies from the staged, verified MelonLoader `net6` directory. This replaces the wildcard content copy, which copied Iced to disk without recording it in `.deps.json`.
 
 The dependencies are AsmResolver, AsmResolver.DotNet, AsmResolver.PE, AsmResolver.PE.File, Il2CppInterop.Generator, Il2CppInterop.Common, Microsoft.Extensions.Logging.Abstractions, System.Diagnostics.DiagnosticSource, Iced, MonoMod.Backports, MonoMod.ILHelpers and Microsoft.Extensions.DependencyInjection.Abstractions. Required DLLs are read from the pinned loader; this does not introduce additional dependency downloads.
 
-Before assembly-tool preparation, check the helper's selected runtime target in `.deps.json`, require every dependency's runtime entry and regular DLL, compare its bytes with the staged loader using SHA-256, inspect managed assembly metadata, and ensure all loader-provided assembly references are represented. Failure reports the missing or mismatched DLL and leaves game files unchanged. Only after that preflight succeeds does Cpp2IL read the game and Il2CppInterop generate proxies.
+Before assembly-tool preparation, check the helper's selected runtime target in `.deps.json`, require all 12 explicit dependencies' runtime entries and regular DLLs, and compare their bytes with the staged loader using SHA-256. Select the highest installed stable .NET 6.0 patch beneath the selected `dotnet.exe`. For references outside the 12 required private dependencies, require registration in that framework's `Microsoft.NETCore.App.deps.json` and compare the DLL's assembly name, version, culture and public-key token to confirm compatibility. Execute the helper using `--fx-version <patch>` and `--roll-forward Disable` so inherited settings cannot choose a different framework. SDK-build arguments are unchanged. Accept compatible framework references even when the loader also contains a copy; do not exempt all `System.*` names. `System.Runtime.CompilerServices.Unsafe` 6 is framework-provided, while `System.Diagnostics.DiagnosticSource` 10 remains explicit because the framework's version 6 is insufficient. Failure reports a missing or incompatible DLL before deployment changes game files. Only after that preflight succeeds does Cpp2IL read the game and Il2CppInterop generate proxies.
 
 The supplied 0.1.8 attempt passed template loading, Cpp2IL and helper compilation, then failed to resolve Iced in `Pass16ScanMethodRefs`. It stopped before deployment. This is a different preparation defect from the 0.1.7 embedded-template failure described above. Neither requires starting the game during installation.
 
@@ -109,3 +109,16 @@ Installer 0.1.9 and its embedded reference helper compiled with zero warnings an
 Static inspection of the final single-file executable confirmed its main DLL exactly matches the inspected installer assembly and that no installer-specific language satellite is included. Its three neutral resources match the current source files byte-for-byte: `uninstall.ps1` (6,021 bytes), `Program.cs.txt` (3,202 bytes), and `BuildReferenceGenerator.csproj.txt` (529 bytes after removing the wildcard). The production preflight checks runtime-manifest entries, copied payload hashes, managed metadata and coverage of loader-provided dependency names. It does not compare requested version/token identities; the additional version inspection above was a separate static build review.
 
 Validation is limited to compilation and static source/artifact inspection. No automated tests, helper execution, offline reference generation, installer/uninstaller execution or game launch were performed. Actual alpha installation and the first manual game launch still require human testing. The main mod remains 0.9.11 with 58 mod builds; no GitHub Release is published.
+
+
+## Shared-framework preflight correction
+
+Installer 0.1.9's helper compiled successfully in the supplied recording, but its guard wrongly rejected the duplicate `System.Runtime.CompilerServices.Unsafe.dll` in the full official MelonLoader archive. The .NET 6 runtime already provides a compatible assembly. Installer 0.1.10 validates framework assembly identities using the selected host's runtime and retains manifest and payload checks for explicit private dependencies, rather than assuming that every referenced file in the loader directory must appear in the helper manifest. The 12 required private dependencies, copied-payload verification, early preflight, cancellation, ownership and manual-launch flow remain in place.
+
+## Validation of preview 0.1.10
+
+The self-contained Windows x64 installer 0.1.10 compiled with zero warnings and zero errors. Static inspection used the full official MelonLoader 0.7.3 archive after verifying its pinned checksum, with 47 top-level DLLs in the `net6` directory, rather than the earlier reduced 12-library staging set. For the 12 helper dependencies, all 73 assembly-reference edges were satisfied by either explicit helper libraries (19) or compatible libraries in the selected .NET 6 shared framework (54). None were missing or incompatible. The inspection compared name, culture, public-key token and available version against every requested reference, including explicit private references; production private-reference checks remain manifest, managed-metadata and staged-payload verification. Duplicate `Unsafe` 6 is compatible with the framework, while `DiagnosticSource` 10 remains explicitly supplied. The helper output retains exactly 13 DLLs: its program plus the 12 required private dependencies.
+
+Static inspection of the final single-file installer confirms that its main DLL matches the inspected compiled assembly and its three neutral embedded resources match their source files; no installer-specific language satellite is included. Source review confirms helper execution is pinned to the inspected framework patch and SDK build arguments are unchanged. These are compilation, source review and static package/metadata inspections. No automated tests, helper execution, offline reference generation, installer/uninstaller run or game launch were performed. They do not establish that a clean alpha installation completes on the target system.
+
+The mod remains 0.9.11 with 58 mod builds. No GitHub Release is published.

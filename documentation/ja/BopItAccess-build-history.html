@@ -185,6 +185,13 @@
 <li>Modはv0.9.11、Modビルド数は58のまま。この修正ではゲームの起動やファイルの配置は行わず、GitHub Releaseも公開しない。</li>
 <li>Windows x64自己完結型インストーラー0.1.9を生成し、ヘルパーを警告・エラーなしでコンパイルした。静的確認により、deps.jsonに12個すべての実行時依存ファイルが登録され、新たに入手したチェックサム検証済みの公式MelonLoaderアーカイブとコピーがバイト単位で一致することを確認した。出力はヘルパーを含む計13個のDLL。単一ファイルのインストーラーには確認済みのメインアセンブリが含まれ、インストーラー独自の言語別サテライトはない。テスト、ヘルパー実行、参照生成、インストール、アンインストール、ゲーム起動は行っていない。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/9018a9f41cbb601976027c9c215364473fe7973e">ソースコミット</a> · GitHubリリースなし</p></article>
+      <article class="commit" id="installer-0-1-10"><div class="meta"><span class="version">Installer 0.1.10 preview</span><span class="kind">fix · dependencies · docs</span></div><h3>fix(installer): 互換性のある共有ランタイムの依存関係を認識</h3><ul>
+<li>提供されたインストーラー0.1.9のログでは、ヘルパーが警告・エラーなしでコンパイルされ、終了コード0で完了している。その後、新しい依存関係確認がSystem.Runtime.CompilerServices.Unsafe.dllを拒否した。これは誤検出である。公式MelonLoaderの完全なアーカイブにもライブラリは含まれるが、.NET 6がすでに互換性のあるアセンブリを提供する。Cpp2ILやゲームファイルの配置より前に準備が停止している。</li>
+<li>選択したdotnet.exe配下にある.NET 6.0の最新安定パッチを特定する。フレームワークのマニフェストへの登録と、アセンブリ名、バージョン、カルチャ、公開キートークンを確認し、MelonLoaderにも含まれるライブラリを含め、互換性のある参照を認める。--fx-versionと--roll-forward Disableで、ヘルパー実行を確認済みのパッチに固定する。名前がSystemで始まるだけでは確認を免除しない。System.Diagnostics.DiagnosticSource 10は明示的なprivate依存関係として維持する。フレームワークのバージョン6ではこの参照を満たせない。</li>
+<li>12個すべての明示的なprivate依存関係、実行時マニフェストの確認、ファイルのバイト単位の一致確認を維持する。縮小したローダーの一部だけでなく、チェックサム検証済みの公式MelonLoader完全版と選択したフレームワークを確認し、重複するUnsafeライブラリも対象にする。</li>
+<li>Modはv0.9.11、Modビルド数は58のまま。手動のゲーム起動、診断、配置時の保護を維持する。GitHub Releaseは公開しない。</li>
+<li>Windows x64自己完結型インストーラー0.1.10を警告・エラーなしでコンパイルした。検証済みのMelonLoader完全版アーカイブを静的に確認し、最上位の47個のDLLと、12個のprivate依存関係からの73件の参照を対象にした。19件は明示的なヘルパーライブラリ、54件は互換性のあるフレームワークライブラリで満たされ、不足や非互換はなかった。ヘルパー出力は引き続き計13個のDLL。最終単一ファイルパッケージと内蔵テンプレートは実行せずに確認した。テスト、ヘルパー実行、参照生成、インストール、アンインストール、ゲーム起動は行っていない。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/79c7d86116ea20f096fcfe15e63f0f67b2ad21d0">ソースコミット</a> · GitHubリリースなし</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 のローカル ソース アーカイブは、パブリック ソースのコミットを再構築するために使用されました。インストール パッケージはローカルに残り、GitHub リリースではありません。 v0.5.4 の再バインド プレビューと v0.5.18 SAPI トリム実験は、履歴実装として記録されます。後のエントリには、それらがどのように変更されたかが記載されています。</p><p><a href="#history">ビルド履歴に戻る</a></p></div></footer>

@@ -446,12 +446,12 @@ Après un changement réussi, le mod annonce l'entrée et l'action à laquelle e
 Diagnostics du programme d’installation
 ---------------------------------------
 
-L’aperçu 0.1.9 du programme d’installation conserve automatiquement des journaux de diagnostic locaux dans %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permet de choisir un fichier texte, y enregistre la session actuelle et continue d’ajouter les nouvelles entrées jusqu’à la fermeture de l’installateur ; Copy diagnostics (Alt+C) copie un instantané. Choisissez Save diagnostics avant le prochain essai d’installation ou de désinstallation pour conserver l’enregistrement complet même après la suppression des journaux automatiques. Les journaux comprennent les messages d’état, les étapes de progression et les détails des erreurs. Rien n’est envoyé en ligne. Vérifiez un journal avant de le partager : il peut contenir des noms d’utilisateur Windows et des chemins de dossiers complets. Une désinstallation réussie supprime les journaux automatiques ; les copies enregistrées volontairement ailleurs sont conservées.
+L’aperçu 0.1.10 du programme d’installation conserve automatiquement des journaux de diagnostic locaux dans %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permet de choisir un fichier texte, y enregistre la session actuelle et continue d’ajouter les nouvelles entrées jusqu’à la fermeture de l’installateur ; Copy diagnostics (Alt+C) copie un instantané. Choisissez Save diagnostics avant le prochain essai d’installation ou de désinstallation pour conserver l’enregistrement complet même après la suppression des journaux automatiques. Les journaux comprennent les messages d’état, les étapes de progression et les détails des erreurs. Rien n’est envoyé en ligne. Vérifiez un journal avant de le partager : il peut contenir des noms d’utilisateur Windows et des chemins de dossiers complets. Une désinstallation réussie supprime les journaux automatiques ; les copies enregistrées volontairement ailleurs sont conservées.
 
 Installation et premier démarrage
 ---------------------------------
 
-L’aperçu 0.1.9 du programme d’installation ne lance jamais Bop It! pendant l’installation. Install télécharge
+L’aperçu 0.1.10 du programme d’installation ne lance jamais Bop It! pendant l’installation. Install télécharge
 une version publique compilée lorsqu’elle existe. Install alpha télécharge le dernier code source, demande
 confirmation et le compile avant de copier les fichiers. Alpha réutilise des références locales complètes ou
 prépare des références de compilation temporaires à partir de votre jeu installé, sans l’exécuter. Après cette
@@ -475,4 +475,4 @@ téléchargés et les assemblages du jeu générés. Comptez environ une minute,
 pas parler avant que MelonLoader ait fini de le charger. Gardez le jeu ouvert et attendez l’annonce de
 démarrage de Bop It Access, puis celle de l’écran titre ou du menu, avant d’utiliser les commandes.
 
-L’aperçu 0.1.9 de l’installateur corrige une dépendance manquante de l’outil de compilation qui pouvait arrêter Install alpha. Il vérifie la liste des dépendances et les fichiers de l’outil avant de télécharger ou d’exécuter les outils d’assemblages. L’installateur ne lance toujours jamais le jeu. Enregistrez les diagnostics avant la prochaine tentative.
+L’aperçu 0.1.10 de l’installateur corrige une vérification qui arrêtait à tort Install alpha pour une bibliothèque déjà fournie par .NET 6. Il reconnaît les bibliothèques d’exécution compatibles tout en conservant les contrôles des outils de compilation. L’installateur ne lance jamais le jeu. Enregistrez les diagnostics avant la prochaine tentative.
