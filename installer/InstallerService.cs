@@ -171,8 +171,8 @@ internal sealed class InstallerService
             if (LastUninstallWarningCount > 0)
                 Log($"Preference cleanup reported {LastUninstallWarningCount} warning(s). Review the status log.");
             Log(LastUninstallWarningCount == 0
-                ? "Uninstall completed. The .NET SDK remains installed, as requested."
-                : "Mod file removal finished, but preference cleanup is incomplete. Use Uninstall to retry. The .NET SDK remains installed.");
+                ? "Uninstall completed. Existing shared .NET installations and SDKs remain untouched."
+                : "Mod file removal finished, but preference cleanup is incomplete. Use Uninstall to retry. Existing shared .NET installations and SDKs remain untouched.");
             if (LastUninstallWarningCount == 0) ScheduleStandaloneCleanup();
             PublishState();
         }, cancellation);
@@ -196,13 +196,12 @@ internal sealed class InstallerService
 
             var temp = Path.Combine(Path.GetTempPath(), "BopItAccessInstaller-" + Guid.NewGuid().ToString("N"));
             Directory.CreateDirectory(temp);
-            bool addedSdk = false;
             bool committed = false;
             InstallTransaction? transaction = null;
             try
             {
-                var (dotnet, sdkAdded) = await SdkAndBuild.EnsureSdkAsync(game, temp, Log, Progress, ct);
-                addedSdk = sdkAdded;
+                Log("Preparing a single-pass installation. Bop It! will not be launched by the installer.");
+                var dependencies = await SdkAndBuild.EnsureDependenciesAsync(alpha, game, temp, Log, Progress, ct);
                 Log("Verifying MelonLoader 0.7.3 Open-Beta.");
                 bool melonWasPresent = Directory.Exists(Path.Combine(game, "MelonLoader")) ||
                     File.Exists(Path.Combine(game, "version.dll"));
@@ -267,28 +266,12 @@ internal sealed class InstallerService
                     sourceRoot = FindPackageRoot(extracted);
                 }
 
-                transaction = new InstallTransaction(game, _stateDirectory, Log);
-                if (melonRoot is not null)
-                {
-                    Log("Installing MelonLoader files into the game folder.");
-                    await InstallTreeAsync(transaction, melonRoot, game, ct);
-                    transaction.MelonLoaderInstalledByInstaller |= !melonWasPresent;
-                }
-                if (prismDll is not null)
-                {
-                    Log("Installing verified Prism speech library.");
-                    await transaction.InstallFileAsync(prismDll, installedPrism, ct);
-                }
-
-                // Set loader UI preferences before the first proxy-generation
-                // launch, and use the same path for release and alpha installs.
-                await LoaderUiDefaults.ApplyAsync(transaction, temp, Log, ct);
-
                 string dll;
                 if (alpha)
                 {
-                    await EnsureProxiesAsync(game, transaction, ct);
-                    dll = await SdkAndBuild.BuildAsync(dotnet, sourceRoot, game, Log, Progress, ct);
+                    var references = await OfflineBuildReferences.PrepareAsync(dependencies.Dotnet!, game,
+                        melonRoot ?? game, temp, Log, Progress, ct);
+                    dll = await SdkAndBuild.BuildAsync(dependencies.Dotnet!, sourceRoot, references, Log, Progress, ct);
                 }
                 else dll = FindReleaseDll(sourceRoot);
 
@@ -296,10 +279,36 @@ internal sealed class InstallerService
                     ? ReadModVersion(sourceRoot) + "-alpha." + reference[..7]
                     : reference.TrimStart('v', 'V');
 
+                ct.ThrowIfCancellationRequested();
+                if (IsGameRunning())
+                    throw new InvalidOperationException("Bop It! was opened during preparation. Close it before installing. The installer has not changed the game files.");
+                transaction = new InstallTransaction(game, _stateDirectory, Log);
+                if (melonRoot is not null)
+                {
+                    Log("Installing MelonLoader files into the game folder.");
+                    await InstallTreeAsync(transaction, melonRoot, game, ct);
+                    transaction.MelonLoaderInstalledByInstaller |= !melonWasPresent;
+                }
                 var mods = Path.Combine(game, "Mods");
                 transaction.CreateDirectory(mods);
-                Log("Installing BopItAccess.dll.");
+                Log("Installing BopItAccess.dll immediately after MelonLoader.");
                 await transaction.InstallFileAsync(dll, Path.Combine(mods, "BopItAccess.dll"), ct);
+
+                if (dependencies.RuntimeSource is not null)
+                {
+                    Log("Installing the required runtime in MelonLoader's Dependencies folder.");
+                    await InstallTreeAsync(transaction, dependencies.RuntimeSource,
+                        Path.Combine(game, "MelonLoader", "Dependencies", "dotnet"), ct);
+                }
+
+                if (prismDll is not null)
+                {
+                    Log("Installing verified Prism speech library.");
+                    await transaction.InstallFileAsync(prismDll, installedPrism, ct);
+                }
+
+                // Prepare loader UI preferences for the player's first launch.
+                await LoaderUiDefaults.ApplyAsync(transaction, temp, Log, ct);
                 await InstallDocumentationAsync(transaction, sourceRoot, game, ct);
                 var prismNotices = Path.Combine(game, "documentation", "THIRD-PARTY-LICENSES", "Prism");
                 var noticeFile = Path.Combine(prismRoot, "NOTICE");
@@ -314,7 +323,7 @@ internal sealed class InstallerService
                 Log("Committing the installation ledger.");
                 await transaction.CommitAsync(displayVersion, alpha ? "alpha" : "release", reference, ct);
                 committed = true;
-                Log("Bop It Access installation completed successfully.");
+                Log("Bop It Access installation completed successfully. Launch Bop It! manually when ready. On its first launch, MelonLoader may download tools and generate assemblies for a minute or longer before mod speech starts.");
             }
             catch (Exception ex)
             {
@@ -322,17 +331,8 @@ internal sealed class InstallerService
                 if (transaction is not null && !committed)
                 {
                     Log("Reversing changes made during this attempt.");
-                    await CloseGameBeforeRollbackAsync();
+                    await WaitForGameBeforeRollbackAsync();
                     await transaction.RollbackAsync();
-                }
-                if (addedSdk)
-                {
-                    var sdk = Path.Combine(game, "dotnet");
-                    if (Directory.Exists(sdk))
-                    {
-                        Log("Removing the SDK added during the aborted installation.");
-                        DeleteOwnedDirectory(sdk, game, "dotnet");
-                    }
                 }
                 throw;
             }
@@ -507,16 +507,14 @@ internal sealed class InstallerService
         Path.GetFullPath(first).TrimEnd(Path.DirectorySeparatorChar),
         Path.GetFullPath(second).TrimEnd(Path.DirectorySeparatorChar), StringComparison.OrdinalIgnoreCase);
 
-    private async Task CloseGameBeforeRollbackAsync()
+    private async Task WaitForGameBeforeRollbackAsync()
     {
         var running = Process.GetProcessesByName("BopIt!");
         if (running.Length == 0) return;
-        Log("Asking the game to close before reversing files it may be using.");
+        Log("Bop It! was opened independently. Close it to allow installation changes to be reversed; the installer will not close your game.");
         foreach (var process in running)
         {
-            try { process.CloseMainWindow(); }
-            catch { /* The player can close the game normally. */ }
-            finally { process.Dispose(); }
+            process.Dispose();
         }
         var until = DateTimeOffset.UtcNow.AddSeconds(30);
         while (IsGameRunning() && DateTimeOffset.UtcNow < until)
@@ -543,7 +541,13 @@ internal sealed class InstallerService
     {
         var version = Path.Combine(game, "version.dll");
         var managed = Path.Combine(game, "MelonLoader", "net6", "MelonLoader.dll");
+        string[] libraries = { "0Harmony", "Il2CppInterop.Runtime", "Il2CppInterop.Generator",
+            "Il2CppInterop.Common", "Il2CppInterop.HarmonySupport", "MelonLoader.NativeHost",
+            "AsmResolver", "AsmResolver.DotNet", "AsmResolver.PE", "AsmResolver.PE.File",
+            "Microsoft.Extensions.Logging.Abstractions", "System.Diagnostics.DiagnosticSource" };
         return File.Exists(version) && File.Exists(managed) &&
+            File.Exists(Path.Combine(game, "MelonLoader", "net6", "MelonLoader.runtimeconfig.json")) &&
+            libraries.All(name => File.Exists(Path.Combine(game, "MelonLoader", "net6", name + ".dll"))) &&
             (FileVersionInfo.GetVersionInfo(managed).FileVersion ?? "").StartsWith("0.7.3", StringComparison.Ordinal) &&
             InstallerNetwork.Sha256(version).Equals("0ce7a4e530c7f83f172a2c44aed45eedb3bdcf06b83760f143a0fba6885fa929", StringComparison.OrdinalIgnoreCase);
     }
@@ -636,70 +640,4 @@ internal sealed class InstallerService
         Log("Registered an Apps & Features uninstall entry using the supplied uninstaller script.");
     }
 
-    private async Task EnsureProxiesAsync(string game, InstallTransaction transaction, CancellationToken cancellation)
-    {
-        string[] required = { "Assembly-CSharp.dll", "Il2Cppmscorlib.dll", "UnityEngine.CoreModule.dll",
-            "Unity.Localization.dll", "UnityEngine.AudioModule.dll", "Il2CppFMODUnity.dll",
-            "UnityEngine.UI.dll", "UnityEngine.UIModule.dll", "Unity.TextMeshPro.dll",
-            "Unity.InputSystem.dll", "Il2CppDOTween.dll" };
-        var directory = Path.Combine(game, "MelonLoader", "Il2CppAssemblies");
-        bool ready() => required.All(name => File.Exists(Path.Combine(directory, name)) &&
-            new FileInfo(Path.Combine(directory, name)).Length > 0);
-        if (ready()) { Log("Verified all game-generated build proxy assemblies."); return; }
-        transaction.TrackGeneratedTree(directory, cancellation);
-        transaction.TrackGeneratedTree(Path.Combine(game, "MelonLoader", "Logs"), cancellation);
-
-        Log("Launching Bop It! once so MelonLoader can generate build references from this copy of the game. If the game does not open, launch it through Steam.");
-        Progress("Generating game build references", 0, null);
-        var launchedAt = DateTime.UtcNow.AddSeconds(-2);
-        var info = new ProcessStartInfo(Path.Combine(game, "BopIt!.exe"))
-        {
-            WorkingDirectory = game,
-            UseShellExecute = true
-        };
-        Process? opened = null;
-        try { opened = Process.Start(info); }
-        catch (System.ComponentModel.Win32Exception ex)
-        {
-            Log("Direct game launch did not work: " + ex.Message + " Launch Bop It! through Steam; the installer will keep waiting.");
-        }
-        using var launched = opened;
-        var until = DateTimeOffset.UtcNow.AddMinutes(8);
-        var previousSizes = string.Empty;
-        int stableSeconds = 0;
-        bool generationFinished()
-        {
-            var latest = Path.Combine(game, "MelonLoader", "Latest.log");
-            if (!File.Exists(latest) || File.GetLastWriteTimeUtc(latest) < launchedAt) return false;
-            try { return File.ReadAllText(latest).Contains("Loading Mods...", StringComparison.OrdinalIgnoreCase); }
-            catch (IOException) { return false; }
-        }
-        while (true)
-        {
-            cancellation.ThrowIfCancellationRequested();
-            if (ready())
-            {
-                var sizes = string.Join(",", required.Select(name =>
-                    new FileInfo(Path.Combine(directory, name)).Length.ToString()));
-                stableSeconds = sizes == previousSizes ? stableSeconds + 1 : 0;
-                previousSizes = sizes;
-                if (stableSeconds >= 3 && generationFinished()) break;
-            }
-            if (DateTimeOffset.UtcNow > until)
-                throw new TimeoutException("MelonLoader did not finish generating the game's build references within eight minutes. Check MelonLoader/Latest.log and retry.");
-            await Task.Delay(1000, cancellation);
-        }
-        Log("MelonLoader generated the required game build references.");
-        try { launched?.CloseMainWindow(); } catch { }
-        Log("Waiting for Bop It! to close before installing the mod. If the game remains open, please close it normally.");
-        until = DateTimeOffset.UtcNow.AddMinutes(5);
-        while (IsGameRunning())
-        {
-            cancellation.ThrowIfCancellationRequested();
-            if (DateTimeOffset.UtcNow > until)
-                throw new TimeoutException("The game is still open. Close it normally, then retry the installation.");
-            await Task.Delay(1000, cancellation);
-        }
-        Log("Game closed; source build can continue.");
-    }
 }

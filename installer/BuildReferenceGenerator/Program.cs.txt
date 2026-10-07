@@ -1,0 +1,74 @@
+using AsmResolver.DotNet;
+using AsmResolver.DotNet.Serialized;
+using Il2CppInterop.Common;
+using Il2CppInterop.Generator;
+using Il2CppInterop.Generator.Runners;
+using Microsoft.Extensions.Logging;
+
+// Standalone build helper. Inputs are local game files; every output is temporary.
+// Keep these options aligned with MelonLoader 0.7.3's Il2CppInterop package.
+if (args.Length != 4)
+{
+    Console.Error.WriteLine("Expected GameAssembly, dumped assemblies, Unity libraries, and output directory.");
+    return 2;
+}
+string? originalTrustedAssemblies = AppDomain.CurrentDomain.GetData("TRUSTED_PLATFORM_ASSEMBLIES") as string;
+try
+{
+    using var resolver = new ModuleResolver();
+    var modules = Directory.EnumerateFiles(args[1], "*.dll")
+        .Select(path => ModuleDefinition.FromFile(path, new ModuleReaderParameters { ModuleResolver = resolver }))
+        .ToList();
+    foreach (var module in modules) resolver.Add(module);
+    if (modules.Count == 0) throw new InvalidDataException("Cpp2IL did not produce any assemblies.");
+    var options = new GeneratorOptions
+    {
+        GameAssemblyPath = args[0],
+        Source = modules.Select(module => module.Assembly ?? throw new InvalidDataException("Dumped module has no assembly definition.")).ToList(),
+        OutputDir = args[3],
+        UnityBaseLibsDir = args[2],
+        Parallel = true,
+        Il2CppPrefixMode = GeneratorOptions.PrefixMode.OptOut
+    };
+    AppDomain.CurrentDomain.SetData("TRUSTED_PLATFORM_ASSEMBLIES", originalTrustedAssemblies +
+        Path.PathSeparator + string.Join(Path.PathSeparator, Directory.EnumerateFiles(args[2], "*.dll")));
+    Il2CppInteropGenerator.Create(options).AddLogger(new ConsoleLogger()).AddInteropAssemblyGenerator().Run();
+    Console.WriteLine("Temporary build reference generation completed.");
+    return 0;
+}
+catch (Exception error)
+{
+    Console.Error.WriteLine(error);
+    return 1;
+}
+finally
+{
+    AppDomain.CurrentDomain.SetData("TRUSTED_PLATFORM_ASSEMBLIES", originalTrustedAssemblies);
+}
+
+sealed class ModuleResolver : INetModuleResolver, IDisposable
+{
+    private readonly Dictionary<string, ModuleDefinition> _modules = new(StringComparer.Ordinal);
+    public void Add(ModuleDefinition module) => _modules[module.Name ?? throw new InvalidDataException("Dumped module has no name.")] = module;
+    public ModuleDefinition Resolve(string name) => _modules.GetValueOrDefault(name)!;
+    public void Dispose() => _modules.Clear();
+}
+
+sealed class ConsoleLogger : ILogger
+{
+    public bool IsEnabled(LogLevel level) => level >= LogLevel.Information;
+    public IDisposable BeginScope<TState>(TState state) where TState : notnull => EmptyScope.Instance;
+    public void Log<TState>(LogLevel level, EventId eventId, TState state, Exception? error,
+        Func<TState, Exception?, string> formatter)
+    {
+        if (!IsEnabled(level)) return;
+        var writer = level >= LogLevel.Warning ? Console.Error : Console.Out;
+        writer.WriteLine(formatter(state, error));
+        if (error is not null) writer.WriteLine(error);
+    }
+    sealed class EmptyScope : IDisposable
+    {
+        internal static readonly EmptyScope Instance = new();
+        public void Dispose() { }
+    }
+}

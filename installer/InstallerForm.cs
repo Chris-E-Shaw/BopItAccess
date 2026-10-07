@@ -320,6 +320,8 @@ internal sealed class InstallerForm : Form
                 var message = uninstall && _service.LastUninstallWarningCount > 0
                     ? $"Bop It Access files were removed, but cleanup reported {_service.LastUninstallWarningCount} warning(s). Review the status log now. You can run Uninstall again to retry the remaining steps."
                     : successMessage;
+                if (!uninstall)
+                    message += " Launch Bop It! manually when you are ready. On the first launch, MelonLoader may download tools and generate assemblies for a minute or longer before speech starts. Wait for the mod's startup announcement and then the menu.";
                 var icon = uninstall && _service.LastUninstallWarningCount > 0
                     ? MessageBoxIcon.Warning : MessageBoxIcon.Information;
                 MessageBox.Show(this, message, "Bop It Access Installer",

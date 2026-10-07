@@ -13,9 +13,14 @@
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.1.6</Version>
+    <Version>0.1.7</Version>
   </PropertyGroup>
   <ItemGroup>
     <EmbeddedResource Include="uninstall.ps1" LogicalName="BopItAccess.Installer.uninstall.ps1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Remove="BuildReferenceGenerator\**\*.cs" />
+    <EmbeddedResource Include="BuildReferenceGenerator\Program.cs.txt" LogicalName="BopItAccess.Installer.BuildReferenceGenerator.Program.cs.txt" />
+    <EmbeddedResource Include="BuildReferenceGenerator\BuildReferenceGenerator.csproj.txt" LogicalName="BopItAccess.Installer.BuildReferenceGenerator.BuildReferenceGenerator.csproj.txt" />
   </ItemGroup>
 </Project>

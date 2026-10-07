@@ -79,7 +79,9 @@ public static class UninstallManager
         var loaderRestorations = new List<LoaderUiDefaults.RestorePlan>();
         ValidateSettingsFiles(game);
         ValidateModLogs(game, removeMain: !manifest.ModLogExistedBeforeInstall);
-        bool sharedLoader = manifest.MelonLoaderInstalledByInstaller && HasOtherMods(game);
+        // A runtime added below a pre-existing loader may also be used by
+        // other mods. Sharing is independent of who first installed the loader.
+        bool sharedLoader = HasOtherMods(game);
         if (sharedLoader)
             log("Other mods are present, or their folders could not be safely inspected. MelonLoader and shared dependencies will be preserved.");
         if (manifest.MelonLoaderInstalledByInstaller && !sharedLoader)

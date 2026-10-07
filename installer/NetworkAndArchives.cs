@@ -14,8 +14,10 @@ internal static class InstallerNetwork
     internal const string PrismUrl = "https://github.com/ethindp/prism/releases/download/v0.18.3/prism-windows-x64.zip";
     internal const string PrismSha256 = "13d3c9d1d524b0737cde261c6468845753e36b6c5c2637e7d26bfb8bf4d8783f";
     internal const string PrismDllSha256 = "7c7d09c8c7306e8e1a0c46d603ccb2a391c194c77843400c11b746e7dd56a467";
-    internal const string SdkUrl = "https://builds.dotnet.microsoft.com/dotnet/Sdk/6.0.428/dotnet-sdk-6.0.428-win-x64.zip";
-    internal const string SdkSha512 = "c027cb47b264a13e529f8c7f3ba33ac91152b56749c8681fede1d6cd48723ae1e5f04a43bac1302ee81e35a5383f3e169654e5bb7c1d331dc11cce5a95052e32";
+    internal const string SdkUrl = "https://builds.dotnet.microsoft.com/dotnet/Sdk/6.0.428/dotnet-sdk-6.0.428-win-x64.exe";
+    internal const string SdkSha512 = "a6706b5c03187922e92fa9307b155255139546d081bf1623faff496035eb707440f13c21798aae06fe8fcfeadcfa046c8606dd452db92e5ed48e2005eb421842";
+    internal const string RuntimeUrl = "https://builds.dotnet.microsoft.com/dotnet/Runtime/6.0.36/dotnet-runtime-6.0.36-win-x64.zip";
+    internal const string RuntimeSha512 = "935db5c6cee19f2c016e67168bfae7b491044735de76c673abb3b125dd325fd5e779d7efe12ba80178d46689ae70a25e558a3fa846417d44c5f4ca256e7f4bf2";
     private static readonly HttpClient Client = CreateClient();
 
     private static HttpClient CreateClient()
