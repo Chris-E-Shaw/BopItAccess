@@ -446,12 +446,12 @@ Nach einer erfolgreichen Änderung kündigt der Mod die Eingabe und die ihr zuge
 Diagnoseprotokolle des Installers
 ---------------------------------
 
-Die Installer-Vorschau 0.1.7 speichert Diagnoseprotokolle automatisch lokal unter %ProgramData%\BopItAccess\diagnostics. Mit Save diagnostics (Alt+D) wählen Sie eine Textdatei, speichern die aktuelle Sitzung und lassen neue Einträge bis zum Schließen des Installers hinzufügen. Copy diagnostics (Alt+C) kopiert den aktuellen Stand. Wählen Sie Save diagnostics vor dem nächsten Installations- oder Deinstallationstest, damit die vollständige Aufzeichnung auch nach dem Entfernen der automatischen Protokolle erhalten bleibt. Aufgezeichnet werden Statusmeldungen, Fortschrittsschritte und Fehlerdetails. Es wird nichts hochgeladen. Prüfen Sie ein Protokoll vor dem Weitergeben: Es kann Windows-Benutzernamen und vollständige Ordnerpfade enthalten. Eine erfolgreiche Deinstallation entfernt die automatischen Protokolle; bewusst an anderer Stelle gespeicherte Kopien bleiben erhalten.
+Die Installer-Vorschau 0.1.8 speichert Diagnoseprotokolle automatisch lokal unter %ProgramData%\BopItAccess\diagnostics. Mit Save diagnostics (Alt+D) wählen Sie eine Textdatei, speichern die aktuelle Sitzung und lassen neue Einträge bis zum Schließen des Installers hinzufügen. Copy diagnostics (Alt+C) kopiert den aktuellen Stand. Wählen Sie Save diagnostics vor dem nächsten Installations- oder Deinstallationstest, damit die vollständige Aufzeichnung auch nach dem Entfernen der automatischen Protokolle erhalten bleibt. Aufgezeichnet werden Statusmeldungen, Fortschrittsschritte und Fehlerdetails. Es wird nichts hochgeladen. Prüfen Sie ein Protokoll vor dem Weitergeben: Es kann Windows-Benutzernamen und vollständige Ordnerpfade enthalten. Eine erfolgreiche Deinstallation entfernt die automatischen Protokolle; bewusst an anderer Stelle gespeicherte Kopien bleiben erhalten.
 
 Installationsablauf und erster Start
 ------------------------------------
 
-Die Installer-Vorschau 0.1.7 startet Bop It! während der Installation niemals. Install lädt eine kompilierte
+Die Installer-Vorschau 0.1.8 startet Bop It! während der Installation niemals. Install lädt eine kompilierte
 öffentliche Veröffentlichung herunter, sobald eine verfügbar ist. Install alpha lädt den neuesten Quellcode,
 fragt nach Bestätigung und kompiliert ihn vor dem Kopieren der Dateien. Alpha verwendet vollständige lokale
 Spielreferenzen oder erzeugt vorübergehende Build-Referenzen aus Ihrem installierten Spiel, ohne es zu
@@ -475,3 +475,5 @@ Spielassemblys erzeugt werden. Rechnen Sie mit etwa einer Minute, auf manchen Sy
 erst sprechen, wenn MelonLoader sie geladen hat. Lassen Sie das Spiel offen. Warten Sie zuerst auf die
 Startmeldung von Bop It Access und dann auf die Ansage des Titelbildschirms oder Menüs, bevor Sie die
 Steuerung verwenden.
+
+Installer-Vorschau 0.1.8 behebt einen Paketierungsfehler, der Install alpha nach der Referenzerzeugung stoppen konnte. Die enthaltenen Build-Vorlagen werden geprüft, bevor Voraussetzungen heruntergeladen oder Referenzen erzeugt werden. Die Installationsreihenfolge bleibt unverändert; der Installer startet das Spiel niemals. Speichern Sie vor dem nächsten Versuch die Diagnose, damit weitere Probleme untersucht werden können.

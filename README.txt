@@ -471,12 +471,12 @@ After a successful change, the mod announces the input and the action it is assi
 Installer diagnostics
 ---------------------
 
-Installer preview 0.1.7 automatically keeps local diagnostic logs in %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) chooses a text file, saves the current session and keeps adding entries until the installer closes; Copy diagnostics (Alt+C) copies a current snapshot. Choose Save diagnostics before the next installation or uninstall test so the full recording survives removal of the automatic logs. Recording includes status messages, progress milestones and error details; nothing is uploaded. Inspect a log before sharing it: it can include Windows usernames and full folder paths. Successful uninstall removes the automatic logs, but copies you deliberately save elsewhere remain.
+Installer preview 0.1.8 automatically keeps local diagnostic logs in %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) chooses a text file, saves the current session and keeps adding entries until the installer closes; Copy diagnostics (Alt+C) copies a current snapshot. Choose Save diagnostics before the next installation or uninstall test so the full recording survives removal of the automatic logs. Recording includes status messages, progress milestones and error details; nothing is uploaded. Inspect a log before sharing it: it can include Windows usernames and full folder paths. Successful uninstall removes the automatic logs, but copies you deliberately save elsewhere remain.
 
 Installer workflow and first startup
 ------------------------------------
 
-Installer preview 0.1.7 never starts Bop It! during installation. Install downloads a compiled public release
+Installer preview 0.1.8 never starts Bop It! during installation. Install downloads a compiled public release
 when one exists; Install alpha downloads the latest source, asks for confirmation, and builds it before
 deployment. Alpha reuses complete local game references or generates temporary build references from your own
 installed game without running it. After preparation, the installer places MelonLoader in the game folder and
@@ -497,3 +497,5 @@ On the first manual launch after installing MelonLoader, it may download support
 assemblies. Allow about a minute, or longer on some systems. The mod cannot speak until MelonLoader finishes
 loading it. Keep the game open and wait for the Bop It Access startup announcement, then for the title-screen
 or menu announcement before using the controls.
+
+Installer preview 0.1.8 fixes a packaging error that could stop Install alpha after reference generation. It checks its included build templates before downloading prerequisites or generating references. The installation order is unchanged, and the installer never starts the game. Save diagnostics before the next attempt so any remaining problem can be investigated.

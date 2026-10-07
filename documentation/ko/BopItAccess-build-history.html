@@ -171,6 +171,13 @@
 <li>진단 기록, 소유권 기록, 롤백과 제거 보호를 유지합니다. 사용자 로그는 Mods에 미리 배치된 모드가 어셈블리 생성 후 로드된 것을 보여 줍니다. 이는 배치 순서의 근거이며 이 설치 프로그램의 실행 테스트는 아닙니다. 모드는 v0.9.11, 모드 빌드 수는 58로 유지합니다.</li>
 <li>Windows x64 자체 포함 설치 프로그램 0.1.7을 게시하고 내장 참조 도우미를 경고와 오류 없이 컴파일했습니다. 확인은 컴파일과 정적 검토만 했으며 자동 테스트, 오프라인 참조 생성, 설치/제거 프로그램 실행이나 게임 실행은 하지 않았습니다. 모드는 v0.9.11로 유지하며 GitHub Release는 게시하지 않았습니다.</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/733893c7935f4e7c169bbe5fc80b0a4fe11f985c">소스 커밋</a> · GitHub 릴리스 없음</p></article>
+      <article class="commit" id="installer-0-1-8"><div class="meta"><span class="version">Installer 0.1.8 preview</span><span class="kind">fix · packaging · docs</span></div><h3>fix(installer): 오프라인 빌드 템플릿을 기본 어셈블리에 유지</h3><ul>
+<li>제공된 설치 프로그램 0.1.7 로그는 2026년 10월 7일 12:43:12 UTC에 Cpp2IL이 종료 코드 0으로 성공한 직후 InvalidDataException: Missing embedded offline build helper resource: Program.cs.txt가 발생했음을 보여 줍니다. 게임 파일을 바꾸는 배포 트랜잭션 전에, 임시 alpha 준비 단계에서 시도가 중단되었습니다.</li>
+<li>MSBuild는 Program.cs.txt의 .cs 부분을 체코어 언어 코드로 해석하여 LogicalName이 지정되어 있어도 소스 템플릿을 언어별 위성 어셈블리에 넣었습니다. 오프라인 도우미 템플릿 두 개와 제거 스크립트에 WithCulture=false를 명시하여 세 파일 모두 기본 어셈블리에 유지합니다.</li>
+<li>SplitResourcesByCulture 이후에 빌드 검사를 추가하여 중립 문화 설정과 정확한 LogicalName 값 세 개를 요구합니다. 필수 리소스가 없거나 이름이 바뀌거나 특정 문화가 지정되면 컴파일을 실패시켜 같은 위성 어셈블리 패키징 문제가 다음 미리 보기에 포함되지 않도록 합니다.</li>
+<li>alpha 준비를 시작할 때 포함된 도우미 템플릿을 검사하여 필수 파일 다운로드, SDK 설치 또는 오프라인 참조 생성 전에 오류를 발견합니다. 한 번의 배포 흐름, 수동 게임 실행, 진단 기록 및 소유권 보호를 유지합니다. 모드는 v0.9.11, 모드 빌드 수는 58 그대로입니다. GitHub Release는 게시하지 않습니다.</li>
+<li>Windows x64 독립 실행형 설치 프로그램 0.1.8을 경고 및 오류 없이 생성합니다. 새 기본 어셈블리의 정적 검사를 통해 내장 리소스 세 개가 모두 존재하고 소스 파일과 바이트 단위로 일치함을 확인했습니다. 검증은 컴파일, 정적 검토 및 컴파일된 리소스 검사에 한정됩니다. 자동 테스트, 오프라인 참조 생성, 설치 프로그램/제거 프로그램 실행 또는 게임 실행은 하지 않았습니다. 모드는 v0.9.11 그대로이며 GitHub Release는 게시하지 않습니다.</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/db95702a3e92940eb1435568604402860555ce2c">소스 커밋</a> · GitHub 릴리스 없음</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37개의 로컬 소스 아카이브가 공개 소스 커밋을 재구성하는 데 사용되었습니다. 설치 패키지는 로컬로 유지되며 GitHub 릴리스가 아닙니다. v0.5.4 리바인딩 미리보기 및 v0.5.18 SAPI 트림 실험은 기록 구현으로 기록됩니다. 이후 항목에는 변경된 방법이 나와 있습니다.</p><p><a href="#history">빌드 기록으로 돌아가기</a></p></div></footer>

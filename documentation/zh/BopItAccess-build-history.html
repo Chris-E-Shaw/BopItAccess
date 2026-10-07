@@ -171,6 +171,13 @@
 <li>保留诊断记录、所有权日志、回滚和卸载保护。用户提供的日志显示：MelonLoader先生成程序集，再加载已放入Mods的Mod。这为部署顺序提供依据，并非对本安装程序的执行测试。Mod仍为v0.9.11，Mod构建数量仍为58。</li>
 <li>发布Windows x64自包含安装程序0.1.7，并编译内置引用辅助工具，均无警告或错误。仅进行了编译和静态审查，未进行自动测试、离线引用生成、安装/卸载程序执行或游戏启动。Mod仍为v0.9.11，没有发布GitHub Release。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/733893c7935f4e7c169bbe5fc80b0a4fe11f985c">源码提交</a> · 未发布GitHub版本</p></article>
+      <article class="commit" id="installer-0-1-8"><div class="meta"><span class="version">Installer 0.1.8 preview</span><span class="kind">fix · packaging · docs</span></div><h3>fix(installer)：将离线构建模板保留在主程序集内</h3><ul>
+<li>用户提供的安装程序0.1.7日志显示，Cpp2IL于2026年10月7日12:43:12 UTC以退出码0正常完成，随后出现InvalidDataException: Missing embedded offline build helper resource: Program.cs.txt。本次尝试在临时Alpha准备阶段停止，尚未进入修改游戏文件的部署事务。</li>
+<li>MSBuild将Program.cs.txt中的.cs识别为捷克语语言代码，即使指定了LogicalName，也仍将源代码模板放入特定语言的附属程序集。为两个离线辅助工具模板和卸载脚本明确设置WithCulture=false，将这三个资源全部保留在主程序集内。</li>
+<li>在SplitResourcesByCulture之后增加构建检查，要求三个精确的LogicalName值及中立区域性设置。如果必需资源缺失、重命名或被指定区域性，编译就会失败，以防相同的附属程序集打包缺陷进入未来的预览版。</li>
+<li>在Alpha准备开始时检查内置辅助工具模板，在下载依赖项、安装SDK或生成离线引用之前发现问题。保留单次部署流程、手动启动游戏、诊断记录和文件所有权保护。模组仍为v0.9.11，共58个模组构建；未发布GitHub Release。</li>
+<li>生成Windows x64自包含安装程序0.1.8，没有警告或错误。对新生成的主程序集进行静态检查，确认三个内置资源均存在，并与源文件逐字节一致。验证仅包括编译、静态代码审查及已编译资源检查；未进行自动化测试、离线引用生成、安装或卸载程序执行，也未启动游戏。模组仍为v0.9.11；未发布GitHub Release。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/db95702a3e92940eb1435568604402860555ce2c">源代码提交</a> · 没有GitHub发行版</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 个本地源档案用于重建公共源提交。安装包保留在本地并且不是 GitHub 版本。 v0.5.4重新绑定预览和v0.5.18 SAPI修剪实验被记录为历史实现；后来的条目说明了它们是如何改变的。</p><p><a href="#history">返回创建历史</a></p></div></footer>

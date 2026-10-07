@@ -171,6 +171,13 @@
 <li>診断記録、所有権ジャーナル、ロールバック、安全なアンインストール処理を維持する。ユーザーのログは、Modsに配置済みのModがアセンブリ生成後に読み込まれたことを示す。これは配置順序の根拠であり、このインストーラーの実行テストではない。Modはv0.9.11、Modビルド数は58のまま。</li>
 <li>Windows x64自己完結型インストーラー0.1.7を発行し、内蔵参照ヘルパーを警告・エラーなしでコンパイル。確認はコンパイルと静的レビューのみ。自動テスト、オフライン参照生成、インストーラーやアンインストーラーの実行、ゲーム起動は行っていない。Modはv0.9.11のまま。GitHub Releaseは公開していない。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/733893c7935f4e7c169bbe5fc80b0a4fe11f985c">ソースコミット</a> · GitHubリリースなし</p></article>
+      <article class="commit" id="installer-0-1-8"><div class="meta"><span class="version">Installer 0.1.8 preview</span><span class="kind">fix · packaging · docs</span></div><h3>fix(installer): オフラインビルド用テンプレートをメインアセンブリに保持</h3><ul>
+<li>提供されたインストーラー0.1.7のログでは、2026年10月7日12:43:12 UTCにCpp2ILが終了コード0で正常に完了した直後、InvalidDataException: Missing embedded offline build helper resource: Program.cs.txtが発生している。ゲームファイルを変更する配置トランザクションの前、一時的なAlpha準備の段階で停止した。</li>
+<li>MSBuildがProgram.cs.txtの.csをチェコ語の言語コードと解釈し、LogicalNameの指定にかかわらずソーステンプレートを言語別サテライトアセンブリに配置していた。2つのオフラインヘルパーテンプレートとアンインストールスクリプトにWithCulture=falseを明示し、3つともメインアセンブリに保持する。</li>
+<li>SplitResourcesByCultureの後にビルド時の保護を追加し、3つの正確なLogicalNameとニュートラルなカルチャーを必須にする。必要なリソースの欠落、名前変更、カルチャーの割り当てがあるとコンパイルを失敗させ、同じサテライト配置の不具合が将来のプレビューに入ることを防ぐ。</li>
+<li>Alpha準備の開始時に内蔵テンプレートを確認し、依存ファイルのダウンロード、SDKのインストール、オフライン参照生成の前に不備を検出する。1回の配置処理、手動のゲーム起動、診断記録、所有権の保護を維持する。Modはv0.9.11、Modビルド数は58のまま。GitHub Releaseは公開しない。</li>
+<li>Windows x64自己完結型インストーラー0.1.8を警告・エラーなしで生成。新しいメインアセンブリの静的確認により、3つの内蔵リソースがすべて存在し、ソースファイルとバイト単位で一致することを確認した。確認はコンパイル、静的レビュー、コンパイル済みリソースの調査のみ。自動テスト、オフライン参照生成、インストーラー・アンインストーラーの実行、ゲーム起動は行っていない。Modはv0.9.11のまま。GitHub Releaseは公開しない。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/db95702a3e92940eb1435568604402860555ce2c">ソースコミット</a> · GitHubリリースなし</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 のローカル ソース アーカイブは、パブリック ソースのコミットを再構築するために使用されました。インストール パッケージはローカルに残り、GitHub リリースではありません。 v0.5.4 の再バインド プレビューと v0.5.18 SAPI トリム実験は、履歴実装として記録されます。後のエントリには、それらがどのように変更されたかが記載されています。</p><p><a href="#history">ビルド履歴に戻る</a></p></div></footer>

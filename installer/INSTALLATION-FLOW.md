@@ -1,6 +1,6 @@
 # Installer installation flow
 
-Installer preview **0.1.7** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game.
+Installer preview **0.1.8** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game.
 
 ## Evidence and scope
 
@@ -33,6 +33,16 @@ Alpha requires a compatible x64 SDK, the **.NET 6 runtime**, and the **.NET 6 ta
 If no suitable SDK exists, it downloads Microsoft's official **.NET SDK 6.0.428 Windows x64 installer**, verifies its SHA-512 checksum, and runs it quietly with no automatic restart. It rechecks the installed components afterward. A requested Windows restart is reported. SDK components stay installed after abort or uninstall, as previously requested, because they are shared development dependencies.
 
 An abort requested during Microsoft's dependency installation is deferred until that installer finishes safely; it does not terminate an in-progress shared component installation. Abort is then honored before deploying the mod. This can make cancellation take longer than cancellation during a download.
+
+### Embedded-template preflight
+
+Installer 0.1.8 validates its own offline-helper source/project resources at the start of alpha preparation, before prerequisite downloads, SDK installation or reference generation. Both templates must exist and be nonempty. A missing template is an installer packaging error, reported with its resource name and a request to download the latest installer preview, rather than a failure of the player's game.
+
+The installer project declares `WithCulture=false` explicitly on `BuildReferenceGenerator/Program.cs.txt`, `BuildReferenceGenerator/BuildReferenceGenerator.csproj.txt` and `uninstall.ps1`. MSBuild otherwise interprets the `.cs` segment as the Czech culture code and can place the helper source in a satellite assembly even when `LogicalName` is explicit. These files are neutral embedded data and must be available regardless of the Windows display language.
+
+A build-time target runs after `SplitResourcesByCulture` and requires the three exact `LogicalName` values with neutral culture. It fails compilation if a resource is missing, renamed or routed to a culture-specific assembly. This checks packaging while building the installer; the separate runtime preflight checks templates before the alpha operation begins.
+
+The supplied 0.1.7 session completed Cpp2IL with exit code 0, then failed reading `Program.cs.txt` before a deployment transaction existed. That evidence identifies a packaging defect in the background alpha preparation; it does not justify restoring a game pre-run. The single-pass deployment order remains unchanged.
 
 ### References without a game launch
 
@@ -74,3 +84,9 @@ Staged source, offline tools and generated references are temporary. Game-file c
 An introduced loader and its owned runtime files are removed/restored according to the existing manifest rules. If other mods need the loader, preserve shared loader/runtime files. System SDKs, pre-existing runtime installations and legacy `<game>/dotnet` SDKs are not removed. An incomplete legacy SDK directory is left untouched; it no longer blocks a suitable system SDK or a runtime-only preparation.
 
 Automatic diagnostic logs are cleared on successful uninstall; files intentionally exported elsewhere remain. The installer contains neither compiled mod DLLs nor game-generated proxy DLLs. The executable embeds only the small source/project templates needed to compile its local reference helper, along with its own self-contained runtime.
+
+## Validation of preview 0.1.8
+
+Publishing completed with zero warnings or errors. Static PE inspection of the newly built main installer assembly confirmed all three named resources and compared their payloads byte-for-byte with the source files: `uninstall.ps1` (6,021 bytes), `Program.cs.txt` (3,202 bytes), and `BuildReferenceGenerator.csproj.txt` (649 bytes). Static inspection of the final single-file executable’s .NET bundle confirmed its main DLL exactly matches that inspected assembly and that it contains no installer-specific language satellite assembly. The bundle format is 6.0; this is a packaging-format version, not a claim that the installer uses the .NET 6 runtime.
+
+An independent static review found no blocking issues. Validation was limited to compilation and static source/artifact inspection. No automated tests, installer/uninstaller execution, helper execution, offline reference generation or game launch were performed. Actual alpha installation and first manual launch still need a human test. This installer hotfix does not create a new mod build or imply that the mod is installed in any current game directory; the source mod version remains 0.9.11.

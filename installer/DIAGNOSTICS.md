@@ -1,6 +1,6 @@
 # Installer diagnostics
 
-Installer preview 0.1.7 records local diagnostic sessions for work on the installation process. The mod remains 0.9.11. This document describes installer recording; it does not replace the game's `Mods/BopItAccess.log` or MelonLoader's `Latest.log`. The installer no longer launches the game. See [Installation flow](INSTALLATION-FLOW.md) for release versus alpha preparation, dependency locations and the first manual launch.
+Installer preview 0.1.8 records local diagnostic sessions for work on the installation process. The mod remains 0.9.11. This document describes installer recording; it does not replace the game's `Mods/BopItAccess.log` or MelonLoader's `Latest.log`. The installer no longer launches the game. See [Installation flow](INSTALLATION-FLOW.md) for release versus alpha preparation, dependency locations and the first manual launch.
 
 ## Find, save and copy a session
 
@@ -65,7 +65,7 @@ Successful managed uninstall removes the owned diagnostic logs during final clea
 
 ## Investigating the deployment sequence
 
-For installer 0.1.7, a complete recording should show preparation before game-file deployment. Alpha either reuses verified matching game references or runs background assembly tools and the compiler. Release installs use an already compiled DLL and do not need an SDK or build references. The installer then deploys MelonLoader, immediately installs `Mods/BopItAccess.dll`, and finishes runtime files if required, Prism, loader defaults, documentation and uninstall support. No step starts `BopIt!.exe`.
+For installer 0.1.8, a complete recording should show preparation before game-file deployment. Alpha either reuses verified matching game references or runs background assembly tools and the compiler. Release installs use an already compiled DLL and do not need an SDK or build references. The installer then deploys MelonLoader, immediately installs `Mods/BopItAccess.dll`, and finishes runtime files if required, Prism, loader defaults, documentation and uninstall support. No step starts `BopIt!.exe`.
 
 If the game is opened independently during preparation, deployment stops. If the game is opened during a later operation and prevents rollback, the installer asks the user to close it and preserves recovery evidence; it does not close the user's game. Record both the installer action and when the game was opened manually.
 
@@ -75,6 +75,16 @@ During the first manual game launch, MelonLoader can download dependencies and g
 
 Inspect a file before sharing it. It can contain Windows usernames, full folder paths, installed dependency locations, game-library locations and exception details. URL sanitization does not remove that local context or all possible personal information in compiler/error text. Remove personal details if needed, keeping enough path structure and error context to diagnose the issue. Share only the intended exported text; do not include credentials or unrelated game files.
 
+## Diagnosing the alpha template packaging failure
+
+The supplied installer 0.1.7 recording shows Cpp2IL finishing at `2026-10-07T12:43:12.5821241+00:00` with exit code **0**. The next error is `System.IO.InvalidDataException: Missing embedded offline build helper resource: Program.cs.txt`. This isolates that attempt's failure to loading the installer’s own helper source, after Cpp2IL succeeded. It is not evidence of a failed Cpp2IL run or a game launch.
+
+MSBuild inferred `.cs` in `Program.cs.txt` as the Czech culture code and assigned the template to a culture-specific satellite assembly. A `LogicalName` does not disable that inference. Installer 0.1.8 explicitly marks both helper templates and `uninstall.ps1` with `WithCulture=false` so the three resources reside in the neutral main assembly.
+
+A build-time guard after `SplitResourcesByCulture` requires all three exact neutral resource names and fails compilation if they are missing or classified as culture-specific. Alpha also checks that its embedded templates are available and nonempty before prerequisite downloads, SDK installation or offline reference generation. Diagnostics record that preflight before continuing. A packaging failure stops with an explanatory error before those steps. The supplied failed attempt stopped in temporary alpha preparation, before a deployment transaction modified game files. This fix preserves the flow in [Installation flow](INSTALLATION-FLOW.md): prepare outside the game, deploy MelonLoader and the mod, then leave the first game launch to the user.
+
 ## Validation of this preview
 
-The project records compilation and static review separately in the build history. No installer, uninstall or game execution is implied by preparing these diagnostics. Accessibility and actual installation behavior still require human testing on the target system.
+Installer 0.1.8 published with zero warnings or errors. Static PE inspection confirmed all three resources in the neutral main assembly and exact source payloads: `uninstall.ps1` (6,021 bytes), `Program.cs.txt` (3,202 bytes), and `BuildReferenceGenerator.csproj.txt` (649 bytes). The final single-file executable’s main DLL exactly matches that inspected assembly; no installer-specific language satellite is bundled. An independent static review found no blocking issues.
+
+The build history records compilation and static review separately. No automated tests, offline reference generation, helper execution, installer/uninstaller execution or game launch were performed for this fix. Accessibility and actual installation behavior still require human testing on the target system. The mod source remains 0.9.11; these installer preparation steps do not imply that a mod copy is currently installed.
