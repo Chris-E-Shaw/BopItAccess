@@ -401,7 +401,11 @@ Voice=System default
 [SAPI]
 Voice=System default
 
-La disinstallazione nell’installatore e nelle App installate di Windows rimuove i registri noti della mod, tra cui Mods/BopItAccess.log.previous, UserData/BopItAccess.ini, il vecchio UserData/BopItAccess.ini.tmp e i residui validati BopItAccess.ini.<GUID>.tmp in UserData. <GUID> indica esattamente 32 caratteri esadecimali senza trattini; i file estranei vengono conservati. Preferenze native del gioco, altre mod e SDK .NET rimangono. Se la pulizia è incompleta, il registro di stato lo segnala. Per una copia gestita dall’installatore, voce Windows, launcher di disinstallazione e punto di ripresa restano disponibili per nuovi tentativi fino al successo della pulizia. Le vecchie installazioni manuali non hanno un registro di proprietà permanente, quindi i loro avvisi possono essere ritentati nell’installatore aperto.
+Dopo aver confermato Uninstall, scegli Uninstall for me oppure Uninstall for everyone. Entrambe le opzioni rimuovono i file condivisi della mod da questa cartella del gioco, quindi la mod non sarà più disponibile per nessuno che usi quell’installazione. La scelta determina di chi vengono rimosse le preferenze Windows salvate della mod: solo dell’account che ha richiesto l’operazione, oppure di tutti i profili Windows locali, compresi quelli con sessione disconnessa. Le preferenze del gioco originale vengono conservate. L’SDK .NET rimane installato.
+
+Quando il programma di installazione rimuove la propria installazione di MelonLoader e nessun’altra mod ne ha bisogno, rimuove anche i file noti Loader.cfg e MelonPreferences.cfg e le cartelle Plugins, UserLibs e UserData se vuote. Vengono rimossi le impostazioni di Bop It Access, i registri noti, le guide e i file del programma di installazione. Le altre mod, i file condivisi del loader già presenti e i file non riconosciuti vengono protetti. Questo significa anche che un file sconosciuto può lasciare una cartella sul disco; il programma di installazione lo segnala nella diagnostica invece di eliminare dati estranei.
+
+Se la pulizia non può essere completata in sicurezza, il programma di installazione lo spiega e conserva le informazioni necessarie per riprovare. Per un’installazione gestita, la voce di disinstallazione di Windows e il punto di ripresa della pulizia rimangono finché la rimozione non riesce. Una vecchia copia manuale non ha un registro persistente di proprietà dei file; nel programma di installazione ancora aperto, riprova le operazioni segnalate dagli avvisi. Non installare, aggiornare o rimuovere la mod mentre Bop It! è in esecuzione.
 
 Nota sulla trasparenza dell'IA
 --------------------
@@ -439,39 +443,64 @@ disable_start_screen = true
 [console]
 hide_console = true
 
-La mod non ripristina queste opzioni ad ogni lancio. Puoi modificare manualmente uno dei due valori su false se hai bisogno delle finestre del caricatore per la risoluzione dei problemi. La disinstallazione del programma di installazione ripristina i valori originali solo mentre i valori reali del programma di installazione sono ancora presenti, preservando le altre modifiche alla configurazione del caricatore.
+La mod non reimposta queste opzioni a ogni avvio. Per risolvere problemi puoi riportare manualmente una delle due impostazioni a false. Se la disinstallazione conserva un’installazione condivisa di MelonLoader, ripristina solo i flag modificati dal programma di installazione che non sono stati successivamente cambiati e conserva le altre modifiche. Se rimuove la propria installazione inutilizzata di MelonLoader, elimina anche i file noti Loader.cfg e MelonPreferences.cfg.
 
 Dopo una modifica riuscita, il mod annuncia l'input e l'azione a cui è assegnato, ad esempio "Space assegnato a COLPISCI".
+
+Anteprima del programma di installazione Windows 0.2.0
+------------------------------------------------------
+
+Chiudi Bop It!, apri il programma di installazione e approva la richiesta di autorizzazione come amministratore di Windows. Il programma di installazione ti dà il benvenuto, cerca il gioco nelle librerie Steam di tutte le unità disponibili e tenta di portare la propria finestra in primo piano. Controlla la cartella del gioco visualizzata; usa Browse se devi scegliere un’altra cartella. Tab passa da un controllo all’altro. Il registro di stato è un campo di testo di sola lettura: portaci il focus per esaminare i messaggi con i tasti di spostamento del cursore, selezionare il testo o copiarlo.
+
+Show advanced è deselezionato all’apertura del programma di installazione. Mostra Install alpha, Save diagnostics e Copy diagnostics. Install scarica l’ultima versione pubblica di GitHub quando disponibile. Non esiste ancora una versione pubblica, quindi al momento chi esegue i test deve usare Show advanced e Install alpha. L’installazione alpha chiede conferma, scarica i sorgenti più recenti e li compila sul tuo computer. Update compare quando viene trovata una versione pubblica più recente per una copia installata.
+
+I messaggi di stato spiegano con parole semplici cosa viene scaricato, installato o completato. Una sola barra mostra l’avanzamento stimato dell’intera installazione, senza azzerarsi per ogni download o file. Avanza a incrementi di cinque punti percentuali; alcune fasi di preparazione possono richiedere tempo senza cambiamenti visibili. Il messaggio di benvenuto, la disponibilità di un nuovo aggiornamento e la conferma della copia della diagnostica vengono inviati al lettore di schermo tramite le notifiche di accessibilità di Windows. La loro lettura ad alta voce dipende dal lettore di schermo e dal suo supporto alle notifiche di Windows.
+
+Il programma di installazione 0.2.0 non avvia mai Bop It! durante l’installazione. L’installazione alpha riutilizza i file locali di compilazione corrispondenti oppure prepara file temporanei dalla tua copia del gioco installata, che rimane chiusa. Il programma di installazione colloca quindi MelonLoader nella cartella del gioco e aggiunge subito Mods/BopItAccess.dll, seguito da Prism, impostazioni, documentazione completa e supporto alla disinstallazione. Attendi il messaggio di riuscita, poi avvia tu il gioco tramite Steam quando sei pronto.
+
+Dopo un’installazione riuscita compare Play Bop It! The Video Game. Attiva questo pulsante per avviare tu il gioco tramite Steam quando sei pronto. Il programma di installazione non avvia mai automaticamente il gioco durante l’installazione.
+
+Una versione compilata richiede il runtime .NET 6 per Windows x64, non un SDK di sviluppo. I runtime completi già presenti vengono riutilizzati. Un runtime mancante viene scaricato da Microsoft e collocato in MelonLoader/Dependencies/dotnet. Install alpha richiede anche un SDK .NET compatibile e il targeting pack di .NET 6: viene riutilizzato un SDK esistente oppure installato l’SDK ufficiale di Microsoft a livello di sistema. Il programma di installazione non crea nuove cartelle SDK nella cartella principale del gioco. MelonLoader 0.7.3 Open-Beta e Prism 0.18.3 provengono dalle rispettive versioni ufficiali. I componenti condivisi di Microsoft .NET e gli SDK rimangono installati dopo l’interruzione o la disinstallazione.
+
+Quit chiude il programma di installazione. Se l’installazione è ancora in corso, chiede se interromperla e annullarne le modifiche prima di chiudere; Keep open prosegue normalmente. Se l’installazione termina mentre stai decidendo, la finestra di dialogo si aggiorna per indicarlo e Quit non annulla l’installazione completata. Una volta iniziata la rimozione, la disinstallazione viene completata in sicurezza prima dell’uscita. Anche Abort chiede conferma e annulla le modifiche ai file del gioco effettuate durante questo tentativo. L’annullamento durante l’installazione di Microsoft .NET attende che l’installazione di quei componenti condivisi termini in sicurezza.
+
+Dopo aver confermato Uninstall, scegli Uninstall for me oppure Uninstall for everyone. Entrambe le opzioni rimuovono i file condivisi della mod da questa cartella del gioco, quindi la mod non sarà più disponibile per nessuno che usi quell’installazione. La scelta determina di chi vengono rimosse le preferenze Windows salvate della mod: solo dell’account che ha richiesto l’operazione, oppure di tutti i profili Windows locali, compresi quelli con sessione disconnessa. Le preferenze del gioco originale vengono conservate. L’SDK .NET rimane installato.
+
+Quando il programma di installazione rimuove la propria installazione di MelonLoader e nessun’altra mod ne ha bisogno, rimuove anche i file noti Loader.cfg e MelonPreferences.cfg e le cartelle Plugins, UserLibs e UserData se vuote. Vengono rimossi le impostazioni di Bop It Access, i registri noti, le guide e i file del programma di installazione. Le altre mod, i file condivisi del loader già presenti e i file non riconosciuti vengono protetti. Questo significa anche che un file sconosciuto può lasciare una cartella sul disco; il programma di installazione lo segnala nella diagnostica invece di eliminare dati estranei.
+
+Il programma di installazione rimane aperto dopo la disinstallazione, così puoi esaminare il risultato, salvare la diagnostica o installare di nuovo. Scegli Quit quando hai finito. L’utilità di disinstallazione in esecuzione e i file di diagnostica automatici vengono eliminati dopo la chiusura della finestra. Una reinstallazione nella stessa finestra avvia un nuovo registro dell’installazione; la pulizia differita non può rimuovere la nuova installazione.
+
+La pagina App installate di Windows usa gli stessi passaggi di conferma, scelta delle preferenze e pulizia. Il programma di installazione fornisce BopItAccess-uninstall.ps1 nella cartella del gioco come collegamento al programma di disinstallazione installato; anche le future compilazioni dai sorgenti includeranno questo script nei file prodotti. Copiare manualmente uno script non installa il programma di disinstallazione stesso. Per una precedente installazione manuale priva di un registro di proprietà dei file, il programma di installazione rimuove i file identificabili della mod e conserva i file condivisi di cui non è possibile stabilire l’origine.
+
+Se la pulizia non può essere completata in sicurezza, il programma di installazione lo spiega e conserva le informazioni necessarie per riprovare. Per un’installazione gestita, la voce di disinstallazione di Windows e il punto di ripresa della pulizia rimangono finché la rimozione non riesce. Una vecchia copia manuale non ha un registro persistente di proprietà dei file; nel programma di installazione ancora aperto, riprova le operazioni segnalate dagli avvisi. Non installare, aggiornare o rimuovere la mod mentre Bop It! è in esecuzione.
+
+Scorciatoie da tastiera del programma di installazione
+------------------------------------------------------
+
+Cartella del gioco: Alt+G. Assegnare il focus al campo della cartella del gioco.
+Browse: Alt+B. Scegliere la cartella del gioco.
+Install: Alt+I. Installare l’ultima versione pubblica quando disponibile.
+Install alpha: Alt+A. Confermare e compilare i sorgenti più recenti; visibile con Show advanced.
+Update: Alt+U. Installare una versione pubblica più recente quando viene proposta.
+Play Bop It! The Video Game: Alt+P. Avviare il gioco tramite Steam; disponibile dopo un’installazione riuscita.
+Uninstall: Alt+N. Confermare la rimozione e scegliere di chi rimuovere le preferenze Windows della mod.
+Abort: Alt+R. Confermare l’annullamento dell’installazione corrente.
+Registro di stato: Alt+L. Assegnare il focus ai messaggi di stato di sola lettura con testo selezionabile.
+Show advanced: Alt+V. Mostrare o nascondere l’installazione alpha e gli strumenti di diagnostica.
+Save diagnostics: Alt+D. Salvare la sessione diagnostica completa e continuare a registrarla; visibile con Show advanced.
+Copy diagnostics: Alt+C. Copiare l’istantanea diagnostica completa; visibile con Show advanced.
+Quit: Alt+Q. Chiudere, gestendo l’annullamento in sicurezza se un’operazione è in corso.
+
+Uso di un controller nel programma di installazione
+---------------------------------------------------
+
+Il programma di installazione supporta i controller di tipo Xbox e gli altri controller che Windows rende disponibili tramite XInput. I suoi comandi sono separati dai comandi rimappabili del gioco. La croce direzionale o la levetta sinistra passa da un controllo all’altro; quando un campo di testo ha il focus, le direzioni servono invece a scorrerne il testo. I pulsanti dorsali passano sempre al controllo precedente o successivo che può ricevere il focus. A attiva il pulsante o la casella di controllo con il focus. L’input del controller viene gestito solo quando questo programma di installazione o una delle sue finestre di dialogo è in primo piano.
+
+B torna indietro o annulla una finestra di dialogo; nella finestra principale del programma di installazione chiede di interrompere un’installazione in corso, altrimenti esegue Quit. Start esegue Quit nella finestra principale e torna indietro in una finestra di dialogo. Y attiva o disattiva Show advanced nella finestra principale. X seleziona tutto il testo nel campo con il focus. Tieni premuto RT mentre usi le direzioni per estendere la selezione nei campi di testo propri del programma di installazione. La navigazione con controller nelle finestre di dialogo native di Windows per le cartelle e il salvataggio richiede ancora una verifica umana. È sempre possibile usare una tastiera per inserire una cartella o un nome di file. Questa implementazione non copre i controller privi del supporto a XInput.
 
 Diagnostica del programma di installazione
 ------------------------------------------
 
-L’anteprima 0.1.10 del programma di installazione salva automaticamente registri diagnostici locali in %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permette di scegliere un file di testo, salva la sessione corrente e continua ad aggiungere nuove voci fino alla chiusura del programma; Copy diagnostics (Alt+C) copia un’istantanea. Scegli Save diagnostics prima della prossima prova di installazione o disinstallazione per conservare l’intera registrazione anche dopo la rimozione dei registri automatici. I registri includono messaggi di stato, fasi di avanzamento e dettagli degli errori. Non viene caricato nulla online. Controlla un registro prima di condividerlo: può contenere nomi utente Windows e percorsi completi delle cartelle. Una disinstallazione completata rimuove i registri automatici; le copie salvate volontariamente altrove restano.
+Show advanced mostra Save diagnostics (Alt+D) e Copy diagnostics (Alt+C). I registri automatici UTF-8 vengono conservati localmente in %ProgramData%\BopItAccess\diagnostics. Save diagnostics scrive l’intera sessione corrente nel file .log o .txt scelto e continua a registrare fino alla chiusura del programma di installazione; Copy diagnostics copia un’istantanea e fornisce una conferma accessibile. Salva prima di una prova di installazione o disinstallazione, così la registrazione sopravvive alla pulizia dei registri automatici. Qui vengono conservati i dettagli tecnici relativi a file, download, compilatore ed errori, anche se il campo di stato usa messaggi più brevi. Non viene caricato nulla online. I registri possono contenere nomi utente Windows e percorsi completi: controllali prima di condividerli. Le copie esportate intenzionalmente rimangono dopo la disinstallazione.
 
-Procedura di installazione e primo avvio
-----------------------------------------
-
-L’anteprima 0.1.10 del programma di installazione non avvia mai Bop It! durante l’installazione. Install
-scarica una versione pubblica compilata quando disponibile. Install alpha scarica il codice più recente,
-chiede conferma e lo compila prima di copiare i file. Alpha riutilizza riferimenti locali completi oppure
-genera riferimenti temporanei dal gioco installato, senza eseguirlo. Dopo la preparazione, il programma copia
-MelonLoader nella cartella del gioco e subito dopo BopItAccess.dll in Mods. Completa quindi Prism,
-configurazione, documentazione e file di disinstallazione. Attendi il messaggio di successo e avvia
-personalmente il gioco tramite Steam quando sei pronto.
-
-Una versione compilata richiede il runtime Windows x64 di .NET 6, non un SDK di sviluppo. I runtime completi
-esistenti vengono riutilizzati. Se manca, il programma scarica lo ZIP ufficiale Microsoft del runtime .NET
-6.0.36 e lo colloca in MelonLoader/Dependencies/dotnet, una posizione supportata. I file sono registrati per
-ripristino e disinstallazione; restano se altri mod usano il loader condiviso. Install alpha richiede anche un
-SDK compatibile e il targeting pack .NET 6. Riutilizza un SDK installato o una precedente cartella dotnet
-compatibile; se necessario installa un SDK ufficiale Microsoft a livello di sistema. L’SDK resta dopo
-disinstallazione o annullamento. Questa anteprima non crea nuove cartelle SDK dotnet nella radice del gioco.
-MelonLoader 0.7.3 e Prism 0.18.3 ufficiali vengono scaricati se necessari. Gli aggiornamenti continuano
-tramite GitHub. Abort chiede conferma e annulla le modifiche di questa installazione ai file del gioco.
-
-Al primo avvio manuale dopo l’installazione di MelonLoader, potrebbero essere scaricati file di supporto e
-generate le assembly del gioco. Attendi circa un minuto, o più su alcuni sistemi. Il mod non può parlare
-finché MelonLoader non lo ha caricato. Lascia aperto il gioco e attendi l’annuncio di avvio di Bop It Access,
-poi quello della schermata del titolo o del menu, prima di usare i comandi.
-
-L’anteprima 0.1.10 dell’installer corregge un controllo che interrompeva erroneamente Install alpha per una libreria già fornita da .NET 6. Riconosce le librerie di runtime compatibili mantenendo i controlli degli strumenti di compilazione. L’installer non avvia mai il gioco. Salva i dati diagnostici prima del prossimo tentativo.
+Al primo avvio manuale dopo l’installazione di MelonLoader, quest’ultimo può scaricare file di supporto e preparare gli assembly del gioco. Attendi circa un minuto, o più a lungo su alcuni sistemi. La mod non può parlare finché MelonLoader non la carica. Lascia aperto il gioco e attendi l’annuncio di avvio di Bop It Access, seguito dall’annuncio della schermata del titolo, di benvenuto o del menu principale prima di usare i comandi del gioco.

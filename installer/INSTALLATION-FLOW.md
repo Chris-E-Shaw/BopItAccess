@@ -1,6 +1,6 @@
 # Installer installation flow
 
-Installer preview **0.1.10** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game.
+Installer preview **0.2.0** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game. After a successful installation, **Play Bop It! The Video Game** (Alt+P) offers a separate, explicitly requested Steam launch; it is never invoked automatically as an installation step.
 
 ## Evidence and scope
 
@@ -20,7 +20,7 @@ No ownership transaction deploys game files until the payload is prepared succes
 
 ## Compiled release path
 
-Install/Update use the release's already compiled `Mods/BopItAccess.dll`. They do not compile source, generate build references or require the .NET SDK/targeting pack. Until a release exists, the regular Install action explains that no package is available; Install alpha is available instead.
+Install/Update use the release's already compiled `Mods/BopItAccess.dll`. They do not compile source, generate build references or require the .NET SDK/targeting pack. Until a release exists, the regular Install action explains that no package is available; Show advanced reveals Install alpha for testers instead.
 
 The runtime requirement is **Windows x64 .NET 6**, not the SDK. Detection checks a real x64 host and the .NET 6 runtime marker files in existing configured/system locations, an older game-root `dotnet` folder, and `MelonLoader/Dependencies/dotnet`. An installed .NET 10 host by itself does not prove that the .NET 6 runtime is present. A hostfxr version reported in a game log does not prove which application runtime was selected.
 
@@ -75,7 +75,7 @@ After successful preparation, recheck that the game has not been opened independ
 1. Deploy the staged MelonLoader tree if installation or replacement is needed.
 2. Create `Mods` if needed and **immediately install `Mods/BopItAccess.dll`**.
 3. Deploy the runtime-only tree into `MelonLoader/Dependencies/dotnet` when the release preparation returned a missing runtime.
-4. Complete Prism and its notices, targeted loader UI defaults, the full documentation tree and uninstall support. Preserve existing shared configuration entries.
+4. Complete Prism and its notices, targeted loader UI defaults, the full documentation tree and uninstall support. Install the same embedded script both as ProgramData/BopItAccess/uninstall.ps1 and as the recorded game-root BopItAccess-uninstall.ps1 shortcut. Preserve existing shared configuration entries.
 5. Commit the ownership ledger and Windows Installed Apps entry, then show the completion dialog. Explain that the user should launch the game manually and that first-start assembly generation can take time.
 
 The player should keep the game closed throughout installation. If it is opened after preparation, deployment stops. If a later rollback needs the game closed, the installer asks the user to close it and retains recovery information when that cannot finish safely. It does not start or force-close the game.
@@ -122,3 +122,32 @@ The self-contained Windows x64 installer 0.1.10 compiled with zero warnings and 
 Static inspection of the final single-file installer confirms that its main DLL matches the inspected compiled assembly and its three neutral embedded resources match their source files; no installer-specific language satellite is included. Source review confirms helper execution is pinned to the inspected framework patch and SDK build arguments are unchanged. These are compilation, source review and static package/metadata inspections. No automated tests, helper execution, offline reference generation, installer/uninstaller run or game launch were performed. They do not establish that a clean alpha installation completes on the target system.
 
 The mod remains 0.9.11 with 58 mod builds. No GitHub Release is published.
+
+
+## Accessible delivery interface in preview 0.2.0
+
+Show advanced starts unchecked and hides alpha installation and both diagnostic buttons. Normal actions retain keyboard access keys and accessible names. **Play Bop It! The Video Game** appears after a successful installation and launches through Steam only when the user activates it. On first showing the window, attempt foreground activation and focus the game-folder field; Windows may deny the request. Post a welcome via native UI Automation notifications. The same notification utility confirms a copied diagnostic snapshot and a newly available update. Actual reader output depends on Windows and the screen reader, so posting success is not audible-output verification.
+
+The status text field remains non-editable and supports caret review, selection and copying. User-facing statuses now explain checks, downloads, installation, completion and rollback using short sentences. All technical per-file/compiler/error context remains in diagnostics. Weighted whole-operation progress replaces per-step resets: publish in five-percentage-point increments and reach 100 only after successful commit/removal. Unknown-duration stages hold their estimate rather than providing a time guarantee.
+
+Quit and the title-bar close action share a live confirmation during an operation. Quitting an active install cancels owned work, waits for safe Microsoft shared-component completion if necessary, and reverses game-file changes before closing. While the confirmation is open, update it when the backend finishes and never abort an already committed install. Suppress a competing success popup until the user finishes deciding. Irreversible uninstall removal finishes safely before shutdown.
+
+### Preference scope and self-cleanup
+
+After confirming uninstall, offer Uninstall for me, Uninstall for everyone or Cancel. Shared game files are removed for everyone in either confirmed scope. The scope changes only which Windows profiles lose mod-specific registry values; native game preferences and shared .NET SDK/runtime components remain. Carry the requesting user SID across UAC and persist it and the scope once removal starts, so retry does not silently target another account.
+
+When the installer-owned loader is removed and no third-party mod needs it, validate and remove the known Loader.cfg/MelonPreferences.cfg and prune empty Plugins, UserLibs and UserData. Preserve unknown contents and pre-existing/shared loader files; rejected links or inaccessible cleanup must be reported rather than followed. An older manual install without a trustworthy loader ownership record retains dependencies whose origin cannot be established.
+
+Both the normal installer and the Installed Apps uninstall window remain open after success. Final self-cleanup waits for Quit. A completed manifest no longer marks the game as installed. Before reinstalling in the same window, discard the old completed file-ownership baseline. Preserve a validated completed-uninstall tombstone for final cleanup if the new installation later aborts, but an active transaction or a newly committed manifest prevents delayed deletion of the new installation.
+
+The root shortcut BopItAccess-uninstall.ps1 delegates to ProgramData's installed script; it never recursively deletes the game directory. The source mod project also links that script into future output so the same design is carried forward. Copying only this shortcut into a manual build does not install the ProgramData launcher. No mod DLL is rebuilt here.
+
+### Controller navigation
+
+Use XInput for Xbox-style and compatible controllers, with polling gated to the foreground installer and owned dialogs. The D-pad and left stick navigate controls or review focused text. Bumpers navigate focus independently of text review, A activates, B goes back/cancels or requests main-window abort, Start quits/back, Y toggles advanced visibility, X selects all, and RT+directions extends selection in managed text fields. Held inputs at dialog transitions or reconnect are absorbed, stick direction uses hysteresis, and repeat has a bounded delay. Native Windows folder/save dialogs are supported by local-window messaging but need human verification; input is never sent to unrelated applications. Non-XInput devices are outside current coverage.
+
+### Human evidence and validation
+
+Installer 0.2.0 compiled with zero warnings and zero errors. PowerShell AST parsing found no errors. Static inspection confirms all three neutral embedded resources match their source bytes, the published single-file bundle’s main assembly exactly matches the inspected DLL, and no installer-specific language satellite assemblies are included. These checks do not execute the UI, controller handling, uninstall or game.
+
+The supplied installer 0.1.10 recording shows successful alpha deployment and uninstall, followed by normal exit code 0. The tester separately identified leftover loader configuration/folders. Static source inspection identifies the old unconditional close and stale completed-manifest state. Installer 0.2.0 addresses those findings and the requested interface changes. Compilation and static review are the only validation performed for this update: no automated tests, installer/uninstaller execution, helper generation or game launch. Actual screen-reader notifications, focus, Quit completion races, both preference scopes and controller/native-dialog interaction still need human checks. The mod remains 0.9.11 with 58 mod builds; no GitHub Release is published.

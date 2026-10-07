@@ -1,6 +1,6 @@
 # Installer diagnostics
 
-Installer preview 0.1.10 records local diagnostic sessions for work on the installation process. The mod remains 0.9.11. This document describes installer recording; it does not replace the game's `Mods/BopItAccess.log` or MelonLoader's `Latest.log`. The installer no longer launches the game. See [Installation flow](INSTALLATION-FLOW.md) for release versus alpha preparation, dependency locations and the first manual launch.
+Installer preview 0.2.0 records local diagnostic sessions for work on the installation process. The mod remains 0.9.11. This document describes installer recording; it does not replace the game's `Mods/BopItAccess.log` or MelonLoader's `Latest.log`. Installation never launches the game automatically. After a successful install, the separate Play Bop It! The Video Game button offers an explicit user-requested Steam launch. See [Installation flow](INSTALLATION-FLOW.md) for release versus alpha preparation, dependency locations and the first manual launch.
 
 ## Find, save and copy a session
 
@@ -14,18 +14,18 @@ Paste that path into File Explorer's address bar and press Enter. `%ProgramData%
 
 Each filename has the form `Installer-YYYYMMDDTHHmmssfffZ-<32-hexadecimal-session-ID>.log`. The date and time are UTC; the suffix distinguishes separate runs. Every entry includes an ISO 8601 UTC timestamp, elapsed milliseconds, the managed thread ID and a category.
 
-The installer's status log remains a selectable, read-only text field. Tab to it to review or select text with the cursor keys. Two buttons beside the status area provide the complete current diagnostic transcript:
+The installer's status log remains a selectable, read-only text field. Tab to it to review or select text with the cursor keys. Check Show advanced (Alt+V) to reveal the two diagnostic buttons. They provide the complete current technical transcript, rather than just the shorter status messages:
 
 | Action | Shortcut | Result |
 | --- | --- | --- |
 | Save diagnostics... | Alt+D | Choose a UTF-8 `.log` or `.txt` file. Save the current transcript there and keep adding new entries until the installer closes. |
 | Copy diagnostics | Alt+C | Copy the current diagnostic transcript to the clipboard. |
 
-These exports contain technical context in addition to the shorter visible status messages. The buttons become available after the initial checks finish, including when those checks fail, and remain available during subsequent operations. Save diagnostics accepts `.log` or `.txt` files outside the installer's `%ProgramData%\BopItAccess` state folder and all known selected or installed game folders; Documents is a suitable destination. It saves the current transcript immediately, then continues recording into your chosen file until this installer session closes. Copy diagnostics gives a snapshot at the time you press it and replaces the clipboard's current contents. Files explicitly saved elsewhere are intentional user copies and remain there after uninstall.
+These exports contain technical context in addition to the shorter visible status messages. The buttons are hidden until Show advanced is checked. Once visible, they become available after the initial checks finish, including when those checks fail, and remain available during subsequent operations. Copy diagnostics posts an accessible confirmation using native Windows UI Automation; Windows/screen-reader support determines whether it is spoken. Save diagnostics accepts `.log` or `.txt` files outside the installer's `%ProgramData%\BopItAccess` state folder and all known selected or installed game folders; Documents is a suitable destination. It saves the current transcript immediately, then continues recording into your chosen file until this installer session closes. Copy diagnostics gives a snapshot at the time you press it and replaces the clipboard's current contents. Files explicitly saved elsewhere are intentional user copies and remain there after uninstall.
 
 If changing the game folder or starting an operation reveals that the active saved recording is inside that game folder, the installer asks you to save elsewhere before proceeding. This prevents an export from interfering with installation or disappearing during removal.
 
-**Before the next installation or uninstall test, choose Save diagnostics.** This keeps an independent, continuing recording available even if successful uninstall removes the automatic logs. The Windows uninstall window can close after you dismiss its success message, so save before starting removal. When testing from the regular installer window, leave it open until the final result has been recorded, then review or share the saved file.
+**Before the next installation or uninstall test, choose Save diagnostics.** This keeps an independent, continuing recording available even if successful uninstall removes the automatic logs. The installer now stays open after successful removal, including when opened from Windows Installed Apps. Review the result and use Quit when finished. Automatic managed-install logs and the running uninstall helper are removed after the window closes; a deliberately saved external recording remains.
 
 ## What is recorded
 
@@ -58,14 +58,14 @@ Successful managed uninstall removes the owned diagnostic logs during final clea
 ## Reviewing a report
 
 1. Note the approximate time, chosen action, expected outcome and what actually happened.
-2. Choose Save diagnostics before starting the action you want to investigate. The selected file includes earlier entries and continues updating through that action. You can also collect an existing automatic session file, or use Copy diagnostics for a current snapshot.
+2. Check Show advanced, then choose Save diagnostics before starting the action you want to investigate. The selected file includes earlier entries and continues updating through that action. You can also collect an existing automatic session file, or use Copy diagnostics for a current snapshot.
 3. Check the version and session header before reading the final error, cancellation or completion entries.
 4. Work backward to the preceding operation, download, prerequisite or compiler entries. Progress is recorded at milestones rather than on every repaint.
 5. For an alpha-build failure, include offline reference-tool and compiler output. For a dependency failure, include the Microsoft installer result and diagnostic entries. For game or speech problems after you manually launch it, also collect the separate mod and MelonLoader logs.
 
 ## Investigating the deployment sequence
 
-For installer 0.1.10, a complete recording should show preparation before game-file deployment. Alpha either reuses verified matching game references or runs background assembly tools and the compiler. Release installs use an already compiled DLL and do not need an SDK or build references. The installer then deploys MelonLoader, immediately installs `Mods/BopItAccess.dll`, and finishes runtime files if required, Prism, loader defaults, documentation and uninstall support. No step starts `BopIt!.exe`.
+For installer 0.2.0, a complete recording should show preparation before game-file deployment. Alpha either reuses verified matching game references or runs background assembly tools and the compiler. Release installs use an already compiled DLL and do not need an SDK or build references. The installer then deploys MelonLoader, immediately installs `Mods/BopItAccess.dll`, and finishes runtime files if required, Prism, loader defaults, documentation and uninstall support. No step starts `BopIt!.exe`.
 
 If the game is opened independently during preparation, deployment stops. If the game is opened during a later operation and prevents rollback, the installer asks the user to close it and preserves recovery evidence; it does not close the user's game. Record both the installer action and when the game was opened manually.
 
@@ -125,3 +125,38 @@ The self-contained Windows x64 installer 0.1.10 compiled with zero warnings and 
 Static inspection of the final single-file installer confirms that its main DLL matches the inspected compiled assembly and its three neutral embedded resources match their source files; no installer-specific language satellite is included. Source review confirms helper execution is pinned to the inspected framework patch and SDK build arguments are unchanged. These are compilation, source review and static package/metadata inspections. No automated tests, helper execution, offline reference generation, installer/uninstaller run or game launch were performed. They do not establish that a clean alpha installation completes on the target system.
 
 The mod source remains 0.9.11 with 58 mod builds. There is no new mod build or GitHub Release. The installer leaves the game’s first launch to the player.
+
+
+## Delivery changes in preview 0.2.0
+
+The supplied human recording is `BopItAccess-Installer-20261007T134543496Z-87f95935135b492da6301206f7b8df9a.log`. It shows the interop generator exiting **0** at `2026-10-07T13:46:48.2388349+00:00`, followed by a committed `0.9.11-alpha.e2c0a77` installation at `13:46:58.0283274+00:00`. Uninstall completes at `13:48:27.4053045+00:00`, and the window closes with exit code **0** at `13:48:33.2343540+00:00`. These are UTC timestamps from the log. The user reports both operations succeeded but found `Plugins`, `UserLibs`, `UserData` and `MelonPreferences.cfg` left behind.
+
+The regular uninstall success handler deliberately called Close after the success dialog. The supplied session records no crash. Remove that unconditional close, route explicit Quit and the window close button through one safe shutdown path, and treat a completed uninstall manifest as uninstalled when publishing UI state. An active installer can then review diagnostics or reinstall without closing.
+
+### Status versus diagnostics
+
+`InstallerService.Log` always records the original technical message. `InstallerFeedback.UserStatus` maps meaningful stages and warnings to short user-facing messages; compiler stdout/stderr, checksum checks, file paths and repeated per-file messages remain in diagnostics. `USER-STATUS` records concise download and completion notices when produced by progress callbacks. The original process and exception records remain available for investigation.
+
+The UI requests native Windows UI Automation notifications for its welcome, a newly available update and clipboard-copy confirmation. `ACCESSIBILITY` records whether Windows accepted posting the notification, not whether a screen reader spoke it. No Prism, Tolk or secondary speech engine is bundled into the installer. Foreground activation is attempted once when shown; Windows can deny it, and that request is not repeatedly used to steal focus while the user works elsewhere.
+
+The visual progress bar now represents weighted progress across the whole operation, using five-percentage-point increments. It never resets between downloads, extraction, reference generation, compilation and deployment. A stage without a measurable fraction holds its current estimate; 100 is published only after commit or complete removal. This is an estimate of work stages, not a time-to-finish promise. Underlying byte/file counts and process stage transitions remain in diagnostic `PROGRESS` entries with their existing sampling rules.
+
+### Uninstall scope and remaining records
+
+After normal confirmation, the user chooses `CurrentUser` or `AllUsers` preference cleanup. Both remove shared files from the selected game installation; scope applies to `BopItAccess.*` registry preferences in Windows user profiles. The original requesting SID is carried across elevation, including an Apps & Features script launch. Once removal starts, the manifest records the scope/SID for consistent retry. Native game PlayerPrefs and shared Microsoft .NET/SDK installations remain untouched.
+
+When removing its installer-owned loader and no other mods need it, cleanup validates the known `Loader.cfg` and `MelonPreferences.cfg` and prunes empty `Plugins`, `UserLibs` and `UserData` folders. Linked paths are rejected; unknown files, pre-existing shared support and unrelated mods remain protected. The short status can explain a preservation limit; full paths and retained items remain in diagnostics.
+
+Deferred cleanup waits until the installer exits. A same-window reinstall clears the completed ownership baseline before creating a fresh transaction, retaining a completed-uninstall tombstone when necessary. Cleanup selects the live manifest before the tombstone, refuses an active transaction or a new installation, and cannot delete newer state because of a previous uninstall. This also permits cleanup after an aborted reinstall. The game-root `BopItAccess-uninstall.ps1` is recorded transactionally and delegates to the ProgramData launcher. Future mod source builds link the same script into output; no new mod DLL is built for this installer update.
+
+### Quit and controller reports
+
+An installation Quit prompt is live: it checks completion while the user decides, updates its wording when the backend stops, and avoids a competing success popup. A confirmed quit cancels an active install and waits for rollback, but never cancels a completed transaction. Uninstall file removal and Microsoft shared-component setup finish safely before shutdown. Preserve the log if these operations fail rather than describing an incomplete rollback as complete.
+
+XInput controller support is limited to compatible Xbox-style devices. Inputs are gated to the installer or its own foreground dialogs; held buttons are absorbed at window changes and connection, sticks use hysteresis, and directions have bounded repeat. Reports should identify the controller, focused field/dialog, whether a button was tapped or held, and the expected action. D-pad/left stick navigate or review text; bumpers move focus, A activates, B cancels/back or requests main-window abort, Start quits/back, Y changes advanced visibility, X selects all and RT+directions extends selection in managed text fields. Native Windows folder/save-dialog behavior still requires human verification.
+
+### Validation boundary
+
+Installer 0.2.0 compiled with zero warnings and zero errors. PowerShell AST parsing found no errors. Static inspection confirms all three neutral embedded resources match their source bytes, the published single-file bundle’s main assembly exactly matches the inspected DLL, and no installer-specific language satellite assemblies are included. These checks do not execute the UI, controller handling, uninstall or game.
+
+The supplied recording and user report establish successful installation and removal with **0.1.10**. They do not verify the new **0.2.0** interface, scoped cleanup or controller behavior. Validation of this update is compilation and static review only: no automated tests, installer/uninstaller execution, reference generation or game launch. Screen-reader notifications, foreground behavior, live Quit races, text selection, native dialogs and both preference scopes remain human verification tasks. The mod remains **0.9.11**, with **58 mod builds**; no new mod DLL or GitHub Release is created.

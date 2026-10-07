@@ -192,6 +192,20 @@
 <li>模组仍为v0.9.11，共58个模组构建。保留手动启动游戏、诊断日志及部署保护。没有发布GitHub Release。</li>
 <li>编译Windows x64自包含安装程序0.1.10，没有警告或错误。对已验证的MelonLoader官方完整压缩包进行静态检查，覆盖顶层47个DLL，以及12个private依赖项的全部73条引用关系。其中19条由显式辅助工具库满足，54条由兼容的框架库满足，没有缺失或不兼容的引用。辅助工具输出仍恰好包含13个DLL。仅检查最终单文件包及内置模板，没有执行它们。未进行测试、辅助工具执行、引用生成、安装、卸载或游戏启动。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/79c7d86116ea20f096fcfe15e63f0f67b2ad21d0">源代码提交</a> · 没有GitHub发行版</p></article>
+      <article class="commit" id="installer-0-2-0"><div class="meta"><span class="version">Installer 0.2.0 preview</span><span class="kind">feat · access · uninstall · docs</span></div><h3>feat(installer)：改善无障碍交付与清理范围选择</h3><ul>
+<li>根据提供的安装程序 0.1.10 日志和人工报告，确认 Alpha 安装与卸载成功。安装于 2026 年 10 月 7 日 13:46:58 UTC 提交，卸载于 13:48:27 UTC 完成。窗口在 13:48:33 UTC 以退出代码 0 正常关闭。移除普通卸载成功处理中的无条件关闭，并修正已完成清单的状态，让打开的窗口可以查看结果并重新进行全新安装。</li>
+<li>保留普通安装操作的显示，把 Install alpha 和两个诊断按钮隐藏在默认未勾选的 Show advanced 后。加入无障碍欢迎消息，尝试首次前台激活并把焦点放到游戏文件夹框。所有操作保留键盘访问。Windows 可能拒绝前台请求，不会反复抢占焦点。</li>
+<li>把简洁的用户状态消息与完整的编译器、校验和、逐文件及异常诊断分离。用原生 Windows UI Automation 通知发送欢迎、新更新以及 Copy diagnostics 确认，不捆绑额外语音引擎。保留可选择的只读状态文本框。</li>
+<li>用加权且单调增长的整个操作进度替代每个步骤重置的进度。以五个百分点为单位更新，仅在提交或删除成功后达到 100。无详细进度的阶段保持当前估计值；诊断保留原始步骤计数。</li>
+<li>卸载确认后询问 CurrentUser 或 AllUsers Windows 偏好设置清理。提升权限后保留请求账户的 SID，开始删除时保存范围与 SID，保证重试目标不变。无论偏好范围如何，共享游戏文件都会对所有人删除。保留原游戏 PlayerPrefs 和共享 .NET SDK／运行时安装。</li>
+<li>删除安装程序拥有且其他模组不需要的 MelonLoader 时，验证并删除已知 Loader.cfg 和 MelonPreferences.cfg，清除空的 Plugins、UserLibs 和 UserData，包括原始文件清单未记录的生成残留。保留未知或原有文件以及其他模组需要的共享支持。将更新的卸载脚本作为 BopItAccess-uninstall.ps1 带入游戏根目录及今后的源码构建输出；快捷脚本委托给 ProgramData，不递归清理游戏文件夹。</li>
+<li>删除后安装程序保持打开。同窗重新安装前清除完成的文件归属基线，并保留安全的延迟自清理。完成卸载的备用记录允许在重装中止后清理；活动事务或新的安装清单可阻止延迟清理删除较新的状态。</li>
+<li>加入 Quit 并让窗口关闭按钮走相同流程。安装期间询问是否在退出前中止并回滚。如果对话框打开时后台完成，更新确认文字，抑制冲突的成功弹窗，绝不取消已完成的事务。不可逆的卸载删除及 Microsoft 共享组件安装会安全结束后再关闭。</li>
+<li>为兼容 Xbox 型控制器和所属对话框加入本地 XInput 轮询：方向键／左摇杆用于焦点或文本，肩键移动焦点，A 激活，B 取消／返回／中止，Start 退出／返回，Y 显示高级，X 全选，RT+方向扩展托管文本的选择。输入仅在前台安装程序／对话框内生效，吸收跨对话框的持续按键，摇杆使用迟滞和有限重复。原生文件夹／保存对话框仍需人工验证。</li>
+<li>更新英语指南和 README、全部九种译本及安装程序技术说明。仅构建和静态审查；本次未运行自动化测试、安装／卸载程序、引用生成或游戏。新界面和清理行为待人工验证。主模组仍为 v0.9.11，共 58 次构建；未重新构建模组，未创建标签或 GitHub Release。</li>
+<li>安装成功后会显示 Play Bop It! The Video Game。准备好时可激活它，自行通过 Steam 启动游戏。安装程序不会在安装期间自动启动游戏。</li>
+<li>安装程序0.2.0编译完成，警告和错误均为零。PowerShell AST语法分析也未发现错误。静态检查确认：三个与语言无关的嵌入资源都与其源文件逐字节一致，发布用单文件包的主程序集与已检查的DLL完全一致，并且不包含安装程序专用的语言卫星程序集。这些检查没有运行界面、手柄处理、卸载功能或游戏。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/ef7a2448f950341aa0ebaf6777f1386b7f0fafb9">源代码提交</a> · 没有 GitHub 发行版</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 个本地源档案用于重建公共源提交。安装包保留在本地并且不是 GitHub 版本。 v0.5.4重新绑定预览和v0.5.18 SAPI修剪实验被记录为历史实现；后来的条目说明了它们是如何改变的。</p><p><a href="#history">返回创建历史</a></p></div></footer>

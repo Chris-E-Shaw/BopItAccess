@@ -401,7 +401,11 @@ Voice=System default
 [SAPI]
 Voice=System default
 
-La desinstalación del instalador y de Aplicaciones instaladas de Windows elimina los registros conocidos del mod, incluidos Mods/BopItAccess.log.previous, UserData/BopItAccess.ini, el antiguo UserData/BopItAccess.ini.tmp y los residuos validados BopItAccess.ini.<GUID>.tmp en UserData. <GUID> significa exactamente 32 caracteres hexadecimales sin guiones; los archivos ajenos se conservan. Las preferencias nativas del juego, otros mods y el SDK .NET permanecen. Si la limpieza es incompleta, el registro de estado lo indica. En una copia gestionada por el instalador, la entrada de Windows, el lanzador de desinstalación y el punto de recuperación siguen disponibles para reintentar hasta que la limpieza termine correctamente. Las instalaciones manuales antiguas no tienen un registro persistente de propiedad, así que sus avisos pueden reintentarse en el instalador abierto.
+Tras confirmar Uninstall, elige Uninstall for me o Uninstall for everyone. Ambas opciones eliminan los archivos compartidos del mod de esta carpeta del juego, por lo que el mod dejará de estar disponible para cualquier persona que utilice esa instalación. La elección determina de quién se eliminan las preferencias guardadas del mod en Windows: solo de la cuenta que solicita la operación o de todos los perfiles locales de Windows, incluidos aquellos que tienen la sesión cerrada. Se conservan las preferencias del juego original. El SDK de .NET permanece instalado.
+
+Cuando el instalador elimina su propia instalación de MelonLoader y ningún otro mod la necesita, también elimina los archivos conocidos Loader.cfg y MelonPreferences.cfg y las carpetas vacías Plugins, UserLibs y UserData. Se eliminan la configuración de Bop It Access, los registros conocidos, las guías y los archivos del instalador. Se protegen los demás mods, los archivos compartidos del cargador que ya existían y los archivos no reconocidos. Esto también significa que un archivo desconocido puede hacer que una carpeta permanezca; el instalador lo indica en los datos de diagnóstico en lugar de eliminar datos ajenos.
+
+Si la limpieza no puede terminar de forma segura, el instalador lo explica y conserva la información necesaria para volver a intentarlo. En una instalación gestionada, su entrada de desinstalación de Windows y el punto de control de limpieza permanecen hasta que la eliminación se completa correctamente. Una copia manual antigua no dispone de un registro persistente de propiedad; vuelve a intentar las operaciones señaladas en sus advertencias con el instalador abierto. No instales, actualices ni elimines el mod mientras Bop It! esté en ejecución.
 
 Nota de transparencia de IA
 --------------------
@@ -439,39 +443,64 @@ disable_start_screen = true
 [console]
 hide_console = true
 
-El mod no restablece estas opciones en cada inicio. Puede cambiar manualmente cualquiera de los valores a falso si necesita las ventanas del cargador para solucionar problemas. La desinstalación del instalador restaura los valores originales solo mientras los valores verdaderos del instalador aún están presentes, preservando otras ediciones de configuración del cargador.
+El mod no restablece estas opciones cada vez que se inicia. Puedes volver a cambiar manualmente cualquiera de los dos valores a false para solucionar problemas. Si la desinstalación conserva una instalación compartida de MelonLoader, solo restaura los indicadores de destino establecidos por el instalador que no se hayan modificado y conserva los demás cambios. Si elimina su propia instalación de MelonLoader que ya no se utiliza, también elimina los archivos conocidos Loader.cfg y MelonPreferences.cfg.
 
 Después de un cambio exitoso, el mod anuncia la entrada y la acción a la que está asignado, por ejemplo, "Space asignado a PULSAR".
 
-Diagnósticos del instalador
----------------------------
+Versión preliminar 0.2.0 del instalador de Windows
+--------------------------------------------------
 
-La versión preliminar 0.1.10 del instalador guarda automáticamente registros de diagnóstico locales en %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permite elegir un archivo de texto, guarda la sesión actual y sigue agregando entradas hasta cerrar el instalador; Copy diagnostics (Alt+C) copia una instantánea. Elige Save diagnostics antes de la siguiente prueba de instalación o desinstalación para conservar el registro completo aunque se eliminen los registros automáticos. Los registros incluyen mensajes de estado, etapas del progreso y detalles de errores. No se envía nada a Internet. Revisa un registro antes de compartirlo: puede contener nombres de usuario de Windows y rutas completas de carpetas. Una desinstalación exitosa elimina los registros automáticos; las copias que guardes intencionalmente en otro lugar se conservan.
+Cierra Bop It!, abre el instalador y acepta la solicitud de permisos de administrador de Windows. El instalador te da la bienvenida, busca el juego en las bibliotecas de Steam de todas las unidades disponibles e intenta traer su ventana al primer plano. Comprueba la carpeta del juego que se muestra; utiliza Browse si necesitas elegir otra carpeta. La tecla Tab permite desplazarse entre los controles. El registro de estado es un campo de texto de solo lectura: sitúa el foco en él para revisar los mensajes con las teclas de dirección, seleccionar texto o copiarlo.
 
-Instalación y primer inicio
----------------------------
+La casilla Show advanced está desmarcada al abrir el instalador. Al marcarla, aparecen Install alpha, Save diagnostics y Copy diagnostics. Install descarga la última versión pública de GitHub cuando existe. Todavía no hay ninguna versión pública, por lo que quienes realizan pruebas necesitan actualmente Show advanced e Install alpha. La opción alfa pide confirmación, descarga el código fuente más reciente y lo compila en tu computadora. Update aparece cuando se encuentra una versión pública más reciente para una copia instalada.
 
-La versión preliminar 0.1.10 del instalador nunca abre Bop It! durante la instalación. Install descarga una
-versión pública compilada cuando existe. Install alpha descarga el código más reciente, pide confirmación y lo
-compila antes de copiar los archivos. Alpha reutiliza referencias locales completas o genera referencias
-temporales de compilación a partir de tu juego instalado, sin ejecutarlo. Después de preparar todo, el
-instalador coloca MelonLoader en la carpeta del juego e inmediatamente BopItAccess.dll en Mods. Luego termina
-los archivos de Prism, configuración, documentación y desinstalación. Espera el mensaje de éxito y abre el
-juego tú mismo mediante Steam cuando estés listo.
+Los mensajes de estado explican con un lenguaje sencillo qué se está descargando, instalando o finalizando. Una única barra muestra el progreso estimado de toda la instalación, sin volver a empezar con cada descarga o archivo. Avanza en incrementos de cinco puntos porcentuales; algunas fases de preparación pueden tardar sin que se vea ningún cambio. El mensaje de bienvenida, el aviso de una nueva actualización disponible y la confirmación de que se han copiado los datos de diagnóstico se envían al lector de pantalla mediante las notificaciones de accesibilidad de Windows. Que se lean en voz alta depende del lector de pantalla y de su compatibilidad con las notificaciones de Windows.
 
-Una versión compilada necesita el entorno de ejecución Windows x64 de .NET 6, no un SDK de desarrollo. Se
-reutilizan los entornos completos existentes. Si falta, el instalador descarga el ZIP oficial Microsoft de
-.NET 6.0.36 y lo coloca en MelonLoader/Dependencies/dotnet, una ubicación compatible. Esos archivos se
-registran para reversión y desinstalación; se conservan si otros mods necesitan el cargador compartido.
-Install alpha también necesita un SDK compatible y el paquete de destino .NET 6. Reutiliza un SDK instalado o
-una carpeta dotnet anterior compatible; si hace falta, instala un SDK oficial Microsoft para todo el sistema.
-El SDK permanece después de desinstalar o cancelar. Esta versión no crea nuevas carpetas SDK dotnet en la raíz
-del juego. Obtiene MelonLoader 0.7.3 y Prism 0.18.3 oficiales cuando hacen falta. Las actualizaciones siguen
-usando GitHub. Abort pide confirmación y revierte los cambios de esta instalación en los archivos del juego.
+El instalador 0.2.0 nunca inicia Bop It! durante la instalación. La opción alfa reutiliza archivos locales de compilación compatibles o prepara archivos temporales a partir de tu propia copia instalada del juego mientras permanece cerrado. Después, el instalador coloca MelonLoader en la carpeta del juego y añade inmediatamente Mods/BopItAccess.dll, seguido de Prism, la configuración, toda la documentación y los componentes necesarios para la desinstalación. Espera al mensaje de éxito y, cuando estés listo, inicia el juego tú mismo desde Steam.
 
-En el primer inicio manual después de instalar MelonLoader, puede descargar archivos de apoyo y generar los
-ensamblados del juego. Espera aproximadamente un minuto, o más en algunos equipos. El mod no puede hablar
-hasta que MelonLoader termine de cargarlo. Deja abierto el juego y espera el anuncio de inicio de Bop It
-Access, y luego el de la pantalla de título o el menú, antes de usar los controles.
+Tras una instalación completada correctamente, aparece Play Bop It! The Video Game. Actívalo para iniciar el juego tú mismo desde Steam cuando estés listo. El instalador nunca inicia el juego automáticamente durante la instalación.
 
-La versión preliminar 0.1.10 del instalador corrige una revisión que detenía Install alpha por una biblioteca ya incluida en .NET 6. Reconoce las bibliotecas de ejecución compatibles y mantiene las revisiones de las herramientas de compilación. El instalador nunca inicia el juego. Guarda los diagnósticos antes del próximo intento.
+Una versión compilada necesita el entorno de ejecución de .NET 6 para Windows x64, no un SDK de desarrollo. Se reutilizan los entornos de ejecución completos que ya estén instalados. Si falta el entorno de ejecución, se descarga de Microsoft y se coloca en MelonLoader/Dependencies/dotnet. Install alpha también necesita un SDK de .NET compatible y el paquete de destino de .NET 6: se reutiliza un SDK existente o se instala el SDK oficial de Microsoft para todo el sistema. El instalador no crea ninguna carpeta nueva para el SDK en la carpeta raíz del juego. MelonLoader 0.7.3 Open-Beta y Prism 0.18.3 proceden de sus versiones oficiales. Los componentes compartidos de Microsoft .NET y los SDK permanecen instalados tras cancelar o desinstalar.
+
+Quit cierra el instalador. Si la instalación sigue en curso, pregunta si quieres cancelarla y deshacerla antes de cerrar; Keep open permite continuar con normalidad. Si la instalación termina mientras decides, el diálogo se actualiza para indicar que ha finalizado y Quit no deshace la instalación completada. Una vez que comienza la eliminación, la desinstalación termina de forma segura antes de salir. Abort también pide confirmación y revierte los cambios realizados en los archivos del juego durante este intento. Si cancelas durante la instalación de Microsoft .NET, se espera a que la instalación de ese componente compartido termine de forma segura.
+
+Tras confirmar Uninstall, elige Uninstall for me o Uninstall for everyone. Ambas opciones eliminan los archivos compartidos del mod de esta carpeta del juego, por lo que el mod dejará de estar disponible para cualquier persona que utilice esa instalación. La elección determina de quién se eliminan las preferencias guardadas del mod en Windows: solo de la cuenta que solicita la operación o de todos los perfiles locales de Windows, incluidos aquellos que tienen la sesión cerrada. Se conservan las preferencias del juego original. El SDK de .NET permanece instalado.
+
+Cuando el instalador elimina su propia instalación de MelonLoader y ningún otro mod la necesita, también elimina los archivos conocidos Loader.cfg y MelonPreferences.cfg y las carpetas vacías Plugins, UserLibs y UserData. Se eliminan la configuración de Bop It Access, los registros conocidos, las guías y los archivos del instalador. Se protegen los demás mods, los archivos compartidos del cargador que ya existían y los archivos no reconocidos. Esto también significa que un archivo desconocido puede hacer que una carpeta permanezca; el instalador lo indica en los datos de diagnóstico en lugar de eliminar datos ajenos.
+
+El instalador permanece abierto tras la desinstalación para que puedas revisar el resultado, guardar los datos de diagnóstico o instalar de nuevo. Elige Quit cuando termines. El programa auxiliar de desinstalación en ejecución y los archivos automáticos de diagnóstico se eliminan después de cerrar la ventana. Una reinstalación en la misma ventana inicia un nuevo registro de instalación; la limpieza aplazada no puede eliminar la nueva instalación.
+
+Aplicaciones instaladas de Windows utiliza la misma confirmación, elección de preferencias y limpieza. El instalador proporciona BopItAccess-uninstall.ps1 en la carpeta del juego como acceso directo al desinstalador instalado; las futuras compilaciones del código fuente también incluyen este script entre sus archivos de salida. Copiar manualmente el script no instala el propio desinstalador. En una instalación manual antigua sin registro de propiedad, el instalador elimina los archivos del mod que puede identificar y conserva los archivos compartidos cuyo origen no puede determinar.
+
+Si la limpieza no puede terminar de forma segura, el instalador lo explica y conserva la información necesaria para volver a intentarlo. En una instalación gestionada, su entrada de desinstalación de Windows y el punto de control de limpieza permanecen hasta que la eliminación se completa correctamente. Una copia manual antigua no dispone de un registro persistente de propiedad; vuelve a intentar las operaciones señaladas en sus advertencias con el instalador abierto. No instales, actualices ni elimines el mod mientras Bop It! esté en ejecución.
+
+Atajos de teclado del instalador
+--------------------------------
+
+Carpeta del juego: Alt+G. Situar el foco en el campo de la carpeta del juego.
+Browse: Alt+B. Elegir la carpeta del juego.
+Install: Alt+I. Instalar la última versión pública, cuando esté disponible.
+Install alpha: Alt+A. Confirmar y compilar el código fuente más reciente; visible con Show advanced.
+Update: Alt+U. Instalar una versión pública más reciente cuando se ofrezca.
+Play Bop It! The Video Game: Alt+P. Iniciar el juego desde Steam; disponible tras una instalación completada correctamente.
+Uninstall: Alt+N. Confirmar la eliminación y elegir de quién se eliminan las preferencias del mod en Windows.
+Abort: Alt+R. Confirmar la cancelación de la instalación actual.
+Registro de estado: Alt+L. Situar el foco en los mensajes de estado de solo lectura cuyo texto se puede seleccionar.
+Show advanced: Alt+V. Mostrar u ocultar la instalación alfa y las herramientas de diagnóstico.
+Save diagnostics: Alt+D. Guardar y seguir registrando toda la sesión de diagnóstico; visible con Show advanced.
+Copy diagnostics: Alt+C. Copiar la instantánea completa de diagnóstico; visible con Show advanced.
+Quit: Alt+Q. Cerrar, gestionando la cancelación de forma segura si hay una operación en curso.
+
+Uso de un control de juego en el instalador
+-------------------------------------------
+
+El instalador admite controles de juego de tipo Xbox y otros controles de juego que Windows expone mediante XInput. Sus controles son independientes de los controles del juego que se pueden reasignar. La cruceta o la palanca izquierda permiten desplazarse entre los controles; cuando un campo de texto tiene el foco, las direcciones sirven para revisar su texto. Los botones superiores siempre desplazan el foco al control anterior o siguiente que pueda recibirlo. A activa el botón o la casilla que tenga el foco. La entrada del control de juego solo se procesa mientras este instalador o uno de sus propios diálogos esté en primer plano.
+
+B vuelve atrás o cancela un diálogo; en la ventana principal del instalador, solicita cancelar una instalación en curso y, en los demás casos, realiza la acción de Quit. Start realiza la acción de Quit en la ventana principal y vuelve atrás en un diálogo. Y activa o desactiva Show advanced en la ventana principal. X selecciona todo el texto de un campo que tenga el foco. Mantén pulsado RT mientras utilizas las direcciones para ampliar la selección de texto en los campos propios del instalador. La navegación con control de juego en los diálogos nativos de Windows para elegir carpetas y guardar archivos todavía requiere verificación humana. El teclado sigue disponible para introducir una carpeta o un nombre de archivo. Esta implementación no admite controles de juego sin compatibilidad con XInput.
+
+Diagnóstico del instalador
+--------------------------
+
+Show advanced muestra Save diagnostics (Alt+D) y Copy diagnostics (Alt+C). Los registros automáticos UTF-8 se guardan localmente en %ProgramData%\BopItAccess\diagnostics. Save diagnostics escribe toda la sesión actual en el archivo .log o .txt que elijas y continúa registrando hasta que se cierra el instalador; Copy diagnostics copia una instantánea y proporciona una confirmación accesible. Guarda antes de una prueba de instalación o desinstalación para que tu registro se conserve tras la limpieza de los registros automáticos. Aquí se guardan los detalles técnicos de los archivos, las descargas, el compilador y los errores, aunque el campo de estado utiliza mensajes más breves. No se sube nada. Los registros pueden contener nombres de usuario de Windows y rutas completas: revísalos antes de compartirlos. Las copias exportadas expresamente permanecen tras la desinstalación.
+
+En el primer inicio manual tras instalar MelonLoader, este puede descargar archivos auxiliares y preparar los ensamblados del juego. Deja pasar aproximadamente un minuto, o más en algunos sistemas. El mod no puede hablar hasta que MelonLoader lo cargue. Mantén el juego abierto y espera al anuncio de inicio de Bop It Access y, después, al anuncio de la pantalla de título, de bienvenida o del menú principal antes de utilizar los controles del juego.

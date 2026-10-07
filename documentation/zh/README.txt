@@ -401,7 +401,11 @@ Voice=System default
 [SAPI]
 Voice=System default
 
-安装程序和 Windows 已安装的应用 中的卸载会删除已知 Mod 日志，包括 Mods/BopItAccess.log.previous、UserData/BopItAccess.ini、较旧的 UserData/BopItAccess.ini.tmp，以及 UserData 中经过验证的 BopItAccess.ini.<GUID>.tmp 残留文件。<GUID> 指恰好 32 个不带连字符的十六进制字符；无关文件保留。原生游戏偏好设置、无关 Mod 和 .NET SDK 保留。清理未完成时，状态日志会报告。对于安装程序管理的副本，Windows 条目、卸载启动器及清理检查点会保留至清理成功，以便重试。旧手动安装没有持久所有权记录，因此其警告可在打开的安装程序中重试。
+确认 Uninstall 后，选择 Uninstall for me 或 Uninstall for everyone。两者都会删除这个游戏文件夹中的共享模组文件，因此使用该游戏安装的任何人都将无法再使用模组。这个选择决定删除谁保存在 Windows 中的模组偏好设置：仅发起请求的账户，或者包括已注销账户在内的所有本地 Windows 用户配置。原游戏的偏好设置会保留。.NET SDK 仍保持安装。
+
+当安装程序删除自己安装的 MelonLoader 且其他模组不需要它时，也会删除已知的 Loader.cfg 和 MelonPreferences.cfg，以及空的 Plugins、UserLibs 和 UserData 文件夹。Bop It Access 设置、已知日志、指南和安装程序文件会删除。其他模组、原有共享加载器文件以及无法识别的文件会受到保护。这也意味着未知文件可能使文件夹保留下来；安装程序会在诊断信息中说明，而不会删除无关数据。
+
+如果无法安全完成清理，安装程序会解释情况并保留重试所需的信息。对于受管理的安装，Windows 卸载条目和清理检查点会一直保留到删除成功。旧手动安装没有持久的文件归属记录；请在打开的安装程序中重试相关警告。Bop It! 运行时不要安装、更新或删除模组。
 
 人工智能透明度说明
 --------------------
@@ -437,28 +441,64 @@ disable_start_screen = true
 [console]
 hide_console = true
 
-该模组不会在每次启动时重置这些选项。如果您需要加载程序的窗口进行故障排除，您可以手动将任一值更改回 false。仅当安装程序的真实值仍然存在时，安装程​​序卸载才会恢复原始值，并保留其他加载程序配置编辑。
+模组不会在每次启动时重置这些选项。如需排查问题，可手动将任一值改回 false。如果卸载时保留共享 MelonLoader，只会恢复安装程序设置后仍未改变的目标标志，并保留其他编辑。如果删除安装程序自己安装且已无人使用的 MelonLoader，也会删除已知的 Loader.cfg 和 MelonPreferences.cfg。
 
 成功更改后，mod 会宣布输入及其分配的操作，例如“Space 分配给 拍打”。
 
-安装程序诊断日志
---------
+Windows 安装程序预览版 0.2.0
+---------------------
 
-安装程序预览版0.1.10会自动将本地诊断日志保存到 %ProgramData%\BopItAccess\diagnostics。选择 Save diagnostics（Alt+D）可指定文本文件，立即保存当前会话，并持续添加新记录直到关闭安装程序。Copy diagnostics（Alt+C）仅复制按下时的内容。下次测试安装或卸载前，请先选择 Save diagnostics。这样，即使自动日志被删除，也能保留完整记录。 日志包含状态消息、进度阶段和错误详情，不会上传到网络。分享前请检查内容：日志可能包含Windows用户名和完整文件夹路径。成功卸载后会删除自动日志，但您主动保存到其他位置的副本会保留。
+请先关闭 Bop It!，打开安装程序并批准 Windows 管理员提示。安装程序会显示欢迎消息，在所有可用驱动器的 Steam 库中寻找游戏，并尝试将窗口切到前台。检查显示的游戏文件夹；需要选择其他位置时使用 Browse。Tab 用于在控件之间移动。状态日志是只读文本框：将焦点移到此处，即可用光标键查看消息、选择或复制文本。
 
-安装流程和首次启动
+安装程序打开时，Show advanced 默认未勾选。勾选后会显示 Install alpha、Save diagnostics 和 Copy diagnostics。如果已有公开的 GitHub 发行版，Install 会下载最新版本。目前还没有公开发行版，因此测试者需要勾选 Show advanced 并使用 Install alpha。Alpha 会请求确认，下载最新源代码并在您的电脑上构建。当已安装版本有更新的公开发行版可用时，会显示 Update。
+
+状态消息用简明语言说明正在下载、安装或完成什么。一条进度条显示整个安装过程的估计进度，不会在每次下载或处理文件时重置。它以五个百分点为单位前进；某些准备阶段可能花费一段时间而没有可见变化。欢迎消息、新更新可用以及诊断信息已复制的确认，会通过 Windows 无障碍通知传递给屏幕阅读器。是否实际朗读取决于屏幕阅读器及其对 Windows 通知的支持。
+
+安装程序 0.2.0 不会在安装期间启动 Bop It!。Alpha 会复用匹配的本地构建文件，或者在游戏保持关闭的情况下，根据您已安装的游戏准备临时文件。之后安装程序把 MelonLoader 放入游戏文件夹，立即添加 Mods/BopItAccess.dll，再安装 Prism、设置、完整文档和卸载支持。请等待成功消息，然后在准备好时自行从 Steam 启动游戏。
+
+安装成功后会显示 Play Bop It! The Video Game。准备好时可激活它，自行通过 Steam 启动游戏。安装程序不会在安装期间自动启动游戏。
+
+已编译的发行版需要 Windows x64 .NET 6 运行时，不需要开发 SDK。完整的现有运行时会被复用。缺少的运行时会从 Microsoft 下载并放入 MelonLoader/Dependencies/dotnet。Install alpha 还需要兼容的 .NET SDK 和 .NET 6 目标包：复用已有 SDK，或在系统范围内安装 Microsoft 官方 SDK。安装程序不会在游戏根目录创建新的 SDK 文件夹。MelonLoader 0.7.3 Open-Beta 和 Prism 0.18.3 来自官方发行版。共享的 Microsoft .NET 组件和 SDK 在中止或卸载后仍保持安装。
+
+Quit 关闭安装程序。如果安装仍在进行，会询问是否在关闭前中止并撤销安装；Keep open 让操作正常继续。如果您考虑期间安装已经完成，对话框会更新为已完成，Quit 不会撤销完成的安装。卸载一旦开始删除，会安全完成后再退出。Abort 也会请求确认并撤销本次尝试对游戏文件的更改。在 Microsoft .NET 安装期间取消，会等待共享组件的安装安全结束。
+
+确认 Uninstall 后，选择 Uninstall for me 或 Uninstall for everyone。两者都会删除这个游戏文件夹中的共享模组文件，因此使用该游戏安装的任何人都将无法再使用模组。这个选择决定删除谁保存在 Windows 中的模组偏好设置：仅发起请求的账户，或者包括已注销账户在内的所有本地 Windows 用户配置。原游戏的偏好设置会保留。.NET SDK 仍保持安装。
+
+当安装程序删除自己安装的 MelonLoader 且其他模组不需要它时，也会删除已知的 Loader.cfg 和 MelonPreferences.cfg，以及空的 Plugins、UserLibs 和 UserData 文件夹。Bop It Access 设置、已知日志、指南和安装程序文件会删除。其他模组、原有共享加载器文件以及无法识别的文件会受到保护。这也意味着未知文件可能使文件夹保留下来；安装程序会在诊断信息中说明，而不会删除无关数据。
+
+卸载后安装程序保持打开，便于查看结果、保存诊断信息或重新安装。完成后选择 Quit。运行中的卸载辅助文件和自动诊断日志将在窗口关闭后清理。同一窗口中重新安装会建立新的安装记录；之前延迟的清理不会删除新安装。
+
+Windows“已安装的应用”使用相同的确认、偏好设置范围选择和清理流程。安装程序在游戏文件夹提供 BopItAccess-uninstall.ps1，作为指向已安装卸载程序的快捷脚本；未来源代码构建的输出也会包含它。仅手动复制脚本不会安装卸载程序本身。对于没有文件归属记录的旧手动安装，安装程序会删除可识别的模组文件，并保留无法确认来源的共享文件。
+
+如果无法安全完成清理，安装程序会解释情况并保留重试所需的信息。对于受管理的安装，Windows 卸载条目和清理检查点会一直保留到删除成功。旧手动安装没有持久的文件归属记录；请在打开的安装程序中重试相关警告。Bop It! 运行时不要安装、更新或删除模组。
+
+安装程序键盘快捷键
 ---------
 
-安装程序预览版0.1.10不会在安装过程中启动Bop It!。Install会在存在公开的已编译版本时下载该版本。Install
-alpha会下载最新源码，请求确认，并在部署文件之前进行编译。Alpha会重用完整的本地引用，或从已安装的游戏中生成临时编译引用，不会运行游戏。准备完成后，安装程序将MelonLoader放入游戏文件夹，并立即将BopItAccess.dll放入Mods。随后完成Prism、配置、文档和卸载文件。请等待成功提示，准备好后再自行通过Steam启动游戏。
+游戏文件夹: Alt+G. 聚焦游戏文件夹文本框。
+Browse: Alt+B. 选择游戏文件夹。
+Install: Alt+I. 有最新公开发行版时安装它。
+Install alpha: Alt+A. 确认并构建最新源代码；勾选 Show advanced 后可见。
+Update: Alt+U. 安装提供的更新公开发行版。
+Play Bop It! The Video Game: Alt+P. 通过 Steam 启动游戏；安装成功后可用。
+Uninstall: Alt+N. 确认删除并选择删除谁的 Windows 模组偏好设置。
+Abort: Alt+R. 确认取消当前安装。
+状态日志: Alt+L. 聚焦只读且可选择的状态消息。
+Show advanced: Alt+V. 显示或隐藏 Alpha 安装和诊断工具。
+Save diagnostics: Alt+D. 保存完整诊断会话并继续记录；勾选 Show advanced 后可见。
+Copy diagnostics: Alt+C. 复制完整诊断快照；勾选 Show advanced 后可见。
+Quit: Alt+Q. 关闭；如有操作正在运行则安全取消。
 
-已编译的公开版本需要Windows x64版.NET 6运行时，不需要开发SDK。现有完整运行时会被重用。如果缺少，安装程序下载Microsoft官方.NET
-6.0.36运行时ZIP，并放入受支持的位置MelonLoader/Dependencies/dotnet。这些文件会记录在回滚和卸载清单中；其他Mod仍需要共享加载器时会保留。Install
-alpha还需要兼容SDK和.NET
-6目标包。它重用已安装SDK或旧的兼容dotnet文件夹，必要时通过Microsoft官方安装程序安装系统级SDK。SDK在卸载或中止后保留。此预览版不会在游戏根目录创建新的dotnet
-SDK文件夹。必要时获取官方MelonLoader 0.7.3和Prism 0.18.3。更新仍通过GitHub进行。Abort会请求确认，并撤销本次安装对游戏文件的修改。
+使用控制器操作安装程序
+-----------
 
-安装MelonLoader后首次手动启动游戏时，可能需要下载支持文件并生成游戏程序集。请等待约一分钟，部分系统可能更久。MelonLoader完成加载Mod之前，Mod无法朗读。请保持游戏开启，先等待Bop It
-Access启动提示，再等待标题画面或菜单提示，然后使用控制键。
+安装程序支持 Xbox 类型控制器以及 Windows 通过 XInput 提供的其他控制器。这些操作独立于游戏内可重新绑定的控制。方向键或左摇杆在控件之间移动；文本框有焦点时，方向输入改为查看文本。肩键始终移动到上一个或下一个可聚焦控件。A 激活有焦点的按钮或复选框。仅当安装程序或其自身对话框位于前台时才处理控制器输入。
 
-安装程序预览版0.1.10修复了依赖检查误将.NET 6已提供的库视为缺失，从而中止Install alpha的问题。现在会识别兼容的运行时库，并保留构建工具的依赖检查。安装程序不会启动游戏。请在下次尝试之前保存诊断日志。
+B 在对话框中返回或取消；在安装程序主窗口中，安装进行时请求中止，否则执行 Quit 流程。Start 在主窗口执行 Quit，在对话框中返回。Y 在主窗口切换 Show advanced。X 选择当前文本框中的全部文本。按住 RT 并输入方向，可以在安装程序自身文本框中扩展选择范围。Windows 原生文件夹和保存对话框的控制器操作仍需人工验证。输入文件夹或文件名仍可使用键盘。不支持 XInput 的控制器不在当前实现范围内。
+
+安装程序诊断信息
+--------
+
+Show advanced 会显示 Save diagnostics（Alt+D）和 Copy diagnostics（Alt+C）。自动 UTF-8 日志保存在本机的 %ProgramData%\BopItAccess\diagnostics。Save diagnostics 将当前完整会话写入您选择的 .log 或 .txt 文件，并持续记录到安装程序关闭。Copy diagnostics 复制当前快照，并提供无障碍确认。安装或卸载测试前请先保存，以便自动日志清理后记录仍然存在。虽然状态文本框采用简短消息，文件、下载、编译器和错误的技术细节仍保存在诊断信息中。不会上传任何内容。日志可能包含 Windows 用户名和完整路径：分享前请检查。主动导出到别处的副本在卸载后仍保留。
+
+安装 MelonLoader 后第一次手动启动时，它可能下载支持文件并准备游戏程序集。请等待大约一分钟，某些系统可能更久。MelonLoader 加载模组之前，模组无法朗读。请保持游戏打开，等待 Bop It Access 启动播报，然后等到标题、欢迎画面或主菜单播报后再使用游戏控制。
