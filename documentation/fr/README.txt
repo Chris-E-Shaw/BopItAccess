@@ -427,7 +427,9 @@ Merci
 MelonLoader fenêtres de démarrage
 ---------------------------
 
-Le modèle Loader.cfg fourni masque l’écran de démarrage et la console séparés de MelonLoader. Le programme d'installation applique automatiquement les deux mêmes valeurs par défaut, avant toute préparation de build alpha nécessaire au démarrage du jeu. Ces paramètres ne sautent pas l’écran titre du jeu ni l’écran de bienvenue du mod.
+Le modèle Loader.cfg fourni masque l’écran de démarrage et la console séparés de MelonLoader. L’installateur
+applique ces deux valeurs par défaut avant que vous lanciez vous-même le jeu. Elles ne suppriment ni l’écran
+titre du jeu ni l’écran de bienvenue du mod.
 
 Le jeu étant fermé, ouvrez UserData/Loader.cfg dans le dossier du jeu. Si ce fichier existe déjà, réglez disable_start_screen sur true dans sa section [loader] existante, et hide_console sur true dans sa section [console] existante. Conservez toutes les autres entrées. Si le fichier n'existe pas, copiez le modèle UserData/Loader.cfg fourni avec la compilation, ou configuration/Loader.cfg depuis le code source. Ne remplacez jamais un Loader.cfg existant par le modèle complet.
 
@@ -444,4 +446,31 @@ Après un changement réussi, le mod annonce l'entrée et l'action à laquelle e
 Diagnostics du programme d’installation
 ---------------------------------------
 
-L’aperçu 0.1.6 du programme d’installation conserve automatiquement des journaux de diagnostic locaux dans %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permet de choisir un fichier texte, y enregistre la session actuelle et continue d’ajouter les nouvelles entrées jusqu’à la fermeture de l’installateur ; Copy diagnostics (Alt+C) copie un instantané. Choisissez Save diagnostics avant le prochain essai d’installation ou de désinstallation pour conserver l’enregistrement complet même après la suppression des journaux automatiques. Les journaux comprennent les messages d’état, les étapes de progression et les détails des erreurs. Rien n’est envoyé en ligne. Vérifiez un journal avant de le partager : il peut contenir des noms d’utilisateur Windows et des chemins de dossiers complets. Une désinstallation réussie supprime les journaux automatiques ; les copies enregistrées volontairement ailleurs sont conservées.
+L’aperçu 0.1.7 du programme d’installation conserve automatiquement des journaux de diagnostic locaux dans %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) permet de choisir un fichier texte, y enregistre la session actuelle et continue d’ajouter les nouvelles entrées jusqu’à la fermeture de l’installateur ; Copy diagnostics (Alt+C) copie un instantané. Choisissez Save diagnostics avant le prochain essai d’installation ou de désinstallation pour conserver l’enregistrement complet même après la suppression des journaux automatiques. Les journaux comprennent les messages d’état, les étapes de progression et les détails des erreurs. Rien n’est envoyé en ligne. Vérifiez un journal avant de le partager : il peut contenir des noms d’utilisateur Windows et des chemins de dossiers complets. Une désinstallation réussie supprime les journaux automatiques ; les copies enregistrées volontairement ailleurs sont conservées.
+
+Installation et premier démarrage
+---------------------------------
+
+L’aperçu 0.1.7 du programme d’installation ne lance jamais Bop It! pendant l’installation. Install télécharge
+une version publique compilée lorsqu’elle existe. Install alpha télécharge le dernier code source, demande
+confirmation et le compile avant de copier les fichiers. Alpha réutilise des références locales complètes ou
+prépare des références de compilation temporaires à partir de votre jeu installé, sans l’exécuter. Après cette
+préparation, l’installateur place MelonLoader dans le dossier du jeu et immédiatement BopItAccess.dll dans
+Mods. Il termine ensuite les fichiers de Prism, de configuration, de documentation et de désinstallation.
+Attendez le message de réussite, puis lancez vous-même le jeu par Steam lorsque vous êtes prêt.
+
+Une version compilée nécessite l’environnement d’exécution Windows x64 de .NET 6, pas de SDK de développement.
+Les environnements complets existants sont réutilisés. S’il en manque un, l’installateur télécharge le ZIP
+officiel Microsoft .NET 6.0.36 et le place dans MelonLoader/Dependencies/dotnet, un emplacement pris en
+charge. Ces fichiers sont enregistrés pour annulation et désinstallation ; ils sont conservés si d’autres mods
+utilisent le chargeur partagé. Install alpha nécessite aussi un SDK compatible et le pack de ciblage .NET 6.
+Il réutilise un SDK installé ou un ancien dossier dotnet compatible ; si nécessaire, il installe un SDK
+Microsoft officiel pour tout le système. Le SDK reste après désinstallation ou annulation. Cet aperçu ne crée
+aucun nouveau dossier SDK dotnet à la racine du jeu. MelonLoader 0.7.3 et Prism 0.18.3 officiels sont
+récupérés si nécessaire. Les mises à jour passent toujours par GitHub. Abort demande confirmation et annule
+les modifications de cette installation aux fichiers du jeu.
+
+Au premier lancement manuel après l’installation de MelonLoader, des fichiers de support peuvent être
+téléchargés et les assemblages du jeu générés. Comptez environ une minute, parfois davantage. Le mod ne peut
+pas parler avant que MelonLoader ait fini de le charger. Gardez le jeu ouvert et attendez l’annonce de
+démarrage de Bop It Access, puis celle de l’écran titre ou du menu, avant d’utiliser les commandes.

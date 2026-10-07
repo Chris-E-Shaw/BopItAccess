@@ -164,6 +164,13 @@
 <li>アンインストールの正常完了時に所有する診断ファイルを削除し、意図的に書き出したコピーは残す。保存場所、確認方法、共有方法と、ユーザー名やフォルダーパスが含まれる可能性を文書化。Modはv0.9.11のまま、既存のレビューレポートは変更しない。</li>
 <li>Windows x64向け自己完結型インストーラープレビュー0.1.6を警告・エラーなしで生成。確認はコンパイルと静的レビューに限定し、自動テスト、インストール・アンインストールの実行、ゲームの起動は行っていない。Modはv0.9.11のままで、GitHubリリースは公開しない。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/982f55ddb5bbca3bbaab51af5e0e9ab7e41b56a4">ソースコミット</a> · GitHubリリースなし</p></article>
+      <article class="commit" id="installer-0-1-7"><div class="meta"><span class="version">Installer 0.1.7 preview</span><span class="kind">fix · flow · docs</span></div><h3>fix(installer): 初回手動起動の前にModを配置</h3><ul>
+<li>参照生成のためゲームを起動するコードを削除。配置前にリリースを準備するかAlphaをコンパイルする。完全なローカルプロキシを再利用するか、ゲームを実行せずインストール済みゲームから一時的なCpp2IL/Il2CppInteropビルド参照を生成する。</li>
+<li>MelonLoaderを配置した直後にMods/BopItAccess.dllをコピーする。その後Prism、設定、文書、アンインストール機能を配置する。初回起動はプレイヤー自身が行い、アセンブリ生成の待ち時間を完了メッセージと全言語のガイドで説明する。</li>
+<li>コンパイル済みリリースは.NET 6ランタイムを確認し、SDKと.NET 6ターゲティングパックはAlphaのみに要求する。検証済みコンポーネントや完全な古いSDKを再利用する。不足するランタイムはMicrosoft公式.NET 6.0.36 x64 ZIPからMelonLoader/Dependencies/dotnetへトランザクション管理下で配置する。不足するAlpha SDKはMicrosoft公式インストーラーでシステム全体に導入する。新しいゲームルートのdotnet SDKは作らず、SDKと他のModに必要なローダーファイルを維持する。</li>
+<li>診断記録、所有権ジャーナル、ロールバック、安全なアンインストール処理を維持する。ユーザーのログは、Modsに配置済みのModがアセンブリ生成後に読み込まれたことを示す。これは配置順序の根拠であり、このインストーラーの実行テストではない。Modはv0.9.11、Modビルド数は58のまま。</li>
+<li>Windows x64自己完結型インストーラー0.1.7を発行し、内蔵参照ヘルパーを警告・エラーなしでコンパイル。確認はコンパイルと静的レビューのみ。自動テスト、オフライン参照生成、インストーラーやアンインストーラーの実行、ゲーム起動は行っていない。Modはv0.9.11のまま。GitHub Releaseは公開していない。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/733893c7935f4e7c169bbe5fc80b0a4fe11f985c">ソースコミット</a> · GitHubリリースなし</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 のローカル ソース アーカイブは、パブリック ソースのコミットを再構築するために使用されました。インストール パッケージはローカルに残り、GitHub リリースではありません。 v0.5.4 の再バインド プレビューと v0.5.18 SAPI トリム実験は、履歴実装として記録されます。後のエントリには、それらがどのように変更されたかが記載されています。</p><p><a href="#history">ビルド履歴に戻る</a></p></div></footer>

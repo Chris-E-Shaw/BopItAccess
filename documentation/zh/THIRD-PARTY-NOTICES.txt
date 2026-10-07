@@ -37,3 +37,19 @@ mod 演讲目录和项目文件的翻译。上游
 Beautiful Soup 4 用于在准备时保留 HTML 结构
 翻译的指南。它是 MIT 许可的，不是 mod 运行时的一部分。
 项目及许可信息： https://www.crummy.com/software/BeautifulSoup/
+
+安装程序Alpha编译工具和运行时依赖
+-------------------
+
+Installer alpha使用Sam
+Byass（SamboyCoding）及贡献者的Cpp2IL和StrippedCodeRegSupport插件，许可证为MIT。BepInEx贡献者的Il2CppInterop使用LGPL第3版，Washi及贡献者的AsmResolver使用MIT。Il2CppInterop和AsmResolver由单独下载的MelonLoader提供。Unity编译引用库遵循Unity
+Software
+Terms和附带声明，本项目不授予其许可证。Alpha下载或重用这些组件作为临时本地编译输入。其二进制文件和生成的游戏代理程序集不包含在源码仓库或Mod包中。内置辅助工具源码调用外部库，不内置其二进制文件。公开版缺少的运行时来自Microsoft官方.NET
+6 ZIP。请保留其中的许可证和第三方声明。.NET源码使用MIT，Microsoft附带的发行条款仍适用。声明随安装组件保留。
+
+Cpp2IL: https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LICENSE
+Il2CppInterop: https://github.com/BepInEx/Il2CppInterop/blob/master/LICENSE
+AsmResolver: https://github.com/Washi1337/AsmResolver/blob/master/LICENSE.md
+MelonLoader: https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md
+Unity Software Terms: https://unity.com/legal/terms-of-service/software
+.NET: https://github.com/dotnet/core/blob/main/license-information.md

@@ -95,7 +95,7 @@ Menüpositionen vorlesen. Diese gespeicherte, standardmäßig eingeschaltete Opt
 
 ### MelonLoader Startfenster
 
-Die mitgelieferte Vorlage Loader.cfg verbirgt den separaten Startbildschirm und die Konsole von MelonLoader. Das Installationsprogramm wendet automatisch dieselben beiden Standardeinstellungen an, bevor der Alpha-Build vorbereitet wird, der zum Starten des Spiels erforderlich ist. Diese Einstellungen überspringen weder den Titelbildschirm des Spiels noch den Begrüßungsbildschirm des Mods.
+Die mitgelieferte Vorlage Loader.cfg verbirgt den separaten Startbildschirm und die Konsole von MelonLoader. Der Installer setzt dieselben beiden Standardwerte, bevor Sie das Spiel selbst starten. Der Titelbildschirm des Spiels und der Begrüßungsbildschirm der Mod werden dadurch nicht übersprungen.
 
 Schließen Sie das Spiel und öffnen Sie `UserData/Loader.cfg` im Spielordner. Wenn die Datei bereits vorhanden ist, setzen Sie `disable_start_screen` im vorhandenen Abschnitt `[loader]` auf `true` und `hide_console` im vorhandenen Abschnitt `[console]` auf `true`. Behalten Sie alle anderen Einträge bei. Wenn die Datei fehlt, kopieren Sie die mitgelieferte Vorlage `UserData/Loader.cfg` aus dem Build oder `configuration/Loader.cfg` aus dem Quellcode. Ersetzen Sie niemals eine vorhandene Loader.cfg durch die gesamte Vorlage.
 
@@ -142,3 +142,11 @@ Vielen Dank an diejenigen, die diesen Mod vor der Veröffentlichung getestet und
 ## Lizenzierung
 
 Für die Quelle Bop It Access wurde noch keine Lizenz ausgewählt. Prism hat eine eigene Lizenz; siehe die [Hinweise Dritter](THIRD-PARTY-NOTICES.txt). Bop It! und seine Vermögenswerte gehören ihren jeweiligen Eigentümern und sind hier nicht enthalten.
+
+## Installationsablauf und erster Start
+
+Die Installer-Vorschau 0.1.7 startet Bop It! während der Installation niemals. Install lädt eine kompilierte öffentliche Veröffentlichung herunter, sobald eine verfügbar ist. Install alpha lädt den neuesten Quellcode, fragt nach Bestätigung und kompiliert ihn vor dem Kopieren der Dateien. Alpha verwendet vollständige lokale Spielreferenzen oder erzeugt vorübergehende Build-Referenzen aus Ihrem installierten Spiel, ohne es zu starten. Nach der Vorbereitung legt der Installer MelonLoader im Spielordner und sofort danach BopItAccess.dll in Mods ab. Anschließend folgen Prism, Konfiguration, Dokumentation und Deinstallationsdateien. Warten Sie auf die Erfolgsmeldung und starten Sie das Spiel selbst über Steam, wenn Sie bereit sind.
+
+Eine kompilierte Veröffentlichung benötigt die Windows-x64-Laufzeit von .NET 6, kein Entwicklungs-SDK. Vollständige vorhandene Laufzeiten werden wiederverwendet. Fehlt eine Laufzeit, lädt der Installer Microsofts offizielles .NET-6.0.36-Laufzeit-ZIP und legt es am unterstützten Ort MelonLoader/Dependencies/dotnet ab. Diese Dateien werden für Rückgängigmachen und Deinstallation erfasst; sie bleiben erhalten, wenn andere Mods den gemeinsamen Loader benötigen. Install alpha benötigt zusätzlich ein kompatibles SDK und das .NET 6 Targeting Pack. Es verwendet ein installiertes SDK oder einen kompatiblen älteren dotnet-Ordner erneut. Bei Bedarf wird ein offizielles Microsoft-SDK systemweit installiert. Das SDK bleibt nach Deinstallation oder Abbruch erhalten. Diese Vorschau erstellt keinen neuen dotnet-SDK-Ordner direkt im Spielordner. MelonLoader 0.7.3 und Prism 0.18.3 werden bei Bedarf offiziell geladen. Updates erfolgen weiter über GitHub. Abort fragt nach Bestätigung und macht Änderungen dieser Installation an Spieldateien rückgängig.
+
+Beim ersten manuellen Start nach der MelonLoader-Installation können Hilfsdateien heruntergeladen und Spielassemblys erzeugt werden. Rechnen Sie mit etwa einer Minute, auf manchen Systemen länger. Die Mod kann erst sprechen, wenn MelonLoader sie geladen hat. Lassen Sie das Spiel offen. Warten Sie zuerst auf die Startmeldung von Bop It Access und dann auf die Ansage des Titelbildschirms oder Menüs, bevor Sie die Steuerung verwenden.

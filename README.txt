@@ -452,7 +452,9 @@ To those who play tested this mod before release and helped get it to where it i
 MelonLoader startup windows
 ---------------------------
 
-The supplied Loader.cfg template hides MelonLoader’s separate start screen and console. The installer applies the same two defaults automatically, before any alpha build preparation that needs to start the game. These settings do not skip the game’s title screen or the mod’s welcome screen.
+The supplied Loader.cfg template hides MelonLoader’s separate start screen and console. The installer applies
+the same two defaults before you launch the game yourself. These settings do not skip the game’s title screen
+or the mod’s welcome screen.
 
 With the game closed, open UserData/Loader.cfg in the game folder. If it already exists, set disable_start_screen to true in its existing [loader] section and hide_console to true in its existing [console] section. Keep all other entries. If the file does not exist, copy the supplied UserData/Loader.cfg template from the build output, or configuration/Loader.cfg from the source. Never overwrite an existing Loader.cfg with the whole template.
 
@@ -469,4 +471,29 @@ After a successful change, the mod announces the input and the action it is assi
 Installer diagnostics
 ---------------------
 
-Installer preview 0.1.6 automatically keeps local diagnostic logs in %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) chooses a text file, saves the current session and keeps adding entries until the installer closes; Copy diagnostics (Alt+C) copies a current snapshot. Choose Save diagnostics before the next installation or uninstall test so the full recording survives removal of the automatic logs. Recording includes status messages, progress milestones and error details; nothing is uploaded. Inspect a log before sharing it: it can include Windows usernames and full folder paths. Successful uninstall removes the automatic logs, but copies you deliberately save elsewhere remain.
+Installer preview 0.1.7 automatically keeps local diagnostic logs in %ProgramData%\BopItAccess\diagnostics. Save diagnostics (Alt+D) chooses a text file, saves the current session and keeps adding entries until the installer closes; Copy diagnostics (Alt+C) copies a current snapshot. Choose Save diagnostics before the next installation or uninstall test so the full recording survives removal of the automatic logs. Recording includes status messages, progress milestones and error details; nothing is uploaded. Inspect a log before sharing it: it can include Windows usernames and full folder paths. Successful uninstall removes the automatic logs, but copies you deliberately save elsewhere remain.
+
+Installer workflow and first startup
+------------------------------------
+
+Installer preview 0.1.7 never starts Bop It! during installation. Install downloads a compiled public release
+when one exists; Install alpha downloads the latest source, asks for confirmation, and builds it before
+deployment. Alpha reuses complete local game references or generates temporary build references from your own
+installed game without running it. After preparation, the installer places MelonLoader in the game folder and
+immediately places BopItAccess.dll in Mods, then finishes the Prism, configuration, documentation and
+uninstall files. Wait for the success message, then launch the game yourself through Steam when you are ready.
+
+A compiled release needs the Windows x64 .NET 6 runtime, not a development SDK. Existing complete runtimes are
+reused. If no runtime is available, the installer downloads Microsoft’s official .NET 6.0.36 runtime ZIP and
+places it in MelonLoader/Dependencies/dotnet, a supported loader location. These files are recorded for
+rollback and uninstall; they are retained if other mods still need the shared loader. Install alpha also needs
+a compatible SDK and the .NET 6 targeting pack to compile the source. It reuses an installed SDK or a
+compatible dotnet folder left by an older installer; if necessary, it installs an official Microsoft SDK
+system-wide. The SDK remains after uninstall or abort. This preview never creates a new dotnet SDK folder at
+the game root. Official MelonLoader 0.7.3 and Prism 0.18.3 are obtained as needed. Updates still use GitHub;
+Abort asks for confirmation and reverses this installation’s game-file changes.
+
+On the first manual launch after installing MelonLoader, it may download support files and generate game
+assemblies. Allow about a minute, or longer on some systems. The mod cannot speak until MelonLoader finishes
+loading it. Keep the game open and wait for the Bop It Access startup announcement, then for the title-screen
+or menu announcement before using the controls.

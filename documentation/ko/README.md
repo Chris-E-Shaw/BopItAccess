@@ -95,7 +95,7 @@ Bop It Access 빌드 명령은 이 모드만 컴파일합니다. Prism를 빌드
 
 ### MelonLoader 시작 창
 
-제공된 Loader.cfg 템플릿은 MelonLoader의 별도 시작 화면과 콘솔을 숨깁니다. 설치 프로그램은 게임을 시작해야 하는 알파 빌드 준비 전에 동일한 두 가지 기본값을 자동으로 적용합니다. 이 설정은 게임의 제목 화면이나 모드의 시작 화면을 건너뛰지 않습니다.
+제공된 Loader.cfg 템플릿은 MelonLoader의 별도 시작 화면과 콘솔을 숨깁니다. 설치 프로그램은 사용자가 직접 게임을 실행하기 전에 두 기본값을 적용합니다. 게임 타이틀 화면이나 모드 환영 화면을 건너뛰지는 않습니다.
 
 게임을 종료한 상태에서 게임 폴더의 `UserData/Loader.cfg`를 엽니다. 파일이 이미 있다면 기존 `[loader]` 섹션의 `disable_start_screen` 값을 `true`로, 기존 `[console]` 섹션의 `hide_console` 값을 `true`로 설정합니다. 다른 항목은 변경하지 마세요. 파일이 없다면 빌드에 포함된 `UserData/Loader.cfg` 템플릿이나 소스 코드의 `configuration/Loader.cfg`를 복사합니다. 기존 Loader.cfg 파일을 템플릿 전체로 덮어쓰지 마세요.
 
@@ -142,3 +142,11 @@ hide_console = true
 ## 라이선스
 
 Bop It Access 소스에 대한 라이센스가 아직 선택되지 않았습니다. Prism에는 자체 라이센스가 있습니다. 참조 [제3자 통지](THIRD-PARTY-NOTICES.txt). Bop It! 및 해당 자산은 해당 소유자의 소유이므로 여기에 포함되지 않습니다.
+
+## 설치 과정과 첫 실행
+
+설치 프로그램 미리 보기 0.1.7은 설치 중 Bop It!을 실행하지 않습니다. Install은 공개된 컴파일 버전이 있으면 다운로드합니다. Install alpha는 최신 소스를 다운로드하고 확인을 받은 뒤 파일을 배치하기 전에 컴파일합니다. Alpha는 완전한 로컬 참조를 재사용하거나 설치된 게임에서 임시 빌드 참조를 생성하며 게임을 실행하지 않습니다. 준비가 끝나면 게임 폴더에 MelonLoader를 배치하고 즉시 Mods에 BopItAccess.dll을 넣습니다. 그다음 Prism, 설정, 문서와 제거용 파일을 마무리합니다. 성공 메시지를 기다린 뒤 준비가 되었을 때 Steam에서 직접 게임을 실행하세요.
+
+컴파일된 공개 버전은 Windows x64 .NET 6 런타임이 필요하며 개발 SDK는 필요하지 않습니다. 완전한 기존 런타임을 재사용합니다. 없으면 공식 Microsoft .NET 6.0.36 런타임 ZIP을 받아 지원되는 위치인 MelonLoader/Dependencies/dotnet에 배치합니다. 이 파일들은 롤백과 제거를 위해 기록하며 다른 모드가 공유 로더를 필요로 하면 유지합니다. Install alpha에는 호환 SDK와 .NET 6 타기팅 팩도 필요합니다. 설치된 SDK나 이전의 호환 dotnet 폴더를 재사용하며 필요하면 공식 Microsoft SDK를 시스템 전체에 설치합니다. SDK는 제거하거나 중단한 뒤에도 남습니다. 이 미리 보기는 게임 루트에 새 dotnet SDK 폴더를 만들지 않습니다. 필요할 때 공식 MelonLoader 0.7.3과 Prism 0.18.3을 받습니다. 업데이트는 GitHub를 사용합니다. Abort는 확인 뒤 이번 설치의 게임 파일 변경을 되돌립니다.
+
+MelonLoader 설치 후 처음 직접 실행하면 지원 파일 다운로드와 게임 어셈블리 생성이 진행될 수 있습니다. 약 1분, 일부 시스템에서는 더 기다려 주세요. MelonLoader가 모드를 불러오기 전에는 모드가 말할 수 없습니다. 게임을 열어 둔 채 Bop It Access 시작 안내를 기다리고, 이후 타이틀 화면이나 메뉴 안내가 나온 뒤 조작하세요.

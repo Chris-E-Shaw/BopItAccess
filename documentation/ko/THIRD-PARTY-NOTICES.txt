@@ -37,3 +37,20 @@ MIT 라이센스: https://github.com/argosopentech/argos-translate/blob/master/L
 Beautiful Soup 4는 HTML 구조를 유지하면서
 번역된 가이드. MIT 라이센스가 있으며 모드 런타임의 일부가 아닙니다.
 프로젝트 및 라이센스 정보: https://www.crummy.com/software/BeautifulSoup/
+
+설치 프로그램 Alpha 빌드 도구와 런타임 의존성
+----------------------------
+
+Installer alpha는 Sam Byass(SamboyCoding)와 기여자의 Cpp2IL 및 StrippedCodeRegSupport 플러그인을 MIT 라이선스로 사용합니다. BepInEx
+기여자의 Il2CppInterop은 LGPL 버전 3이며 Washi와 기여자의 AsmResolver는 MIT입니다. Il2CppInterop과 AsmResolver는 별도로 다운로드하는
+MelonLoader가 제공합니다. Unity 빌드 참조 라이브러리에는 Unity Software Terms와 동봉 고지가 적용되며 이 프로젝트가 라이선스를 부여하지 않습니다. Alpha는 이를
+임시 로컬 빌드 입력으로 다운로드하거나 재사용합니다. 바이너리와 생성된 게임 프록시는 소스 저장소나 모드 패키지에 포함하지 않습니다. 내장 도우미 소스는 외부 라이브러리를 호출하며 바이너리를
+내장하지 않습니다. 공개 버전에 없는 런타임은 공식 Microsoft .NET 6 ZIP에서 가져옵니다. 동봉 라이선스와 제삼자 고지를 유지하세요. .NET 소스는 MIT이며 Microsoft 배포
+조건도 적용됩니다. 설치된 구성 요소와 함께 고지를 유지합니다.
+
+Cpp2IL: https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LICENSE
+Il2CppInterop: https://github.com/BepInEx/Il2CppInterop/blob/master/LICENSE
+AsmResolver: https://github.com/Washi1337/AsmResolver/blob/master/LICENSE.md
+MelonLoader: https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md
+Unity Software Terms: https://unity.com/legal/terms-of-service/software
+.NET: https://github.com/dotnet/core/blob/main/license-information.md

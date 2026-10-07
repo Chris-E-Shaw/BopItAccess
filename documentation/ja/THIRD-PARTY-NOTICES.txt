@@ -37,3 +37,19 @@ MOD は Google に接続せず、実行時にインターネット接続も必�
 Beautiful Soup 4 は、HTML 構造を維持しながら、
 翻訳されたガイド。これは MIT ライセンスがあり、MOD ランタイムの一部ではありません。
 プロジェクトとライセンス情報: https://www.crummy.com/software/BeautifulSoup/
+
+インストーラーのAlphaビルドツールとランタイム依存関係
+-----------------------------
+
+Installer alphaはSam
+Byass（SamboyCoding）と協力者のCpp2ILおよびStrippedCodeRegSupportプラグインをMITライセンスで使用します。BepInEx協力者のIl2CppInteropはLGPLバージョン3、Washiと協力者のAsmResolverはMITです。Il2CppInteropとAsmResolverは別途ダウンロードするMelonLoaderに含まれます。Unityのビルド参照ライブラリにはUnity
+Software
+Termsと付属の通知が適用され、このプロジェクトがライセンスを付与するものではありません。Alphaはこれらを一時的なローカルビルド入力として取得または再利用します。そのバイナリや生成されたゲームプロキシはソースリポジトリやModパッケージに含めません。内蔵ヘルパーのソースは外部ライブラリを呼び出し、バイナリを内蔵しません。公開版で不足するランタイムはMicrosoft公式.NET
+6 ZIPから取得します。付属ライセンスと第三者通知を維持してください。.NETソースはMITであり、Microsoftの配布条件も適用されます。通知は導入したコンポーネントに保持します。
+
+Cpp2IL: https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LICENSE
+Il2CppInterop: https://github.com/BepInEx/Il2CppInterop/blob/master/LICENSE
+AsmResolver: https://github.com/Washi1337/AsmResolver/blob/master/LICENSE.md
+MelonLoader: https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md
+Unity Software Terms: https://unity.com/legal/terms-of-service/software
+.NET: https://github.com/dotnet/core/blob/main/license-information.md

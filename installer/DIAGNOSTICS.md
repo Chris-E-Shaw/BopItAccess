@@ -1,6 +1,6 @@
 # Installer diagnostics
 
-Installer preview 0.1.6 records local diagnostic sessions for work on the installation process. The mod remains 0.9.11. This document describes installer recording; it does not replace the game's `Mods/BopItAccess.log` or MelonLoader's `Latest.log`.
+Installer preview 0.1.7 records local diagnostic sessions for work on the installation process. The mod remains 0.9.11. This document describes installer recording; it does not replace the game's `Mods/BopItAccess.log` or MelonLoader's `Latest.log`. The installer no longer launches the game. See [Installation flow](INSTALLATION-FLOW.md) for release versus alpha preparation, dependency locations and the first manual launch.
 
 ## Find, save and copy a session
 
@@ -35,6 +35,8 @@ If changing the game folder or starting an operation reveals that the active sav
 - State changes and progress milestones, including download/extraction byte counts when available.
 - HTTP requests and results, including status and timing; URL query strings, fragments and embedded user information are excluded.
 - Compiler standard output and standard error, process completion and exit code.
+- For alpha, local proxy-cache checks, offline reference preparation and the Cpp2IL/reference-helper output. These are background build tools, not a game launch.
+- .NET runtime reuse or staging, SDK reuse or Microsoft SDK installation, and the subsequent deployment order.
 - Managed exceptions with their detailed context instead of only the short message shown to the user.
 
 Successful log entries establish what the installer requested or observed. They do not prove that a screen reader spoke a control, that downloaded software works correctly on that computer, or that a game session succeeded.
@@ -59,7 +61,17 @@ Successful managed uninstall removes the owned diagnostic logs during final clea
 2. Choose Save diagnostics before starting the action you want to investigate. The selected file includes earlier entries and continues updating through that action. You can also collect an existing automatic session file, or use Copy diagnostics for a current snapshot.
 3. Check the version and session header before reading the final error, cancellation or completion entries.
 4. Work backward to the preceding operation, download, prerequisite or compiler entries. Progress is recorded at milestones rather than on every repaint.
-5. For an alpha-build failure, include compiler output. For game or speech problems after installation, also collect the separate mod and MelonLoader logs.
+5. For an alpha-build failure, include offline reference-tool and compiler output. For a dependency failure, include the Microsoft installer result and diagnostic entries. For game or speech problems after you manually launch it, also collect the separate mod and MelonLoader logs.
+
+## Investigating the deployment sequence
+
+For installer 0.1.7, a complete recording should show preparation before game-file deployment. Alpha either reuses verified matching game references or runs background assembly tools and the compiler. Release installs use an already compiled DLL and do not need an SDK or build references. The installer then deploys MelonLoader, immediately installs `Mods/BopItAccess.dll`, and finishes runtime files if required, Prism, loader defaults, documentation and uninstall support. No step starts `BopIt!.exe`.
+
+If the game is opened independently during preparation, deployment stops. If the game is opened during a later operation and prevents rollback, the installer asks the user to close it and preserves recovery evidence; it does not close the user's game. Record both the installer action and when the game was opened manually.
+
+An SDK used by alpha can already be installed system-wide or in an older game-root `dotnet` folder. New missing SDKs are installed system-wide and intentionally remain after abort or uninstall. A missing release runtime is staged from Microsoft's official runtime-only ZIP and deployed under `MelonLoader/Dependencies/dotnet` with ownership records. It is removed or restored with other owned loader files unless the loader must remain for other mods. Do not infer that .NET 6 is absent because the game-root `dotnet` folder is absent, or that the game runs on .NET 10 because a log reports a .NET 10 `hostfxr.dll`; the loader host and selected application runtime are distinct.
+
+During the first manual game launch, MelonLoader can download dependencies and generate its runtime assemblies before the mod initializes. A minute without mod speech can be expected at that stage. The installer log ends at installation; use MelonLoader's `Latest.log` and `Mods/BopItAccess.log` to distinguish first-launch generation from an installer failure.
 
 Inspect a file before sharing it. It can contain Windows usernames, full folder paths, installed dependency locations, game-library locations and exception details. URL sanitization does not remove that local context or all possible personal information in compiler/error text. Remove personal details if needed, keeping enough path structure and error context to diagnose the issue. Share only the intended exported text; do not include credentials or unrelated game files.
 

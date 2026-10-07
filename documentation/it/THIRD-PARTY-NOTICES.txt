@@ -37,3 +37,24 @@ la mod non contatta Google né richiede una connessione Internet in fase di esec
 Beautiful Soup 4 è stato utilizzato per preservare la struttura HTML durante la preparazione del file
 guide tradotte. Ha la licenza MIT e non fa parte del runtime mod.
 Informazioni sul progetto e sulla licenza: https://www.crummy.com/software/BeautifulSoup/
+
+Strumenti alpha e dipendenze runtime dell’installer
+---------------------------------------------------
+
+Installer alpha usa Cpp2IL e il plugin StrippedCodeRegSupport di Sam Byass (SamboyCoding) e collaboratori,
+sotto licenza MIT. Il2CppInterop dei collaboratori BepInEx è sotto LGPL versione 3; AsmResolver di Washi e
+collaboratori sotto MIT. Il2CppInterop e AsmResolver sono forniti da MelonLoader scaricato separatamente. Le
+librerie di riferimento Unity restano soggette ai Unity Software Terms e alle relative note; questo progetto
+non le concede in licenza. Alpha scarica o riutilizza questi componenti come dati temporanei di compilazione
+locale. I loro binari e le assembly proxy del gioco generate non sono inclusi nel repository o nel pacchetto
+del mod. Il sorgente dell’helper incorporato chiama librerie esterne e non ne incorpora i binari. Un runtime
+mancante per una versione compilata proviene dallo ZIP ufficiale Microsoft .NET 6. Conservare licenza e note
+di terze parti incluse; il sorgente .NET è sotto MIT e restano valide le condizioni di distribuzione
+Microsoft. Le note restano con i componenti installati.
+
+Cpp2IL: https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LICENSE
+Il2CppInterop: https://github.com/BepInEx/Il2CppInterop/blob/master/LICENSE
+AsmResolver: https://github.com/Washi1337/AsmResolver/blob/master/LICENSE.md
+MelonLoader: https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md
+Unity Software Terms: https://unity.com/legal/terms-of-service/software
+.NET: https://github.com/dotnet/core/blob/main/license-information.md

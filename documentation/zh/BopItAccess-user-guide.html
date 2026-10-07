@@ -168,6 +168,7 @@
 
 <h3>当前安装路径：从源构建</h3>
 <p>公共 GitHub 存储库当前包含源代码和文档，没有编译的下载或 GitHub 版本。构建意味着将源文件转换为 mod 的 DLL。的 <a href="README.md#build-from-source">存储库的构建说明</a> 是维护的参考。以下是用日常语言表达的完整当前路线：</p>
+<p>以下手动编译步骤使用此前启动游戏时生成的引用。提供的安装程序预览版可以在不启动游戏的情况下准备Alpha编译引用，流程见下文。</p>
 <ol>
 <li>通过 Steam 在 Windows x64 上安装游戏。如果您没有使用默认位置，请从 Steam 的库中找到其文件夹。</li>
 <li>随着比赛结束， <a href="https://github.com/LavaGang/MelonLoader#how-to-use-the-installer">安装MelonLoader</a> 进入该游戏文件夹。该游戏的开发使用了 x64 MelonLoader 0.7.3 Open-Beta；其他组合尚未验证。启动游戏一次并再次关闭。这让 MelonLoader 准备 mod 所需的文件。</li>
@@ -181,15 +182,15 @@ dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"</cod
 <li>如果使用屏幕阅读器，请先启动它，再启动游戏。没有运行兼容的屏幕阅读器时，Prism 优先使用 OneCore；如果 OneCore 不可用，则使用 SAPI。</li>
 </ol>
 <p>一个常见的 Steam 位置是 <code>C:\Program Files (x86)\Steam\steamapps\common\Bop It!</code>。如果您选择不同的 Steam 图书馆，您的位置可能会有所不同。如果您有项目中本地提供的安装 ZIP，请关闭游戏并将其内容解压到游戏文件夹中，从而允许 <code>Mods</code> 要合并的文件夹。这些本地包与纯源代码 GitHub 存储库是分开的。</p>
-<div class="current"><h3>MelonLoader 启动窗口</h3><p>提供的 Loader.cfg 模板隐藏了 MelonLoader 的单独启动屏幕和控制台。在需要启动游戏的任何 alpha 构建准备之前，安装程序会自动应用相同的两个默认值。这些设置不会跳过游戏的标题屏幕或模组的欢迎屏幕。</p><p>关闭游戏后，打开游戏文件夹中的 <code>UserData/Loader.cfg</code>。如果文件已经存在，请在现有的 <code>[loader]</code> 节中将 <code>disable_start_screen</code> 设为 <code>true</code>，在现有的 <code>[console]</code> 节中将 <code>hide_console</code> 设为 <code>true</code>。保留其他所有设置。如果文件不存在，请复制构建文件中提供的 <code>UserData/Loader.cfg</code> 模板，或源码中的 <code>configuration/Loader.cfg</code>。切勿用整个模板覆盖已有的 Loader.cfg。</p><pre><code>[loader]
+<div class="current"><h3>MelonLoader 启动窗口</h3><p>附带的Loader.cfg模板会隐藏MelonLoader单独的启动画面和控制台。安装程序会在您自行启动游戏之前应用这两个默认值。它们不会跳过游戏标题画面或Mod欢迎画面。</p><p>关闭游戏后，打开游戏文件夹中的 <code>UserData/Loader.cfg</code>。如果文件已经存在，请在现有的 <code>[loader]</code> 节中将 <code>disable_start_screen</code> 设为 <code>true</code>，在现有的 <code>[console]</code> 节中将 <code>hide_console</code> 设为 <code>true</code>。保留其他所有设置。如果文件不存在，请复制构建文件中提供的 <code>UserData/Loader.cfg</code> 模板，或源码中的 <code>configuration/Loader.cfg</code>。切勿用整个模板覆盖已有的 Loader.cfg。</p><pre><code>[loader]
 disable_start_screen = true
 
 [console]
 hide_console = true</code></pre><p>该模组不会在每次启动时重置这些选项。如果您需要加载程序的窗口进行故障排除，您可以手动将任一值更改回 false。仅当安装程序的真实值仍然存在时，安装程​​序卸载才会恢复原始值，并保留其他加载程序配置编辑。</p></div>
-<h3>使用提供的安装程序预览</h3><div class="current"><p>关闭游戏，运行安装程序，并批准Windows’管理员提示。它在可用驱动器中搜索 Steam 个库。如果需要，请使用“浏览”选择游戏文件夹。它的状态字段是只读的：使用 Tab 键切换到它并使用光标键或选择并复制文本来查看其操作。进度条报告当前步骤。</p><p>如果存在最新的公共模组版本，安装会下载该版本。在此之前，仅当您愿意测试最新源时才使用 Install alpha：确认其警告，让它准备缺少的依赖项并编译 mod，然后等待成功消息。 alpha路线可能会打开游戏准备构建参考；当询问时关闭该游戏窗口，以便安装程序可以继续。</p><p>安装程序根据需要获取官方 MelonLoader 0.7.3、Prism 0.18.3 和便携式 .NET 6 SDK。它使用上面显示的两个配置标志隐藏 MelonLoader 自己的开始屏幕和控制台。更新使用 GitHub，无需新下载的安装程序。中止请求确认并撤消安装的更改。</p><p>可通过安装程序和 Windows 已安装的应用 卸载。它会删除自身拥有的 Mod 文件和 Bop It Access 偏好设置，包括 <code>UserData/BopItAccess.ini</code>、较旧的 <code>UserData/BopItAccess.ini.tmp</code>、经过验证的 <code>BopItAccess.ini.&lt;GUID&gt;.tmp</code> 残留文件（位于 <code>UserData</code>），以及已知 Mod 日志，包括 <code>Mods/BopItAccess.log.previous</code>。这里的 GUID 必须恰好为不带连字符的 32 个十六进制字符；保留无关文件。原生游戏偏好设置、无关 Mod 和 .NET SDK 保留。加载器配置清理仅恢复安装程序设定且未被改动的目标标记，保留其他编辑。若无法安全完成清理，状态日志和完成消息会说明原因。对于安装程序管理的副本，Windows 条目、卸载启动器及清理检查点会保留至清理成功，以便重试。较旧的手动安装没有持久所有权记录；其警告可在打开的安装程序中重试。</p></div>
+<h3>使用提供的安装程序预览</h3><div class="current" id="installer-workflow"><p>关闭游戏，运行安装程序，并批准Windows’管理员提示。它在可用驱动器中搜索 Steam 个库。如果需要，请使用“浏览”选择游戏文件夹。它的状态字段是只读的：使用 Tab 键切换到它并使用光标键或选择并复制文本来查看其操作。进度条报告当前步骤。</p><p>安装程序预览版0.1.7不会在安装过程中启动Bop It!。Install会在存在公开的已编译版本时下载该版本。Install alpha会下载最新源码，请求确认，并在部署文件之前进行编译。Alpha会重用完整的本地引用，或从已安装的游戏中生成临时编译引用，不会运行游戏。准备完成后，安装程序将MelonLoader放入游戏文件夹，并立即将BopItAccess.dll放入Mods。随后完成Prism、配置、文档和卸载文件。请等待成功提示，准备好后再自行通过Steam启动游戏。</p><p>已编译的公开版本需要Windows x64版.NET 6运行时，不需要开发SDK。现有完整运行时会被重用。如果缺少，安装程序下载Microsoft官方.NET 6.0.36运行时ZIP，并放入受支持的位置MelonLoader/Dependencies/dotnet。这些文件会记录在回滚和卸载清单中；其他Mod仍需要共享加载器时会保留。Install alpha还需要兼容SDK和.NET 6目标包。它重用已安装SDK或旧的兼容dotnet文件夹，必要时通过Microsoft官方安装程序安装系统级SDK。SDK在卸载或中止后保留。此预览版不会在游戏根目录创建新的dotnet SDK文件夹。必要时获取官方MelonLoader 0.7.3和Prism 0.18.3。更新仍通过GitHub进行。Abort会请求确认，并撤销本次安装对游戏文件的修改。</p><p>可通过安装程序和 Windows 已安装的应用 卸载。它会删除自身拥有的 Mod 文件和 Bop It Access 偏好设置，包括 <code>UserData/BopItAccess.ini</code>、较旧的 <code>UserData/BopItAccess.ini.tmp</code>、经过验证的 <code>BopItAccess.ini.&lt;GUID&gt;.tmp</code> 残留文件（位于 <code>UserData</code>），以及已知 Mod 日志，包括 <code>Mods/BopItAccess.log.previous</code>。这里的 GUID 必须恰好为不带连字符的 32 个十六进制字符；保留无关文件。原生游戏偏好设置、无关 Mod 和 .NET SDK 保留。加载器配置清理仅恢复安装程序设定且未被改动的目标标记，保留其他编辑。若无法安全完成清理，状态日志和完成消息会说明原因。对于安装程序管理的副本，Windows 条目、卸载启动器及清理检查点会保留至清理成功，以便重试。较旧的手动安装没有持久所有权记录；其警告可在打开的安装程序中重试。</p></div>
 
 
-<div class="current" id="installer-diagnostics"><h3>安装程序诊断日志</h3><p>安装程序预览版0.1.6会自动将本地诊断日志保存到 %ProgramData%\BopItAccess\diagnostics。选择 Save diagnostics（Alt+D）可指定文本文件，立即保存当前会话，并持续添加新记录直到关闭安装程序。Copy diagnostics（Alt+C）仅复制按下时的内容。下次测试安装或卸载前，请先选择 Save diagnostics。这样，即使自动日志被删除，也能保留完整记录。 日志包含状态消息、进度阶段和错误详情，不会上传到网络。分享前请检查内容：日志可能包含Windows用户名和完整文件夹路径。成功卸载后会删除自动日志，但您主动保存到其他位置的副本会保留。</p></div>
+<div class="current" id="installer-diagnostics"><h3>安装程序诊断日志</h3><p>安装程序预览版0.1.7会自动将本地诊断日志保存到 %ProgramData%\BopItAccess\diagnostics。选择 Save diagnostics（Alt+D）可指定文本文件，立即保存当前会话，并持续添加新记录直到关闭安装程序。Copy diagnostics（Alt+C）仅复制按下时的内容。下次测试安装或卸载前，请先选择 Save diagnostics。这样，即使自动日志被删除，也能保留完整记录。 日志包含状态消息、进度阶段和错误详情，不会上传到网络。分享前请检查内容：日志可能包含Windows用户名和完整文件夹路径。成功卸载后会删除自动日志，但您主动保存到其他位置的副本会保留。</p></div>
 </section>
 <section id="controls">
 <h2>玩家操作一览</h2>
@@ -230,6 +231,7 @@ hide_console = true</code></pre><p>该模组不会在每次启动时重置这些
 <h2>首次启动</h2>
 <ol>
 <li>如果使用屏幕阅读器，请先启动它。安装 MelonLoader、模组 DLL 和 <code>prism.dll</code> 后，通过 Steam 启动 Bop It!。</li>
+      <li>安装MelonLoader后首次手动启动游戏时，可能需要下载支持文件并生成游戏程序集。请等待约一分钟，部分系统可能更久。MelonLoader完成加载Mod之前，Mod无法朗读。请保持游戏开启，先等待Bop It Access启动提示，再等待标题画面或菜单提示，然后使用控制键。</li>
 <li>在您第一次使用该模组时，游戏的音乐、SFX 和 Voice Over 音量从 30 开始。如果您要升级，您保存的游戏音频级别将保持不变。</li>
 <li>等待公告： <q>Bop It Access 演讲已准备就绪。游戏仍在加载中。在使用控件之前，请等待标题屏幕或主菜单公告。</q> 该模组在游戏完成加载之前就已准备就绪。</li>
 <li>再等待几秒钟，即可看到标题屏幕公告。输入在加载期间可能不执行任何操作。按 拍打（默认为 Space，或控制器的确认按钮）从标题屏幕继续。首次启动欢迎功能时，欢迎屏幕会在主菜单之前获得焦点。使用向上/向下移动并使用 Enter、Space 或控制器确认进行确认。</li>
@@ -584,6 +586,7 @@ Voice=System default</code></pre>
 <tr><th scope="row">游戏和加载器构建参考</th><td>该 mod 针对 MelonLoader、Il2CppInterop.Runtime、游戏的 Assembly-CSharp 和 Il2Cppmscorlib 文件、Unity Engine/UI/Input System/TextMeshPro 模块以及游戏的FMODUnity 和 DOTween 组件。</td><td>这些来自单独安装的游戏和加载程序，根据其自己的适用条款。源存储库不会重新分发这些程序集。</td></tr>
 <tr><th scope="row"><a href="https://github.com/argosopentech/argos-translate">阿尔戈斯 翻译</a></th><td>用于准备第一个非英语模组和文档文本的离线创作工具。玩的时候不需要。</td><td><a href="https://github.com/argosopentech/argos-translate/blob/master/LICENSE">麻省理工学院许可证</a> 或CC0；模型和 Python 包不与 mod 捆绑在一起。</td></tr>
 <tr><th scope="row"><a href="https://www.crummy.com/software/BeautifulSoup/">美丽的汤</a></th><td>用于在翻译指南时保留 HTML 结构的创作工具。玩的时候不需要。</td><td>麻省理工学院许可证； Python 包未与 mod 捆绑在一起。</td></tr>
+<tr><th scope="row">安装程序Alpha编译工具</th><td>Cpp2IL、Il2CppInterop、AsmResolver和Unity库在不启动游戏的情况下准备本地引用。安装已编译版本不需要这些工具。</td><td>在本地下载或重用；源码和Mod包不包含其二进制文件或生成的游戏代理。独立许可证请参阅完整第三方声明。 <a href="THIRD-PARTY-NOTICES.txt">THIRD-PARTY-NOTICES.txt</a></td></tr>
 </tbody>
 </table></div>
 <p>有关运行时所需文件，请参阅<a href="THIRD-PARTY-NOTICES.txt">第三方软件声明</a>。当前 GitHub 仓库<strong>不包含</strong>编译后的模组 DLL 或 <code>prism.dll</code>。</p>

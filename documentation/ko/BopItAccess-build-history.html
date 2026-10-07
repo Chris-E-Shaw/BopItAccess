@@ -164,6 +164,13 @@
 <li>제거가 성공하면 자체 진단 파일을 정리하며 사용자가 직접 내보낸 복사본은 유지합니다. 위치, 검토 및 공유 방법과 사용자 이름 및 폴더 경로가 포함될 가능성을 문서화합니다. 모드는 v0.9.11로 유지하고 이전 검토 보고서를 변경하지 않습니다.</li>
 <li>Windows x64 자체 포함 설치 프로그램 미리 보기 0.1.6을 경고나 오류 없이 생성합니다. 확인은 컴파일과 정적 검토에 한정되며 자동 테스트, 설치 및 제거 실행, 게임 실행은 수행하지 않았습니다. 모드는 v0.9.11로 유지하고 GitHub 릴리스를 게시하지 않습니다.</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/982f55ddb5bbca3bbaab51af5e0e9ab7e41b56a4">소스 커밋</a> · GitHub 릴리스 없음</p></article>
+      <article class="commit" id="installer-0-1-7"><div class="meta"><span class="version">Installer 0.1.7 preview</span><span class="kind">fix · flow · docs</span></div><h3>fix(installer): 첫 수동 게임 실행 전에 모드 배치</h3><ul>
+<li>참조 생성을 위해 게임을 실행하는 코드를 제거합니다. 배치 전에 공개 버전을 준비하거나 Alpha를 컴파일합니다. 완전한 로컬 프록시를 재사용하거나 게임 실행 없이 설치된 게임에서 임시 Cpp2IL/Il2CppInterop 빌드 참조를 생성합니다.</li>
+<li>MelonLoader를 배치한 직후 Mods/BopItAccess.dll을 복사합니다. 이후 Prism, 설정, 문서와 제거 지원을 마무리합니다. 첫 실행은 플레이어가 직접 하며 어셈블리 생성 대기 시간을 완료 메시지와 모든 가이드에서 설명합니다.</li>
+<li>컴파일된 버전은 .NET 6 런타임을 확인하고 SDK와 .NET 6 타기팅 팩은 Alpha에만 요구합니다. 검증된 구성 요소나 완전한 이전 SDK를 재사용합니다. 없는 런타임은 공식 Microsoft .NET 6.0.36 x64 ZIP에서 MelonLoader/Dependencies/dotnet에 트랜잭션 소유권으로 배치합니다. 없는 Alpha SDK는 공식 Microsoft 설치 프로그램으로 시스템 전체에 설치합니다. 게임 루트에 새 dotnet SDK를 만들지 않으며 SDK와 다른 모드가 필요한 로더 파일을 유지합니다.</li>
+<li>진단 기록, 소유권 기록, 롤백과 제거 보호를 유지합니다. 사용자 로그는 Mods에 미리 배치된 모드가 어셈블리 생성 후 로드된 것을 보여 줍니다. 이는 배치 순서의 근거이며 이 설치 프로그램의 실행 테스트는 아닙니다. 모드는 v0.9.11, 모드 빌드 수는 58로 유지합니다.</li>
+<li>Windows x64 자체 포함 설치 프로그램 0.1.7을 게시하고 내장 참조 도우미를 경고와 오류 없이 컴파일했습니다. 확인은 컴파일과 정적 검토만 했으며 자동 테스트, 오프라인 참조 생성, 설치/제거 프로그램 실행이나 게임 실행은 하지 않았습니다. 모드는 v0.9.11로 유지하며 GitHub Release는 게시하지 않았습니다.</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/733893c7935f4e7c169bbe5fc80b0a4fe11f985c">소스 커밋</a> · GitHub 릴리스 없음</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37개의 로컬 소스 아카이브가 공개 소스 커밋을 재구성하는 데 사용되었습니다. 설치 패키지는 로컬로 유지되며 GitHub 릴리스가 아닙니다. v0.5.4 리바인딩 미리보기 및 v0.5.18 SAPI 트림 실험은 기록 구현으로 기록됩니다. 이후 항목에는 변경된 방법이 나와 있습니다.</p><p><a href="#history">빌드 기록으로 돌아가기</a></p></div></footer>

@@ -427,7 +427,7 @@ Voice=System default
 MelonLoader 启动窗口
 ---------------------------
 
-提供的 Loader.cfg 模板隐藏了 MelonLoader 的单独启动屏幕和控制台。在需要启动游戏的任何 alpha 构建准备之前，安装程序会自动应用相同的两个默认值。这些设置不会跳过游戏的标题屏幕或模组的欢迎屏幕。
+附带的Loader.cfg模板会隐藏MelonLoader单独的启动画面和控制台。安装程序会在您自行启动游戏之前应用这两个默认值。它们不会跳过游戏标题画面或Mod欢迎画面。
 
 关闭游戏后，打开游戏文件夹中的 UserData/Loader.cfg。如果文件已经存在，请在现有的 [loader] 节中将 disable_start_screen 设为 true，在现有的 [console] 节中将 hide_console 设为 true。保留其他所有设置。如果文件不存在，请复制构建文件中提供的 UserData/Loader.cfg 模板，或源码中的 configuration/Loader.cfg。切勿用整个模板覆盖已有的 Loader.cfg。
 
@@ -444,4 +444,19 @@ hide_console = true
 安装程序诊断日志
 --------
 
-安装程序预览版0.1.6会自动将本地诊断日志保存到 %ProgramData%\BopItAccess\diagnostics。选择 Save diagnostics（Alt+D）可指定文本文件，立即保存当前会话，并持续添加新记录直到关闭安装程序。Copy diagnostics（Alt+C）仅复制按下时的内容。下次测试安装或卸载前，请先选择 Save diagnostics。这样，即使自动日志被删除，也能保留完整记录。 日志包含状态消息、进度阶段和错误详情，不会上传到网络。分享前请检查内容：日志可能包含Windows用户名和完整文件夹路径。成功卸载后会删除自动日志，但您主动保存到其他位置的副本会保留。
+安装程序预览版0.1.7会自动将本地诊断日志保存到 %ProgramData%\BopItAccess\diagnostics。选择 Save diagnostics（Alt+D）可指定文本文件，立即保存当前会话，并持续添加新记录直到关闭安装程序。Copy diagnostics（Alt+C）仅复制按下时的内容。下次测试安装或卸载前，请先选择 Save diagnostics。这样，即使自动日志被删除，也能保留完整记录。 日志包含状态消息、进度阶段和错误详情，不会上传到网络。分享前请检查内容：日志可能包含Windows用户名和完整文件夹路径。成功卸载后会删除自动日志，但您主动保存到其他位置的副本会保留。
+
+安装流程和首次启动
+---------
+
+安装程序预览版0.1.7不会在安装过程中启动Bop It!。Install会在存在公开的已编译版本时下载该版本。Install
+alpha会下载最新源码，请求确认，并在部署文件之前进行编译。Alpha会重用完整的本地引用，或从已安装的游戏中生成临时编译引用，不会运行游戏。准备完成后，安装程序将MelonLoader放入游戏文件夹，并立即将BopItAccess.dll放入Mods。随后完成Prism、配置、文档和卸载文件。请等待成功提示，准备好后再自行通过Steam启动游戏。
+
+已编译的公开版本需要Windows x64版.NET 6运行时，不需要开发SDK。现有完整运行时会被重用。如果缺少，安装程序下载Microsoft官方.NET
+6.0.36运行时ZIP，并放入受支持的位置MelonLoader/Dependencies/dotnet。这些文件会记录在回滚和卸载清单中；其他Mod仍需要共享加载器时会保留。Install
+alpha还需要兼容SDK和.NET
+6目标包。它重用已安装SDK或旧的兼容dotnet文件夹，必要时通过Microsoft官方安装程序安装系统级SDK。SDK在卸载或中止后保留。此预览版不会在游戏根目录创建新的dotnet
+SDK文件夹。必要时获取官方MelonLoader 0.7.3和Prism 0.18.3。更新仍通过GitHub进行。Abort会请求确认，并撤销本次安装对游戏文件的修改。
+
+安装MelonLoader后首次手动启动游戏时，可能需要下载支持文件并生成游戏程序集。请等待约一分钟，部分系统可能更久。MelonLoader完成加载Mod之前，Mod无法朗读。请保持游戏开启，先等待Bop It
+Access启动提示，再等待标题画面或菜单提示，然后使用控制键。

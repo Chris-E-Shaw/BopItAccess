@@ -37,3 +37,25 @@ Der Mod kontaktiert Google nicht und benötigt zur Laufzeit keine Internetverbin
 Beautiful Soup 4 wurde verwendet, um die HTML-Struktur bei der Vorbereitung beizubehalten
 übersetzte Reiseführer. Es ist MIT-lizenziert und nicht Teil der Mod-Laufzeit.
 Projekt- und Lizenzinformationen: https://www.crummy.com/software/BeautifulSoup/
+
+Alpha-Build-Werkzeuge und Laufzeitabhängigkeiten des Installers
+---------------------------------------------------------------
+
+Installer alpha verwendet Cpp2IL und das StrippedCodeRegSupport-Plugin von Sam Byass (SamboyCoding) und
+Mitwirkenden unter der MIT-Lizenz. Il2CppInterop von BepInEx-Mitwirkenden steht unter LGPL Version 3;
+AsmResolver von Washi und Mitwirkenden unter MIT. Il2CppInterop und AsmResolver werden durch den separat
+heruntergeladenen MelonLoader geliefert. Unity-Build-Referenzbibliotheken unterliegen den Unity Software Terms
+und beigefügten Hinweisen; dieses Projekt lizenziert sie nicht. Alpha lädt diese Komponenten herunter oder
+verwendet sie als vorübergehende lokale Build-Eingaben erneut. Ihre Binärdateien und erzeugte
+Spielproxyassemblys sind weder im Quellrepository noch im Mod-Paket enthalten. Der eingebettete
+Helferquellcode ruft diese externen Bibliotheken auf und enthält deren Binärdateien nicht. Eine fehlende
+Laufzeit für Veröffentlichungen stammt aus Microsofts offiziellem .NET-6-Laufzeit-ZIP. Dessen Lizenz und
+Drittanbieterhinweise erhalten; .NET-Quellcode ist MIT-lizenziert, während Microsofts beigefügte
+Vertriebsbedingungen weiter gelten. Loader- und Laufzeithinweise bleiben bei den installierten Komponenten.
+
+Cpp2IL: https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LICENSE
+Il2CppInterop: https://github.com/BepInEx/Il2CppInterop/blob/master/LICENSE
+AsmResolver: https://github.com/Washi1337/AsmResolver/blob/master/LICENSE.md
+MelonLoader: https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md
+Unity Software Terms: https://unity.com/legal/terms-of-service/software
+.NET: https://github.com/dotnet/core/blob/main/license-information.md

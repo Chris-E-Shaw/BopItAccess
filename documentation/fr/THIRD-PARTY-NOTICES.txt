@@ -37,3 +37,25 @@ le mod ne contacte pas Google et ne nécessite pas de connexion Internet au mome
 Beautiful Soup 4 a été utilisé pour préserver la structure HTML lors de la préparation du
 guides traduits. Il est sous licence MIT et ne fait pas partie du runtime du mod.
 Informations sur le projet et la licence : https://www.crummy.com/software/BeautifulSoup/
+
+Outils de compilation alpha et dépendances de l’installateur
+------------------------------------------------------------
+
+Installer alpha utilise Cpp2IL et son plugin StrippedCodeRegSupport de Sam Byass (SamboyCoding) et
+contributeurs, sous licence MIT. Il2CppInterop des contributeurs BepInEx est sous LGPL version 3 ; AsmResolver
+de Washi et contributeurs sous MIT. Il2CppInterop et AsmResolver sont fournis par MelonLoader téléchargé
+séparément. Les bibliothèques de référence Unity restent soumises aux Unity Software Terms et aux notices
+fournies ; ce projet ne leur accorde aucune licence. Alpha télécharge ou réutilise ces composants comme
+entrées temporaires de compilation locale. Leurs binaires et les proxys du jeu générés ne sont inclus ni dans
+ce dépôt source ni dans le paquet du mod. Le code du petit outil intégré appelle ces bibliothèques externes
+sans intégrer leurs binaires. Un environnement d’exécution manquant pour une version compilée provient du ZIP
+officiel Microsoft .NET 6. Conserver sa licence et ses notices tierces ; le code source .NET est sous MIT, et
+les conditions de distribution fournies par Microsoft continuent de s’appliquer. Les notices restent avec les
+composants installés.
+
+Cpp2IL: https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LICENSE
+Il2CppInterop: https://github.com/BepInEx/Il2CppInterop/blob/master/LICENSE
+AsmResolver: https://github.com/Washi1337/AsmResolver/blob/master/LICENSE.md
+MelonLoader: https://github.com/LavaGang/MelonLoader/blob/master/LICENSE.md
+Unity Software Terms: https://unity.com/legal/terms-of-service/software
+.NET: https://github.com/dotnet/core/blob/main/license-information.md
