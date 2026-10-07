@@ -201,6 +201,11 @@ internal sealed class InstallerService
             try
             {
                 Log("Preparing a single-pass installation. Bop It! will not be launched by the installer.");
+                if (alpha)
+                {
+                    OfflineBuildReferences.ValidateEmbeddedTemplates();
+                    Log("Verified both embedded offline build helper templates.");
+                }
                 var dependencies = await SdkAndBuild.EnsureDependenciesAsync(alpha, game, temp, Log, Progress, ct);
                 Log("Verifying MelonLoader 0.7.3 Open-Beta.");
                 bool melonWasPresent = Directory.Exists(Path.Combine(game, "MelonLoader")) ||

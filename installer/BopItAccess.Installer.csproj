@@ -13,14 +13,34 @@
     <PublishSingleFile>true</PublishSingleFile>
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <Version>0.1.7</Version>
+    <Version>0.1.8</Version>
   </PropertyGroup>
   <ItemGroup>
-    <EmbeddedResource Include="uninstall.ps1" LogicalName="BopItAccess.Installer.uninstall.ps1" />
+    <EmbeddedResource Include="uninstall.ps1" LogicalName="BopItAccess.Installer.uninstall.ps1" WithCulture="false" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="BuildReferenceGenerator\**\*.cs" />
-    <EmbeddedResource Include="BuildReferenceGenerator\Program.cs.txt" LogicalName="BopItAccess.Installer.BuildReferenceGenerator.Program.cs.txt" />
-    <EmbeddedResource Include="BuildReferenceGenerator\BuildReferenceGenerator.csproj.txt" LogicalName="BopItAccess.Installer.BuildReferenceGenerator.BuildReferenceGenerator.csproj.txt" />
+    <!-- .cs is also the Czech culture code. These templates are source data,
+         so keep them in the main assembly on every build host and UI language. -->
+    <EmbeddedResource Include="BuildReferenceGenerator\Program.cs.txt" LogicalName="BopItAccess.Installer.BuildReferenceGenerator.Program.cs.txt" WithCulture="false" />
+    <EmbeddedResource Include="BuildReferenceGenerator\BuildReferenceGenerator.csproj.txt" LogicalName="BopItAccess.Installer.BuildReferenceGenerator.BuildReferenceGenerator.csproj.txt" WithCulture="false" />
   </ItemGroup>
+  <Target Name="ValidateRequiredInstallerResources" AfterTargets="SplitResourcesByCulture">
+    <ItemGroup>
+      <_RequiredInstallerResource Include="@(EmbeddedResource)"
+          Condition="'%(EmbeddedResource.Identity)' == 'uninstall.ps1' or '%(EmbeddedResource.Identity)' == 'BuildReferenceGenerator\Program.cs.txt' or '%(EmbeddedResource.Identity)' == 'BuildReferenceGenerator\BuildReferenceGenerator.csproj.txt'" />
+      <_MisplacedInstallerResource Include="@(_RequiredInstallerResource)"
+          Condition="'%(_RequiredInstallerResource.WithCulture)' != 'false' or '%(_RequiredInstallerResource.Culture)' != ''" />
+    </ItemGroup>
+    <Error Condition="'@(_RequiredInstallerResource->Count())' != '3'"
+        Text="The installer must embed its uninstall script and both offline build templates." />
+    <Error Condition="'@(_MisplacedInstallerResource)' != ''"
+        Text="Required installer resources must remain culture-neutral in the main assembly: @(_MisplacedInstallerResource). Set WithCulture=false." />
+    <Error Condition="'%(_RequiredInstallerResource.Identity)' == 'uninstall.ps1' and '%(_RequiredInstallerResource.LogicalName)' != 'BopItAccess.Installer.uninstall.ps1'"
+        Text="The uninstall script has an unexpected embedded resource name." />
+    <Error Condition="'%(_RequiredInstallerResource.Identity)' == 'BuildReferenceGenerator\Program.cs.txt' and '%(_RequiredInstallerResource.LogicalName)' != 'BopItAccess.Installer.BuildReferenceGenerator.Program.cs.txt'"
+        Text="The offline helper source has an unexpected embedded resource name." />
+    <Error Condition="'%(_RequiredInstallerResource.Identity)' == 'BuildReferenceGenerator\BuildReferenceGenerator.csproj.txt' and '%(_RequiredInstallerResource.LogicalName)' != 'BopItAccess.Installer.BuildReferenceGenerator.BuildReferenceGenerator.csproj.txt'"
+        Text="The offline helper project has an unexpected embedded resource name." />
+  </Target>
 </Project>

@@ -29,6 +29,16 @@ internal static class OfflineBuildReferences
         "Il2CppInterop.Generator", "Il2CppInterop.Common", "Microsoft.Extensions.Logging.Abstractions", "System.Diagnostics.DiagnosticSource"
     };
 
+    internal static void ValidateEmbeddedTemplates()
+    {
+        foreach (string name in new[] { "Program.cs.txt", "BuildReferenceGenerator.csproj.txt" })
+        {
+            using var resource = OpenTemplate(name);
+            if (resource.Length == 0)
+                throw new InvalidDataException("The installer contains an empty offline build template: " + name);
+        }
+    }
+
     internal static async Task<string> PrepareAsync(string dotnet, string game, string loaderRoot,
         string temporaryRoot, Action<string> log, Action<string, long, long?> progress,
         CancellationToken cancellation)
@@ -193,12 +203,16 @@ internal static class OfflineBuildReferences
 
     private static async Task<string> ReadResourceAsync(string name, CancellationToken cancellation)
     {
-        await using var resource = Assembly.GetExecutingAssembly().GetManifestResourceStream(
-            "BopItAccess.Installer.BuildReferenceGenerator." + name)
-            ?? throw new InvalidDataException("Missing embedded offline build helper resource: " + name);
+        await using var resource = OpenTemplate(name);
         using var reader = new StreamReader(resource, Encoding.UTF8);
         return await reader.ReadToEndAsync(cancellation);
     }
+
+    private static Stream OpenTemplate(string name) =>
+        Assembly.GetExecutingAssembly().GetManifestResourceStream(
+            "BopItAccess.Installer.BuildReferenceGenerator." + name)
+        ?? throw new InvalidDataException("The installer is missing its offline build helper template: " + name +
+            ". Download the latest installer preview. No game files have been changed.");
 
     private static async Task WriteResourceAsync(string name, string destination, CancellationToken cancellation) =>
         await File.WriteAllTextAsync(destination, await ReadResourceAsync(name, cancellation), new UTF8Encoding(false), cancellation);
