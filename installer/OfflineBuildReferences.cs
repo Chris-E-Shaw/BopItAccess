@@ -4,6 +4,7 @@ using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Security;
 using System.Text;
+using System.Text.Json;
 using System.Text.RegularExpressions;
 
 namespace BopItAccess.Installer;
@@ -26,7 +27,10 @@ internal static class OfflineBuildReferences
     private static readonly string[] HelperReferences =
     {
         "AsmResolver", "AsmResolver.DotNet", "AsmResolver.PE", "AsmResolver.PE.File",
-        "Il2CppInterop.Generator", "Il2CppInterop.Common", "Microsoft.Extensions.Logging.Abstractions", "System.Diagnostics.DiagnosticSource"
+        "Il2CppInterop.Generator", "Il2CppInterop.Common", "Microsoft.Extensions.Logging.Abstractions", "System.Diagnostics.DiagnosticSource",
+        // Runtime dependencies of the pinned MelonLoader generator must also be
+        // references: copying DLLs as content does not register them in deps.json.
+        "Iced", "MonoMod.Backports", "MonoMod.ILHelpers", "Microsoft.Extensions.DependencyInjection.Abstractions"
     };
 
     internal static void ValidateEmbeddedTemplates()
@@ -89,6 +93,28 @@ internal static class OfflineBuildReferences
             log("Reusing matching game proxies with the staged, verified MelonLoader build libraries.");
             return references;
         }
+        var helper = Path.Combine(temporaryRoot, "reference-helper");
+        Directory.CreateDirectory(helper);
+        await WriteResourceAsync("Program.cs.txt", Path.Combine(helper, "Program.cs"), cancellation);
+        var projectText = await ReadResourceAsync("BuildReferenceGenerator.csproj.txt", cancellation);
+        string Escape(string text) => SecurityElement.Escape(text) ?? "";
+        string referenceXml = string.Join(Environment.NewLine, HelperReferences.Select(name =>
+            "<Reference Include=\"" + Escape(name) + "\"><HintPath>" + Escape(Path.Combine(stagedLoader, name + ".dll")) +
+            "</HintPath><Private>true</Private></Reference>"));
+        projectText = projectText.Replace("{{REFERENCES}}", referenceXml, StringComparison.Ordinal);
+        var project = Path.Combine(helper, "BuildReferenceGenerator.csproj");
+        await File.WriteAllTextAsync(project, projectText, new UTF8Encoding(false), cancellation);
+        await File.WriteAllTextAsync(Path.Combine(helper, "NuGet.Config"),
+            "<configuration><packageSources><clear /></packageSources></configuration>", cancellation);
+        progress("Building offline reference helper", 0, null);
+        await RunProcessAsync(dotnet, helper,
+            new[] { "build", project, "-c", "Release", "--nologo", "-p:RestoreConfigFile=" + Path.Combine(helper, "NuGet.Config") },
+            "Reference helper build", TimeSpan.FromMinutes(3), dotnet, log, cancellation);
+        var helperDll = Path.Combine(helper, "bin", "Release", "net6.0", "BopItAccess.BuildReferenceGenerator.dll");
+        ValidateRegularFile(helperDll);
+        ValidateHelperDependencies(helperDll, stagedLoader, cancellation);
+        log("Verified all " + HelperReferences.Length + " offline helper dependencies in its runtime manifest and output files.");
+
         var cpp2IlRoot = Path.Combine(temporaryRoot, "cpp2il");
         Directory.CreateDirectory(cpp2IlRoot);
         var cpp2Il = Path.Combine(cpp2IlRoot, "Cpp2IL.exe");
@@ -111,26 +137,6 @@ internal static class OfflineBuildReferences
                 "attributeanalyzer", "attributeinjector", "--output-to", dumped }, "Cpp2IL", TimeSpan.FromMinutes(8), dotnet, log, cancellation);
         ValidateRegularFile(Path.Combine(dumped, "Assembly-CSharp.dll"));
 
-        var helper = Path.Combine(temporaryRoot, "reference-helper");
-        Directory.CreateDirectory(helper);
-        await WriteResourceAsync("Program.cs.txt", Path.Combine(helper, "Program.cs"), cancellation);
-        var projectText = await ReadResourceAsync("BuildReferenceGenerator.csproj.txt", cancellation);
-        string Escape(string text) => SecurityElement.Escape(text) ?? "";
-        string referenceXml = string.Join(Environment.NewLine, HelperReferences.Select(name =>
-            "<Reference Include=\"" + Escape(name) + "\"><HintPath>" + Escape(Path.Combine(stagedLoader, name + ".dll")) +
-            "</HintPath><Private>true</Private></Reference>"));
-        projectText = projectText.Replace("{{REFERENCES}}", referenceXml, StringComparison.Ordinal)
-            .Replace("{{LOADER_DIRECTORY}}", Escape(stagedLoader), StringComparison.Ordinal);
-        var project = Path.Combine(helper, "BuildReferenceGenerator.csproj");
-        await File.WriteAllTextAsync(project, projectText, new UTF8Encoding(false), cancellation);
-        await File.WriteAllTextAsync(Path.Combine(helper, "NuGet.Config"),
-            "<configuration><packageSources><clear /></packageSources></configuration>", cancellation);
-        progress("Building offline reference helper", 0, null);
-        await RunProcessAsync(dotnet, helper,
-            new[] { "build", project, "-c", "Release", "--nologo", "-p:RestoreConfigFile=" + Path.Combine(helper, "NuGet.Config") },
-            "Reference helper build", TimeSpan.FromMinutes(3), dotnet, log, cancellation);
-        var helperDll = Path.Combine(helper, "bin", "Release", "net6.0", "BopItAccess.BuildReferenceGenerator.dll");
-        ValidateRegularFile(helperDll);
         var proxies = Path.Combine(references, "MelonLoader", "Il2CppAssemblies");
         Directory.CreateDirectory(proxies);
         progress("Generating temporary interop references", 0, null);
@@ -140,6 +146,52 @@ internal static class OfflineBuildReferences
         progress("Generating temporary interop references", 1, 1);
         log("Verified temporary build references. MelonLoader will generate its runtime assemblies at the player's first launch.");
         return references;
+    }
+
+    private static void ValidateHelperDependencies(string helperDll, string loaderLibraries, CancellationToken cancellation)
+    {
+        string manifest = Path.ChangeExtension(helperDll, ".deps.json");
+        ValidateRegularFile(manifest);
+        using var input = File.OpenRead(manifest);
+        using var document = JsonDocument.Parse(input);
+        var root = document.RootElement;
+        string target = root.GetProperty("runtimeTarget").GetProperty("name").GetString()
+            ?? throw new InvalidDataException("The offline helper runtime manifest has no target.");
+        var runtimeAssets = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+        foreach (var library in root.GetProperty("targets").GetProperty(target).EnumerateObject())
+        {
+            if (!library.Value.TryGetProperty("runtime", out var assets)) continue;
+            foreach (var asset in assets.EnumerateObject()) runtimeAssets.Add(asset.Name);
+        }
+        string helperDirectory = Path.GetDirectoryName(helperDll)!;
+        foreach (string name in HelperReferences)
+        {
+            cancellation.ThrowIfCancellationRequested();
+            string fileName = name + ".dll";
+            if (!runtimeAssets.Contains(fileName))
+                throw new InvalidDataException("Offline helper dependency is missing from its runtime manifest: " +
+                    fileName + ". No game files have been changed.");
+            string source = Path.Combine(loaderLibraries, fileName);
+            string output = Path.Combine(helperDirectory, fileName);
+            ValidateRegularFile(source);
+            ValidateRegularFile(output);
+            if (InstallerNetwork.Sha256(source) != InstallerNetwork.Sha256(output))
+                throw new InvalidDataException("Offline helper dependency does not match the staged loader: " + fileName);
+            using var assembly = File.OpenRead(output);
+            using var pe = new PEReader(assembly);
+            if (!pe.HasMetadata || !pe.GetMetadataReader().IsAssembly)
+                throw new InvalidDataException("Offline helper dependency is not a managed assembly: " + fileName);
+            var metadata = pe.GetMetadataReader();
+            foreach (var handle in metadata.AssemblyReferences)
+            {
+                string dependency = metadata.GetString(metadata.GetAssemblyReference(handle).Name) + ".dll";
+                // Framework references are supplied by .NET. Any loader-provided
+                // dependency must be one of the explicitly validated libraries.
+                if (File.Exists(Path.Combine(loaderLibraries, dependency)) &&
+                    !HelperReferences.Contains(Path.GetFileNameWithoutExtension(dependency), StringComparer.OrdinalIgnoreCase))
+                    throw new InvalidDataException("Offline helper has an unregistered loader dependency: " + dependency);
+            }
+        }
     }
 
     private static bool CacheMatchesGame(string game, string gameAssembly)

@@ -12,6 +12,5 @@
   </PropertyGroup>
   <ItemGroup>
     {{REFERENCES}}
-    <None Include="{{LOADER_DIRECTORY}}\*.dll" Link="%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
