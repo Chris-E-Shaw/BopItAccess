@@ -35,6 +35,7 @@ internal sealed class InstallerForm : Form
     private bool _reportedDiagnosticFailure;
     private bool _reportedExportFailure;
     private InstallerGamepad? _gamepad;
+    private IDisposable? _startupFocus;
     private Task? _backendTask;
     private bool _operationIsUninstall;
     private bool _exitAfterOperation;
@@ -233,8 +234,10 @@ internal sealed class InstallerForm : Form
         _service.StateChanged += state => OnUiThread(() => ShowState(state));
         Shown += async (_, _) =>
         {
-            InstallerWindowFocus.Activate(this);
-            _gamePath.Focus();
+            _startupFocus = InstallerWindowFocus.BeginStartup(this,
+                () => _gamePath.CanFocus ? _gamePath : _statusLog,
+                () => !_quitApproved && !_closeAfterInitialization && _operationCancellation == null &&
+                    _quitDialog == null && !OwnedForms.Any(dialog => dialog.Visible));
             _gamepad = new InstallerGamepad(this, RequestQuit,
                 () => _showAdvanced.Checked = !_showAdvanced.Checked,
                 () => { if (_operationCancellation != null && _allowAbort) RequestAbortWithConfirmation(); else RequestQuit(); });
@@ -576,11 +579,14 @@ internal sealed class InstallerForm : Form
         bool reviewing = _statusLog.Focused;
         int caret = _statusLog.SelectionStart;
         int selection = _statusLog.SelectionLength;
+        int activeEnd = reviewing ? InstallerGamepad.ActiveCaret(_statusLog) : caret;
+        int anchor = activeEnd == caret ? caret + selection : caret;
         _statusLog.AppendText($"[{DateTime.Now:HH:mm:ss}] {message}{Environment.NewLine}");
         if (reviewing)
         {
-            _statusLog.SelectionStart = caret;
-            _statusLog.SelectionLength = selection;
+            // Keep a backwards selection's active end as well as its range.
+            // New status lines must not reverse RT+direction text selection.
+            _statusLog.Select(anchor, activeEnd - anchor);
             _statusLog.ScrollToCaret();
         }
         if (!_reportedDiagnosticFailure && _service.Diagnostics.PersistenceFailure is string failure)
@@ -658,9 +664,15 @@ internal sealed class InstallerForm : Form
         }
     }
 
+    protected override void WndProc(ref Message message)
+    {
+        if (InstallerWindowFocus.TryHandleActivationMessage(this, ref message)) return;
+        base.WndProc(ref message);
+    }
+
     protected override void Dispose(bool disposing)
     {
-        if (disposing) { _gamepad?.Dispose(); _initializationCancellation.Dispose(); }
+        if (disposing) { _startupFocus?.Dispose(); _gamepad?.Dispose(); _initializationCancellation.Dispose(); }
         base.Dispose(disposing);
     }
 }

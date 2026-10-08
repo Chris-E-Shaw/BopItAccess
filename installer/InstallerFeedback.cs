@@ -5,12 +5,13 @@ namespace BopItAccess.Installer;
 /// <summary>Native Windows screen-reader notifications; never starts a second speech engine.</summary>
 internal static class InstallerFeedback
 {
-    internal static bool Announce(Control source, string message, bool important = false)
+    internal static bool Announce(Control source, string message, bool important = false,
+        bool logContent = true, bool replacePending = false)
     {
         if (string.IsNullOrWhiteSpace(message) || source.IsDisposed || !source.IsHandleCreated) return false;
         if (source.InvokeRequired)
         {
-            try { source.BeginInvoke(() => Announce(source, message, important)); }
+            try { source.BeginInvoke(() => Announce(source, message, important, logContent, replacePending)); }
             catch (InvalidOperationException) { return false; }
             return true;
         }
@@ -18,11 +19,13 @@ internal static class InstallerFeedback
         {
             bool raised = source.AccessibilityObject.RaiseAutomationNotification(
                 AutomationNotificationKind.Other,
-                important ? AutomationNotificationProcessing.ImportantAll : AutomationNotificationProcessing.CurrentThenMostRecent,
+                replacePending ? AutomationNotificationProcessing.ImportantMostRecent :
+                    important ? AutomationNotificationProcessing.ImportantAll : AutomationNotificationProcessing.CurrentThenMostRecent,
                 message);
             InstallerDiagnostics.Current?.Write("ACCESSIBILITY", raised
-                ? "Posted Windows screen-reader notification: " + message
-                : "Windows could not post the screen-reader notification; the message remains visible: " + message);
+                ? logContent ? "Posted Windows screen-reader notification: " + message : "Posted controller text-review notification."
+                : logContent ? "Windows could not post the screen-reader notification; the message remains visible: " + message
+                    : "Windows could not post a controller text-review notification; the text remains visible.");
             return raised;
         }
         catch (Exception ex) when (ex is InvalidOperationException or System.Runtime.InteropServices.COMException or NotSupportedException)
