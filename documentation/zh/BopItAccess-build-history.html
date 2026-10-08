@@ -42,7 +42,7 @@
 <header>
 <div class="wrap">
 <h1>Bop It Access：技术构建历史</h1>
-<p class="intro">按时间顺序记录从 v0.1.0 到 v0.9.11 的 58 个模组构建版本，以及独立的安装程序构建版本。每个条目都有范围变更摘要和实施详细信息。公共 GitHub 存储库包含源代码，尚未编译下载或 GitHub 版本。</p>
+<p class="intro">按时间顺序记录从 v0.1.0 到 v0.9.12 的 59 个模组构建版本，以及独立的安装程序构建版本。每个条目都有范围变更摘要和实施详细信息。公共 GitHub 存储库包含源代码，尚未编译下载或 GitHub 版本。</p>
 <p class="note"><strong>Git 出处：</strong> Git 是在 v0.6.12 之后引入的。 37 个源提交是根据保留的源 ZIP 重建的；他们的 Git 日期描述了导入，而不是原始构建事件。 Christopher Shaw 是提交作者。合著者预告片反映了相应构建工作的经过验证的模型记录：第一个构建为 GPT-6 Luna，其余 36 个构建为 GPT-6 Sol。本地安装包和版本标签不是初始 GitHub 发布的一部分。</p>
 <nav aria-label="打造系列"><a href="#foundation">v0.1–v0.4 基础版</a><a href="#series05">v0.5系列</a><a href="#series06">v0.6系列</a><a href="#series07">v0.7系列</a><a href="#series08">v0.8 多语种</a><a href="#series09">v0.9 Prism</a><a href="#installer-preview">Windows 安装程序</a></nav>
 </div>
@@ -145,7 +145,11 @@
 <li>更新英语及所有支持语言的歌曲选择说明和README说明。在注意事项与限制中补充：四个舞台的描述均未经过有视力的用户或玩家核实准确性，仍需要对照实际画面进行审核和确认。 两份西班牙语指南均保留 G 键名称，不将其翻译。</li>
 <li>.NET 6模组已完成Release编译，警告和错误均为0。检查仅限于编译和静态审阅，未运行自动测试或启动游戏。安装程序预览版保持为0.1.5。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/1d9b671a6f4a7575a5b99f8c973d200830d2c0e5">源代码提交</a> · 尚无已编译的GitHub发布版本</p></article>
-    </section>
+          <article class="commit" id="v0-9-12"><div class="meta"><span class="version">v0.9.12</span><span class="kind">fix · hints</span></div><h3>fix(hints): 为自动提示追踪原生输入设备</h3><ul>
+<li>修正Automatic设备追踪：托管C#类型检查未识别IL2CPP派生输入包装，导致Automatic保持错误设备，而固定Controller正常。使用原生TryCast描述符及指针身份，观察实际PlayerInput副本，区分新操作与持续按住的控件，不因未使用的按键重置提示计时。 对重新绑定、默认值重置及配置文件变更，使用代数保护输入缓存；包含当前映射和模组操作签名，避免同一帧重复分配。</li>
+<li>.NET 6 x64模组Release编译完成，警告及错误均为0。验证仅限编译和静态源代码审查，未进行自动测试、游戏或输入／语音运行检查。自动设备切换与提示时间表现仍待人工验证。这是第59次模组构建，未发布公开发行版或标签。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/3d906f9ac012ef9ae85b93c8eecfe5f56496b123">源代码提交</a> · 无GitHub Release</p></article>
+</section>
     <section id="installer-preview" aria-labelledby="installer-preview-heading">
       <h2 id="installer-preview-heading">Windows 安装程序</h2>
       <article class="commit" id="installer-0-1-3"><div class="meta"><span class="version">Installer 0.1.3 preview</span><span class="kind">fix · docs</span></div><h3>fix(安装程序)：卸载时删除可编辑设置</h3><ul><li>验证固定的 UserData/BopItAccess.ini 和 BopItAccess.ini.tmp 路径，删除前拒绝链接文件或目录联接。在清单管理的安装和旧版手动安装两种卸载流程中，删除这些可修改的模组文件。</li><li>保留其他模组、游戏原生设置和 .NET SDK。本地安装程序预览已重新编译，无警告或错误；未执行卸载来验证行为。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/6d21fc406d739abefcf5cda70a881db7b9abd89e">源代码提交</a> · 暂无 GitHub 发布版本</p></article>
@@ -234,6 +238,11 @@
 <li>安装程序0.2.4发布构建完成，警告和错误均为0。静态PE检查确认所需三项嵌入资源与源文件字节一致，单文件包包含匹配的主DLL，没有安装程序专属的语言卫星资源。验证仅限编译和静态检查：未运行自动化测试、安装程序、卸载程序、控制器、屏幕阅读器或游戏。语音时间表现仍待人工验证。</li>
 <li>主模组仍为v0.9.11，共58次模组构建。不生成新的模组DLL、标签或GitHub Release。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/e7e0f6e33aeb652a7cf02d95f75ff1f4e1158c6d">源代码提交</a> · 无GitHub Release</p></article>
+      <article class="commit" id="installer-0-2-5"><div class="meta"><span class="version">Installer 0.2.5</span><span class="kind">feat · packaging · docs</span></div><h3>feat(installer): 聚焦独立欢迎说明并选择编译发行包</h3><ul>
+<li>在Game folder上方添加常驻、只读可选择的Welcome and controls文本框，首次聚焦并提供Alt+W。欢迎文本不加入操作日志，启动焦点确认后发送一次受保护通知。按标签选择BopItAccess-v1.0.zip等编译包，绝不选择安装程序EXE或GitHub源代码包。</li>
+<li>十种语言均补充全部操作、安装/更新/卸载流程、四项计划GitHub文件、手动ZIP及引用一手资料的有限Windows 11 Defender/SmartScreen说明。保留既往文章及锚点。公开v1.0文件与标签仍在计划中。</li>
+<li>Windows x64自包含安装程序0.2.5发布构建完成，警告及错误均为0。静态审查打包工具语法及内容约定，最终文档完成后创建包。未进行自动测试、安装／卸载程序、屏幕阅读器、控制器、游戏或Defender界面试验。欢迎／焦点、公开／手动安装及语音仍待人工验证。模组为0.9.12，59次构建。</li>
+<li>最终EXE静态检查确认源代码修订fabc32d48754bf53f266656d67b356bc9d0841d3，三项嵌入资源与源文件完全一致，包内主DLL匹配，且无安装程序专属语言卫星资源。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/fabc32d48754bf53f266656d67b356bc9d0841d3">源代码提交</a> · 无GitHub Release</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 个本地源档案用于重建公共源提交。安装包保留在本地并且不是 GitHub 版本。 v0.5.4重新绑定预览和v0.5.18 SAPI修剪实验被记录为历史实现；后来的条目说明了它们是如何改变的。</p><p><a href="#history">返回创建历史</a></p></div></footer>

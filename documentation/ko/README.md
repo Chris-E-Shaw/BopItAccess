@@ -1,5 +1,7 @@
 # Bop It Access
 
+현재 소스 빌드는 모드 0.9.12(모드 빌드 59개), 설치 프로그램 0.2.5입니다. 첫 공개 릴리스는 아직 예정입니다.
+
 Bop It Access은 **Bop It!**의 Windows Steam 버전에 대한 비공식 접근성 모드입니다. MelonLoader를 사용하고 [Prism](https://github.com/ethindp/prism) 메뉴와 게임 화면에 음성 및 점자 피드백을 추가합니다. 현재 기능에는 첫 실행 시작 화면, 게임 내 사용자 가이드, 음성 제목 및 일시 정지 화면, 설정 및 컨트롤, 노래 선택, 최종 점수 및 순위표, 업적, 크레딧, 버튼 힌트, 라운드 전 현재 컨트롤 할당이 포함된 주문형 튜토리얼 텍스트, 4단계에 대한 설명이 포함됩니다. 버전 0.9.0은 음성 및 점자 출력에 Prism를 사용합니다. 모드는 게임에서 선택한 언어를 따르며 게임에서 제공하는 모든 언어에 대한 가이드를 포함합니다.
 
 ## 설정 파일 편집
@@ -148,19 +150,60 @@ hide_console = true
 Bop It Access 소스에 대한 라이센스가 아직 선택되지 않았습니다. Prism에는 자체 라이센스가 있습니다. 참조 [제3자 통지](THIRD-PARTY-NOTICES.txt). Bop It! 및 해당 자산은 해당 소유자의 소유이므로 여기에 포함되지 않습니다.
 
 
-## Windows 설치 프로그램 0.2.4
+## 올바른 다운로드 선택
 
-제공된 BopItAccess-Installer-0.2.4.exe 또는 BopItAccess-Installer.exe를 사용하세요. 두 이름 모두 같은 Windows x64용 자체 포함 설치 프로그램입니다. 프로젝트에는 소스가 포함되며 공개 컴파일 바이너리나 GitHub Release는 아직 게시되지 않았습니다.
+첫 GitHub 공개 릴리스에는 아래 네 다운로드가 계획되어 있습니다. 아직 제공되지 않는 예정 파일이며 공개 릴리스나 태그는 게시되지 않았습니다. 그때까지 제공된 설치 프로그램이나 소스 경로를 사용하세요. 소스 압축 파일은 컴파일된 설치 ZIP과 다릅니다.
+
+[GitHub Releases](https://github.com/Chris-E-Shaw/BopItAccess/releases)
+
+- BopItAccess-Installer.exe: Windows x64용 자체 포함 설치 프로그램입니다. 게임을 찾고 종속성, 설치, 업데이트, 진단 및 제거를 관리합니다. 서명되지 않았습니다.
+- BopItAccess-v1.0.zip: Bop It Access EXE를 실행하지 않고 수동 설치하는 컴파일된 모드 패키지입니다. Mods/BopItAccess.dll, prism.dll, 모든 문서 및 Prism 라이선스, Loader.cfg 템플릿, README.txt와 제거 바로 가기를 포함합니다. MelonLoader, .NET, 게임 파일 및 생성된 게임 어셈블리는 포함하지 않습니다.
+- Source code (zip): GitHub가 자동 생성하는 릴리스 소스 ZIP입니다. 코드를 읽거나 빌드하기 위한 것이며 컴파일된 모드 패키지가 아닙니다.
+- Source code (tar.gz): 같은 소스를 gzip으로 압축한 tar 파일입니다. 다른 소스 형식이며 다른 모드 설치 프로그램은 아닙니다.
+
+### 서명되지 않은 설치 프로그램과 Windows 11 경고
+
+이 설치 프로그램은 서명되지 않았습니다. 서명되지 않거나 알려지지 않은 프로그램은 SmartScreen 또는 백신 경고를 일으킬 수 있고 오탐도 가능하지만 모든 탐지가 잘못됐다는 뜻은 아닙니다. 공식 Bop It Access 프로젝트나 신뢰하는 직접 제공처에서만 받고 해당 파일을 신뢰할지 결정하세요. 컴파일 ZIP은 이 EXE 실행을 피합니다. 백신을 끄거나 드라이브 또는 게임 폴더 전체를 제외하지 마세요.
+[Microsoft: unsigned apps and SmartScreen](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/publish-first-app)
+
+### 특정 Defender 탐지 허용
+
+Win+I에서 개인 정보 및 보안 > Windows 보안 > Windows 보안 열기 > 바이러스 및 위협 방지 > 보호 기록(위협 기록이라고도 함)으로 갑니다. 설치 프로그램과 일치하는 항목을 펼칩니다. Tab으로 작업 또는 추가 작업으로 이동하여 Enter를 누르고 디바이스에서 허용 또는 허용을 선택합니다. 관리자 확인이 나오면 승인하세요. 격리된 파일은 먼저 복원한 뒤 다시 탐지되면 허용해야 할 수 있습니다. 제거된 파일은 공식 프로젝트에서 다시 받으세요. 허용하기 전에 정확한 항목을 확인하세요.
+[Microsoft: Protection history](https://support.microsoft.com/en-us/windows/security/windows-security/protection-history-in-the-windows-security-app) · [Microsoft Defender FAQ](https://support.microsoft.com/en-us/defender/antivirus-and-antimalware-software-faq)
+
+### 선택적인 제한된 Defender 제외
+
+바이러스 및 위협 방지 설정에서 설정 관리를 선택하고 제외 > 제외 추가 또는 제거로 갑니다. 관리자 확인이 나오면 예를 선택합니다. 제외 사항 추가 > 프로세스를 선택하고 정확히 BopItAccess-Installer.exe를 입력하여 Enter를 누릅니다. 실제 실행하는 파일명과 일치해야 합니다.
+
+Microsoft의 프로세스 제외는 해당 프로세스가 여는 파일에 적용됩니다. 설치 프로그램 EXE 자체를 제외하거나 격리 파일을 복원하거나 SmartScreen을 우회하지 않습니다. EXE 자체가 탐지되고 신뢰한다면 그 다운로드 EXE만 선택하는 선택적 파일 제외가 적절한 좁은 대안입니다. 필요 없어진 예외는 제거하세요.
+[Microsoft: exclusions overview](https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-antivirus-exclusions-overview)
+
+SmartScreen은 별도 경고입니다. 해당 EXE를 신뢰하고 Windows가 제공하면 추가 정보 > 실행을 선택합니다. Defender 허용이나 프로세스 제외는 이 경고를 우회하지 않으며 정책이 실행을 막을 수도 있습니다.
+
+2026년 10월 9일 Windows 11 25H2 빌드 26200.9550용으로 검토한 단계입니다. 표시 이름은 다를 수 있으며 UI 시도는 수행하지 않았습니다.
+
+## Windows 설치 프로그램 0.2.5
+
+### 설치 프로그램으로 설치, 업데이트 또는 제거
+
+1. 게임을 종료하고 BopItAccess-Installer.exe를 실행하여 Windows 관리자 확인을 승인하세요. Welcome and controls 필드를 읽은 뒤 감지된 Game folder를 확인하거나 Browse를 사용하세요. Welcome and controls은 읽기 전용이며 선택 가능하고 처음 포커스를 받습니다. Alt+W로 돌아갑니다.
+2. 공개 컴파일 릴리스가 제공되면 Install을 선택하세요. 첫 공개 전에는 Show advanced로 Install alpha를 표시하여 확인 후 최신 소스를 컴퓨터에서 빌드합니다. 성공 메시지를 기다리세요. 이후 Play Bop It! The Video Game을 선택할 때만 Steam으로 게임을 시작합니다.
+3. 기존 설치를 업데이트하려면 게임을 종료한 뒤 설치 프로그램을 열어 상태를 확인하세요. 새 공개 릴리스를 찾으면 Update가 나타납니다. 선택하고 완료를 기다리세요. 저장된 설정은 유지합니다. Install alpha는 최신 소스를 위한 별도 선택이며 공개 릴리스 업데이트가 아닙니다.
+4. 모드를 제거하려면 Uninstall을 선택하고 확인한 뒤 Uninstall for me 또는 Uninstall for everyone을 고르세요. 둘 다 이 게임 폴더의 공유 모드 파일을 제거합니다. 선택은 Windows 모드 기본 설정을 현재 계정 또는 모든 로컬 프로필에서 제거할지 결정합니다. 원래 게임 설정은 유지합니다. Windows 설치된 앱도 같은 제거 흐름입니다. 결과를 확인한 뒤 Quit을 선택하세요.
+
+아래 표는 기본 창의 모든 작업과 텍스트 필드를 설명합니다. Installer status 및 Installation progress는 정보이며 버튼이 아닙니다. Welcome and controls은 다시 읽는 안내이고 Status log는 변화하는 작업 메시지입니다. Abort는 활성 설치를 되돌리기 전에 확인하며 Quit도 같은 안전한 취소 규칙을 사용합니다. 대화 상자에는 Keep open/Quit, 확인/취소와 두 제거 기본 설정 범위가 있습니다. Show advanced는 표시되는 작업만 바꿉니다.
+
+제공된 BopItAccess-Installer-0.2.5.exe 또는 BopItAccess-Installer.exe를 사용하세요. 두 이름 모두 같은 Windows x64용 자체 포함 설치 프로그램입니다. 프로젝트에는 소스가 포함되며 공개 컴파일 바이너리나 GitHub Release는 아직 게시되지 않았습니다.
 
 Bop It!을 종료한 뒤 설치 프로그램을 열고 Windows 관리자 확인을 승인하세요. 설치 프로그램은 환영 메시지를 표시하고 사용 가능한 모든 드라이브의 Steam 라이브러리에서 게임을 찾은 다음 창을 앞으로 가져오려고 합니다. 표시된 게임 폴더를 확인하고 다른 폴더를 선택하려면 Browse를 사용하세요. Tab으로 항목 사이를 이동합니다. 상태 로그는 읽기 전용 텍스트 필드입니다. 포커스를 옮겨 커서 키로 메시지를 살펴보고 텍스트를 선택하거나 복사할 수 있습니다.
 
-설치 프로그램 0.2.4는 시작 시 잠시 전경 활성화와 키보드 포커스를 요청합니다. 제한된 시작 관찰이 끝나도 다른 창이 활성 상태이면 제목과 작업 표시줄 버튼을 깜박이고 Alt+Tab으로 설치 프로그램으로 전환하라고 안내합니다. 키보드나 컨트롤러 조작 전에 설치 프로그램을 활성화하세요. Alt+G는 게임 폴더 필드에 포커스를 맞춥니다.
+설치 프로그램 0.2.5는 시작 시 잠시 전경 활성화와 키보드 포커스를 요청합니다. 제한된 시작 관찰이 끝나도 다른 창이 활성 상태이면 제목과 작업 표시줄 버튼을 깜박이고 Alt+Tab으로 설치 프로그램으로 전환하라고 안내합니다. 키보드나 컨트롤러 조작 전에 설치 프로그램을 활성화하세요. Alt+G는 게임 폴더 필드에 포커스를 맞춥니다.
 
 설치 프로그램을 열면 Show advanced는 선택되어 있지 않습니다. 선택하면 Install alpha, Save diagnostics, Copy diagnostics가 나타납니다. Install은 공개된 GitHub 릴리스가 있을 때 최신 버전을 다운로드합니다. 아직 공개 릴리스가 없으므로 테스터는 Show advanced를 선택하고 Install alpha를 사용해야 합니다. Alpha는 확인을 받은 후 최신 소스를 다운로드해 사용자의 컴퓨터에서 빌드합니다. 설치된 버전보다 새로운 공개 릴리스가 발견되면 Update가 나타납니다.
 
 상태 메시지는 무엇을 다운로드하거나 설치하고 완료하는지 쉬운 말로 설명합니다. 하나의 진행률 표시줄이 전체 설치의 예상 진행률을 나타내며 다운로드나 파일마다 처음부터 다시 시작하지 않습니다. 5퍼센트포인트 단위로 증가합니다. 일부 준비 단계에서는 표시가 바뀌지 않아도 시간이 걸릴 수 있습니다. 환영 메시지, 새로운 업데이트 안내, 진단 정보 복사 완료는 Windows 접근성 알림을 통해 화면 읽기 프로그램에 전달합니다. 실제로 읽는지는 화면 읽기 프로그램과 Windows 알림 지원에 따라 달라집니다.
 
-설치 프로그램 0.2.4은 설치 중 Bop It!을 실행하지 않습니다. Alpha는 일치하는 로컬 빌드 파일을 재사용하거나 게임을 종료한 상태에서 설치된 게임의 파일로 임시 파일을 준비합니다. 그런 다음 게임 폴더에 MelonLoader를 배치하고 즉시 Mods/BopItAccess.dll을 추가합니다. 이어서 Prism, 설정, 전체 문서 및 제거 지원 파일을 설치합니다. 성공 메시지를 기다린 후 준비가 되면 직접 Steam에서 게임을 실행하세요.
+설치 프로그램 0.2.5은 설치 중 Bop It!을 실행하지 않습니다. Alpha는 일치하는 로컬 빌드 파일을 재사용하거나 게임을 종료한 상태에서 설치된 게임의 파일로 임시 파일을 준비합니다. 그런 다음 게임 폴더에 MelonLoader를 배치하고 즉시 Mods/BopItAccess.dll을 추가합니다. 이어서 Prism, 설정, 전체 문서 및 제거 지원 파일을 설치합니다. 성공 메시지를 기다린 후 준비가 되면 직접 Steam에서 게임을 실행하세요.
 
 설치가 성공하면 Play Bop It! The Video Game이 나타납니다. 준비되면 선택하여 직접 Steam을 통해 게임을 실행하세요. 설치 프로그램은 설치 중 자동으로 게임을 시작하지 않습니다.
 
@@ -182,6 +225,7 @@ Windows 설치된 앱에서도 같은 확인, 기본 설정 범위 선택 및 �
 
 | 작업 | 키보드 단축키 | 기능 |
 | --- | --- | --- |
+| Welcome and controls | Alt+W | 별도 Welcome and controls 필드는 컨트롤러 텍스트 검토 단축키를 나열합니다. Alt+W로 돌아가고 Alt+L로 변화하는 Status log를 엽니다. 둘 다 읽기 전용이며 선택과 검토가 가능합니다. Show advanced는 선택/해제 상태를 알리며 모두 선택은 성공 또는 빈 필드를 확인합니다. 키보드 Ctrl+A는 모든 텍스트를 선택하고 Ctrl+C는 선택 영역을 복사합니다. |
 | 게임 폴더 | Alt+G | 게임 폴더 필드에 포커스를 둡니다. |
 | Browse | Alt+B | 게임 폴더를 선택합니다. |
 | Install | Alt+I | 최신 공개 릴리스가 있으면 설치합니다. |
@@ -202,12 +246,30 @@ Windows 설치된 앱에서도 같은 확인, 기본 설정 범위 선택 및 �
 
 B는 대화 상자에서 뒤로 가거나 취소합니다. 메인 설치 창에서는 설치 중일 때 중단을 요청하고 그렇지 않으면 Quit과 같은 동작을 합니다. Start는 메인 창에서 Quit, 대화 상자에서는 뒤로 가기입니다. Y(전면 위쪽 버튼)는 설치 프로그램의 텍스트 필드에 포커스가 있으면 전체 텍스트를 선택합니다. 메인 창의 텍스트 필드 밖에서는 Show advanced를 전환합니다. 상태 로그나 설치 프로그램의 다른 텍스트 필드에서는 방향 패드 또는 왼쪽 스틱이 화살표 키처럼 작동합니다. 왼쪽/오른쪽은 문자 단위, 위/아래는 줄 단위로 이동합니다. LT를 누르면 Ctrl처럼 작동하여 왼쪽/오른쪽은 단어 단위, 위/아래는 문단 단위로 이동합니다. RT를 누르면 Shift처럼 선택 영역을 확장하며, LT와 RT를 함께 누르면 단어나 문단을 선택합니다. X는 선택한 텍스트만 복사하므로 먼저 원하는 부분을 선택하세요. 키보드 Ctrl+C도 계속 선택 영역을 복사합니다. 선택한 텍스트가 없으면 설치 프로그램은 커서 위치의 문자, 단어, 줄 또는 문단에 대한 접근성 알림도 보냅니다. 설치 프로그램은 텍스트가 복사되면 접근성 확인 알림을 보내며, 선택 영역이 없거나 복사가 실패하면 이를 알립니다. 음성으로 읽히는지는 스크린 리더의 Windows 알림 지원에 따라 달라집니다. Windows 기본 폴더 및 저장 대화 상자의 컨트롤러 탐색은 아직 사람의 확인이 필요합니다. 폴더나 파일 이름 입력에는 키보드를 사용할 수 있습니다. XInput을 지원하지 않는 컨트롤러는 이번 구현에 포함되지 않습니다.
 
-상태 로그의 환영 메시지에는 컨트롤러 텍스트 검토 단축키가 나열됩니다. Alt+L로 로그로 돌아갈 수 있습니다. Show advanced를 변경하면 선택 또는 선택 해제 상태를 알리는 Windows 접근성 알림을 보냅니다. 전체 선택도 접근성 확인 알림을 제공하며, 필드가 비어 있으면 이를 알립니다.
+별도 Welcome and controls 필드는 컨트롤러 텍스트 검토 단축키를 나열합니다. Alt+W로 돌아가고 Alt+L로 변화하는 Status log를 엽니다. 둘 다 읽기 전용이며 선택과 검토가 가능합니다. Show advanced는 선택/해제 상태를 알리며 모두 선택은 성공 또는 빈 필드를 확인합니다. 키보드 Ctrl+A는 모든 텍스트를 선택하고 Ctrl+C는 선택 영역을 복사합니다.
 
-설치 프로그램 0.2.4는 텍스트 검토, 모두 선택, Show advanced의 선택/해제 상태, Copy diagnostics 및 다른 확인을 포함해 내보내는 모든 음성 알림이 이전 설치 프로그램 음성을 대체하도록 요청합니다. LB/RB는 계속 새로 포커스된 컨트롤을 알립니다. 상태 알림 빈도는 그대로이며 모든 로그 항목을 자동으로 읽지는 않습니다. 실제 중단은 스크린 리더의 Windows 알림 지원에 달려 있으며 아직 사람의 확인이 필요합니다.
+설치 프로그램 0.2.5는 텍스트 검토, 모두 선택, Show advanced의 선택/해제 상태, Copy diagnostics 및 다른 확인을 포함해 내보내는 모든 음성 알림이 이전 설치 프로그램 음성을 대체하도록 요청합니다. LB/RB는 계속 새로 포커스된 컨트롤을 알립니다. 상태 알림 빈도는 그대로이며 모든 로그 항목을 자동으로 읽지는 않습니다. 실제 중단은 스크린 리더의 Windows 알림 지원에 달려 있으며 아직 사람의 확인이 필요합니다.
 
 ### 설치 프로그램 진단 정보
 
 Show advanced를 선택하면 Save diagnostics(Alt+D)와 Copy diagnostics(Alt+C)가 나타납니다. 자동 UTF-8 로그는 %ProgramData%\BopItAccess\diagnostics에 로컬로 저장합니다. Save diagnostics는 선택한 .log 또는 .txt 파일에 현재 전체 세션을 저장하고 설치 프로그램을 닫을 때까지 기록을 계속합니다. Copy diagnostics는 현재 내용을 복사하고 접근성 알림으로 완료를 알립니다. 설치나 제거를 시도하기 전에 저장하여 자동 로그 정리 후에도 기록을 유지하세요. 상태 필드는 짧은 메시지를 사용하지만 파일, 다운로드, 컴파일러 및 오류의 기술적 세부 정보는 진단에 남습니다. 업로드하지 않습니다. 로그에는 Windows 사용자 이름과 전체 경로가 포함될 수 있으므로 공유 전에 검토하세요. 의도적으로 외부에 저장한 복사본은 제거 후에도 남습니다.
 
 MelonLoader 설치 후 처음 직접 게임을 실행하면 지원 파일을 다운로드하고 게임 어셈블리를 준비할 수 있습니다. 약 1분, 일부 시스템에서는 그 이상 기다려 주세요. MelonLoader가 모드를 로드하기 전에는 모드가 말할 수 없습니다. 게임을 열어 둔 채 Bop It Access 시작 안내를 기다리고 제목 화면, 환영 화면 또는 메인 메뉴 안내가 나온 후 게임 조작을 사용하세요.
+
+
+### Bop It Access EXE 없이 컴파일된 ZIP 설치
+
+BopItAccess-v1.0.zip이 게시되면 빌드된 DLL을 사용하므로 .NET SDK가 필요 없습니다. 구매한 Windows x64 게임, 공식 x64 MelonLoader 0.7.3 Open-Beta 및 Windows x64 .NET 6 런타임은 필요합니다. MelonLoader와 Microsoft의 공식 안내를 따르세요. ZIP에는 이 필수 소프트웨어가 없습니다.
+
+[MelonLoader](https://github.com/LavaGang/MelonLoader#how-to-use-the-installer) · [.NET 6 Windows x64 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
+
+1. Steam으로 게임을 설치하고 폴더를 찾으세요. 파일 변경 전에 Bop It!을 종료하세요. 필요하면 Steam의 설치된 파일 탐색 기능을 사용하세요.
+2. 그 게임 폴더에 공식 x64 MelonLoader를 설치하고 .NET 6 x64 런타임이 있는지 확인하세요. 아직 게임을 실행하지 말고 모드를 먼저 배치하세요.
+3. 컴파일된 BopItAccess-v1.0.zip을 임시 폴더에 풉니다. Mods/BopItAccess.dll을 게임의 Mods에 복사합니다. 폴더를 만들거나 병합하되 다른 모드는 삭제하지 마세요. prism.dll을 BopIt!.exe 옆에 복사하세요.
+4. 모든 언어와 Prism 고지/라이선스를 포함하여 documentation과 THIRD-PARTY-LICENSES 전체를 복사하세요. 패키지 README.txt와 BopItAccess-uninstall.ps1도 복사하세요. 이 스크립트는 설치 프로그램이 관리하는 제거 프로그램의 바로 가기일 뿐입니다. 복사해도 작동하는 제거 프로그램이나 Windows 설치된 앱 등록이 생기지 않습니다.
+5. UserData/Loader.cfg가 없으면 템플릿을 복사하세요. 있으면 해당 섹션에 [loader] disable_start_screen=true와 [console] hide_console=true만 병합하고 나머지 설정을 유지하세요. 기존 설정을 템플릿으로 덮어쓰지 마세요.
+6. 스크린 리더를 사용하면 먼저 시작하고 Steam으로 게임을 실행하세요. 모드가 이미 Mods에 있는 상태에서 MelonLoader가 첫 실행에 지원 파일을 다운로드하고 어셈블리를 생성할 수 있습니다. 모드 시작 및 메뉴 음성을 기다린 후 조작하세요.
+
+수동 업데이트는 게임을 종료하고 새 패키지의 모드, Prism, 문서와 라이선스를 같은 위치에 복사합니다. BopItAccess.ini, 다른 모드와 관련 없는 파일을 유지하고 Loader.cfg는 위와 같이 병합하세요. 수동 모드를 비활성화/제거하려면 Mods/BopItAccess.dll만 삭제하세요. 추가 정리는 이 모드를 위해 복사한 파일과 UserData/BopItAccess.ini 또는 .tmp만 제거하며 공유 Prism/MelonLoader는 유지하세요. 저장된 Windows 기본 설정은 남을 수 있습니다. 수동 ZIP에는 소유권 기록이나 등록된 제거 프로그램이 없습니다. 나중에 설치 프로그램을 사용하면 Uninstall이 기존 수동 복사본을 식별하고 기본 설정을 정리하면서 소유권이 불분명한 파일을 보호합니다. 모드 로그는 Mods/BopItAccess.log와 Mods/BopItAccess.log.previous입니다. 정리할 때 이 알려진 모드 로그만 제거하세요.
+
+고급 패키징: scripts/package-mod.ps1은 이미 빌드된 일치 모드와 알려진 문서/설정/Prism 파일을 패키징합니다. 소스/DLL 버전을 확인하고 게임/생성/이전 파일을 제외합니다. 컴파일하지 않으며 압축 파일과 준비물은 로컬에 둡니다.

@@ -42,7 +42,7 @@
 <header>
 <div class="wrap">
 <h1>Bop It Access: 技術的なビルド履歴</h1>
-<p class="intro">v0.1.0からv0.9.11までの58件のModビルドと、独立したインストーラービルドの時系列記録。各エントリには、範囲を限定した変更の概要と実装の詳細が含まれます。パブリック GitHub リポジトリにはソース コードが含まれていますが、コンパイルされたダウンロードや GitHub リリースはまだありません。</p>
+<p class="intro">v0.1.0からv0.9.12までの59件のModビルドと、独立したインストーラービルドの時系列記録。各エントリには、範囲を限定した変更の概要と実装の詳細が含まれます。パブリック GitHub リポジトリにはソース コードが含まれていますが、コンパイルされたダウンロードや GitHub リリースはまだありません。</p>
 <p class="note"><strong>Git の出所:</strong> Git は v0.6.12 以降に導入されました。 37 個のソース コミットは、保存されたソース ZIP から再構築されました。 Git の日付は、元のビルド イベントではなく、インポートについて説明しています。 Christopher Shaw がコミットの作成者です。共同作成者のトレーラーには、対応するビルド作業の検証済みモデル レコードが反映されています。最初のビルドは GPT-6 Luna、残りの 36 は GPT-6 Sol です。ローカル インストール パッケージとバージョン タグは、最初の公開版 GitHub の一部ではありません。</p>
 <nav aria-label="ビルドシリーズ"><a href="#foundation">v0.1 ～ v0.4 基礎</a><a href="#series05">v0.5シリーズ</a><a href="#series06">v0.6シリーズ</a><a href="#series07">v0.7シリーズ</a><a href="#series08">v0.8 多言語対応</a><a href="#series09">v0.9 Prism</a><a href="#installer-preview">Windows インストーラー</a></nav>
 </div>
@@ -145,7 +145,11 @@
 <li>英語とすべての対応言語で、曲選択の案内とREADMEの説明を更新する。注意事項と制限に、4つすべてのステージの説明は目の見えるユーザーやプレイヤーによって正確さが検証されておらず、目視による確認と検証が引き続き必要であることを追記する。 両方のスペイン語ガイドで、Gキーの名前を翻訳せずに保持します。</li>
 <li>.NET 6のMODをReleaseでコンパイルし、警告とエラーはいずれも0件。確認はコンパイルと静的なコード確認に限り、自動テストやゲームの起動は行っていない。インストーラープレビューは0.1.5のまま。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/1d9b671a6f4a7575a5b99f8c973d200830d2c0e5">ソースコミット</a> · コンパイル済みのGitHubリリースなし</p></article>
-    </section>
+          <article class="commit" id="v0-9-12"><div class="meta"><span class="version">v0.9.12</span><span class="kind">fix · hints</span></div><h3>fix(hints): 自動ヒント用のネイティブ入力機器を追跡する</h3><ul>
+<li>Automaticの機器追跡を修正します。管理されたC#型判定がIL2CPP派生入力ラッパーを認識せず、Controller固定では動く一方でAutomaticは誤った機器を保持していました。ネイティブTryCast記述子とポインター同一性を使用し、実際のPlayerInputコピーを監視します。新しい操作と押し続ける操作を分け、未使用キーでヒントを再始動しません。 再割り当て、既定値へのリセット、設定ファイル変更時は世代で入力キャッシュを保護します。現在のマップ・Mod操作の署名を含め、同一フレームでの繰り返し割り当てを避けます。</li>
+<li>.NET 6 x64 ModをReleaseで警告0件、エラー0件でコンパイルします。検証はコンパイルと静的ソース確認のみで、自動テスト、ゲーム、入力・音声の実行確認は行っていません。自動機器切替とヒントのタイミングは人による確認を待ちます。59件目のModビルドであり、公開リリースやタグは作成しません。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/3d906f9ac012ef9ae85b93c8eecfe5f56496b123">ソースコミット</a> · GitHub Releaseなし</p></article>
+</section>
     <section id="installer-preview" aria-labelledby="installer-preview-heading">
       <h2 id="installer-preview-heading">Windows インストーラー</h2>
       <article class="commit" id="installer-0-1-3"><div class="meta"><span class="version">Installer 0.1.3 preview</span><span class="kind">fix · docs</span></div><h3>fix(インストーラー): アンインストール時に編集可能な設定を削除</h3><ul><li>UserData/BopItAccess.iniとBopItAccess.ini.tmpの固定パスを検証し、削除前にリンクされたファイルやジャンクションを拒否する。マニフェスト管理のインストールと以前の手動インストールの両方で、これらの変更可能なModファイルを削除する。</li><li>他のMod、ゲーム本来の設定、.NET SDKを保持する。ローカルのインストーラープレビューを警告・エラーなしで再コンパイルした。確認のためのアンインストールは実行していない。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/6d21fc406d739abefcf5cda70a881db7b9abd89e">ソースのコミット</a> · GitHubリリースなし</p></article>
@@ -234,6 +238,11 @@
 <li>インストーラー0.2.4を警告0件、エラー0件で発行します。静的PE確認により、必要な3つの埋め込みリソースがソースのバイトと一致し、単一ファイルパッケージには一致するメインDLLが含まれ、インストーラー固有の言語サテライトリソースがないことを確認します。検証はコンパイルと静的確認のみです。自動テストやインストーラー、アンインストーラー、コントローラー、スクリーンリーダー、ゲームの実行は行っていません。読み上げタイミングの人による確認は未実施です。</li>
 <li>メインのModはv0.9.11、Modビルド数は58のままです。新しいMod DLL、タグ、GitHub Releaseは作成しません。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/e7e0f6e33aeb652a7cf02d95f75ff1f4e1158c6d">ソースコミット</a> · GitHub Releaseなし</p></article>
+      <article class="commit" id="installer-0-2-5"><div class="meta"><span class="version">Installer 0.2.5</span><span class="kind">feat · packaging · docs</span></div><h3>feat(installer): 独立した説明欄をフォーカスしコンパイル済み公開包を選ぶ</h3><ul>
+<li>Game folderの上に常設の読み取り専用・選択可能なWelcome and controls欄を追加し、最初にフォーカスしてAlt+Wを提供します。説明は処理ログへ追加せず、起動フォーカス確認後に保護された通知を一度送ります。BopItAccess-v1.0.zipなどタグに合うコンパイル済み包を選び、インストーラーEXEやGitHubソース包は選びません。</li>
+<li>全10言語で全操作、導入・更新・削除、予定されるGitHubの4ファイル、手動ZIP、一次情報付きの限定的なWindows 11 Defender/SmartScreen説明を追加します。以前の記事とアンカーを保持します。公開v1.0ファイルとタグは今後の予定です。</li>
+<li>Windows x64自己完結型インストーラー0.2.5を警告0件、エラー0件で発行します。パッケージ補助の構文と内容規約を静的確認し、最終文書の後にパッケージを作成します。自動テスト、インストーラー／アンインストーラー、スクリーンリーダー、コントローラー、ゲーム、Defender UIの試行は行っていません。説明・フォーカス、公開・手動導入、音声は人による確認を待ちます。Modは0.9.12、59件のビルドです。</li>
+<li>最終EXEの静的確認により、ソースリビジョンfabc32d48754bf53f266656d67b356bc9d0841d3、埋め込み3リソースのソース完全一致、同梱メインDLLの一致、インストーラー固有の言語サテライトがないことを確認しました。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/fabc32d48754bf53f266656d67b356bc9d0841d3">ソースコミット</a> · GitHub Releaseなし</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 のローカル ソース アーカイブは、パブリック ソースのコミットを再構築するために使用されました。インストール パッケージはローカルに残り、GitHub リリースではありません。 v0.5.4 の再バインド プレビューと v0.5.18 SAPI トリム実験は、履歴実装として記録されます。後のエントリには、それらがどのように変更されたかが記載されています。</p><p><a href="#history">ビルド履歴に戻る</a></p></div></footer>

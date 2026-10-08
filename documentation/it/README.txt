@@ -1,4 +1,6 @@
-Bop It Access 0.9.11 - Prism Voce e Braille
+Bop It Access 0.9.12 - Prism Voce e Braille
+
+Build sorgente attuali: mod 0.9.12 (59 build del mod), installer 0.2.5. La prima pubblicazione pubblica è ancora futura.
 
 Cosa fa questo
 --------------
@@ -447,20 +449,61 @@ La mod non reimposta queste opzioni a ogni avvio. Per risolvere problemi puoi ri
 
 Dopo una modifica riuscita, il mod annuncia l'input e l'azione a cui è assegnato, ad esempio "Space assegnato a COLPISCI".
 
-Programma di installazione Windows 0.2.4
+Scegliere il download giusto
+
+La prima pubblicazione pubblica su GitHub prevede i quattro download seguenti. Sono file futuri, non ancora disponibili; non è stata pubblicata alcuna release pubblica o tag. Nel frattempo usa un installer fornito o il codice sorgente. Un archivio sorgente non è lo ZIP di installazione compilato.
+
+https://github.com/Chris-E-Shaw/BopItAccess/releases
+
+- BopItAccess-Installer.exe: L’installer autonomo per Windows x64. Trova il gioco e gestisce dipendenze, installazione, aggiornamenti, diagnostica e rimozione. Non è firmato.
+- BopItAccess-v1.0.zip: Il pacchetto compilato del mod per installazione manuale senza eseguire l’EXE Bop It Access. Include Mods/BopItAccess.dll, prism.dll, tutti i documenti e le licenze Prism, un modello Loader.cfg, README.txt e il collegamento di disinstallazione. Non include MelonLoader, .NET, file del gioco o assembly generati.
+- Source code (zip): Lo ZIP del codice sorgente della release generato automaticamente da GitHub. Serve a leggere o compilare il codice; non è il pacchetto compilato del mod.
+- Source code (tar.gz): Lo stesso codice sorgente come archivio tar compresso con gzip. Un formato sorgente alternativo, non un altro installer del mod.
+
+Installer non firmato e avvisi di sicurezza Windows 11
+
+Questo installer non è firmato. Un programma non firmato o poco conosciuto può generare avvisi SmartScreen o antivirus, inclusi possibili falsi positivi; non dimostra che ogni rilevamento sia errato. Ottienilo soltanto dal progetto ufficiale Bop It Access o da una consegna diretta affidabile e decidi se fidarti del file. Lo ZIP compilato evita questo EXE. Non disattivare l’antivirus né escludere un’intera unità o cartella del gioco.
+https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/publish-first-app
+
+Consentire uno specifico rilevamento Defender
+
+Premi Win+I e apri Privacy e sicurezza > Sicurezza di Windows > Apri Sicurezza di Windows > Protezione da virus e minacce > Cronologia della protezione (talvolta detta cronologia delle minacce). Espandi la voce relativa all’installer. Con Tab raggiungi Azioni o Altre azioni, premi Invio e scegli Consenti nel dispositivo o Consenti; approva la richiesta amministratore se appare. Un file in quarantena può richiedere prima Ripristina e poi il consenso se rilevato nuovamente. Se rimosso, scaricalo di nuovo dal progetto ufficiale. Controlla la voce esatta prima di consentire.
+https://support.microsoft.com/en-us/windows/security/windows-security/protection-history-in-the-windows-security-app · https://support.microsoft.com/en-us/defender/antivirus-and-antimalware-software-faq
+
+Esclusioni Defender facoltative e limitate
+
+In Protezione da virus e minacce scegli Gestisci impostazioni sotto le impostazioni di protezione, poi Esclusioni > Aggiungi o rimuovi esclusioni. Approva con Sì la richiesta amministratore se presente. Scegli Aggiungi un’esclusione > Processo, digita esattamente BopItAccess-Installer.exe e premi Invio. Il nome deve corrispondere all’eseguibile effettivamente avviato.
+
+L’esclusione Processo Microsoft riguarda i file aperti da quel processo; non esclude l’EXE dell’installer, ripristina file in quarantena o evita SmartScreen. Se Defender rileva l’EXE stesso e ti fidi, un’esclusione File facoltativa per quel preciso EXE scaricato è l’alternativa limitata pertinente. Rimuovi le eccezioni non più necessarie.
+https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-antivirus-exclusions-overview
+
+SmartScreen è un avviso separato. Se ti fidi di quel preciso EXE e Windows lo offre, scegli Ulteriori informazioni > Esegui comunque. Il consenso Defender o l’esclusione Processo non evita questo avviso; un criterio può impedire l’esecuzione.
+
+Passaggi verificati il 9 ottobre 2026 per Windows 11 25H2, build 26200.9550. Le etichette possono variare; nessuna prova dell’interfaccia è stata eseguita.
+
+Programma di installazione Windows 0.2.5
 ----------------------------------------
 
-Usa BopItAccess-Installer-0.2.4.exe oppure BopItAccess-Installer.exe fornito dal progetto. Entrambi i nomi contengono lo stesso programma di installazione autonomo per Windows x64. Il progetto include il codice sorgente; non è ancora pubblicato alcun binario compilato pubblico o GitHub Release.
+Installare, aggiornare o rimuovere con l’installer
+
+1. Chiudi il gioco, avvia BopItAccess-Installer.exe e approva la richiesta amministratore Windows. Leggi il campo Welcome and controls, poi controlla Game folder o usa Browse. Welcome and controls è di sola lettura, selezionabile e riceve il primo focus; Alt+W vi ritorna.
+2. Scegli Install per l’ultima release pubblica compilata quando disponibile. Prima della prima pubblicazione, Show advanced mostra Install alpha, che chiede conferma e compila le ultime sorgenti sul computer. Attendi il messaggio di successo. Play Bop It! The Video Game avvia poi il gioco con Steam solo quando lo scegli.
+3. Per un’installazione esistente, apri l’installer con il gioco chiuso e controlla lo stato. Update appare se trova una release pubblica più recente. Scegli Update e attendi il termine; mantiene le impostazioni salvate. Install alpha è la scelta separata per le ultime sorgenti, non l’aggiornamento pubblico.
+4. Per rimuovere il mod, scegli Uninstall e conferma, poi Uninstall for me oppure Uninstall for everyone. Entrambi rimuovono i file condivisi del mod da questa cartella del gioco. La scelta determina se eliminare le preferenze Windows del mod per il tuo account o tutti i profili locali; le preferenze originali del gioco restano. App installate di Windows usa lo stesso flusso. Controlla il risultato prima di Quit.
+
+La tabella seguente elenca ogni azione e campo di testo della finestra principale. Installer status e Installation progress sono informazioni, non pulsanti. Welcome and controls contiene istruzioni riutilizzabili; Status log contiene i messaggi variabili. Abort chiede prima di annullare un’installazione attiva; Quit usa le stesse regole di cancellazione sicura. I dialoghi includono Keep open/Quit, conferma/annulla e i due ambiti delle preferenze da rimuovere. Show advanced cambia solo le azioni visibili.
+
+Usa BopItAccess-Installer-0.2.5.exe oppure BopItAccess-Installer.exe fornito dal progetto. Entrambi i nomi contengono lo stesso programma di installazione autonomo per Windows x64. Il progetto include il codice sorgente; non è ancora pubblicato alcun binario compilato pubblico o GitHub Release.
 
 Chiudi Bop It!, apri il programma di installazione e approva la richiesta di autorizzazione come amministratore di Windows. Il programma di installazione ti dà il benvenuto, cerca il gioco nelle librerie Steam di tutte le unità disponibili e tenta di portare la propria finestra in primo piano. Controlla la cartella del gioco visualizzata; usa Browse se devi scegliere un’altra cartella. Tab passa da un controllo all’altro. Il registro di stato è un campo di testo di sola lettura: portaci il focus per esaminare i messaggi con i tasti di spostamento del cursore, selezionare il testo o copiarlo.
 
-Il programma di installazione 0.2.4 richiede brevemente attivazione in primo piano e focus della tastiera all’avvio. Se al termine della sua breve osservazione iniziale è ancora attiva un’altra finestra, fa lampeggiare il titolo e il pulsante sulla barra delle applicazioni e chiede di passare al programma con Alt+Tab. Attivalo prima di usare i suoi comandi da tastiera o controller. Alt+G porta il focus sul campo della cartella del gioco.
+Il programma di installazione 0.2.5 richiede brevemente attivazione in primo piano e focus della tastiera all’avvio. Se al termine della sua breve osservazione iniziale è ancora attiva un’altra finestra, fa lampeggiare il titolo e il pulsante sulla barra delle applicazioni e chiede di passare al programma con Alt+Tab. Attivalo prima di usare i suoi comandi da tastiera o controller. Alt+G porta il focus sul campo della cartella del gioco.
 
 Show advanced è deselezionato all’apertura del programma di installazione. Mostra Install alpha, Save diagnostics e Copy diagnostics. Install scarica l’ultima versione pubblica di GitHub quando disponibile. Non esiste ancora una versione pubblica, quindi al momento chi esegue i test deve usare Show advanced e Install alpha. L’installazione alpha chiede conferma, scarica i sorgenti più recenti e li compila sul tuo computer. Update compare quando viene trovata una versione pubblica più recente per una copia installata.
 
 I messaggi di stato spiegano con parole semplici cosa viene scaricato, installato o completato. Una sola barra mostra l’avanzamento stimato dell’intera installazione, senza azzerarsi per ogni download o file. Avanza a incrementi di cinque punti percentuali; alcune fasi di preparazione possono richiedere tempo senza cambiamenti visibili. Il messaggio di benvenuto, la disponibilità di un nuovo aggiornamento e la conferma della copia della diagnostica vengono inviati al lettore di schermo tramite le notifiche di accessibilità di Windows. La loro lettura ad alta voce dipende dal lettore di schermo e dal suo supporto alle notifiche di Windows.
 
-Il programma di installazione 0.2.4 non avvia mai Bop It! durante l’installazione. L’installazione alpha riutilizza i file locali di compilazione corrispondenti oppure prepara file temporanei dalla tua copia del gioco installata, che rimane chiusa. Il programma di installazione colloca quindi MelonLoader nella cartella del gioco e aggiunge subito Mods/BopItAccess.dll, seguito da Prism, impostazioni, documentazione completa e supporto alla disinstallazione. Attendi il messaggio di riuscita, poi avvia tu il gioco tramite Steam quando sei pronto.
+Il programma di installazione 0.2.5 non avvia mai Bop It! durante l’installazione. L’installazione alpha riutilizza i file locali di compilazione corrispondenti oppure prepara file temporanei dalla tua copia del gioco installata, che rimane chiusa. Il programma di installazione colloca quindi MelonLoader nella cartella del gioco e aggiunge subito Mods/BopItAccess.dll, seguito da Prism, impostazioni, documentazione completa e supporto alla disinstallazione. Attendi il messaggio di riuscita, poi avvia tu il gioco tramite Steam quando sei pronto.
 
 Dopo un’installazione riuscita compare Play Bop It! The Video Game. Attiva questo pulsante per avviare tu il gioco tramite Steam quando sei pronto. Il programma di installazione non avvia mai automaticamente il gioco durante l’installazione.
 
@@ -481,6 +524,7 @@ Se la pulizia non può essere completata in sicurezza, il programma di installaz
 Scorciatoie da tastiera del programma di installazione
 ------------------------------------------------------
 
+Welcome and controls: Alt+W. Il campo Welcome and controls separato elenca le scorciatoie di lettura con controller; Alt+W vi ritorna e Alt+L apre il Status log variabile. Entrambi sono di sola lettura, selezionabili e consultabili. Show advanced annuncia selezionato o non selezionato. Seleziona tutto conferma il successo o un campo vuoto. Da tastiera, Ctrl+A seleziona tutto il testo e Ctrl+C copia la selezione.
 Cartella del gioco: Alt+G. Assegnare il focus al campo della cartella del gioco.
 Browse: Alt+B. Scegliere la cartella del gioco.
 Install: Alt+I. Installare l’ultima versione pubblica quando disponibile.
@@ -502,9 +546,9 @@ Il programma di installazione supporta i controller di tipo Xbox e gli altri con
 
 B torna indietro o annulla una finestra di dialogo; nella finestra principale del programma di installazione chiede di interrompere un’installazione in corso, altrimenti esegue Quit. Start esegue Quit nella finestra principale e torna indietro in una finestra di dialogo. Y (il pulsante frontale superiore) seleziona tutto il testo quando un campo di testo del programma di installazione ha il focus. Fuori dai campi di testo della finestra principale, Y attiva o disattiva Show advanced. Nel registro di stato o in un altro campo di testo del programma di installazione, la croce direzionale o la levetta sinistra funziona come le frecce: Sinistra/Destra si sposta per caratteri e Su/Giù per righe. Tieni premuto LT come Ctrl: Sinistra/Destra si sposta per parole e Su/Giù per paragrafi. Tieni premuto RT come Maiusc per estendere la selezione; tieni premuti LT e RT insieme per selezionare parole o paragrafi. X copia solo il testo selezionato; seleziona prima la parte desiderata. Ctrl+C sulla tastiera continua a copiare la selezione. Quando non è selezionato del testo, il programma di installazione invia anche notifiche accessibili per il carattere, la parola, la riga o il paragrafo nella posizione del cursore. Il programma di installazione invia una conferma accessibile quando il testo viene copiato e segnala una selezione vuota o un errore di copia. L’annuncio vocale dipende dal supporto del lettore di schermo per le notifiche di Windows. La navigazione con controller nelle finestre di dialogo native di Windows per le cartelle e il salvataggio richiede ancora una verifica umana. È sempre possibile usare una tastiera per inserire una cartella o un nome di file. Questa implementazione non copre i controller privi del supporto a XInput.
 
-Il messaggio di benvenuto nel registro di stato elenca i comandi del controller per leggere il testo; usa Alt+L per tornare al registro. Modificare Show advanced invia una notifica di accessibilità di Windows che indica se la casella è selezionata o deselezionata. Anche la selezione di tutto il testo dà una conferma accessibile, oppure segnala che il campo è vuoto.
+Il campo Welcome and controls separato elenca le scorciatoie di lettura con controller; Alt+W vi ritorna e Alt+L apre il Status log variabile. Entrambi sono di sola lettura, selezionabili e consultabili. Show advanced annuncia selezionato o non selezionato. Seleziona tutto conferma il successo o un campo vuoto. Da tastiera, Ctrl+A seleziona tutto il testo e Ctrl+C copia la selezione.
 
-Il programma di installazione 0.2.4 richiede che ogni annuncio vocale emesso sostituisca la voce precedente dell’installer, inclusi lettura del testo, Seleziona tutto, stato selezionato/non selezionato di Show advanced, Copy diagnostics e altre conferme. LB/RB continua ad annunciare il nuovo controllo con il focus. La frequenza degli annunci di stato resta invariata; non ogni voce del registro viene letta automaticamente. L’interruzione effettiva dipende dal supporto delle notifiche Windows del lettore di schermo e richiede ancora una verifica umana.
+Il programma di installazione 0.2.5 richiede che ogni annuncio vocale emesso sostituisca la voce precedente dell’installer, inclusi lettura del testo, Seleziona tutto, stato selezionato/non selezionato di Show advanced, Copy diagnostics e altre conferme. LB/RB continua ad annunciare il nuovo controllo con il focus. La frequenza degli annunci di stato resta invariata; non ogni voce del registro viene letta automaticamente. L’interruzione effettiva dipende dal supporto delle notifiche Windows del lettore di schermo e richiede ancora una verifica umana.
 
 Diagnostica del programma di installazione
 ------------------------------------------
@@ -512,3 +556,22 @@ Diagnostica del programma di installazione
 Show advanced mostra Save diagnostics (Alt+D) e Copy diagnostics (Alt+C). I registri automatici UTF-8 vengono conservati localmente in %ProgramData%\BopItAccess\diagnostics. Save diagnostics scrive l’intera sessione corrente nel file .log o .txt scelto e continua a registrare fino alla chiusura del programma di installazione; Copy diagnostics copia un’istantanea e fornisce una conferma accessibile. Salva prima di una prova di installazione o disinstallazione, così la registrazione sopravvive alla pulizia dei registri automatici. Qui vengono conservati i dettagli tecnici relativi a file, download, compilatore ed errori, anche se il campo di stato usa messaggi più brevi. Non viene caricato nulla online. I registri possono contenere nomi utente Windows e percorsi completi: controllali prima di condividerli. Le copie esportate intenzionalmente rimangono dopo la disinstallazione.
 
 Al primo avvio manuale dopo l’installazione di MelonLoader, quest’ultimo può scaricare file di supporto e preparare gli assembly del gioco. Attendi circa un minuto, o più a lungo su alcuni sistemi. La mod non può parlare finché MelonLoader non la carica. Lascia aperto il gioco e attendi l’annuncio di avvio di Bop It Access, seguito dall’annuncio della schermata del titolo, di benvenuto o del menu principale prima di usare i comandi del gioco.
+
+
+Installare lo ZIP compilato senza l’EXE Bop It Access
+
+Quando BopItAccess-v1.0.zip sarà pubblicato, questo percorso userà la DLL già compilata e non richiederà il .NET SDK. Occorrono comunque il gioco acquistato Windows x64, MelonLoader ufficiale x64 0.7.3 Open-Beta e il runtime .NET 6 Windows x64. Segui le istruzioni ufficiali di MelonLoader e Microsoft; lo ZIP non fornisce questi prerequisiti.
+
+https://github.com/LavaGang/MelonLoader#how-to-use-the-installer
+https://dotnet.microsoft.com/en-us/download/dotnet/6.0
+
+1. Installa il gioco con Steam e trova la sua cartella. Chiudi Bop It! prima di cambiare i file; usa se necessario la funzione Steam per sfogliare i file installati.
+2. Installa MelonLoader ufficiale x64 in quella cartella e assicurati che il runtime .NET 6 x64 sia installato. Non avviare ancora il gioco: colloca prima il mod.
+3. Estrai BopItAccess-v1.0.zip compilato in una cartella temporanea. Copia Mods/BopItAccess.dll in Mods del gioco, creando o unendo la cartella senza eliminare altri mod. Copia prism.dll accanto a BopIt!.exe.
+4. Copia per intero documentation e THIRD-PARTY-LICENSES, incluse tutte le lingue e le note/licenze Prism. Copia README.txt e BopItAccess-uninstall.ps1 del pacchetto. Lo script è soltanto un collegamento a un uninstaller gestito dall’installer; copiarlo non crea un uninstaller funzionante o una registrazione in App installate.
+5. Per UserData/Loader.cfg: se assente, copia il modello. Se esiste, unisci solo [loader] disable_start_screen=true e [console] hide_console=true nelle sezioni corrispondenti e mantieni le altre impostazioni. Non sovrascrivere una configurazione esistente con il modello.
+6. Avvia il lettore di schermo se usato, poi il gioco tramite Steam. MelonLoader può scaricare file di supporto e generare assembly al primo avvio, con il mod già in Mods. Attendi gli annunci di avvio del mod e del menu prima di usare i controlli.
+
+Per un aggiornamento manuale, chiudi il gioco e copia mod, Prism, documenti e licenze del nuovo pacchetto negli stessi percorsi. Mantieni BopItAccess.ini, altri mod e file estranei; unisci Loader.cfg come sopra. Per disattivare/rimuovere il mod manuale, elimina solo Mods/BopItAccess.dll. Per una pulizia ulteriore, rimuovi soltanto i file copiati per questo mod e UserData/BopItAccess.ini o il suo .tmp; mantieni Prism/MelonLoader se condivisi. Le preferenze Windows possono restare. Lo ZIP manuale non ha registro di proprietà né uninstaller registrato. Se poi scegli l’installer, Uninstall può riconoscere una vecchia copia manuale e pulire le preferenze proteggendo i file di provenienza sconosciuta. I log del mod sono Mods/BopItAccess.log e Mods/BopItAccess.log.previous; nella pulizia elimina soltanto questi log noti.
+
+Pacchettizzazione avanzata: scripts/package-mod.ps1 impacchetta un mod già compilato corrispondente e file noti di documentazione/configurazione/Prism. Verifica versioni sorgente/DLL ed esclude file del gioco, generati o precedenti; non compila. Archivio e preparazione restano locali.

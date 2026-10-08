@@ -1,4 +1,6 @@
-Bop It Access 0.9.11 - Prism 语音和盲文
+Bop It Access 0.9.12 - Prism 语音和盲文
+
+当前源代码构建为模组0.9.12（59次模组构建）、安装程序0.2.5。首次公开发行仍在计划中。
 
 这是做什么的
 --------------
@@ -445,20 +447,61 @@ hide_console = true
 
 成功更改后，mod 会宣布输入及其分配的操作，例如“Space 分配给 拍打”。
 
-Windows 安装程序 0.2.4
+选择正确的下载
+
+首次GitHub公开发行计划提供以下四种下载。它们尚未提供，公开发行版和标签均未发布。在此之前，请使用提供的安装程序或源代码方式。源代码压缩包并非编译好的安装ZIP。
+
+https://github.com/Chris-E-Shaw/BopItAccess/releases
+
+- BopItAccess-Installer.exe: Windows x64自包含安装程序。查找游戏并管理依赖项、安装、更新、诊断及卸载。此程序没有数字签名。
+- BopItAccess-v1.0.zip: 无需运行Bop It Access EXE的手动安装编译包。包含Mods/BopItAccess.dll、prism.dll、全部文档及Prism许可、Loader.cfg模板、README.txt和卸载快捷脚本。不含MelonLoader、.NET、游戏文件或生成的游戏程序集。
+- Source code (zip): GitHub自动生成的发行版源代码ZIP。用于阅读或编译代码，不是编译好的模组包。
+- Source code (tar.gz): 相同源代码的gzip压缩tar包。只是另一种源代码格式，不是另一种模组安装程序。
+
+未签名安装程序与Windows 11安全提示
+
+此安装程序没有数字签名。未签名或不常见的程序可能触发SmartScreen或杀毒警告，也可能出现误报，但并不证明所有检测都错误。仅从Bop It Access官方项目或可信的直接提供者获取，并自行判断是否信任该文件。编译ZIP方式可避免运行此EXE。不要关闭杀毒防护或排除整个磁盘及游戏文件夹。
+https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/publish-first-app
+
+允许特定Defender检测项
+
+按Win+I，进入隐私和安全性 > Windows安全中心 > 打开Windows安全中心 > 病毒和威胁防护 > 保护历史记录（有时也称威胁历史记录）。展开与此安装程序对应的项，按Tab找到操作或更多操作，按Enter并选择在设备上允许或允许；出现管理员提示时批准。隔离文件可能需要先还原，再次检测后再允许。若文件已删除，请从官方项目重新下载。允许前确认具体项目。
+https://support.microsoft.com/en-us/windows/security/windows-security/protection-history-in-the-windows-security-app · https://support.microsoft.com/en-us/defender/antivirus-and-antimalware-software-faq
+
+可选的有限Defender排除项
+
+在病毒和威胁防护设置标题下选择管理设置，再进入排除项 > 添加或删除排除项。出现管理员提示时选择是。选择添加排除项 > 进程，准确输入BopItAccess-Installer.exe并按Enter。名称必须与实际运行的EXE一致。
+
+Microsoft的进程排除适用于该进程打开的文件，并不排除安装程序EXE本身、还原隔离文件或绕过SmartScreen。若Defender检测的是EXE本身且你信任它，可选的文件排除只选择那个已下载的EXE，才是对应的有限替代方式。不再需要时删除例外。
+https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-antivirus-exclusions-overview
+
+SmartScreen是独立提示。若信任该EXE且Windows提供选项，可选择更多信息 > 仍要运行。Defender允许或进程排除不会绕过该提示，策略也可能阻止运行。
+
+步骤于2026年10月9日针对Windows 11 25H2、版本26200.9550核对。界面名称可能不同，未进行UI操作试验。
+
+Windows 安装程序 0.2.5
 ------------------
 
-请使用提供的BopItAccess-Installer-0.2.4.exe或BopItAccess-Installer.exe。两个名称均为同一个Windows x64自包含安装程序。项目包含源代码；目前尚未发布公开编译的二进制文件或GitHub Release。
+通过安装程序安装、更新或卸载
+
+1. 关闭游戏，打开BopItAccess-Installer.exe并批准Windows管理员提示。阅读Welcome and controls文本框，再检查检测到的Game folder或使用Browse。Welcome and controls只读、可选择，并首先获得焦点；Alt+W可返回。
+2. 公开编译发行版可用后，选择Install。在首次公开前，Show advanced显示Install alpha，确认后在电脑上编译最新源代码。等待成功消息。之后只有选择Play Bop It! The Video Game时才会通过Steam启动游戏。
+3. 更新已有安装时，关闭游戏后打开安装程序并检查状态。发现较新的公开发行版后显示Update。选择并等待完成；保存的设置保持不变。Install alpha是获取最新源代码的独立选项，不是公开发行版更新。
+4. 卸载时选择Uninstall并确认，再选择Uninstall for me或Uninstall for everyone。两者均删除此游戏文件夹中的共享模组文件。区别是删除当前账户或所有本地Windows用户的模组偏好；保留原游戏偏好。Windows已安装的应用使用相同卸载流程。检查结果后选择Quit。
+
+下表列出主窗口的所有操作及文本框。Installer status和Installation progress是信息，不是按钮。Welcome and controls提供可重复阅读的说明，Status log提供变化的操作消息。Abort会在回退正在进行的安装前确认，Quit也遵循安全取消规则。对话框包含Keep open/Quit、确认/取消及两个卸载偏好范围。Show advanced只改变哪些操作可见。
+
+请使用提供的BopItAccess-Installer-0.2.5.exe或BopItAccess-Installer.exe。两个名称均为同一个Windows x64自包含安装程序。项目包含源代码；目前尚未发布公开编译的二进制文件或GitHub Release。
 
 请先关闭 Bop It!，打开安装程序并批准 Windows 管理员提示。安装程序会显示欢迎消息，在所有可用驱动器的 Steam 库中寻找游戏，并尝试将窗口切到前台。检查显示的游戏文件夹；需要选择其他位置时使用 Browse。Tab 用于在控件之间移动。状态日志是只读文本框：将焦点移到此处，即可用光标键查看消息、选择或复制文本。
 
-安装程序0.2.4会在启动时短暂请求前台激活和键盘焦点。如果有限的启动观察结束时仍有其他窗口处于活动状态，安装程序会闪烁标题和任务栏按钮，并提示用Alt+Tab切换到安装程序。使用键盘或控制器操作前，请先激活安装程序。Alt+G将焦点移到游戏文件夹文本框。
+安装程序0.2.5会在启动时短暂请求前台激活和键盘焦点。如果有限的启动观察结束时仍有其他窗口处于活动状态，安装程序会闪烁标题和任务栏按钮，并提示用Alt+Tab切换到安装程序。使用键盘或控制器操作前，请先激活安装程序。Alt+G将焦点移到游戏文件夹文本框。
 
 安装程序打开时，Show advanced 默认未勾选。勾选后会显示 Install alpha、Save diagnostics 和 Copy diagnostics。如果已有公开的 GitHub 发行版，Install 会下载最新版本。目前还没有公开发行版，因此测试者需要勾选 Show advanced 并使用 Install alpha。Alpha 会请求确认，下载最新源代码并在您的电脑上构建。当已安装版本有更新的公开发行版可用时，会显示 Update。
 
 状态消息用简明语言说明正在下载、安装或完成什么。一条进度条显示整个安装过程的估计进度，不会在每次下载或处理文件时重置。它以五个百分点为单位前进；某些准备阶段可能花费一段时间而没有可见变化。欢迎消息、新更新可用以及诊断信息已复制的确认，会通过 Windows 无障碍通知传递给屏幕阅读器。是否实际朗读取决于屏幕阅读器及其对 Windows 通知的支持。
 
-安装程序 0.2.4 不会在安装期间启动 Bop It!。Alpha 会复用匹配的本地构建文件，或者在游戏保持关闭的情况下，根据您已安装的游戏准备临时文件。之后安装程序把 MelonLoader 放入游戏文件夹，立即添加 Mods/BopItAccess.dll，再安装 Prism、设置、完整文档和卸载支持。请等待成功消息，然后在准备好时自行从 Steam 启动游戏。
+安装程序 0.2.5 不会在安装期间启动 Bop It!。Alpha 会复用匹配的本地构建文件，或者在游戏保持关闭的情况下，根据您已安装的游戏准备临时文件。之后安装程序把 MelonLoader 放入游戏文件夹，立即添加 Mods/BopItAccess.dll，再安装 Prism、设置、完整文档和卸载支持。请等待成功消息，然后在准备好时自行从 Steam 启动游戏。
 
 安装成功后会显示 Play Bop It! The Video Game。准备好时可激活它，自行通过 Steam 启动游戏。安装程序不会在安装期间自动启动游戏。
 
@@ -479,6 +522,7 @@ Windows“已安装的应用”使用相同的确认、偏好设置范围选择�
 安装程序键盘快捷键
 ---------
 
+Welcome and controls: Alt+W. 独立Welcome and controls文本框列出控制器文本查看快捷键；Alt+W返回，Alt+L进入变化的Status log。两者均只读，可选择和查看。Show advanced通知选中或未选中，全选通知成功或空文本框。 键盘Ctrl+A选择全部文本，Ctrl+C复制选择内容。
 游戏文件夹: Alt+G. 聚焦游戏文件夹文本框。
 Browse: Alt+B. 选择游戏文件夹。
 Install: Alt+I. 有最新公开发行版时安装它。
@@ -500,9 +544,9 @@ Quit: Alt+Q. 关闭；如有操作正在运行则安全取消。
 
 B 在对话框中返回或取消；在安装程序主窗口中，安装进行时请求中止，否则执行 Quit 流程。Start 在主窗口执行 Quit，在对话框中返回。Y（上方正面按钮）在安装程序文本框有焦点时选择全部文本。在主窗口的文本框之外，Y切换Show advanced。在状态日志或安装程序的其他文本框中，方向键或左摇杆相当于键盘箭头键：左／右按字符移动，上／下按行移动。按住LT相当于Ctrl：左／右按单词移动，上／下按段落移动。按住RT相当于Shift，可扩展选择范围；同时按住LT和RT可选择单词或段落。X只复制已选中的文本，请先选择需要的部分。键盘Ctrl+C仍可复制选择范围。未选择文本时，安装程序也会发送无障碍通知，告知插入点所在的字符、单词、行或段落。复制成功时安装程序会发送无障碍确认通知，未选择文本或复制失败时也会通知。是否朗读取决于屏幕阅读器对Windows通知的支持。Windows 原生文件夹和保存对话框的控制器操作仍需人工验证。输入文件夹或文件名仍可使用键盘。不支持 XInput 的控制器不在当前实现范围内。
 
-状态日志中的欢迎消息列出了控制器文本查看快捷操作，可用Alt+L返回日志。更改Show advanced时，会发送Windows无障碍通知，说明当前已勾选或未勾选。全选也会提供无障碍确认，文本框为空时会告知。
+独立Welcome and controls文本框列出控制器文本查看快捷键；Alt+W返回，Alt+L进入变化的Status log。两者均只读，可选择和查看。Show advanced通知选中或未选中，全选通知成功或空文本框。 键盘Ctrl+A选择全部文本，Ctrl+C复制选择内容。
 
-安装程序0.2.4请求每条发出的语音通知替换先前的安装程序语音，包括文本查看、全选、Show advanced的选中／未选中状态、Copy diagnostics及其他确认。LB/RB仍会通知新获得焦点的控件。状态通知频率保持不变，并非每条日志都自动朗读。实际中断取决于屏幕阅读器对Windows通知的支持，仍需人工验证。
+安装程序0.2.5请求每条发出的语音通知替换先前的安装程序语音，包括文本查看、全选、Show advanced的选中／未选中状态、Copy diagnostics及其他确认。LB/RB仍会通知新获得焦点的控件。状态通知频率保持不变，并非每条日志都自动朗读。实际中断取决于屏幕阅读器对Windows通知的支持，仍需人工验证。
 
 安装程序诊断信息
 --------
@@ -510,3 +554,22 @@ B 在对话框中返回或取消；在安装程序主窗口中，安装进行时
 Show advanced 会显示 Save diagnostics（Alt+D）和 Copy diagnostics（Alt+C）。自动 UTF-8 日志保存在本机的 %ProgramData%\BopItAccess\diagnostics。Save diagnostics 将当前完整会话写入您选择的 .log 或 .txt 文件，并持续记录到安装程序关闭。Copy diagnostics 复制当前快照，并提供无障碍确认。安装或卸载测试前请先保存，以便自动日志清理后记录仍然存在。虽然状态文本框采用简短消息，文件、下载、编译器和错误的技术细节仍保存在诊断信息中。不会上传任何内容。日志可能包含 Windows 用户名和完整路径：分享前请检查。主动导出到别处的副本在卸载后仍保留。
 
 安装 MelonLoader 后第一次手动启动时，它可能下载支持文件并准备游戏程序集。请等待大约一分钟，某些系统可能更久。MelonLoader 加载模组之前，模组无法朗读。请保持游戏打开，等待 Bop It Access 启动播报，然后等到标题、欢迎画面或主菜单播报后再使用游戏控制。
+
+
+不运行Bop It Access EXE，手动安装编译ZIP
+
+BopItAccess-v1.0.zip发布后，此方式使用已编译DLL，无需.NET SDK。仍需购买的Windows x64游戏、官方x64 MelonLoader 0.7.3 Open-Beta和Windows x64 .NET 6运行时。请遵循MelonLoader及Microsoft官方安装说明；ZIP不包含这些前置软件。
+
+https://github.com/LavaGang/MelonLoader#how-to-use-the-installer
+https://dotnet.microsoft.com/en-us/download/dotnet/6.0
+
+1. 通过Steam安装游戏并找到文件夹。修改文件前关闭Bop It!；需要时使用Steam浏览已安装文件的功能。
+2. 在该游戏文件夹安装官方x64 MelonLoader，并确认.NET 6 x64运行时已安装。暂勿启动游戏，先放置模组。
+3. 将编译好的BopItAccess-v1.0.zip解压至临时文件夹。把Mods/BopItAccess.dll复制到游戏的Mods，创建或合并文件夹时不要删除其他模组。将prism.dll复制到BopIt!.exe旁。
+4. 完整复制documentation和THIRD-PARTY-LICENSES，保留全部语言子文件夹及Prism通知和许可。复制包内README.txt与BopItAccess-uninstall.ps1。此脚本只是指向安装程序管理的卸载工具的快捷方式；复制不会建立可用卸载工具或Windows应用登记。
+5. 谨慎处理UserData/Loader.cfg：不存在时复制模板；已存在时只合并对应章节的[loader] disable_start_screen=true和[console] hide_console=true，保留其他设置。不要用模板覆盖已有配置。
+6. 先打开使用的屏幕阅读器，再通过Steam启动游戏。模组已放入Mods后，MelonLoader可能在首次启动下载支持文件并生成程序集。等待模组启动及菜单朗读后再操作游戏。
+
+手动更新时关闭游戏，将新包的模组、Prism、文档和许可复制到相同位置。保留BopItAccess.ini、其他模组及无关文件；按上述方式合并Loader.cfg。停用或删除手动模组时，仅删除Mods/BopItAccess.dll。进一步清理时，只删除为此模组复制的文件及UserData/BopItAccess.ini或其.tmp文件；若其他组件使用Prism/MelonLoader，则保留共享文件。Windows保存的偏好可能仍在。手动ZIP没有所有权记录或登记的卸载工具。之后若选择使用安装程序，Uninstall可识别旧手动模组并提供偏好清理，同时保护所有权不明的文件。 模组日志为Mods/BopItAccess.log和Mods/BopItAccess.log.previous；清理时只删除这些已知模组日志。
+
+高级打包：scripts/package-mod.ps1将已编译且版本匹配的模组与已知文档、配置、Prism文件打包。检查源代码/DLL版本，排除游戏、生成及旧格式文件；不进行编译。压缩包及暂存内容留在本地。
