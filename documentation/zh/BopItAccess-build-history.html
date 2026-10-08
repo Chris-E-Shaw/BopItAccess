@@ -214,6 +214,14 @@
 <li>未选择文本时，安装程序也会发送无障碍通知，告知插入点所在的字符、单词、行或段落。复制成功时安装程序会发送无障碍确认通知，未选择文本或复制失败时也会通知。是否朗读取决于屏幕阅读器对Windows通知的支持。</li>
 <li>主模组仍为v0.9.11，共58次模组构建。不生成新的模组DLL、标签或GitHub Release。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/a5d614b2ee9f34b015845374d665a49b19605bae">源代码提交</a> · 无GitHub Release</p></article>
+      <article class="commit" id="installer-0-2-2"><div class="meta"><span class="version">Installer 0.2.2 preview</span><span class="kind">feat · selection · feedback · focus · docs</span></div><h3>feat(installer): 添加控制器全选及明确的控件状态反馈</h3><ul>
+<li>用户确认安装程序0.2.1的控制器文本移动、选择和复制可正常工作。从文件资源管理器打开时，初始前台激活和键盘焦点仍失败。此人工结果与仍待人工检查的0.2.2新行为分别记录。</li>
+<li>在托管代码开始时，为安装程序自身PID请求AllowSetForegroundWindow，并记录允许或拒绝。这可能保留进程已经拥有的权限，但不能创建缺失的权限或更改Windows前台策略。 用125毫秒定时器观察启动，最多持续2秒。对每个不同的前台窗口仅请求激活一次，最多3次；确认前台及控件焦点稳定250毫秒后停止。新的用户输入、刻意更改启用控件的焦点、操作或自身对话框接管时也停止。移除无效的临时置顶调整。期限或前台切换次数达到上限后，若其他窗口仍活动，则闪烁安装程序标题／任务栏3次，并通过可见状态及重要的本机屏幕阅读器通知提示用Alt+Tab切换。Windows仍可能拒绝激活，前台进程信息不能确定确切原因。记录托管代码最早观察到的前台可执行文件名／句柄、管理员令牌状态及本机进程经过的时间，不记录窗口标题或参数。</li>
+<li>上方正面按钮Y会全选安装程序当前文本框中的文本，包括其自身的本机编辑控件。将选择锚点保持在开头，当前插入点保持在末尾，以便后续RT加方向输入调整选择范围。全选成功或文本框为空时发送重要的Windows无障碍通知。在主窗口文本框之外，Y仍切换Show advanced。X继续只复制选择范围。</li>
+<li>扩充可见及无障碍欢迎消息，列出控制器焦点移动、字符／行查看、LT单词／段落移动、RT选择、两个扳机同时使用、Y全选和X复制。为Show advanced设置明确的复选框角色；无论采用哪种输入方式，每次状态更改都通过可见状态消息和重要的本机UI Automation通知说明已勾选或未勾选。</li>
+<li>更新英文README和指南、九种语言版本及安装程序技术说明。保留所有以前的历史文章和现有锚点。Windows x64自包含安装程序0.2.2已完成发布构建，警告和错误均为0；git diff --check未发现问题。静态PE检查确认三项嵌入资源与源文件字节完全一致。单一文件包内包含匹配的主DLL，没有安装程序专属的语言卫星资源。验证仅限编译和静态检查：未运行自动化测试、安装程序／卸载程序、控制器、屏幕阅读器、引用生成或游戏。尚未证明焦点问题已解决。新的全选、状态及注意提示反馈仍待人工检查。</li>
+<li>主模组仍为v0.9.11，共58次模组构建。不生成新的模组DLL、标签或GitHub Release。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/717def01543356d748ac977d778250440d8a7857">源代码提交</a> · 无GitHub Release</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 个本地源档案用于重建公共源提交。安装包保留在本地并且不是 GitHub 版本。 v0.5.4重新绑定预览和v0.5.18 SAPI修剪实验被记录为历史实现；后来的条目说明了它们是如何改变的。</p><p><a href="#history">返回创建历史</a></p></div></footer>
