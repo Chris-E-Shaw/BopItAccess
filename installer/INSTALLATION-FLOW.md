@@ -1,6 +1,6 @@
 # Installer installation flow
 
-Installer preview **0.2.2** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game. After a successful installation, **Play Bop It! The Video Game** (Alt+P) offers a separate, explicitly requested Steam launch; it is never invoked automatically as an installation step.
+Installer preview **0.2.3** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game. After a successful installation, **Play Bop It! The Video Game** (Alt+P) offers a separate, explicitly requested Steam launch; it is never invoked automatically as an installation step.
 
 ## Evidence and scope
 
@@ -168,7 +168,7 @@ Validation for this update is compilation and static inspection only. No automat
 
 ## Select All, explicit checkbox state and foreground attention in preview 0.2.2
 
-The user confirms preview **0.2.1** controller text navigation, selection and copying. Startup foreground/keyboard focus still fail after opening the installer from File Explorer. Preview **0.2.2** focus is **not proven resolved**; its new activation and attention behavior requires human review.
+During preparation of preview **0.2.2**, the user had confirmed **0.2.1** controller text navigation, selection and copying, while startup foreground/keyboard focus still failed from File Explorer. At publication, **0.2.2** activation and attention behavior awaited human review. The later confirmation is recorded below under 0.2.3.
 
 At the earliest managed startup, request `AllowSetForegroundWindow` for the installer's own PID and record grant/denial. This preserves existing legitimate permission when possible, without creating missing permission or changing Windows policy. Record the earliest managed foreground executable name/handle, administrator-token state and native process age, using executable names only and omitting other applications' titles, paths and command lines. Process context does not establish the exact reason for a foreground denial or directly observe preceding UAC interaction.
 
@@ -178,4 +178,16 @@ Y, the top face button, selects all in a focused installer text field, including
 
 The welcome message includes all controller text-review shortcuts: character/line arrows, LT words/paragraphs, RT selection, both triggers, Y Select All and X Copy. Show advanced uses an explicit checkbox role. On every state change, from any input method, append visible checked/unchecked status and post important native accessibility confirmation. Notifications depend on Windows/screen-reader support; static posting paths do not prove spoken output.
 
-Installer **0.2.2** publishes with zero warnings and zero errors; the whitespace diff check is clean. Static PE resource inspection confirms three exact source matches, the executable bundle's main DLL matches the inspected DLL, and no installer-specific language satellite resources are included. Validation is compilation and static inspection only: no automated tests, installer/uninstaller, controller or screen-reader execution, helper/reference generation or game launch. Startup focus remains unproven, and new Select All and state/attention feedback await human review. The main mod remains **0.9.11**, with **58 mod builds**; no new mod DLL, tag or GitHub Release is created.
+Installer **0.2.2** publishes with zero warnings and zero errors; the whitespace diff check is clean. Static PE resource inspection confirms three exact source matches, the executable bundle's main DLL matches the inspected DLL, and no installer-specific language satellite resources are included. Validation was compilation and static inspection only: no automated tests, installer/uninstaller, controller or screen-reader execution, helper/reference generation or game launch. At publication, startup focus, Select All and state/attention feedback awaited human review. The main mod remained **0.9.11**, with **58 mod builds**; no new mod DLL, tag or GitHub Release was created.
+
+## Replacing controller review with focus announcements in preview 0.2.3
+
+The user confirms preview **0.2.2** startup focus and all new controls. The remaining bug is continued D-pad status-text speech after LB/RB moves focus. That human confirmation concerns 0.2.2. The **0.2.3** interruption change awaits human verification.
+
+Routine controller review uses normal `MostRecent` when `important=false` and `replacePending=true`. A verified successful bumper move from a control that posted controller speech queues a deferred `ImportantMostRecent` destination announcement. It identifies the accessible name, role and relevant state, including checkbox/radio state and single-line values. A multiline field supplies its name/type and selection count if present, without repeating its contents or total character count.
+
+Before posting, validate generation, foreground, actual managed/native focus, destination handle identity, enabled/visible state and ownership. Rapid bumper movement retains the latest valid destination. Keep a successfully announced destination as the controller speech source so further bumper moves replace its announcement too. Other focus/window changes invalidate stale work. Do not add an announcement when navigation leaves focus at the same boundary control. Important confirmations and attention keep their processing priority. Native dialog navigation remains scoped to local messages.
+
+The replacement is intended to interrupt old review or focus-announcement speech. Diagnostics record whether posting succeeded and the control type, without destination labels/values or reviewed text. Actual speech and timing depend on Windows and the installed reader and require human review.
+
+Installer **0.2.3** publishes with zero warnings and zero errors; the whitespace diff check is clean. Static PE inspection confirms all three required resource payloads exactly match source, the single-file bundle includes the matching main DLL, and no installer-specific language satellite resources are present. Validation is compilation and static inspection only: no automated tests, installer/uninstaller, controller or screen-reader execution, helper/reference generation or game launch. The main mod remains **0.9.11**, with **58 mod builds**; no new mod DLL, tag or GitHub Release is created.

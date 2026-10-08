@@ -472,18 +472,18 @@ The mod does not reset these options on each launch. You may manually change eit
 
 After a successful change, the mod announces the input and the action it is assigned to, for example, “Space assigned to Bop.”
 
-Windows installer preview 0.2.2
+Windows installer preview 0.2.3
 -------------------------------
 
 Close Bop It!, open the installer and approve the Windows administrator prompt. The installer welcomes you, looks for the game in Steam libraries on all available drives, and tries to bring its window to the foreground. Check the displayed game folder; use Browse if you need to choose another folder. Tab moves between controls. The status log is a read-only text field: focus it to review messages with cursor keys, select text, or copy it.
 
-Installer 0.2.2 briefly requests foreground activation and keyboard focus. If its bounded startup observation ends with another window still active, it flashes its title and taskbar button and asks you to use Alt+Tab to switch to the installer. Activate the installer before using its keyboard or controller controls. Alt+G focuses the game-folder field.
+Installer 0.2.3 briefly requests foreground activation and keyboard focus. If its bounded startup observation ends with another window still active, it flashes its title and taskbar button and asks you to use Alt+Tab to switch to the installer. Activate the installer before using its keyboard or controller controls. Alt+G focuses the game-folder field.
 
 Show advanced is unchecked when the installer opens. It reveals Install alpha, Save diagnostics and Copy diagnostics. Install downloads the latest public GitHub release when one exists. There is no public release yet, so testers currently need Show advanced and Install alpha. Alpha asks for confirmation, downloads the latest source and builds it on your computer. Update appears when a newer public release is found for an installed copy.
 
 Status messages explain what is downloading, installing or finishing in plain language. One progress bar shows estimated progress for the whole installation, without resetting for each download or file. It advances in five-percentage-point increments; some preparation stages may take time without a visible change. The welcome message, a newly available update and confirmation that diagnostics were copied are sent through Windows accessibility notifications to your screen reader. Whether these are spoken depends on your screen reader and its Windows notification support.
 
-Installer 0.2.2 never launches Bop It! during installation. Alpha reuses matching local build files or prepares temporary files from your own installed game while it stays closed. The installer then places MelonLoader in the game folder and immediately adds Mods/BopItAccess.dll, followed by Prism, settings, the complete documentation and uninstall support. Wait for the success message, then launch the game yourself through Steam when you are ready.
+Installer 0.2.3 never launches Bop It! during installation. Alpha reuses matching local build files or prepares temporary files from your own installed game while it stays closed. The installer then places MelonLoader in the game folder and immediately adds Mods/BopItAccess.dll, followed by Prism, settings, the complete documentation and uninstall support. Wait for the success message, then launch the game yourself through Steam when you are ready.
 
 After a successful installation, Play Bop It! The Video Game appears. Activate it to launch the game yourself through Steam when you are ready. The installer never starts the game automatically during installation.
 
@@ -526,6 +526,8 @@ The installer supports Xbox-style controllers and other controllers that Windows
 B goes back or cancels a dialog; on the main installer window it asks to abort an active installation, otherwise it follows Quit. Start follows Quit on the main window and goes back in a dialog. Y (the top face button) selects all text when an installer text field is focused. Outside text fields on the main window, Y toggles Show advanced. In the status log or another installer text field, the D-pad or left stick works like the arrow keys: Left/Right moves by character and Up/Down by line. Hold LT as Ctrl: Left/Right moves by word and Up/Down by paragraph. Hold RT as Shift to extend the selection; hold LT and RT together to select words or paragraphs. X copies only the selected text; select the part you want first. Keyboard Ctrl+C continues to copy the selection. When no text is selected, the installer also sends accessibility notifications for the character, word, line or paragraph at the caret. The installer sends accessible confirmation when text is copied and reports an empty selection or copy failure. Whether this is spoken depends on your screen reader’s Windows notification support. Controller navigation in Windows’ native folder and save dialogs still needs human verification. A keyboard remains available for entering a folder or filename. Controllers without XInput support are not covered by this implementation.
 
 The welcome message in the status log lists the controller text-review shortcuts; use Alt+L to return to the log. Changing Show advanced sends a Windows accessibility notification stating whether it is checked or unchecked. Selecting all also provides accessible confirmation, or reports that the field is empty.
+
+When LB/RB leaves controller text review, installer 0.2.3 requests a short replacement announcement identifying the newly focused control. This interruption change still needs human review. Subsequent bumper moves also request a replacement of the preceding control announcement.
 
 Installer diagnostics
 ---------------------

@@ -222,6 +222,12 @@
 <li>更新英文README和指南、九种语言版本及安装程序技术说明。保留所有以前的历史文章和现有锚点。Windows x64自包含安装程序0.2.2已完成发布构建，警告和错误均为0；git diff --check未发现问题。静态PE检查确认三项嵌入资源与源文件字节完全一致。单一文件包内包含匹配的主DLL，没有安装程序专属的语言卫星资源。验证仅限编译和静态检查：未运行自动化测试、安装程序／卸载程序、控制器、屏幕阅读器、引用生成或游戏。尚未证明焦点问题已解决。新的全选、状态及注意提示反馈仍待人工检查。</li>
 <li>主模组仍为v0.9.11，共58次模组构建。不生成新的模组DLL、标签或GitHub Release。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/717def01543356d748ac977d778250440d8a7857">源代码提交</a> · 无GitHub Release</p></article>
+      <article class="commit" id="installer-0-2-3"><div class="meta"><span class="version">Installer 0.2.3 preview</span><span class="kind">fix · focus speech · docs</span></div><h3>fix(installer): 离开控制器文本查看时通知移到的控件</h3><ul>
+<li>用户确认安装程序0.2.2的启动焦点和全部新操作可正常工作。剩余问题是：LB/RB将焦点移到其他控件后，由方向键开始的状态文本朗读仍继续。此人工结果涉及0.2.2；新的朗读中断路径仍待人工检查。</li>
+<li>当important为false、replacePending为true时，对控制器文本查看通知使用普通MostRecent处理。确认LB/RB成功将焦点移出文本查看后，请求有实际内容的ImportantMostRecent通知，说明目标控件、角色及相关状态，不重新朗读多行文本内容。防止在焦点已过时或前台已改变时发送通知。此通知旨在中断文本朗读，实际中断仍需人工确认。重要确认及启动注意提示保持其优先级。查看过的文本仍不写入通知诊断记录。 将最后成功通知的控件保留为来源，使后续肩键移动也替换上一个目标通知。快速移动会把待处理请求传递到最新有效目标，焦点／窗口变化使其失效。</li>
+<li>更新英文README和指南、九种语言版本及安装程序技术说明。保留所有以前的历史文章和指南锚点。Windows x64自包含安装程序0.2.3已完成发布构建，警告和错误均为0；git diff --check未发现问题。静态PE检查确认所需三项嵌入资源与源文件字节完全一致。包内包含匹配的主DLL，没有安装程序专属的语言卫星资源。验证仅限编译和静态检查：未运行自动化测试、安装程序／卸载程序、控制器、屏幕阅读器、引用生成或游戏。新的朗读中断行为仍待人工验证。</li>
+<li>主模组仍为v0.9.11，共58次模组构建。不生成新的模组DLL、标签或GitHub Release。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/45e1ee416da2995078f95cce7b8c04dce730ca7a">源代码提交</a> · 无GitHub Release</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 个本地源档案用于重建公共源提交。安装包保留在本地并且不是 GitHub 版本。 v0.5.4重新绑定预览和v0.5.18 SAPI修剪实验被记录为历史实现；后来的条目说明了它们是如何改变的。</p><p><a href="#history">返回创建历史</a></p></div></footer>
