@@ -51,17 +51,19 @@ The commit history includes reconstructed source snapshots of 37 earlier builds.
 
 The mod references DLLs generated or installed by MelonLoader under the game directory. It does not include or redistribute game assemblies.
 
-## Windows installer preview 0.2.0
+## Windows installer preview 0.2.1
 
 The installer source is in [`installer/`](installer/). It is a self-contained Windows x64 application.
 
 Close Bop It!, open the installer and approve the Windows administrator prompt. The installer welcomes you, looks for the game in Steam libraries on all available drives, and tries to bring its window to the foreground. Check the displayed game folder; use Browse if you need to choose another folder. Tab moves between controls. The status log is a read-only text field: focus it to review messages with cursor keys, select text, or copy it.
 
+Installer 0.2.1 makes a short, bounded attempt to bring its window to the foreground and give the game-folder field keyboard focus. Windows may still refuse; use Alt+Tab to switch to the installer and Alt+G to focus that field.
+
 Show advanced is unchecked when the installer opens. It reveals Install alpha, Save diagnostics and Copy diagnostics. Install downloads the latest public GitHub release when one exists. There is no public release yet, so testers currently need Show advanced and Install alpha. Alpha asks for confirmation, downloads the latest source and builds it on your computer. Update appears when a newer public release is found for an installed copy.
 
 Status messages explain what is downloading, installing or finishing in plain language. One progress bar shows estimated progress for the whole installation, without resetting for each download or file. It advances in five-percentage-point increments; some preparation stages may take time without a visible change. The welcome message, a newly available update and confirmation that diagnostics were copied are sent through Windows accessibility notifications to your screen reader. Whether these are spoken depends on your screen reader and its Windows notification support.
 
-Installer 0.2.0 never launches Bop It! during installation. Alpha reuses matching local build files or prepares temporary files from your own installed game while it stays closed. The installer then places MelonLoader in the game folder and immediately adds Mods/BopItAccess.dll, followed by Prism, settings, the complete documentation and uninstall support. Wait for the success message, then launch the game yourself through Steam when you are ready.
+Installer 0.2.1 never launches Bop It! during installation. Alpha reuses matching local build files or prepares temporary files from your own installed game while it stays closed. The installer then places MelonLoader in the game folder and immediately adds Mods/BopItAccess.dll, followed by Prism, settings, the complete documentation and uninstall support. Wait for the success message, then launch the game yourself through Steam when you are ready.
 
 After a successful installation, Play Bop It! The Video Game appears. Activate it to launch the game yourself through Steam when you are ready. The installer never starts the game automatically during installation.
 
@@ -101,7 +103,7 @@ If cleanup cannot finish safely, the installer explains that and keeps the infor
 
 The installer supports Xbox-style controllers and other controllers that Windows exposes through XInput. Its controls are separate from the game’s remappable controls. The D-pad or left stick moves between controls; when a text field is focused, directions review its text instead. The bumpers always move to the previous or next focusable control. A activates the focused button or checkbox. Controller input is handled only while this installer or one of its own dialogs is in the foreground.
 
-B goes back or cancels a dialog; on the main installer window it asks to abort an active installation, otherwise it follows Quit. Start follows Quit on the main window and goes back in a dialog. Y toggles Show advanced on the main window. X selects all text in a focused text field. Hold RT while using directions to extend text selection in the installer’s own text fields. Controller navigation in Windows’ native folder and save dialogs still needs human verification. A keyboard remains available for entering a folder or filename. Controllers without XInput support are not covered by this implementation.
+B goes back or cancels a dialog; on the main installer window it asks to abort an active installation, otherwise it follows Quit. Start follows Quit on the main window and goes back in a dialog. Y toggles Show advanced on the main window. In the status log or another installer text field, the D-pad or left stick works like the arrow keys: Left/Right moves by character and Up/Down by line. Hold LT as Ctrl: Left/Right moves by word and Up/Down by paragraph. Hold RT as Shift to extend the selection; hold LT and RT together to select words or paragraphs. X copies only the selected text; select the part you want first. Keyboard Ctrl+C continues to copy the selection. When no text is selected, the installer also sends accessibility notifications for the character, word, line or paragraph at the caret. The installer sends accessible confirmation when text is copied and reports an empty selection or copy failure. Whether this is spoken depends on your screen reader’s Windows notification support. Controller navigation in Windows’ native folder and save dialogs still needs human verification. A keyboard remains available for entering a folder or filename. Controllers without XInput support are not covered by this implementation.
 
 ### Installer diagnostics
 

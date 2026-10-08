@@ -206,6 +206,14 @@
 <li>安装成功后会显示 Play Bop It! The Video Game。准备好时可激活它，自行通过 Steam 启动游戏。安装程序不会在安装期间自动启动游戏。</li>
 <li>安装程序0.2.0编译完成，警告和错误均为零。PowerShell AST语法分析也未发现错误。静态检查确认：三个与语言无关的嵌入资源都与其源文件逐字节一致，发布用单文件包的主程序集与已检查的DLL完全一致，并且不包含安装程序专用的语言卫星程序集。这些检查没有运行界面、手柄处理、卸载功能或游戏。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/ef7a2448f950341aa0ebaf6777f1386b7f0fafb9">源代码提交</a> · 没有 GitHub 发行版</p></article>
+      <article class="commit" id="installer-0-2-1"><div class="meta"><span class="version">Installer 0.2.1 preview</span><span class="kind">fix · focus · controller · docs</span></div><h3>fix(installer): 改进启动焦点和控制器文本查看</h3><ul>
+<li>用户确认安装程序0.2.0除初始前台显示和键盘焦点外均可正常工作。此人工反馈与本次更新的验证分别记录；0.2.1的新行为仍待人工检查。</li>
+<li>启动激活最多在2秒内尝试8次。确认窗口实际位于前台后，才将键盘焦点设置到游戏文件夹文本框；该框不可用时改用状态文本框。焦点稳定、新的用户输入、控件焦点改变或操作／自身对话框接管时停止。Windows的前台限制仍然适用。一次短暂的可见性调整会立即恢复正常窗口顺序，不会使安装程序始终置顶。</li>
+<li>控制器方向输入在安装程序当前文本框中相当于键盘箭头键：左／右按字符，上／下按行。LT添加Ctrl以按单词或段落移动；RT添加Shift以扩展选择；LT+RT选择单词或段落。X复制当前选择范围。肩键仍可从文本框移走焦点；键盘Ctrl+C保持原生行为。</li>
+<li>更新英文README和指南、全部九种语言版本以及安装程序技术说明。所有以前的历史文章保持原样。Windows x64自包含安装程序0.2.1已完成发布构建，警告和错误均为0。git diff --check未发现问题。静态PE资源检查确认，嵌入的uninstall.ps1和构建引用生成器的两项资源均与对应源文件的字节完全一致。可执行文件包内包含匹配的主DLL，没有安装程序专属的语言卫星资源。静态检查还确认，追加状态行时会保留反向选择的锚点和当前插入点。验证仅限编译和静态检查：未运行自动化测试、安装程序／卸载程序、控制器、屏幕阅读器、引用生成或游戏。启动焦点、控制器文本查看／选择和实际无障碍输出仍待人工检查。</li>
+<li>未选择文本时，安装程序也会发送无障碍通知，告知插入点所在的字符、单词、行或段落。复制成功时安装程序会发送无障碍确认通知，未选择文本或复制失败时也会通知。是否朗读取决于屏幕阅读器对Windows通知的支持。</li>
+<li>主模组仍为v0.9.11，共58次模组构建。不生成新的模组DLL、标签或GitHub Release。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/a5d614b2ee9f34b015845374d665a49b19605bae">源代码提交</a> · 无GitHub Release</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 个本地源档案用于重建公共源提交。安装包保留在本地并且不是 GitHub 版本。 v0.5.4重新绑定预览和v0.5.18 SAPI修剪实验被记录为历史实现；后来的条目说明了它们是如何改变的。</p><p><a href="#history">返回创建历史</a></p></div></footer>
