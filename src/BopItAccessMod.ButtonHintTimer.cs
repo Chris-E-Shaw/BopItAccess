@@ -22,9 +22,16 @@ public sealed partial class BopItAccessMod
     private bool _manualButtonHintCycleActive;
     private bool _manualButtonHintInputLatched;
     private int _lastButtonHintSelectedObjectId;
-    private readonly List<InputControl> _assignedButtonHintControls = new();
+    private readonly List<AssignedHintControl> _assignedButtonHintControls = new();
     private long _nextAssignedButtonHintControlsRefreshAt;
     private long _nextAssignedButtonHintControlsErrorAt;
+    private int _assignedButtonHintSourceSignature = int.MinValue;
+    private int _lastAssignedButtonHintControlCounts = int.MinValue;
+    private int _lastAssignedButtonHintControlsProbeFrame = -1;
+    private int _lastAssignedButtonHintControlsProbeModActionSignature;
+    private uint _assignedButtonHintControlsGeneration;
+    private uint _lastAssignedButtonHintControlsProbeGeneration;
+    private readonly InputAction?[] _immediateAssignedButtonHintActions = new InputAction?[13];
 
     // The slider describes total readings, including the first inline or
     // delayed hint. For example, 2X permits one additional timed reading.
@@ -385,43 +392,158 @@ public sealed partial class BopItAccessMod
     private bool IsUserInputActive()
     {
         RefreshAssignedButtonHintControls();
-        foreach (InputControl control in _assignedButtonHintControls)
+        foreach (AssignedHintControl control in _assignedButtonHintControls)
         {
-            if (control is ButtonControl button && Pressed(button))
+            if (!control.IsAvailable)
+                continue;
+            if (control.Button != null && Pressed(control.Button))
                 return true;
-            if (control is Vector2Control vector)
+            if (control.MousePosition)
             {
                 // An absolute cursor position is nonzero while the mouse is
                 // stationary. Only actual movement counts as activity.
-                if (control.device is Mouse mouse &&
-                    string.Equals(control.name, "position",
-                        StringComparison.OrdinalIgnoreCase))
-                {
-                    if (mouse.delta.ReadValue().sqrMagnitude > 0.01f)
-                        return true;
-                }
-                else if (vector.ReadValue().sqrMagnitude > 0.04f)
+                if (control.Mouse!.delta.ReadValue().sqrMagnitude > 0.01f)
                     return true;
             }
-            else if (control is AxisControl axis &&
-                Math.Abs(axis.ReadValue()) > 0.2f)
+            else if (control.Button == null && control.ReadMagnitudeSquared() > 0.16f)
                 return true;
         }
         return false;
     }
 
-    private readonly HashSet<InputControl> _assignedHintControlSet = new();
+    private readonly Dictionary<IntPtr, AssignedHintControl> _assignedHintControlSet = new();
+
+    private sealed class AssignedHintControl
+    {
+        internal readonly InputControl Control;
+        internal readonly InputDevice Device;
+        internal readonly HintDevice DeviceType;
+        internal readonly ButtonControl? Button;
+        internal readonly Vector2Control? Vector;
+        internal readonly AxisControl? Axis;
+        internal readonly Mouse? Mouse;
+        internal readonly bool MousePosition;
+        internal readonly List<InputAction> Actions = new();
+        internal IntPtr Pointer => Control.Pointer;
+        internal bool IsAvailable
+        {
+            get
+            {
+                if (!Device.added || !Device.enabled)
+                    return false;
+                for (int index = 0; index < Actions.Count; index++)
+                    if (Actions[index].enabled)
+                        return true;
+                return false;
+            }
+        }
+
+        internal AssignedHintControl(InputControl control, InputDevice device,
+            HintDevice type, Mouse? mouse)
+        {
+            Control = control;
+            Device = device;
+            DeviceType = type;
+            // action.controls and control.device return base IL2CPP wrappers.
+            // Managed `is` checks cannot establish their native derived type.
+            Button = control.TryCast<ButtonControl>();
+            Vector = Button == null ? control.TryCast<Vector2Control>() : null;
+            Axis = Button == null && Vector == null ? control.TryCast<AxisControl>() : null;
+            Mouse = mouse;
+            MousePosition = mouse != null && string.Equals(control.name, "position", StringComparison.OrdinalIgnoreCase);
+        }
+
+        internal float ReadMagnitudeSquared()
+        {
+            if (Vector != null) return Vector.ReadValue().sqrMagnitude;
+            float value = Axis?.ReadValue() ?? 0f;
+            return value * value;
+        }
+
+        internal float ReadPreviousMagnitudeSquared()
+        {
+            if (Vector != null) return Vector.ReadValueFromPreviousFrame().sqrMagnitude;
+            float value = Axis?.ReadValueFromPreviousFrame() ?? 0f;
+            return value * value;
+        }
+
+        internal void AddAction(InputAction action)
+        {
+            for (int index = 0; index < Actions.Count; index++)
+                if (Actions[index].Pointer == action.Pointer)
+                    return;
+            Actions.Add(action);
+        }
+    }
+
+    private void InvalidateAssignedButtonHintControls()
+    {
+        _nextAssignedButtonHintControlsRefreshAt = 0;
+        _assignedButtonHintControlsGeneration = unchecked(_assignedButtonHintControlsGeneration + 1);
+    }
+
+    private static int HintActionStateSignature(InputAction? action) =>
+        HashCode.Combine(action?.Pointer ?? IntPtr.Zero, action?.enabled ?? false);
 
     private void RefreshAssignedButtonHintControls()
     {
+        int frame = Time.frameCount;
+        uint generation = _assignedButtonHintControlsGeneration;
         long now = Environment.TickCount64;
-        if (now < _nextAssignedButtonHintControlsRefreshAt)
-            return;
-        _nextAssignedButtonHintControlsRefreshAt = now + 250;
         try
         {
+            int modActionSignature = HashCode.Combine(
+                HintActionStateSignature(_descriptionAction), HintActionStateSignature(_scoreAction),
+                HintActionStateSignature(_toggleSpeechAction), HintActionStateSignature(_speakHintsAction),
+                HintActionStateSignature(_changeSpeechOutputAction));
+            // Update and LateUpdate share the successful probe. Binding
+            // changes advance the generation; LateUpdate may also enable or
+            // create a mod action before checking whether hints are due.
+            if (frame == _lastAssignedButtonHintControlsProbeFrame &&
+                generation == _lastAssignedButtonHintControlsProbeGeneration &&
+                modActionSignature == _lastAssignedButtonHintControlsProbeModActionSignature)
+                return;
+            InputSystemUIInputModule? module =
+                EventSystem.current?.GetComponent<InputSystemUIInputModule>();
+            int signature = HashCode.Combine(module?.Pointer ?? IntPtr.Zero,
+                PlayerInput.all.Count, modActionSignature);
+            // Device identity, rather than just device count, detects a
+            // replacement controller and refreshes before its first input.
+            foreach (InputDevice device in InputSystem.devices)
+                signature = HashCode.Combine(signature, device.deviceId, device.enabled);
+            foreach (PlayerInput player in PlayerInput.all)
+            {
+                InputActionMap? map = player.currentActionMap;
+                signature = HashCode.Combine(signature, player.Pointer,
+                    player.actions?.Pointer ?? IntPtr.Zero, map?.Pointer ?? IntPtr.Zero, map?.enabled ?? false);
+            }
+            InputAction?[] immediateActions = _immediateAssignedButtonHintActions;
+            immediateActions[0] = module?.move?.action;
+            immediateActions[1] = module?.submit?.action;
+            immediateActions[2] = module?.cancel?.action;
+            immediateActions[3] = module?.point?.action;
+            immediateActions[4] = module?.leftClick?.action;
+            immediateActions[5] = module?.rightClick?.action;
+            immediateActions[6] = module?.middleClick?.action;
+            immediateActions[7] = module?.scrollWheel?.action;
+            immediateActions[8] = _descriptionAction;
+            immediateActions[9] = _scoreAction;
+            immediateActions[10] = _toggleSpeechAction;
+            immediateActions[11] = _speakHintsAction;
+            immediateActions[12] = _changeSpeechOutputAction;
+            for (int index = 0; index < 8; index++)
+                signature = HashCode.Combine(signature, HintActionStateSignature(immediateActions[index]));
+            if (now < _nextAssignedButtonHintControlsRefreshAt && signature == _assignedButtonHintSourceSignature)
+            {
+                _lastAssignedButtonHintControlsProbeFrame = frame;
+                _lastAssignedButtonHintControlsProbeGeneration = generation;
+                _lastAssignedButtonHintControlsProbeModActionSignature = modActionSignature;
+                return;
+            }
+            _assignedButtonHintSourceSignature = signature;
+            _nextAssignedButtonHintControlsRefreshAt = now + 250;
             _assignedButtonHintControls.Clear();
-            HashSet<InputControl> seen = _assignedHintControlSet;
+            Dictionary<IntPtr, AssignedHintControl> seen = _assignedHintControlSet;
             seen.Clear();
             InputRebindingManager? manager = _controlsRebindingManager;
             if (manager == null)
@@ -433,30 +555,31 @@ public sealed partial class BopItAccessMod
 
             AddAssignedControls(manager?.playerInput?.actions, seen);
             AddAssignedControls(manager?.inputActions, seen);
-
-            InputSystemUIInputModule? module =
-                EventSystem.current?.GetComponent<InputSystemUIInputModule>();
-            AddAssignedControls(module?.move?.action, seen);
-            AddAssignedControls(module?.submit?.action, seen);
-            AddAssignedControls(module?.cancel?.action, seen);
-            AddAssignedControls(module?.point?.action, seen);
-            AddAssignedControls(module?.leftClick?.action, seen);
-            AddAssignedControls(module?.rightClick?.action, seen);
-            AddAssignedControls(module?.middleClick?.action, seen);
-            AddAssignedControls(module?.scrollWheel?.action, seen);
-
-            AddAssignedControls(_descriptionAction, seen);
-            AddAssignedControls(_scoreAction, seen);
-            AddAssignedControls(_toggleSpeechAction, seen);
-            AddAssignedControls(_speakHintsAction, seen);
-            AddAssignedControls(_changeSpeechOutputAction, seen);
-            foreach (InputControl stale in _hintAnalogWasActive.Keys
-                         .Where(control => !seen.Contains(control)).ToArray())
+            // PlayerInput owns live action copies with device pairing and
+            // saved overrides; Controls may be absent in gameplay scenes.
+            foreach (PlayerInput player in PlayerInput.all)
+                AddAssignedControls(player.actions, seen);
+            foreach (InputAction? action in immediateActions)
+                AddAssignedControls(action, seen);
+            foreach (IntPtr stale in _hintAnalogWasActive.Keys
+                         .Where(pointer => !seen.ContainsKey(pointer)).ToArray())
                 _hintAnalogWasActive.Remove(stale);
+            int keyboard = _assignedButtonHintControls.Count(control => control.DeviceType == HintDevice.Keyboard);
+            int controller = _assignedButtonHintControls.Count - keyboard;
+            int counts = HashCode.Combine(keyboard, controller);
+            if (counts != _lastAssignedButtonHintControlCounts)
+            {
+                _lastAssignedButtonHintControlCounts = counts;
+                WriteStatus($"Assigned hint inputs: {keyboard} keyboard/mouse control(s), {controller} controller control(s).");
+            }
+            _lastAssignedButtonHintControlsProbeFrame = frame;
+            _lastAssignedButtonHintControlsProbeGeneration = generation;
+            _lastAssignedButtonHintControlsProbeModActionSignature = modActionSignature;
         }
         catch (Exception ex)
         {
             _assignedButtonHintControls.Clear();
+            _nextAssignedButtonHintControlsRefreshAt = now + 250;
             if (now >= _nextAssignedButtonHintControlsErrorAt)
             {
                 WriteStatus("Assigned button hint input refresh failed: " + ex.Message);
@@ -466,7 +589,7 @@ public sealed partial class BopItAccessMod
     }
 
     private void AddAssignedControls(InputActionAsset? asset,
-        HashSet<InputControl> seen)
+        Dictionary<IntPtr, AssignedHintControl> seen)
     {
         if (asset == null)
             return;
@@ -476,14 +599,12 @@ public sealed partial class BopItAccessMod
     }
 
     private void AddAssignedControls(InputAction? action,
-        HashSet<InputControl> seen)
+        Dictionary<IntPtr, AssignedHintControl> seen)
     {
         if (action == null || !action.enabled)
             return;
         foreach (InputControl control in action.controls)
         {
-            if (!seen.Add(control))
-                continue;
             bool explicitlyAssigned = false;
             foreach (InputBinding binding in action.bindings)
             {
@@ -496,10 +617,26 @@ public sealed partial class BopItAccessMod
                     break;
                 }
             }
-            if (explicitlyAssigned)
-                _assignedButtonHintControls.Add(control);
-            else
-                seen.Remove(control);
+            if (!explicitlyAssigned)
+                continue;
+            IntPtr pointer = control.Pointer;
+            if (seen.TryGetValue(pointer, out AssignedHintControl? assigned))
+            {
+                assigned.AddAction(action);
+                continue;
+            }
+            InputDevice device = control.device;
+            Mouse? mouse = device.TryCast<Mouse>();
+            HintDevice? type = mouse != null || device.TryCast<Keyboard>() != null ? HintDevice.Keyboard :
+                device.TryCast<Gamepad>() != null || device.TryCast<Joystick>() != null ? HintDevice.Controller : null;
+            if (type == null)
+                continue;
+            assigned = new AssignedHintControl(control, device, type.Value, mouse);
+            if (assigned.Button == null && assigned.Vector == null && assigned.Axis == null)
+                continue;
+            assigned.AddAction(action);
+            seen.Add(pointer, assigned);
+            _assignedButtonHintControls.Add(assigned);
         }
     }
 

@@ -75,6 +75,7 @@ public sealed partial class BopItAccessMod
             catch (Exception ex) { WriteStatus("Could not dispose control capture: " + ex.Message); }
         }
         inputState?.Restore();
+        InvalidateAssignedButtonHintControls();
         if (operation != null || inputState != null)
             SuppressControlCapturePressThrough();
     }
@@ -483,6 +484,7 @@ public sealed partial class BopItAccessMod
 
     private void QueueControlAssignmentSpeech(string? binding, string actionLabel)
     {
+        InvalidateAssignedButtonHintControls();
         string? displayed = CleanSpeechValue(binding);
         string message = displayed == null
             ? LF("Input assigned to {0}", L(actionLabel))
@@ -672,6 +674,7 @@ public sealed partial class BopItAccessMod
             !string.Equals(snapshot, _lastControlsResetSnapshot, StringComparison.Ordinal))
         {
             _lastControlsResetSnapshot = snapshot;
+            InvalidateAssignedButtonHintControls();
             QueueSpeech(L("Bindings reset to default"));
         }
     }

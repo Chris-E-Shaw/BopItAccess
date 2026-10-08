@@ -154,7 +154,7 @@ public sealed partial class BopItAccessMod
         InputRebindingEvents.RefreshPrompts?.Invoke();
         _cachedButtonHintContext = null;
         _nextButtonHintContextProbeAt = 0;
-        _nextAssignedButtonHintControlsRefreshAt = 0;
+        InvalidateAssignedButtonHintControls();
         WriteStatus("Editable configuration applied validated mod input bindings.");
     }
 

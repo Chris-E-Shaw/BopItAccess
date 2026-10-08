@@ -11,7 +11,7 @@ public sealed partial class BopItAccessMod
         { "Automatic", "Keyboard", "Controller", "Both" };
     private string _hintsType = "Automatic";
     private HintDevice _lastHintInputDevice = HintDevice.Keyboard;
-    private readonly Dictionary<InputControl, bool> _hintAnalogWasActive = new();
+    private readonly Dictionary<IntPtr, bool> _hintAnalogWasActive = new();
 
     private enum HintDevice { Keyboard, Controller, Both }
 
@@ -63,16 +63,18 @@ public sealed partial class BopItAccessMod
         RefreshAssignedButtonHintControls();
         bool keyboardInput = false;
         bool controllerInput = false;
-        foreach (InputControl control in _assignedButtonHintControls)
+        foreach (AssignedHintControl control in _assignedButtonHintControls)
         {
-            bool controlTouched = control is ButtonControl button
-                ? NewPress(button)
+            if (!control.IsAvailable)
+                continue;
+            bool controlTouched = control.Button != null
+                ? NewPress(control.Button)
                 : WasAssignedAnalogControlNewlyUsed(control);
             if (!controlTouched)
                 continue;
-            if (control.device is Keyboard or Mouse)
+            if (control.DeviceType == HintDevice.Keyboard)
                 keyboardInput = true;
-            else if (control.device is Gamepad or Joystick)
+            else if (control.DeviceType == HintDevice.Controller)
                 controllerInput = true;
         }
 
@@ -94,22 +96,21 @@ public sealed partial class BopItAccessMod
     private static bool NewPress(ButtonControl? button) =>
         button?.wasPressedThisFrame == true;
 
-    private bool WasAssignedAnalogControlNewlyUsed(InputControl control)
+    private bool WasAssignedAnalogControlNewlyUsed(AssignedHintControl control)
     {
-        if (control.device is Mouse mouse &&
-            string.Equals(control.name, "position",
-                StringComparison.OrdinalIgnoreCase))
-            return mouse.delta.ReadValue().sqrMagnitude > 1f;
+        if (control.MousePosition)
+            return control.Mouse!.delta.ReadValue().sqrMagnitude > 1f;
 
-        bool active = control switch
-        {
-            Vector2Control vector => vector.ReadValue().sqrMagnitude > 0.16f,
-            AxisControl axis => Math.Abs(axis.ReadValue()) > 0.4f,
-            _ => false
-        };
-        bool previous = _hintAnalogWasActive.TryGetValue(control, out bool wasActive) &&
-            wasActive;
-        _hintAnalogWasActive[control] = active;
+        float magnitude = control.ReadMagnitudeSquared();
+        // Preserve the edge latch by native identity, not wrapper identity.
+        // First observation uses previous-frame state so a held control on a
+        // newly enabled action/device does not look like a fresh touch.
+        bool previous = _hintAnalogWasActive.TryGetValue(control.Pointer, out bool wasActive)
+            ? wasActive : control.ReadPreviousMagnitudeSquared() > 0.16f;
+        // A neutral range prevents stick noise near the press threshold from
+        // stealing Automatic mode back from a newly touched keyboard.
+        bool active = magnitude > (previous ? 0.0625f : 0.16f);
+        _hintAnalogWasActive[control.Pointer] = active;
         return active && !previous;
     }
 
