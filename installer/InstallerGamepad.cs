@@ -33,6 +33,9 @@ internal sealed class InstallerGamepad : IDisposable
     private string? _navigationText;
     private int[] _textElements = [];
     private string? _lastReviewMessage;
+    private Control? _controllerSpeechSource;
+    private PendingFocusFeedback? _pendingFocusFeedback;
+    private long _focusFeedbackGeneration;
 
     internal InstallerGamepad(Form owner, Action quit, Action? advanced = null, Action? cancel = null,
         Func<Form, bool, bool>? navigateFocus = null)
@@ -57,10 +60,17 @@ internal sealed class InstallerGamepad : IDisposable
         {
             _activeWindow = 0;
             ResetSelection();
+            ClearControllerSpeech();
             return;
         }
         bool changedWindow = target.Window != _activeWindow;
         _activeWindow = target.Window;
+        if (changedWindow) ClearControllerSpeech();
+        else
+        {
+            if (!ReferenceEquals(FocusedControl(target.Form), _controllerSpeechSource)) _controllerSpeechSource = null;
+            if (_pendingFocusFeedback is { } pending && !IsFocusFeedbackTarget(pending)) _pendingFocusFeedback = null;
+        }
         if (changedWindow || !ReferenceEquals(FocusedControl(target.Form), _selectionBox)) ResetSelection();
         long now = Environment.TickCount64;
         for (uint index = 0; index < 4; index++)
@@ -111,6 +121,8 @@ internal sealed class InstallerGamepad : IDisposable
     private void DispatchButton(Target target, ushort pressed)
     {
         if (!IsStillActive(target)) return;
+        _focusFeedbackGeneration++;
+        if ((pressed & (LeftBumper | RightBumper)) == 0) _pendingFocusFeedback = null;
         if ((pressed & B) != 0) { Cancel(target); return; }
         if ((pressed & Start) != 0)
         {
@@ -165,19 +177,23 @@ internal sealed class InstallerGamepad : IDisposable
     private void Navigate(Target target, Direction direction, bool byUnit, bool extendSelection)
     {
         if (!IsStillActive(target)) return;
+        _focusFeedbackGeneration++;
         Control? focused = FocusedControl(target.Form);
         if (focused is TextBoxBase box)
         {
+            _pendingFocusFeedback = null;
             MoveCaret(target, box, direction, byUnit, extendSelection);
             return;
         }
         if (focused is ListBox or ListView or TreeView or ComboBox or DataGridView or UpDownBase)
         {
+            _pendingFocusFeedback = null;
             PostLocalKey(target, focused.Handle, DirectionKey(direction));
             return;
         }
         if (target.Form is null)
         {
+            _pendingFocusFeedback = null;
             nint focus = NativeFocus(target.Window);
             if (focus != 0) PostLocalKey(target, focus, DirectionKey(direction));
             return;
@@ -187,14 +203,101 @@ internal sealed class InstallerGamepad : IDisposable
 
     private void MoveFocus(Target target, bool forward)
     {
+        Control? previous = FocusedControl(target.Form);
+        bool leavingControllerSpeech = previous is not null && ReferenceEquals(previous, _controllerSpeechSource);
+        // Carry an undelivered replacement through rapid bumper moves, even
+        // when the intermediate control is not a text field.
+        bool pendingHandoff = _pendingFocusFeedback is { } pending && IsFocusFeedbackTarget(pending);
+        _pendingFocusFeedback = null;
         ResetSelection();
         if (target.Form is null)
         {
+            _controllerSpeechSource = null;
             PostMessage(target.Window, WmNextDialogControl, forward ? 0 : 1, 0);
             return;
         }
-        if (_navigateFocus?.Invoke(target.Form, forward) == true) return;
-        target.Form.SelectNextControl(FocusedControl(target.Form), forward, true, true, true);
+        if (_navigateFocus?.Invoke(target.Form, forward) != true)
+            target.Form.SelectNextControl(previous, forward, true, true, true);
+        Control? destination = FocusedControl(target.Form);
+        bool moved = !ReferenceEquals(previous, destination);
+        if (moved) _controllerSpeechSource = null;
+        if (destination is not null && (pendingHandoff || leavingControllerSpeech && moved)) QueueFocusFeedback(target, destination);
+    }
+
+    private void ClearControllerSpeech()
+    {
+        _controllerSpeechSource = null;
+        _pendingFocusFeedback = null;
+        _focusFeedbackGeneration++;
+    }
+
+    private bool IsFocusFeedbackTarget(PendingFocusFeedback pending)
+    {
+        Control destination = pending.Destination;
+        Form? form = pending.Target.Form;
+        if (form is null || form.IsDisposed || form.Disposing || !form.IsHandleCreated || form.Handle != pending.Target.Window ||
+            destination.IsDisposed || destination.Disposing || !destination.IsHandleCreated || destination.Handle != pending.Handle ||
+            !destination.Enabled || !destination.Visible || destination.FindForm() != form || !destination.ContainsFocus ||
+            !ReferenceEquals(FocusedControl(form), destination) || !IsStillActive(pending.Target)) return false;
+        nint focus = NativeFocus(pending.Target.Window);
+        return focus == pending.Handle || focus != 0 && IsChild(pending.Handle, focus);
+    }
+
+    private void QueueFocusFeedback(Target target, Control destination)
+    {
+        if (!destination.IsHandleCreated) return;
+        var pending = new PendingFocusFeedback(target, destination, destination.Handle, _focusFeedbackGeneration);
+        if (!IsFocusFeedbackTarget(pending)) return;
+        _pendingFocusFeedback = pending;
+        try
+        {
+            // Let the native focus event be posted first. NVDA does not attach
+            // notification speech to focus loss, so a meaningful replacement
+            // cancels the old review and supplies the destination's context.
+            destination.BeginInvoke((Action)(() =>
+            {
+                if (!ReferenceEquals(_pendingFocusFeedback, pending) || pending.Generation != _focusFeedbackGeneration) return;
+                _pendingFocusFeedback = null;
+                if (!IsFocusFeedbackTarget(pending)) return;
+                try
+                {
+                    bool raised = InstallerFeedback.Announce(destination, FocusDescription(destination), important: true,
+                        logContent: false, replacePending: true);
+                    // This destination message is also notification speech.
+                    // Later bumper moves must replace it just like text review.
+                    if (raised) _controllerSpeechSource = destination;
+                    InstallerDiagnostics.Current?.Write("ACCESSIBILITY",
+                        $"Controller focus handoff {(raised ? "posted" : "unavailable")} for {destination.GetType().Name}.");
+                }
+                catch (Exception error) when (error is InvalidOperationException or COMException or NotSupportedException)
+                {
+                    InstallerDiagnostics.Current?.Error("Controller focus notification unavailable", error);
+                }
+            }));
+        }
+        catch (InvalidOperationException) { _pendingFocusFeedback = null; }
+    }
+
+    private static string FocusDescription(Control control)
+    {
+        AccessibleObject accessible = control.AccessibilityObject;
+        string name = accessible.Name ?? control.AccessibleName ?? string.Empty;
+        if (string.IsNullOrWhiteSpace(name))
+            name = control is TextBoxBase ? "Text" : control.Text.Replace("&", string.Empty, StringComparison.Ordinal);
+        return control switch
+        {
+            CheckBox check => $"{name}, checkbox, {check.CheckState switch { CheckState.Checked => "checked", CheckState.Indeterminate => "mixed", _ => "unchecked" }}.",
+            RadioButton radio => $"{name}, radio button, {(radio.Checked ? "checked" : "unchecked")}.",
+            TextBoxBase box when box.Multiline => $"{name}, {(box.ReadOnly ? "read only " : string.Empty)}multiline text field" +
+                (box.SelectionLength > 0 ? $", {box.SelectionLength} characters selected." : "."),
+            TextBox box when box.UseSystemPasswordChar || box.PasswordChar != '\0' => $"{name}, password text field.",
+            TextBoxBase box => $"{name}, {(box.ReadOnly ? "read only " : string.Empty)}text field, " +
+                (string.IsNullOrEmpty(accessible.Value ?? box.Text) ? "blank." : (accessible.Value ?? box.Text) + "."),
+            ButtonBase => $"{name}, button.",
+            ComboBox combo => $"{name}, combo box, {(string.IsNullOrEmpty(combo.Text) ? "blank" : combo.Text)}.",
+            UpDownBase upDown => $"{name}, spin box, {upDown.Text}.",
+            _ => $"{name}, control."
+        };
     }
 
     private void ResetSelection()
@@ -388,7 +491,7 @@ internal sealed class InstallerGamepad : IDisposable
         // NVDA's arrow scripts speak the navigation unit; a local window
         // message does not trigger those scripts. Announce collapsed movement
         // through native UIA, without writing reviewed text into diagnostics.
-        InstallerFeedback.Announce(box, message, logContent: false, replacePending: true);
+        if (InstallerFeedback.Announce(box, message, logContent: false, replacePending: true)) _controllerSpeechSource = box;
     }
 
     private static string CharacterName(string character) => character switch
@@ -628,6 +731,7 @@ internal sealed class InstallerGamepad : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
+        ClearControllerSpeech();
         _timer.Stop();
         _timer.Tick -= Poll;
         _timer.Dispose();
@@ -636,6 +740,7 @@ internal sealed class InstallerGamepad : IDisposable
 
     private enum Direction { None, Up, Down, Left, Right }
     private sealed record Target(nint Window, Form? Form);
+    private sealed record PendingFocusFeedback(Target Target, Control Destination, nint Handle, long Generation);
     private sealed class ControllerHistory
     {
         internal bool Connected;

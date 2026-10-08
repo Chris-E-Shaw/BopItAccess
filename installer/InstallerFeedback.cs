@@ -17,15 +17,23 @@ internal static class InstallerFeedback
         }
         try
         {
+            // Routine controller review may replace older review without
+            // requesting urgency. Focus handoff explicitly requests both.
+            AutomationNotificationProcessing processing = (important, replacePending) switch
+            {
+                (true, true) => AutomationNotificationProcessing.ImportantMostRecent,
+                (false, true) => AutomationNotificationProcessing.MostRecent,
+                (true, false) => AutomationNotificationProcessing.ImportantAll,
+                (false, false) => AutomationNotificationProcessing.CurrentThenMostRecent
+            };
             bool raised = source.AccessibilityObject.RaiseAutomationNotification(
                 AutomationNotificationKind.Other,
-                replacePending ? AutomationNotificationProcessing.ImportantMostRecent :
-                    important ? AutomationNotificationProcessing.ImportantAll : AutomationNotificationProcessing.CurrentThenMostRecent,
+                processing,
                 message);
             InstallerDiagnostics.Current?.Write("ACCESSIBILITY", raised
-                ? logContent ? "Posted Windows screen-reader notification: " + message : "Posted controller text-review notification."
+                ? logContent ? "Posted Windows screen-reader notification: " + message : "Posted controller accessibility notification."
                 : logContent ? "Windows could not post the screen-reader notification; the message remains visible: " + message
-                    : "Windows could not post a controller text-review notification; the text remains visible.");
+                    : "Windows could not post a controller accessibility notification.");
             return raised;
         }
         catch (Exception ex) when (ex is InvalidOperationException or System.Runtime.InteropServices.COMException or NotSupportedException)
