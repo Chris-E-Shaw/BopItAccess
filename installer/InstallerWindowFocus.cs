@@ -81,8 +81,8 @@ internal static class InstallerWindowFocus
     // Start only from Shown. Posting the first attempt lets WinForms finish
     // showing/activating the window and lets the desktop settle after UAC.
     internal static IDisposable BeginStartup(Form owner, Func<Control?> initialControl,
-        Func<bool> canRetry, Action<string>? attention = null) =>
-        new StartupActivation(owner, initialControl, canRetry, attention);
+        Func<bool> canRetry, Action<string>? attention = null, Action<Control>? initialFocus = null) =>
+        new StartupActivation(owner, initialControl, canRetry, attention, initialFocus);
 
     // Capture before WinForms, mutex acquisition, local diagnostics and form
     // construction. The native single-file host and manifest elevation have
@@ -243,6 +243,7 @@ internal static class InstallerWindowFocus
         private readonly Func<Control?> _initialControl;
         private readonly Func<bool> _canRetry;
         private readonly Action<string>? _attention;
+        private readonly Action<Control>? _initialFocus;
         private readonly HashSet<nint> _attemptedForegrounds = new();
         private readonly System.Windows.Forms.Timer _timer = new() { Interval = 125 };
         private readonly long _started = Environment.TickCount64;
@@ -252,14 +253,16 @@ internal static class InstallerWindowFocus
         private bool _disposed;
         private long? _foregroundSince;
         private Control? _focusedControl;
+        private bool _reportedInitialFocus;
 
         internal StartupActivation(Form owner, Func<Control?> initialControl, Func<bool> canRetry,
-            Action<string>? attention)
+            Action<string>? attention, Action<Control>? initialFocus)
         {
             _owner = owner;
             _initialControl = initialControl;
             _canRetry = canRetry;
             _attention = attention;
+            _initialFocus = initialFocus;
             _hasInputAtStart = TryLastInput(out _inputAtStart);
             _timer.Tick += Tick;
             _owner.Disposed += OwnerDisposed;
@@ -339,7 +342,15 @@ internal static class InstallerWindowFocus
                 "; keyboardReady=" + (foreground && control?.Focused == true) +
                 "; " + Snapshot() + (accepted != false ? "." :
                     ". Windows returned false; SetForegroundWindow does not document a last-error reason."));
-            if (foreground && _focusedControl?.Focused == true) _foregroundSince = Environment.TickCount64;
+            if (foreground && _focusedControl?.Focused == true)
+            {
+                _foregroundSince = Environment.TickCount64;
+                if (!_reportedInitialFocus)
+                {
+                    _reportedInitialFocus = true;
+                    _initialFocus?.Invoke(_focusedControl);
+                }
+            }
         }
 
         private void Stop(string reason, bool requestAttention = false)

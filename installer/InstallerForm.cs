@@ -4,6 +4,10 @@ namespace BopItAccess.Installer;
 
 internal sealed class InstallerForm : Form
 {
+    private const string WelcomeText = "Welcome to the Bop It Access Installer! Check the game folder, then choose Install. Use Browse to choose a different folder. Show advanced provides alpha installation and diagnostic tools.\r\n\r\n" +
+        "This welcome text stays available separately from the status log. Alt+W returns here. Tab moves between fields. Use arrow keys to review text, Ctrl+A to select all, and Ctrl+C to copy. Operation messages appear in the status log.\r\n\r\n" +
+        "With a compatible controller, use the D-pad to navigate, A to activate, and the bumpers to move between fields. In a text field, D-pad Left and Right move by character; Up and Down move by line. Hold LT to move by word or paragraph. Hold RT to select text, or both triggers to select words or paragraphs. Y selects all text and X copies the selection.\r\n\r\n" +
+        "Outside a text field in the main window, Y toggles Show advanced. B goes back or requests abort; Start quits.";
     private readonly InstallerService _service;
     private readonly bool _startUninstall;
     private readonly string _uninstallUserSid;
@@ -22,6 +26,7 @@ internal sealed class InstallerForm : Form
     private readonly Label _stateLabel = new();
     private readonly ProgressBar _progress = new();
     private readonly TextBox _statusLog = new();
+    private readonly TextBox _welcomeText = new();
     private InstallerState _state = new(null, false, false, false, false, false, null);
     private CancellationTokenSource? _operationCancellation;
     private readonly CancellationTokenSource _initializationCancellation = new();
@@ -50,18 +55,21 @@ internal sealed class InstallerForm : Form
         _uninstallUserSid = uninstallUserSid;
         Text = "Bop It Access Installer";
         StartPosition = FormStartPosition.CenterScreen;
-        MinimumSize = new Size(680, 420);
-        Size = new Size(780, 540);
+        MinimumSize = new Size(680, 560);
+        Size = new Size(780, 700);
         Font = SystemFonts.MessageBoxFont;
         AutoScaleMode = AutoScaleMode.Dpi;
+        AutoScroll = true;
+        Load += (_, _) => FitInitialWindowToWorkingArea();
 
         var layout = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             Padding = new Padding(16),
             ColumnCount = 1,
-            RowCount = 5
+            RowCount = 6
         };
+        layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -69,11 +77,44 @@ internal sealed class InstallerForm : Form
         layout.RowStyles.Add(new RowStyle(SizeType.AutoSize));
         Controls.Add(layout);
 
+        var welcomePanel = new TableLayoutPanel
+        {
+            Dock = DockStyle.Top,
+            AutoSize = true,
+            ColumnCount = 1,
+            RowCount = 2,
+            TabIndex = 0,
+            Margin = new Padding(0, 0, 0, 12)
+        };
+        welcomePanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
+        welcomePanel.RowStyles.Add(new RowStyle(SizeType.Absolute, 140));
+        var welcomeLabel = new Label
+        {
+            Text = "&Welcome and controls:",
+            AutoSize = true,
+            TabIndex = 0,
+            Margin = new Padding(0, 0, 0, 4)
+        };
+        _welcomeText.Dock = DockStyle.Fill;
+        _welcomeText.Multiline = true;
+        _welcomeText.ReadOnly = true;
+        _welcomeText.ScrollBars = ScrollBars.Vertical;
+        _welcomeText.WordWrap = true;
+        _welcomeText.Text = WelcomeText;
+        _welcomeText.AccessibleName = "Installer welcome and controls";
+        _welcomeText.AccessibleDescription = "Read-only, selectable welcome instructions. Alt+W returns here. Arrow keys or the controller D-pad review text; LT moves by word or paragraph, RT selects, Y selects all, and X copies the selection. Bumpers move between fields.";
+        _welcomeText.TabIndex = 1;
+        _welcomeText.Select(0, 0);
+        welcomePanel.Controls.Add(welcomeLabel, 0, 0);
+        welcomePanel.Controls.Add(_welcomeText, 0, 1);
+        layout.Controls.Add(welcomePanel, 0, 0);
+
         var folderRow = new TableLayoutPanel
         {
             Dock = DockStyle.Top,
             AutoSize = true,
             ColumnCount = 3,
+            TabIndex = 1,
             Margin = new Padding(0, 0, 0, 12)
         };
         folderRow.ColumnStyles.Add(new ColumnStyle(SizeType.AutoSize));
@@ -112,13 +153,14 @@ internal sealed class InstallerForm : Form
         folderRow.Controls.Add(folderLabel, 0, 0);
         folderRow.Controls.Add(_gamePath, 1, 0);
         folderRow.Controls.Add(_browse, 2, 0);
-        layout.Controls.Add(folderRow, 0, 0);
+        layout.Controls.Add(folderRow, 0, 1);
 
         var actions = new FlowLayoutPanel
         {
             Dock = DockStyle.Top,
             AutoSize = true,
             WrapContents = true,
+            TabIndex = 2,
             Margin = new Padding(0, 0, 0, 12)
         };
         ConfigureAction(_install, "&Install", "Install the latest release", 3,
@@ -150,13 +192,13 @@ internal sealed class InstallerForm : Form
         _play.Click += (_, _) => PlayGame();
         actions.Controls.AddRange(new Control[]
             { _install, _installAlpha, _update, _uninstall, _abort, _play });
-        layout.Controls.Add(actions, 0, 1);
+        layout.Controls.Add(actions, 0, 2);
 
         _stateLabel.AutoSize = true;
         _stateLabel.Text = "Checking installation status...";
         _stateLabel.AccessibleName = "Installer status";
         _stateLabel.Margin = new Padding(0, 0, 0, 8);
-        layout.Controls.Add(_stateLabel, 0, 2);
+        layout.Controls.Add(_stateLabel, 0, 3);
 
         _progress.Dock = DockStyle.Top;
         _progress.Height = 22;
@@ -164,13 +206,14 @@ internal sealed class InstallerForm : Form
         _progress.Minimum = 0;
         _progress.Maximum = 100;
         _progress.Margin = new Padding(0, 0, 0, 12);
-        layout.Controls.Add(_progress, 0, 4);
+        layout.Controls.Add(_progress, 0, 5);
 
         var logPanel = new TableLayoutPanel
         {
             Dock = DockStyle.Fill,
             ColumnCount = 1,
             RowCount = 3,
+            TabIndex = 3,
             Margin = Padding.Empty
         };
         logPanel.RowStyles.Add(new RowStyle(SizeType.AutoSize));
@@ -180,6 +223,7 @@ internal sealed class InstallerForm : Form
         {
             Text = "Status &log:",
             AutoSize = true,
+            TabIndex = 0,
             Margin = new Padding(0, 0, 0, 4)
         };
         _statusLog.Dock = DockStyle.Fill;
@@ -190,7 +234,7 @@ internal sealed class InstallerForm : Form
         _statusLog.WordWrap = true;
         _statusLog.AccessibleName = "Installer status log";
         _statusLog.AccessibleDescription = "Read-only, selectable operation messages. Controller D-pad reviews text; LT moves by word or paragraph, RT selects, Y selects all, and X copies the selection. Bumpers move between fields.";
-        _statusLog.TabIndex = 8;
+        _statusLog.TabIndex = 1;
         logPanel.Controls.Add(logLabel, 0, 0);
         logPanel.Controls.Add(_statusLog, 0, 1);
         var diagnosticsActions = new FlowLayoutPanel
@@ -198,6 +242,7 @@ internal sealed class InstallerForm : Form
             Dock = DockStyle.Fill,
             AutoSize = true,
             WrapContents = true,
+            TabIndex = 2,
             Margin = new Padding(0, 6, 0, 0)
         };
         _saveDiagnostics.Text = "Save &diagnostics...";
@@ -234,7 +279,7 @@ internal sealed class InstallerForm : Form
         _quit.Click += (_, _) => RequestQuit();
         diagnosticsActions.Controls.AddRange(new Control[] { _showAdvanced, _saveDiagnostics, _copyDiagnostics, _quit });
         logPanel.Controls.Add(diagnosticsActions, 0, 2);
-        layout.Controls.Add(logPanel, 0, 3);
+        layout.Controls.Add(logPanel, 0, 4);
 
         _service.StatusChanged += message => OnUiThread(() => AppendStatus(message, record: false));
         _service.ProgressChanged += progress => OnUiThread(() => ShowProgress(progress));
@@ -242,25 +287,58 @@ internal sealed class InstallerForm : Form
         Shown += async (_, _) =>
         {
             _startupFocus = InstallerWindowFocus.BeginStartup(this,
-                () => _gamePath.CanFocus ? _gamePath : _statusLog,
+                () => _welcomeText,
                 () => !_quitApproved && !_closeAfterInitialization && _operationCancellation == null &&
                     _quitDialog == null && !OwnedForms.Any(dialog => dialog.Visible),
                 message =>
                 {
                     AppendStatus(message);
                     InstallerFeedback.Announce(this, message, important: true, allowBackground: true);
-                });
+                },
+                _ => AnnounceInitialWelcome());
             _gamepad = new InstallerGamepad(this, RequestQuit,
                 () => _showAdvanced.Checked = !_showAdvanced.Checked,
                 () => { if (_operationCancellation != null && _allowAbort) RequestAbortWithConfirmation(); else RequestQuit(); });
-            const string welcome = "Welcome to the Bop It Access Installer! Check the game folder, then choose Install. Use Browse to choose a different folder. Show advanced provides alpha installation and diagnostic tools. Tab moves between fields. You can review all messages in the status log. With a compatible controller, use the D-pad to navigate, A to activate, and the bumpers to move between fields. In a text field, D-pad Left and Right move by character; Up and Down move by line. Hold LT to move by word or paragraph. Hold RT to select text, or both triggers to select words or paragraphs. Y selects all text and X copies the selection. Outside a text field in the main window, Y toggles Show advanced. B goes back or requests abort; Start quits.";
-            AppendStatus(welcome);
-            InstallerFeedback.Announce(this, welcome, important: true);
             await InitializeAsync();
         };
         FormClosing += OnFormClosing;
         UpdateAdvancedControls();
         UpdateActions();
+        ActiveControl = _welcomeText;
+    }
+
+    private void FitInitialWindowToWorkingArea()
+    {
+        // Load runs after initial display scaling. Keep the window inside the
+        // usable desktop and retain a scrollable virtual area on small screens.
+        Rectangle working = Screen.FromControl(this).WorkingArea;
+        AutoScrollMinSize = new Size(
+            Math.Max(0, MinimumSize.Width - (Width - ClientSize.Width)),
+            Math.Max(0, MinimumSize.Height - (Height - ClientSize.Height)));
+        MinimumSize = new Size(Math.Min(MinimumSize.Width, working.Width),
+            Math.Min(MinimumSize.Height, working.Height));
+        Size = new Size(Math.Min(Width, working.Width), Math.Min(Height, working.Height));
+        Location = new Point(working.Left + (working.Width - Width) / 2,
+            working.Top + (working.Height - Height) / 2);
+    }
+
+    private void AnnounceInitialWelcome()
+    {
+        long generation = InstallerFeedback.PostedGeneration;
+        try
+        {
+            // Let the native focus event arrive first, then replace it with
+            // one full welcome message. A user's next action takes priority.
+            _welcomeText.BeginInvoke((Action)(() =>
+            {
+                if (IsDisposed || Disposing || !_welcomeText.Focused ||
+                    _welcomeText.SelectionStart != 0 || _welcomeText.SelectionLength != 0 ||
+                    InstallerFeedback.PostedGeneration != generation) return;
+                InstallerFeedback.Announce(_welcomeText, WelcomeText, important: true);
+            }));
+        }
+        catch (InvalidOperationException) when (IsDisposed || Disposing || !_welcomeText.IsHandleCreated)
+        { /* The form closed before its startup announcement was posted. */ }
     }
 
     private void ConfigureAction(Button button, string text, string accessibleName,

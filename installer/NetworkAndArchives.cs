@@ -38,15 +38,27 @@ internal static class InstallerNetwork
         using var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellation);
         var root = json.RootElement;
         var tag = root.GetProperty("tag_name").GetString() ?? throw new InvalidDataException("Release tag is missing.");
+        var version = tag.StartsWith('v') || tag.StartsWith('V') ? tag[1..] : tag;
+        if (version.Length == 0 || !char.IsAsciiDigit(version[0]) ||
+            version.Any(character => !char.IsAsciiLetterOrDigit(character) && character is not '.' and not '-' and not '+'))
+            throw new InvalidDataException("Release tag does not identify a valid mod package version.");
+        string expectedAsset = "BopItAccess-v" + version + ".zip";
         foreach (var asset in root.GetProperty("assets").EnumerateArray())
         {
             var name = asset.GetProperty("name").GetString() ?? "";
-            if (!name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase) ||
-                !name.Contains("BopItAccess", StringComparison.OrdinalIgnoreCase)) continue;
+            // Select only this release's compiled mod package. The installer,
+            // other ZIP uploads and GitHub's generated source archives are
+            // separate downloads and must never become Install/Update input.
+            if (!string.Equals(name, expectedAsset, StringComparison.Ordinal)) continue;
+            if (asset.GetProperty("state").GetString() != "uploaded" || asset.GetProperty("size").GetInt64() <= 0) continue;
             var url = asset.GetProperty("browser_download_url").GetString();
             if (url is not null && Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps)
+            {
+                InstallerDiagnostics.Current?.Write("network", $"Selected compiled release package: tag={tag}; asset={name}.");
                 return new GitHubRelease(tag, name, uri);
+            }
         }
+        InstallerDiagnostics.Current?.Write("network", $"Release {tag} has no ready compiled mod asset named {expectedAsset}.");
         return null;
     }
 

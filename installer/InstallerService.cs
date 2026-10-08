@@ -678,21 +678,46 @@ internal sealed class InstallerService
 
     private static string FindPackageRoot(string extracted)
     {
-        if (File.Exists(Path.Combine(extracted, "Mods", "BopItAccess.dll"))) return extracted;
-        var root = Directory.EnumerateDirectories(extracted).SingleOrDefault();
-        if (root is null || !File.Exists(Path.Combine(root, "Mods", "BopItAccess.dll")))
-            throw new InvalidDataException("Release ZIP must contain Mods/BopItAccess.dll.");
+        string root = extracted;
+        if (!File.Exists(Path.Combine(root, "Mods", "BopItAccess.dll")))
+        {
+            var folders = Directory.EnumerateDirectories(extracted).Take(2).ToArray();
+            if (folders.Length != 1 || !File.Exists(Path.Combine(folders[0], "Mods", "BopItAccess.dll")))
+                throw new InvalidDataException("Release ZIP must contain Mods/BopItAccess.dll at its root or inside one enclosing folder.");
+            root = folders[0];
+        }
+        // Validate required documentation before a transaction changes the
+        // game. An older installed guide must not hide an incomplete package.
+        if (!File.Exists(Path.Combine(root, "BopItAccess-user-guide.html")) &&
+            !File.Exists(Path.Combine(root, "documentation", "BopItAccess-user-guide.html")))
+            throw new InvalidDataException("The compiled release package has no English user guide.");
         return root;
     }
 
-    private static string FindReleaseDll(string root) => Path.Combine(root, "Mods", "BopItAccess.dll");
+    private static string FindReleaseDll(string root)
+    {
+        string dll = Path.Combine(root, "Mods", "BopItAccess.dll");
+        try
+        {
+            // Read assembly metadata without loading or running downloaded
+            // code. A filename alone does not establish a compiled mod.
+            var assembly = System.Reflection.AssemblyName.GetAssemblyName(dll);
+            if (!string.Equals(assembly.Name, "BopItAccess", StringComparison.Ordinal))
+                throw new InvalidDataException("The release package does not contain the compiled BopItAccess mod assembly.");
+        }
+        catch (Exception ex) when (ex is BadImageFormatException or FileLoadException)
+        {
+            throw new InvalidDataException("The release package's Mods/BopItAccess.dll is not a valid compiled mod assembly.", ex);
+        }
+        return dll;
+    }
 
     private static string ReadModVersion(string root)
     {
         var source = Path.Combine(root, "src", "BopItAccessMod.cs");
         if (!File.Exists(source)) return "source";
         var match = Regex.Match(File.ReadAllText(source),
-            "MelonInfo\\([^\\r\\n]*?,\\s*\"Bop It Access\"\\s*,\\s*\"(?<version>[0-9]+\\.[0-9]+\\.[0-9]+)\"");
+            "MelonInfo\\([^\\r\\n]*?,\\s*\"Bop It Access\"\\s*,\\s*\"(?<version>[0-9]+(?:\\.[0-9]+)+)\"");
         return match.Success ? match.Groups["version"].Value : "source";
     }
 
