@@ -42,9 +42,9 @@
 <header>
 <div class="wrap">
 <h1>Bop It Access: 기술 빌드 기록</h1>
-<p class="intro">v0.1.0부터 v0.9.11까지 58개 모드 빌드와 독립형 설치 프로그램 미리보기의 연대순 기록입니다. 각 항목에는 범위가 지정된 변경 요약 및 구현 세부 정보가 있습니다. 공개 GitHub 저장소에는 아직 컴파일된 다운로드나 GitHub 릴리스가 없는 소스 코드가 포함되어 있습니다.</p>
+<p class="intro">v0.1.0부터 v0.9.11까지 58개 모드 빌드와 독립형 설치 프로그램 빌드의 연대순 기록입니다. 각 항목에는 범위가 지정된 변경 요약 및 구현 세부 정보가 있습니다. 공개 GitHub 저장소에는 아직 컴파일된 다운로드나 GitHub 릴리스가 없는 소스 코드가 포함되어 있습니다.</p>
 <p class="note"><strong>Git 출처:</strong> Git은 v0.6.12 이후에 도입되었습니다. 37개의 소스 커밋은 보존된 소스 ZIP에서 재구성되었습니다. Git 날짜는 원래 빌드 이벤트가 아닌 가져오기를 설명합니다. Christopher Shaw는 커밋 작성자입니다. 공동 작성자 예고편은 해당 빌드 작업에 대해 확인된 모델 기록을 반영합니다. 첫 번째 빌드의 경우 GPT-6 Luna, 나머지 36개의 경우 GPT-6 Sol입니다. 로컬 설치 패키지 및 버전 태그는 초기 GitHub 게시의 일부가 아닙니다.</p>
-<nav aria-label="빌드 시리즈"><a href="#foundation">v0.1–v0.4 기초</a><a href="#series05">v0.5 시리즈</a><a href="#series06">v0.6 시리즈</a><a href="#series07">v0.7 시리즈</a><a href="#series08">v0.8 다국어</a><a href="#series09">v0.9 Prism</a><a href="#installer-preview">설치 프로그램 미리보기</a></nav>
+<nav aria-label="빌드 시리즈"><a href="#foundation">v0.1–v0.4 기초</a><a href="#series05">v0.5 시리즈</a><a href="#series06">v0.6 시리즈</a><a href="#series07">v0.7 시리즈</a><a href="#series08">v0.8 다국어</a><a href="#series09">v0.9 Prism</a><a href="#installer-preview">Windows 설치 프로그램</a></nav>
 </div>
 </header>
 <main class="wrap" id="history">
@@ -147,7 +147,7 @@
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/1d9b671a6f4a7575a5b99f8c973d200830d2c0e5">소스 커밋</a> · 컴파일된 GitHub 릴리스 없음</p></article>
     </section>
     <section id="installer-preview" aria-labelledby="installer-preview-heading">
-      <h2 id="installer-preview-heading">독립형 Windows 설치 프로그램 미리보기</h2>
+      <h2 id="installer-preview-heading">Windows 설치 프로그램</h2>
       <article class="commit" id="installer-0-1-3"><div class="meta"><span class="version">Installer 0.1.3 preview</span><span class="kind">fix · docs</span></div><h3>fix(설치 프로그램): 제거 시 편집 가능한 설정 삭제</h3><ul><li>고정된 UserData/BopItAccess.ini 및 BopItAccess.ini.tmp 경로를 검증하고 삭제 전에 연결된 파일이나 정션을 거부한다. 매니페스트로 관리되는 설치와 이전 수동 설치의 제거 흐름 모두에서 변경 가능한 이 모드 파일을 삭제한다.</li><li>다른 모드, 게임의 기본 설정 및 .NET SDK를 유지한다. 로컬 설치 프로그램 미리보기를 경고나 오류 없이 다시 컴파일했다. 확인을 위한 제거 작업은 실행하지 않았다.</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/6d21fc406d739abefcf5cda70a881db7b9abd89e">소스 커밋</a> · GitHub 릴리스 없음</p></article>
           <article class="commit" id="installer-0-1-4"><div class="meta"><span class="version">Installer 0.1.4 preview</span><span class="kind">fix · docs</span></div><h3>수정(설치 프로그램): 공유 구성을 교체하지 않고 로더 시작 창 숨기기</h3><ul><li>병합만 <code>[loader] disable_start_screen=true</code> 그리고 <code>[console] hide_console=true</code> 안으로 <code>UserData/Loader.cfg</code> 알파 프록시 생성 시작 전을 포함하여 릴리스 및 알파 설치용입니다. 연결된 구성 경로를 거부하고 관련 없는 항목을 보존합니다.</li><li>롤백을 위해 설치 저널에 정확한 이전 파일을 보관하십시오. 매니페스트에서 파일을 변경 가능한 공유 구성으로 처리합니다. 제거 시 변경되지 않은 대상 플래그만 원래 값으로 복원합니다. 이후 편집 내용을 유지하고, 도입된 구성이 비어 있거나 설치 프로그램 소유의 비공유 로더가 제거된 경우에만 삭제합니다.</li><li>최소 수동 설치 템플릿과 해당 항목을 기존 구성에 병합하는 문서를 제공합니다. 사용자는 두 로더 창 중 하나를 수동으로 다시 활성화할 수 있습니다. 모드는 시작할 때마다 이러한 플래그를 덮어쓰지 않습니다.</li><li>경고나 오류 없이 모드를 컴파일하고 설치 프로그램 0.1.4의 게시 작업도 성공적으로 완료했습니다. 확인은 컴파일과 정적 검토로 제한되었습니다. 자동화된 테스트, 게임 내 확인, 설치 또는 제거 실행은 하지 않았습니다.</li><li>모드 파일을 제거하기 전에 공유 로더 설정의 크기, UTF-8 인코딩, 대상 옵션 값을 검증합니다. 이 사전 확인으로 설정을 안전하게 보존할 수 없다면 제거를 중단합니다.</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/7e3ab2b1694369b1a16427967ffc34e2ee10b284">소스 커밋</a> · GitHub 출시 없음</p></article>
       <article class="commit" id="installer-0-1-5"><div class="meta"><span class="version">Installer 0.1.5 preview</span><span class="kind">refactor · fix · perf · docs</span></div><h3>fix(installer): 작업 소유권, 롤백 및 제거 복구 강화</h3><ul>
@@ -228,6 +228,12 @@
 <li>영문 README와 안내서, 9개 언어 번역본 및 설치 프로그램 기술 문서를 업데이트합니다. 모든 이전 기록 문서와 안내서 앵커를 보존합니다. Windows x64용 자체 포함 설치 프로그램 0.2.3을 경고 0개, 오류 0개로 게시했으며 git diff --check에서도 문제가 없습니다. 정적 PE 검사는 필요한 세 포함 리소스가 소스 바이트와 정확히 일치함을 확인합니다. 번들에는 일치하는 기본 DLL이 포함되어 있으며 설치 프로그램 전용 언어 위성 리소스는 없습니다. 검증은 컴파일과 정적 검사로 제한됩니다. 자동 테스트, 설치 프로그램/제거 프로그램, 컨트롤러 또는 스크린 리더 실행, 참조 생성, 게임 실행은 수행하지 않았습니다. 새 음성 중단 동작은 사람의 확인을 기다립니다.</li>
 <li>기본 모드는 v0.9.11, 모드 빌드는 58개로 유지됩니다. 새 모드 DLL, 태그 또는 GitHub Release를 만들지 않습니다.</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/45e1ee416da2995078f95cce7b8c04dce730ca7a">소스 커밋</a> · GitHub Release 없음</p></article>
+      <article class="commit" id="installer-0-2-4"><div class="meta"><span class="version">Installer 0.2.4</span><span class="kind">fix · speech · docs</span></div><h3>fix(installer): 내보내는 각 알림으로 이전 음성을 대체</h3><ul>
+<li>내보내는 모든 알림이 이전 설치 프로그램 음성을 대체하도록 요청합니다. 텍스트 검토에는 MostRecent, 중요한 피드백에는 ImportantMostRecent를 사용합니다. 모두 선택, Show advanced 상태, Copy diagnostics 및 다른 확인을 포함합니다. 상태 로그 알림 빈도를 유지하고 관리되는 컨트롤 간 컨트롤러 포커스 이동이 성공할 때마다 보호된 대상 알림을 계속 사용합니다. 실제 중단과 타이밍은 사람의 확인을 기다립니다.</li>
+<li>0.2.4를 제공된 설치 프로그램으로 설명하고 현재 미리보기 표기를 제거하며 이전 기록 문서와 가이드 앵커를 보존합니다. build/installer에 로컬 게시하고 BopItAccess-Installer-0.2.4.exe 및 BopItAccess-Installer.exe를 제공합니다. 공개 GitHub 바이너리는 아닙니다.</li>
+<li>설치 프로그램 0.2.4를 경고와 오류 없이 게시합니다. 정적 PE 검사는 필요한 세 포함 리소스가 소스 바이트와 일치하며 단일 파일 번들에 일치하는 기본 DLL이 있고 설치 프로그램 전용 언어 위성 리소스가 없음을 확인합니다. 검증은 컴파일과 정적 검사로 제한됩니다. 자동 테스트나 설치 프로그램, 제거 프로그램, 컨트롤러, 스크린 리더 또는 게임 실행은 수행하지 않았습니다. 음성 타이밍에 대한 사람의 확인은 대기 중입니다.</li>
+<li>기본 모드는 v0.9.11, 모드 빌드는 58개로 유지됩니다. 새 모드 DLL, 태그 또는 GitHub Release를 만들지 않습니다.</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/e7e0f6e33aeb652a7cf02d95f75ff1f4e1158c6d">소스 커밋</a> · GitHub Release 없음</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37개의 로컬 소스 아카이브가 공개 소스 커밋을 재구성하는 데 사용되었습니다. 설치 패키지는 로컬로 유지되며 GitHub 릴리스가 아닙니다. v0.5.4 리바인딩 미리보기 및 v0.5.18 SAPI 트림 실험은 기록 구현으로 기록됩니다. 이후 항목에는 변경된 방법이 나와 있습니다.</p><p><a href="#history">빌드 기록으로 돌아가기</a></p></div></footer>

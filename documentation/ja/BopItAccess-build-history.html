@@ -42,9 +42,9 @@
 <header>
 <div class="wrap">
 <h1>Bop It Access: 技術的なビルド履歴</h1>
-<p class="intro">v0.1.0からv0.9.11までの58件のModビルドと、独立したインストーラープレビューの時系列記録。各エントリには、範囲を限定した変更の概要と実装の詳細が含まれます。パブリック GitHub リポジトリにはソース コードが含まれていますが、コンパイルされたダウンロードや GitHub リリースはまだありません。</p>
+<p class="intro">v0.1.0からv0.9.11までの58件のModビルドと、独立したインストーラービルドの時系列記録。各エントリには、範囲を限定した変更の概要と実装の詳細が含まれます。パブリック GitHub リポジトリにはソース コードが含まれていますが、コンパイルされたダウンロードや GitHub リリースはまだありません。</p>
 <p class="note"><strong>Git の出所:</strong> Git は v0.6.12 以降に導入されました。 37 個のソース コミットは、保存されたソース ZIP から再構築されました。 Git の日付は、元のビルド イベントではなく、インポートについて説明しています。 Christopher Shaw がコミットの作成者です。共同作成者のトレーラーには、対応するビルド作業の検証済みモデル レコードが反映されています。最初のビルドは GPT-6 Luna、残りの 36 は GPT-6 Sol です。ローカル インストール パッケージとバージョン タグは、最初の公開版 GitHub の一部ではありません。</p>
-<nav aria-label="ビルドシリーズ"><a href="#foundation">v0.1 ～ v0.4 基礎</a><a href="#series05">v0.5シリーズ</a><a href="#series06">v0.6シリーズ</a><a href="#series07">v0.7シリーズ</a><a href="#series08">v0.8 多言語対応</a><a href="#series09">v0.9 Prism</a><a href="#installer-preview">インストーラープレビュー</a></nav>
+<nav aria-label="ビルドシリーズ"><a href="#foundation">v0.1 ～ v0.4 基礎</a><a href="#series05">v0.5シリーズ</a><a href="#series06">v0.6シリーズ</a><a href="#series07">v0.7シリーズ</a><a href="#series08">v0.8 多言語対応</a><a href="#series09">v0.9 Prism</a><a href="#installer-preview">Windows インストーラー</a></nav>
 </div>
 </header>
 <main class="wrap" id="history">
@@ -147,7 +147,7 @@
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/1d9b671a6f4a7575a5b99f8c973d200830d2c0e5">ソースコミット</a> · コンパイル済みのGitHubリリースなし</p></article>
     </section>
     <section id="installer-preview" aria-labelledby="installer-preview-heading">
-      <h2 id="installer-preview-heading">Windows用インストーラーの独立したプレビュー</h2>
+      <h2 id="installer-preview-heading">Windows インストーラー</h2>
       <article class="commit" id="installer-0-1-3"><div class="meta"><span class="version">Installer 0.1.3 preview</span><span class="kind">fix · docs</span></div><h3>fix(インストーラー): アンインストール時に編集可能な設定を削除</h3><ul><li>UserData/BopItAccess.iniとBopItAccess.ini.tmpの固定パスを検証し、削除前にリンクされたファイルやジャンクションを拒否する。マニフェスト管理のインストールと以前の手動インストールの両方で、これらの変更可能なModファイルを削除する。</li><li>他のMod、ゲーム本来の設定、.NET SDKを保持する。ローカルのインストーラープレビューを警告・エラーなしで再コンパイルした。確認のためのアンインストールは実行していない。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/6d21fc406d739abefcf5cda70a881db7b9abd89e">ソースのコミット</a> · GitHubリリースなし</p></article>
           <article class="commit" id="installer-0-1-4"><div class="meta"><span class="version">Installer 0.1.4 preview</span><span class="kind">fix · docs</span></div><h3>修正(インストーラー): 共有構成を置き換えずにローダーの起動ウィンドウを非表示にする</h3><ul><li>マージのみ <code>[loader] disable_start_screen=true</code> そして <code>[console] hide_console=true</code> に <code>UserData/Loader.cfg</code> アルファ プロキシ生成の起動前を含む、リリースおよびアルファ インストールの場合。リンクされた構成パスを拒否し、無関係なエントリを保持します。</li><li>ロールバックに備えて、正確な以前のファイルをインストール ジャーナルに保存します。マニフェスト内のファイルを変更可能な共有構成として扱います。アンインストール時に、変更されていないターゲット フラグのみを元の値に復元します。後の編集を保存し、導入された構成を削除するのは、それが空であるか、インストーラーが所有する非共有ローダーが削除された場合に限られます。</li><li>最小限の手動インストール テンプレートと、そのエントリを既存の構成にマージするドキュメントを提供します。ユーザーはいずれかのローダー ウィンドウを手動で再度有効にすることができます。 MOD は起動のたびにこれらのフラグを上書きしません。</li><li>警告・エラーなしでMODをコンパイルし、インストーラー0.1.4の発行処理も正常に完了。確認はコンパイルと静的レビューのみ。自動テスト、ゲーム内での確認、インストール・アンインストールの実行は行っていません。</li><li>MODのファイルを削除する前に、共有ローダー設定のサイズ、UTF-8エンコーディング、対象オプションの値を検証。設定を安全に保持できない場合は、この事前確認で削除を中止します。</li></ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/7e3ab2b1694369b1a16427967ffc34e2ee10b284">ソースコミット</a> · GitHub リリースなし</p></article>
       <article class="commit" id="installer-0-1-5"><div class="meta"><span class="version">Installer 0.1.5 preview</span><span class="kind">refactor · fix · perf · docs</span></div><h3>fix(installer): 操作の所有権、ロールバック、アンインストール復旧を強化</h3><ul>
@@ -228,6 +228,12 @@
 <li>英語のREADMEとガイド、9言語の翻訳版、インストーラーの技術資料を更新します。すべての以前の履歴記事とガイドのアンカーを保持します。Windows x64用の自己完結型インストーラー0.2.3を警告0件、エラー0件で発行し、git diff --checkでも問題はありませんでした。静的PE確認により、必要な3つの埋め込みリソースがソースのバイトと完全に一致します。パッケージには一致するメインDLLが含まれ、インストーラー固有の言語サテライトリソースはありません。検証はコンパイルと静的な確認のみです。自動テスト、インストーラー／アンインストーラー、コントローラー、スクリーンリーダーの実行、参照生成、ゲーム起動は行っていません。新しい読み上げ中断の動作は人による確認を待ちます。</li>
 <li>メインのModはv0.9.11、Modビルド数は58のままです。新しいMod DLL、タグ、GitHub Releaseは作成しません。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/45e1ee416da2995078f95cce7b8c04dce730ca7a">ソースコミット</a> · GitHub Releaseなし</p></article>
+      <article class="commit" id="installer-0-2-4"><div class="meta"><span class="version">Installer 0.2.4</span><span class="kind">fix · speech · docs</span></div><h3>fix(installer): 送信する各通知で前の音声を置き換える</h3><ul>
+<li>送信するすべての読み上げ通知で前のインストーラー音声を置き換えるよう要求します。テキスト確認にはMostRecent、重要なフィードバックにはImportantMostRecentを使用します。すべて選択、Show advancedの状態、Copy diagnostics、その他の確認を含みます。状態ログの通知頻度を維持し、管理された項目間でコントローラーのフォーカス移動が成功するたびに保護された移動先通知を継続します。実際の中断とタイミングは人による確認を待ちます。</li>
+<li>0.2.4を提供されるインストーラーと表記し、現在のプレビュー表記を削除しながら以前の履歴記事とガイドのアンカーを保持します。build/installerへローカル発行し、BopItAccess-Installer-0.2.4.exeとBopItAccess-Installer.exeを提供します。GitHubで公開するバイナリではありません。</li>
+<li>インストーラー0.2.4を警告0件、エラー0件で発行します。静的PE確認により、必要な3つの埋め込みリソースがソースのバイトと一致し、単一ファイルパッケージには一致するメインDLLが含まれ、インストーラー固有の言語サテライトリソースがないことを確認します。検証はコンパイルと静的確認のみです。自動テストやインストーラー、アンインストーラー、コントローラー、スクリーンリーダー、ゲームの実行は行っていません。読み上げタイミングの人による確認は未実施です。</li>
+<li>メインのModはv0.9.11、Modビルド数は58のままです。新しいMod DLL、タグ、GitHub Releaseは作成しません。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/e7e0f6e33aeb652a7cf02d95f75ff1f4e1158c6d">ソースコミット</a> · GitHub Releaseなし</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 のローカル ソース アーカイブは、パブリック ソースのコミットを再構築するために使用されました。インストール パッケージはローカルに残り、GitHub リリースではありません。 v0.5.4 の再バインド プレビューと v0.5.18 SAPI トリム実験は、履歴実装として記録されます。後のエントリには、それらがどのように変更されたかが記載されています。</p><p><a href="#history">ビルド履歴に戻る</a></p></div></footer>

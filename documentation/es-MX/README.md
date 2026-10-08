@@ -148,17 +148,19 @@ A aquellos que jugaron probaron este mod antes de su lanzamiento y ayudaron a ll
 Aún no se ha seleccionado una licencia para la fuente Bop It Access. Prism tiene licencia propia; ver el [avisos de terceros](THIRD-PARTY-NOTICES.txt). Bop It! y sus bienes pertenecen a sus respectivos dueños y no están incluidos aquí.
 
 
-## Versión preliminar 0.2.3 del instalador de Windows
+## Instalador de Windows 0.2.4
+
+Usa BopItAccess-Installer-0.2.4.exe o BopItAccess-Installer.exe proporcionado por el proyecto. Ambos nombres contienen el mismo instalador autónomo para Windows x64. El proyecto incluye su código fuente; todavía no se publica ningún binario compilado público ni GitHub Release.
 
 Cierra Bop It!, abre el instalador y acepta la solicitud de permisos de administrador de Windows. El instalador te da la bienvenida, busca el juego en las bibliotecas de Steam de todas las unidades disponibles e intenta traer su ventana al primer plano. Comprueba la carpeta del juego que se muestra; utiliza Browse si necesitas elegir otra carpeta. La tecla Tab permite desplazarse entre los controles. El registro de estado es un campo de texto de solo lectura: sitúa el foco en él para revisar los mensajes con las teclas de dirección, seleccionar texto o copiarlo.
 
-El instalador 0.2.3 solicita brevemente activación en primer plano y foco del teclado al iniciar. Si al terminar su observación inicial limitada sigue activa otra ventana, hace parpadear el título y el botón de la barra de tareas y pide usar Alt+Tab para pasar al instalador. Activa el instalador antes de usar sus controles de teclado o control de juego. Alt+G enfoca el campo de la carpeta del juego.
+El instalador 0.2.4 solicita brevemente activación en primer plano y foco del teclado al iniciar. Si al terminar su observación inicial limitada sigue activa otra ventana, hace parpadear el título y el botón de la barra de tareas y pide usar Alt+Tab para pasar al instalador. Activa el instalador antes de usar sus controles de teclado o control de juego. Alt+G enfoca el campo de la carpeta del juego.
 
 La casilla Show advanced está desmarcada al abrir el instalador. Al marcarla, aparecen Install alpha, Save diagnostics y Copy diagnostics. Install descarga la última versión pública de GitHub cuando existe. Todavía no hay ninguna versión pública, por lo que quienes realizan pruebas necesitan actualmente Show advanced e Install alpha. La opción alfa pide confirmación, descarga el código fuente más reciente y lo compila en tu computadora. Update aparece cuando se encuentra una versión pública más reciente para una copia instalada.
 
 Los mensajes de estado explican con un lenguaje sencillo qué se está descargando, instalando o finalizando. Una única barra muestra el progreso estimado de toda la instalación, sin volver a empezar con cada descarga o archivo. Avanza en incrementos de cinco puntos porcentuales; algunas fases de preparación pueden tardar sin que se vea ningún cambio. El mensaje de bienvenida, el aviso de una nueva actualización disponible y la confirmación de que se han copiado los datos de diagnóstico se envían al lector de pantalla mediante las notificaciones de accesibilidad de Windows. Que se lean en voz alta depende del lector de pantalla y de su compatibilidad con las notificaciones de Windows.
 
-El instalador 0.2.3 nunca inicia Bop It! durante la instalación. La opción alfa reutiliza archivos locales de compilación compatibles o prepara archivos temporales a partir de tu propia copia instalada del juego mientras permanece cerrado. Después, el instalador coloca MelonLoader en la carpeta del juego y añade inmediatamente Mods/BopItAccess.dll, seguido de Prism, la configuración, toda la documentación y los componentes necesarios para la desinstalación. Espera al mensaje de éxito y, cuando estés listo, inicia el juego tú mismo desde Steam.
+El instalador 0.2.4 nunca inicia Bop It! durante la instalación. La opción alfa reutiliza archivos locales de compilación compatibles o prepara archivos temporales a partir de tu propia copia instalada del juego mientras permanece cerrado. Después, el instalador coloca MelonLoader en la carpeta del juego y añade inmediatamente Mods/BopItAccess.dll, seguido de Prism, la configuración, toda la documentación y los componentes necesarios para la desinstalación. Espera al mensaje de éxito y, cuando estés listo, inicia el juego tú mismo desde Steam.
 
 Tras una instalación completada correctamente, aparece Play Bop It! The Video Game. Actívalo para iniciar el juego tú mismo desde Steam cuando estés listo. El instalador nunca inicia el juego automáticamente durante la instalación.
 
@@ -202,7 +204,7 @@ B vuelve atrás o cancela un diálogo; en la ventana principal del instalador, s
 
 El mensaje de bienvenida del registro de estado enumera los atajos del control de juego para revisar texto; usa Alt+L para volver al registro. Al cambiar Show advanced se envía una notificación de accesibilidad de Windows que indica si está marcado o desmarcado. Seleccionar todo también proporciona una confirmación accesible, o informa de que el campo está vacío.
 
-Cuando LB/RB sale de la revisión de texto con control de juego, el instalador 0.2.3 solicita un breve anuncio de sustitución que identifica el nuevo control con foco. Este cambio de interrupción aún requiere revisión humana. Los cambios posteriores con los botones superiores también solicitan sustituir el anuncio del control anterior.
+El instalador 0.2.4 solicita que cada anuncio de voz que emite sustituya la voz anterior del instalador, incluida la revisión de texto, Seleccionar todo, el estado marcado/desmarcado de Show advanced, Copy diagnostics y otras confirmaciones. LB/RB sigue anunciando el nuevo control con foco. La frecuencia de los anuncios de estado no cambia; no se lee automáticamente cada entrada del registro. La interrupción real depende de la compatibilidad del lector de pantalla con las notificaciones de Windows y aún requiere verificación humana.
 
 ### Diagnóstico del instalador
 

@@ -51,19 +51,21 @@ The commit history includes reconstructed source snapshots of 37 earlier builds.
 
 The mod references DLLs generated or installed by MelonLoader under the game directory. It does not include or redistribute game assemblies.
 
-## Windows installer preview 0.2.3
+## Windows installer 0.2.4
+
+Use the supplied BopItAccess-Installer-0.2.4.exe or BopItAccess-Installer.exe. Both names provide the same self-contained Windows x64 installer. Its source is included in the project; no public compiled binary or GitHub Release is published yet.
 
 The installer source is in [`installer/`](installer/). It is a self-contained Windows x64 application.
 
 Close Bop It!, open the installer and approve the Windows administrator prompt. The installer welcomes you, looks for the game in Steam libraries on all available drives, and tries to bring its window to the foreground. Check the displayed game folder; use Browse if you need to choose another folder. Tab moves between controls. The status log is a read-only text field: focus it to review messages with cursor keys, select text, or copy it.
 
-Installer 0.2.3 briefly requests foreground activation and keyboard focus. If its bounded startup observation ends with another window still active, it flashes its title and taskbar button and asks you to use Alt+Tab to switch to the installer. Activate the installer before using its keyboard or controller controls. Alt+G focuses the game-folder field.
+Installer 0.2.4 briefly requests foreground activation and keyboard focus. If its bounded startup observation ends with another window still active, it flashes its title and taskbar button and asks you to use Alt+Tab to switch to the installer. Activate the installer before using its keyboard or controller controls. Alt+G focuses the game-folder field.
 
 Show advanced is unchecked when the installer opens. It reveals Install alpha, Save diagnostics and Copy diagnostics. Install downloads the latest public GitHub release when one exists. There is no public release yet, so testers currently need Show advanced and Install alpha. Alpha asks for confirmation, downloads the latest source and builds it on your computer. Update appears when a newer public release is found for an installed copy.
 
 Status messages explain what is downloading, installing or finishing in plain language. One progress bar shows estimated progress for the whole installation, without resetting for each download or file. It advances in five-percentage-point increments; some preparation stages may take time without a visible change. The welcome message, a newly available update and confirmation that diagnostics were copied are sent through Windows accessibility notifications to your screen reader. Whether these are spoken depends on your screen reader and its Windows notification support.
 
-Installer 0.2.3 never launches Bop It! during installation. Alpha reuses matching local build files or prepares temporary files from your own installed game while it stays closed. The installer then places MelonLoader in the game folder and immediately adds Mods/BopItAccess.dll, followed by Prism, settings, the complete documentation and uninstall support. Wait for the success message, then launch the game yourself through Steam when you are ready.
+Installer 0.2.4 never launches Bop It! during installation. Alpha reuses matching local build files or prepares temporary files from your own installed game while it stays closed. The installer then places MelonLoader in the game folder and immediately adds Mods/BopItAccess.dll, followed by Prism, settings, the complete documentation and uninstall support. Wait for the success message, then launch the game yourself through Steam when you are ready.
 
 After a successful installation, Play Bop It! The Video Game appears. Activate it to launch the game yourself through Steam when you are ready. The installer never starts the game automatically during installation.
 
@@ -107,7 +109,7 @@ B goes back or cancels a dialog; on the main installer window it asks to abort a
 
 The welcome message in the status log lists the controller text-review shortcuts; use Alt+L to return to the log. Changing Show advanced sends a Windows accessibility notification stating whether it is checked or unchecked. Selecting all also provides accessible confirmation, or reports that the field is empty.
 
-When LB/RB leaves controller text review, installer 0.2.3 requests a short replacement announcement identifying the newly focused control. This interruption change still needs human review. Subsequent bumper moves also request a replacement of the preceding control announcement.
+Installer 0.2.4 requests that every speech announcement it emits replace earlier installer speech, including text review, Select All, Show advanced checked/unchecked, Copy diagnostics and other confirmations. LB/RB continues to announce the newly focused control. Status messages keep their existing announcement frequency; not every log entry is spoken automatically. Actual interruption depends on the screen reader’s Windows notification support and still needs human verification.
 
 ### Installer diagnostics
 
@@ -119,10 +121,10 @@ To build the installer executable from source on a Windows development machine w
 
 ```powershell
 dotnet restore .\installer\BopItAccess.Installer.csproj --source https://api.nuget.org/v3/index.json
-dotnet publish .\installer\BopItAccess.Installer.csproj -c Release -o .\build\installer-preview --no-restore
+dotnet publish .\installer\BopItAccess.Installer.csproj -c Release -o .\build\installer --no-restore
 ```
 
-The executable is `build\installer-preview\BopItAccess.Installer.exe`. It contains the runtime and does not require .NET 10 on the player's computer. It is currently unsigned, so Windows may show its standard unknown-publisher warning. Do not run installation or removal while Bop It! is open.
+The compiled publish output is `build\installer\BopItAccess.Installer.exe`. The supplied copies use the names `BopItAccess-Installer-0.2.4.exe` and `BopItAccess-Installer.exe` and are delivered separately from the publish directory. It contains the runtime and does not require .NET 10 on the player's computer. It is currently unsigned, so Windows may show its standard unknown-publisher warning. Do not run installation or removal while Bop It! is open.
 
 When publishing the first mod release, attach a ZIP with `Mods/BopItAccess.dll` and the complete `documentation/` directory. The installer fetches Prism and MelonLoader from their official releases rather than from that ZIP. It reads the latest release through GitHub's Releases API, so the installer executable can continue to find later releases without being rebuilt.
 
@@ -130,7 +132,7 @@ On the first manual launch after installing MelonLoader, it may download support
 
 ## Build from source
 
-The manual source-build steps below use references generated by a previous game launch. The supplied installer preview can prepare alpha-build references without launching the game; its workflow is described below.
+The manual source-build steps below use references generated by a previous game launch. The supplied installer can prepare alpha-build references without launching the game; its workflow is described below.
 
 1. Install MelonLoader, start Bop It! once, and then close the game. MelonLoader should create `MelonLoader\Il2CppAssemblies` beneath the game directory.
 2. Clone or download this repository. Open PowerShell in the repository's root directory.

@@ -447,18 +447,20 @@ Die Mod setzt diese Optionen nicht bei jedem Start zurück. Zur Fehlersuche kön
 
 Nach einer erfolgreichen Änderung kündigt der Mod die Eingabe und die ihr zugewiesene Aktion an, zum Beispiel „Space zugewiesen an KLOPFEN“.
 
-Vorabversion des Windows-Installationsprogramms 0.2.3
------------------------------------------------------
+Windows-Installationsprogramm 0.2.4
+-----------------------------------
+
+Verwenden Sie die bereitgestellte BopItAccess-Installer-0.2.4.exe oder BopItAccess-Installer.exe. Beide Namen enthalten dasselbe eigenständige Windows-x64-Installationsprogramm. Der Quellcode ist im Projekt enthalten; eine öffentliche kompilierte Datei oder ein GitHub Release wurde noch nicht veröffentlicht.
 
 Schließen Sie Bop It!, öffnen Sie das Installationsprogramm und bestätigen Sie die Windows-Abfrage für Administratorrechte. Das Installationsprogramm begrüßt Sie, sucht in den Steam-Bibliotheken auf allen verfügbaren Laufwerken nach dem Spiel und versucht, sein Fenster in den Vordergrund zu bringen. Prüfen Sie den angezeigten Spielordner; verwenden Sie Browse, wenn Sie einen anderen Ordner auswählen müssen. Mit Tab wechseln Sie zwischen den Bedienelementen. Das Statusprotokoll ist ein schreibgeschütztes Textfeld: Setzen Sie den Fokus darauf, um Meldungen mit den Cursortasten zu lesen, Text auszuwählen oder ihn zu kopieren.
 
-Das Installationsprogramm 0.2.3 fordert beim Start kurz Vordergrundaktivierung und Tastaturfokus an. Ist am Ende der begrenzten Startbeobachtung noch ein anderes Fenster aktiv, blinken sein Fenstertitel und seine Taskleistenschaltfläche, und es fordert zum Wechsel mit Alt+Tab auf. Aktivieren Sie das Installationsprogramm, bevor Sie seine Tastatur- oder Controller-Steuerung verwenden. Alt+G setzt den Fokus auf das Spielordnerfeld.
+Das Installationsprogramm 0.2.4 fordert beim Start kurz Vordergrundaktivierung und Tastaturfokus an. Ist am Ende der begrenzten Startbeobachtung noch ein anderes Fenster aktiv, blinken sein Fenstertitel und seine Taskleistenschaltfläche, und es fordert zum Wechsel mit Alt+Tab auf. Aktivieren Sie das Installationsprogramm, bevor Sie seine Tastatur- oder Controller-Steuerung verwenden. Alt+G setzt den Fokus auf das Spielordnerfeld.
 
 Show advanced ist beim Öffnen des Installationsprogramms nicht aktiviert. Damit werden Install alpha, Save diagnostics und Copy diagnostics eingeblendet. Install lädt die neueste öffentliche GitHub-Version herunter, sofern eine vorhanden ist. Es gibt noch keine öffentliche Version, daher benötigen Tester derzeit Show advanced und Install alpha. Die Alpha-Installation bittet um Bestätigung, lädt den neuesten Quellcode herunter und kompiliert ihn auf Ihrem Computer. Update erscheint, wenn für eine installierte Kopie eine neuere öffentliche Version gefunden wird.
 
 Die Statusmeldungen erklären in verständlicher Sprache, was heruntergeladen, installiert oder abgeschlossen wird. Eine einzige Fortschrittsanzeige zeigt den geschätzten Fortschritt der gesamten Installation, ohne für jeden Download oder jede Datei zurückgesetzt zu werden. Sie steigt in Schritten von fünf Prozentpunkten; manche Vorbereitungsschritte können Zeit benötigen, ohne dass eine sichtbare Änderung erfolgt. Die Begrüßung, ein neu verfügbares Update und die Bestätigung, dass Diagnosedaten kopiert wurden, werden über die Windows-Benachrichtigungen zur Barrierefreiheit an Ihren Screenreader gesendet. Ob sie vorgelesen werden, hängt von Ihrem Screenreader und seiner Unterstützung für Windows-Benachrichtigungen ab.
 
-Das Installationsprogramm 0.2.3 startet Bop It! während der Installation niemals. Die Alpha-Installation verwendet passende lokale Builddateien erneut oder bereitet temporäre Dateien aus Ihrem eigenen installierten Spiel vor, während dieses geschlossen bleibt. Anschließend legt das Installationsprogramm MelonLoader im Spielordner ab und fügt sofort Mods/BopItAccess.dll hinzu, gefolgt von Prism, Einstellungen, der vollständigen Dokumentation und der Unterstützung für die Deinstallation. Warten Sie auf die Erfolgsmeldung und starten Sie das Spiel anschließend selbst über Steam, wenn Sie bereit sind.
+Das Installationsprogramm 0.2.4 startet Bop It! während der Installation niemals. Die Alpha-Installation verwendet passende lokale Builddateien erneut oder bereitet temporäre Dateien aus Ihrem eigenen installierten Spiel vor, während dieses geschlossen bleibt. Anschließend legt das Installationsprogramm MelonLoader im Spielordner ab und fügt sofort Mods/BopItAccess.dll hinzu, gefolgt von Prism, Einstellungen, der vollständigen Dokumentation und der Unterstützung für die Deinstallation. Warten Sie auf die Erfolgsmeldung und starten Sie das Spiel anschließend selbst über Steam, wenn Sie bereit sind.
 
 Nach einer erfolgreichen Installation erscheint Play Bop It! The Video Game. Aktivieren Sie diese Schaltfläche, um das Spiel selbst über Steam zu starten, wenn Sie bereit sind. Das Installationsprogramm startet das Spiel während der Installation niemals automatisch.
 
@@ -502,7 +504,7 @@ B geht zurück oder bricht einen Dialog ab; im Hauptfenster des Installationspro
 
 Die Begrüßungsmeldung im Statusprotokoll nennt die Controller-Tastenkombinationen zur Textprüfung; mit Alt+L kehren Sie zum Protokoll zurück. Bei einer Änderung sendet Show advanced eine Windows-Benachrichtigung zur Barrierefreiheit, die angibt, ob es aktiviert oder deaktiviert ist. Auch die Auswahl des gesamten Texts wird barrierefrei bestätigt; bei einem leeren Feld wird dies gemeldet.
 
-Wenn LB/RB die Textprüfung per Controller verlässt, fordert das Installationsprogramm 0.2.3 eine kurze Ersatzansage an, die das neue Bedienelement mit Fokus nennt. Diese Änderung der Unterbrechung wartet noch auf menschliche Prüfung. Weitere Wechsel mit den Schultertasten fordern auch eine Ersatzansage für die vorherige Bedienelementansage an.
+Das Installationsprogramm 0.2.4 fordert für jede ausgegebene Sprachnachricht die Ersetzung früherer Installer-Sprachausgabe an, einschließlich Textprüfung, Alles auswählen, aktiviertem/deaktiviertem Show advanced, Copy diagnostics und weiteren Bestätigungen. LB/RB sagt weiterhin das neue Bedienelement mit Fokus an. Die Häufigkeit der Statusansagen bleibt gleich; nicht jeder Protokolleintrag wird automatisch gesprochen. Die tatsächliche Unterbrechung hängt von der Windows-Benachrichtigungsunterstützung des Screenreaders ab und erfordert noch menschliche Prüfung.
 
 Diagnose des Installationsprogramms
 -----------------------------------

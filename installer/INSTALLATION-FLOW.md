@@ -1,6 +1,6 @@
 # Installer installation flow
 
-Installer preview **0.2.3** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game. After a successful installation, **Play Bop It! The Video Game** (Alt+P) offers a separate, explicitly requested Steam launch; it is never invoked automatically as an installation step.
+Installer **0.2.4** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod stays **0.9.11**. The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game. After a successful installation, **Play Bop It! The Video Game** (Alt+P) offers a separate, explicitly requested Steam launch; it is never invoked automatically as an installation step.
 
 ## Evidence and scope
 
@@ -36,7 +36,7 @@ An abort requested during Microsoft's dependency installation is deferred until 
 
 ### Embedded-template preflight
 
-Installer 0.1.8 validates its own offline-helper source/project resources at the start of alpha preparation, before prerequisite downloads, SDK installation or reference generation. Both templates must exist and be nonempty. A missing template is an installer packaging error, reported with its resource name and a request to download the latest installer preview, rather than a failure of the player's game.
+Installer 0.1.8 validates its own offline-helper source/project resources at the start of alpha preparation, before prerequisite downloads, SDK installation or reference generation. Both templates must exist and be nonempty. A missing template is an installer packaging error, reported with its resource name and a request to download the latest installer, rather than a failure of the player's game.
 
 The installer project declares `WithCulture=false` explicitly on `BuildReferenceGenerator/Program.cs.txt`, `BuildReferenceGenerator/BuildReferenceGenerator.csproj.txt` and `uninstall.ps1`. MSBuild otherwise interprets the `.cs` segment as the Czech culture code and can place the helper source in a satellite assembly even when `LogicalName` is explicit. These files are neutral embedded data and must be available regardless of the Windows display language.
 
@@ -184,10 +184,20 @@ Installer **0.2.2** publishes with zero warnings and zero errors; the whitespace
 
 The user confirms preview **0.2.2** startup focus and all new controls. The remaining bug is continued D-pad status-text speech after LB/RB moves focus. That human confirmation concerns 0.2.2. The **0.2.3** interruption change awaits human verification.
 
-Routine controller review uses normal `MostRecent` when `important=false` and `replacePending=true`. A verified successful bumper move from a control that posted controller speech queues a deferred `ImportantMostRecent` destination announcement. It identifies the accessible name, role and relevant state, including checkbox/radio state and single-line values. A multiline field supplies its name/type and selection count if present, without repeating its contents or total character count.
+In 0.2.3, routine controller review used normal `MostRecent` when `important=false` and `replacePending=true`. A verified successful bumper move from a control that posted controller speech queued a deferred `ImportantMostRecent` destination announcement. It identifies the accessible name, role and relevant state, including checkbox/radio state and single-line values. A multiline field supplies its name/type and selection count if present, without repeating its contents or total character count.
 
 Before posting, validate generation, foreground, actual managed/native focus, destination handle identity, enabled/visible state and ownership. Rapid bumper movement retains the latest valid destination. Keep a successfully announced destination as the controller speech source so further bumper moves replace its announcement too. Other focus/window changes invalidate stale work. Do not add an announcement when navigation leaves focus at the same boundary control. Important confirmations and attention keep their processing priority. Native dialog navigation remains scoped to local messages.
 
 The replacement is intended to interrupt old review or focus-announcement speech. Diagnostics record whether posting succeeded and the control type, without destination labels/values or reviewed text. Actual speech and timing depend on Windows and the installed reader and require human review.
 
 Installer **0.2.3** publishes with zero warnings and zero errors; the whitespace diff check is clean. Static PE inspection confirms all three required resource payloads exactly match source, the single-file bundle includes the matching main DLL, and no installer-specific language satellite resources are present. Validation is compilation and static inspection only: no automated tests, installer/uninstaller, controller or screen-reader execution, helper/reference generation or game launch. The main mod remains **0.9.11**, with **58 mod builds**; no new mod DLL, tag or GitHub Release is created.
+
+## Recent announcement replacement in installer 0.2.4
+
+Installer **0.2.4** compiles to `build/installer/BopItAccess.Installer.exe`. The supplied copies, `BopItAccess-Installer-0.2.4.exe` and the identical `BopItAccess-Installer.exe`, are delivered separately in `C:\Users\Chris\Documents\Codex`. Current documentation uses the normal installer name; earlier preview articles and guide anchors are preserved. No public compiled binary, GitHub Release or tag is published.
+
+Every speech announcement emitted by the installer requests replacement of earlier installer speech. The central policy uses `ImportantMostRecent` for important feedback and `MostRecent` for ordinary feedback, including controller text review; there is no per-call `replacePending` opt-in. Select All, selected-text copy, Show advanced state, diagnostics confirmations, welcome/update/dialog messages and attention all use that policy. Status-log announcement frequency is unchanged, so appending a status line does not necessarily speak it.
+
+Every successful managed controller focus move queues the guarded concise destination announcement, even without prior D-pad review. The callback validates the actual destination and skips when a newer announcement has posted; worker requests reject stale foreground or teardown and coalesce rapid updates. Announcements normally require their own form to be active. Copy/select feedback in owned native dialogs uses exact owner-window scope, and deliberate startup/duplicate-launch attention retains its exception. Destination descriptions keep accessible name, role and relevant state; multiline contents and total character count are omitted.
+
+These requests aim to interrupt earlier speech; native automatic focus, checkbox and selection events remain reader/Windows controlled. Human verification of interruption and event timing is still needed. Compilation and static inspection succeed with zero warnings and errors: all three required embedded resources match source bytes, the bundle contains the matching main DLL, and no installer-specific language satellite resources are present. No automated tests or installer, uninstaller, controller, screen-reader or game execution is performed. The main mod remains **0.9.11**, with **58 mod builds**; no new mod DLL is built.
