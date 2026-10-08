@@ -72,6 +72,7 @@ internal sealed class InstallerDiagnostics : IDisposable
             "; local time zone: " + TimeZoneInfo.Local.Id + ".");
         Write("PRIVACY", "Recorded locally only. Paths may include Windows user names. " +
             "URL queries, fragments and embedded credentials are omitted. " +
+            "Focus checks record foreground executable names, not other applications' window titles, paths, or command lines. " +
             "No environment-variable or registry dumps, preferences, or game-file contents are collected.");
         if (_persistenceFailure is not null)
             Write("WARNING", "Automatic file recording unavailable: " + _persistenceFailure +

@@ -6,6 +6,7 @@ internal static class Program
     [STAThread]
     private static void Main(string[] args)
     {
+        string launchFocusState = InstallerWindowFocus.CaptureLaunchState();
         ApplicationConfiguration.Initialize();
         using var instance = new Mutex(false, InstallerMutexName);
         bool acquired;
@@ -22,6 +23,7 @@ internal static class Program
             string.Equals(arg, "--uninstall", StringComparison.OrdinalIgnoreCase));
         if (startUninstall) Environment.ExitCode = 1;
         using var diagnostics = new InstallerDiagnostics(startUninstall);
+        diagnostics.Write("FOCUS", "Managed entry after native hosting/manifest elevation: " + launchFocusState);
         string? suppliedUserSid = null;
         for (int index = 0; index + 1 < args.Length; index++)
             if (string.Equals(args[index], "--uninstall-user-sid", StringComparison.OrdinalIgnoreCase))

@@ -189,7 +189,7 @@ internal sealed class InstallerForm : Form
         _statusLog.ScrollBars = ScrollBars.Vertical;
         _statusLog.WordWrap = true;
         _statusLog.AccessibleName = "Installer status log";
-        _statusLog.AccessibleDescription = "Read-only, selectable operation messages.";
+        _statusLog.AccessibleDescription = "Read-only, selectable operation messages. Controller D-pad reviews text; LT moves by word or paragraph, RT selects, Y selects all, and X copies the selection. Bumpers move between fields.";
         _statusLog.TabIndex = 8;
         logPanel.Controls.Add(logLabel, 0, 0);
         logPanel.Controls.Add(_statusLog, 0, 1);
@@ -214,10 +214,17 @@ internal sealed class InstallerForm : Form
         _copyDiagnostics.Click += (_, _) => CopyDiagnostics();
         _showAdvanced.Text = "Show ad&vanced";
         _showAdvanced.AccessibleName = "Show advanced";
+        _showAdvanced.AccessibleRole = AccessibleRole.CheckButton;
         _showAdvanced.AccessibleDescription = "Show alpha installation and diagnostic tools.";
         _showAdvanced.AutoSize = true;
         _showAdvanced.TabIndex = 9;
-        _showAdvanced.CheckedChanged += (_, _) => UpdateAdvancedControls();
+        _showAdvanced.CheckedChanged += (_, _) =>
+        {
+            UpdateAdvancedControls();
+            string message = _showAdvanced.Checked ? "Show advanced, checked." : "Show advanced, unchecked.";
+            AppendStatus(message);
+            InstallerFeedback.Announce(_showAdvanced, message, important: true);
+        };
         _saveDiagnostics.TabIndex = 10;
         _copyDiagnostics.TabIndex = 11;
         _quit.Text = "&Quit";
@@ -237,11 +244,16 @@ internal sealed class InstallerForm : Form
             _startupFocus = InstallerWindowFocus.BeginStartup(this,
                 () => _gamePath.CanFocus ? _gamePath : _statusLog,
                 () => !_quitApproved && !_closeAfterInitialization && _operationCancellation == null &&
-                    _quitDialog == null && !OwnedForms.Any(dialog => dialog.Visible));
+                    _quitDialog == null && !OwnedForms.Any(dialog => dialog.Visible),
+                message =>
+                {
+                    AppendStatus(message);
+                    InstallerFeedback.Announce(this, message, important: true, replacePending: true);
+                });
             _gamepad = new InstallerGamepad(this, RequestQuit,
                 () => _showAdvanced.Checked = !_showAdvanced.Checked,
                 () => { if (_operationCancellation != null && _allowAbort) RequestAbortWithConfirmation(); else RequestQuit(); });
-            const string welcome = "Welcome to the Bop It Access Installer! Check the game folder, then choose Install. Use Browse to choose a different folder. Show advanced provides alpha installation and diagnostic tools. You can review all messages in the status log. With a compatible controller, use the D-pad to navigate and A to activate; the bumpers move between fields.";
+            const string welcome = "Welcome to the Bop It Access Installer! Check the game folder, then choose Install. Use Browse to choose a different folder. Show advanced provides alpha installation and diagnostic tools. Tab moves between fields. You can review all messages in the status log. With a compatible controller, use the D-pad to navigate, A to activate, and the bumpers to move between fields. In a text field, D-pad Left and Right move by character; Up and Down move by line. Hold LT to move by word or paragraph. Hold RT to select text, or both triggers to select words or paragraphs. Y selects all text and X copies the selection. Outside a text field in the main window, Y toggles Show advanced. B goes back or requests abort; Start quits.";
             AppendStatus(welcome);
             InstallerFeedback.Announce(this, welcome, important: true);
             await InitializeAsync();

@@ -1,4 +1,7 @@
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
+using System.Security.Principal;
 
 namespace BopItAccess.Installer;
 
@@ -6,8 +9,9 @@ internal static class InstallerWindowFocus
 {
     private const int SwRestore = 9;
     private const uint GwEnabledPopup = 6;
-    private const uint SwpNoSize = 0x0001, SwpNoMove = 0x0002, SwpNoActivate = 0x0010;
-    private static readonly nint HwndTopMost = -1, HwndNoTopMost = -2;
+    private const string AttentionMessage =
+        "Bop It Access Installer is open, but Windows kept another window active. " +
+        "Press Alt+Tab to switch to Bop It Access Installer before using its keyboard or controller controls.";
     internal static readonly uint ActivationMessage =
         RegisterWindowMessage("BopItAccess.Installer.Activate.1");
 
@@ -45,10 +49,9 @@ internal static class InstallerWindowFocus
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool IsWindowEnabled(nint window);
-    [DllImport("user32.dll", SetLastError = true)]
+    [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
-    private static extern bool SetWindowPos(nint window, nint insertAfter,
-        int x, int y, int width, int height, uint flags);
+    private static extern bool FlashWindowEx(ref FlashInfo info);
     [DllImport("user32.dll")]
     [return: MarshalAs(UnmanagedType.Bool)]
     private static extern bool GetLastInputInfo(ref LastInputInfo input);
@@ -58,6 +61,13 @@ internal static class InstallerWindowFocus
 
     [StructLayout(LayoutKind.Sequential)]
     private struct LastInputInfo { internal uint Size, Tick; }
+    [StructLayout(LayoutKind.Sequential)]
+    private struct FlashInfo
+    {
+        internal uint Size;
+        internal nint Window;
+        internal uint Flags, Count, Timeout;
+    }
     [StructLayout(LayoutKind.Sequential)]
     private struct NativeRect { internal int Left, Top, Right, Bottom; }
     [StructLayout(LayoutKind.Sequential)]
@@ -71,7 +81,38 @@ internal static class InstallerWindowFocus
     // Start only from Shown. Posting the first attempt lets WinForms finish
     // showing/activating the window and lets the desktop settle after UAC.
     internal static IDisposable BeginStartup(Form owner, Func<Control?> initialControl,
-        Func<bool> canRetry) => new StartupActivation(owner, initialControl, canRetry);
+        Func<bool> canRetry, Action<string>? attention = null) =>
+        new StartupActivation(owner, initialControl, canRetry, attention);
+
+    // Capture before WinForms, mutex acquisition, local diagnostics and form
+    // construction. The native single-file host and manifest elevation have
+    // already run by managed Main; this cannot reconstruct pre-UAC focus.
+    internal static string CaptureLaunchState()
+    {
+        // Retain a legitimate launch permission for this process through form
+        // construction. This grants nobody else permission and cannot succeed
+        // when Windows has already denied us the right to set foreground.
+        bool permissionGranted = AllowSetForegroundWindow((uint)Environment.ProcessId);
+        int permissionError = permissionGranted ? 0 : Marshal.GetLastPInvokeError();
+        string state = Snapshot();
+        string elevated, processAge;
+        try
+        {
+            using var identity = WindowsIdentity.GetCurrent();
+            elevated = new WindowsPrincipal(identity).IsInRole(WindowsBuiltInRole.Administrator).ToString();
+        }
+        catch (Exception ex) { elevated = "unavailable (" + ex.GetType().Name + ")"; }
+        try
+        {
+            using var process = Process.GetCurrentProcess();
+            processAge = Math.Max(0, (DateTime.UtcNow - process.StartTime.ToUniversalTime()).TotalMilliseconds)
+                .ToString("F0", System.Globalization.CultureInfo.InvariantCulture);
+        }
+        catch (Exception ex) { processAge = "unavailable (" + ex.GetType().Name + ")"; }
+        return state + "; startupForegroundPermission=" + (permissionGranted ? "granted" : "denied") +
+            "; AllowSetForegroundWindow error=" + permissionError +
+            "; administratorToken=" + elevated + "; nativeProcessAgeMs=" + processAge;
+    }
 
     internal static bool Activate(Form owner)
     {
@@ -82,7 +123,8 @@ internal static class InstallerWindowFocus
         // Do not activate a disabled owner behind its modal confirmation or
         // native folder/save dialog. Its existing focused control is preserved.
         if (target == 0 || !IsWindowVisible(target) || !IsWindowEnabled(target)) return false;
-        if (Control.FromHandle(target) is Form targetForm) targetForm.Activate();
+        // SetForegroundWindow also activates the target. Form.Activate calls
+        // the same native API for a top-level form, so do not request twice.
         bool accepted = SetForegroundWindow(target);
         Record("Explicit activation; SetForegroundWindow=" + accepted +
             "; target=" + FormatHandle(target) + "; " + Snapshot());
@@ -116,7 +158,11 @@ internal static class InstallerWindowFocus
         Record("Second launch foreground permission=" +
             (message.WParam != 0 ? "granted" : "denied") +
             "; AllowSetForegroundWindow error=" + message.LParam + "; " + Snapshot());
-        Activate(owner);
+        if (!Activate(owner) && GetForegroundWindow() != ActivationTarget(owner.Handle))
+        {
+            RequestAttention(owner);
+            InstallerFeedback.Announce(owner, AttentionMessage, important: true, replacePending: true);
+        }
         message.Result = 0;
         return true;
     }
@@ -152,6 +198,7 @@ internal static class InstallerWindowFocus
         var info = new GuiThreadInfo { Size = (uint)Marshal.SizeOf<GuiThreadInfo>() };
         bool hasInfo = GetGUIThreadInfo(0, ref info);
         return "foreground=" + FormatHandle(foreground) + "; foregroundPID=" + process +
+            "; foregroundExecutable=" + ExecutableName(process) +
             "; foregroundThread=" + thread + "; foregroundFocus=" +
             (hasInfo ? FormatHandle(info.Focus) : "unavailable") +
             "; UI-thread focus=" + FormatHandle(GetFocus());
@@ -160,31 +207,65 @@ internal static class InstallerWindowFocus
     private static string FormatHandle(nint window) => "0x" + window.ToString("X");
     private static void Record(string message) => InstallerDiagnostics.Current?.Write("FOCUS", message);
 
+    private static string ExecutableName(uint processId)
+    {
+        if (processId == 0) return "none";
+        try
+        {
+            using var process = Process.GetProcessById(checked((int)processId));
+            // ProcessName is the executable filename without its extension
+            // or path. Do not read MainWindowTitle, arguments or module paths.
+            return process.ProcessName;
+        }
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException or
+            Win32Exception or NotSupportedException or OverflowException)
+        { return "unavailable (" + ex.GetType().Name + ")"; }
+    }
+
+    private static void RequestAttention(Form owner)
+    {
+        if (owner.IsDisposed || owner.Disposing || !owner.IsHandleCreated) return;
+        var info = new FlashInfo
+        {
+            Size = (uint)Marshal.SizeOf<FlashInfo>(), Window = owner.Handle,
+            Flags = 3, Count = 3 // FLASHW_ALL: three caption/taskbar flashes.
+        };
+        // The return value describes the previous caption state, not success.
+        bool previouslyActive = FlashWindowEx(ref info);
+        Record("Requested three taskbar/caption attention flashes; previouslyActive=" + previouslyActive +
+            "; " + Snapshot());
+    }
+
     private sealed class StartupActivation : IDisposable
     {
-        private const int MaximumAttempts = 8, MaximumMilliseconds = 2000, SettledMilliseconds = 250;
+        private const int MaximumAttempts = 3, MaximumMilliseconds = 2000, SettledMilliseconds = 250;
         private readonly Form _owner;
         private readonly Func<Control?> _initialControl;
         private readonly Func<bool> _canRetry;
+        private readonly Action<string>? _attention;
+        private readonly HashSet<nint> _attemptedForegrounds = new();
         private readonly System.Windows.Forms.Timer _timer = new() { Interval = 125 };
         private readonly long _started = Environment.TickCount64;
         private readonly uint _inputAtStart;
         private readonly bool _hasInputAtStart;
         private int _attempts;
-        private bool _disposed, _pulsed;
+        private bool _disposed;
         private long? _foregroundSince;
         private Control? _focusedControl;
 
-        internal StartupActivation(Form owner, Func<Control?> initialControl, Func<bool> canRetry)
+        internal StartupActivation(Form owner, Func<Control?> initialControl, Func<bool> canRetry,
+            Action<string>? attention)
         {
             _owner = owner;
             _initialControl = initialControl;
             _canRetry = canRetry;
+            _attention = attention;
             _hasInputAtStart = TryLastInput(out _inputAtStart);
             _timer.Tick += Tick;
             _owner.Disposed += OwnerDisposed;
-            Record("Startup activation scheduled; lastInputAvailable=" + _hasInputAtStart +
-                "; " + Snapshot());
+            Record("Startup activation scheduled; original " + Snapshot() +
+                "; lastInputAvailable=" + _hasInputAtStart +
+                "; repeated requests against an unchanged foreground are suppressed.");
             _owner.BeginInvoke((Action)(() =>
             {
                 if (_disposed) return;
@@ -206,9 +287,10 @@ internal static class InstallerWindowFocus
             if (_hasInputAtStart && TryLastInput(out uint inputNow) && inputNow != _inputAtStart)
             { Stop("new user input; preserving the user's window and control choice"); return; }
             if (Environment.TickCount64 - _started >= MaximumMilliseconds)
-            { Stop("startup deadline reached"); return; }
+            { Stop("startup observation deadline reached", requestAttention: true); return; }
 
-            bool foreground = GetForegroundWindow() == _owner.Handle;
+            nint foregroundWindow = GetForegroundWindow();
+            bool foreground = foregroundWindow == _owner.Handle;
             if (foreground && _focusedControl is not null && !_focusedControl.Focused)
             {
                 if (_focusedControl.CanFocus)
@@ -226,15 +308,20 @@ internal static class InstallerWindowFocus
                 return;
             }
             _foregroundSince = null;
-            if (_attempts >= MaximumAttempts) { Stop("startup attempt limit reached"); return; }
-
-            _attempts++;
-            // A single brief pulse makes a denied startup window visible. It
-            // changes z-order only; foreground permission still belongs to
-            // Windows. Never leave the installer topmost after this call.
-            if (_attempts == 2 && !_pulsed && !_owner.TopMost) PulseVisibility();
-            bool accepted = Activate(_owner);
-            foreground = GetForegroundWindow() == _owner.Handle;
+            bool? accepted = null;
+            if (!foreground)
+            {
+                // The 0.2.1 log demonstrated eight denials against the same
+                // foreground window. Wait for a desktop/foreground transition
+                // before making another claim instead of repeating that call.
+                if (_attemptedForegrounds.Contains(foregroundWindow)) return;
+                if (_attempts >= MaximumAttempts)
+                { Stop("startup foreground-transition limit reached", requestAttention: true); return; }
+                _attemptedForegrounds.Add(foregroundWindow);
+                _attempts++;
+                accepted = Activate(_owner);
+                foreground = GetForegroundWindow() == _owner.Handle;
+            }
             bool focusResult = false;
             Control? control = _initialControl();
             // Focus() alone does not bring a process to the foreground. Assign
@@ -244,36 +331,27 @@ internal static class InstallerWindowFocus
                 focusResult = control.Focus();
                 if (control.Focused) _focusedControl = control;
             }
-            Record("Startup attempt " + _attempts + "; activationAccepted=" + accepted +
+            Record("Startup attempt " + _attempts + "; activationAccepted=" +
+                (accepted?.ToString() ?? "not requested") +
                 "; actualForeground=" + foreground + "; initialControl=" +
                 (control?.AccessibleName ?? control?.GetType().Name ?? "none") +
                 "; Focus result=" + focusResult + "; controlFocused=" + (control?.Focused == true) +
-                "; " + Snapshot() + (accepted ? "." :
+                "; keyboardReady=" + (foreground && control?.Focused == true) +
+                "; " + Snapshot() + (accepted != false ? "." :
                     ". Windows returned false; SetForegroundWindow does not document a last-error reason."));
             if (foreground && _focusedControl?.Focused == true) _foregroundSince = Environment.TickCount64;
         }
 
-        private void PulseVisibility()
-        {
-            _pulsed = true;
-            uint flags = SwpNoSize | SwpNoMove | SwpNoActivate;
-            bool raised = false, restored = false;
-            try { raised = SetWindowPos(_owner.Handle, HwndTopMost, 0, 0, 0, 0, flags); }
-            finally
-            {
-                restored = SetWindowPos(_owner.Handle, HwndNoTopMost, 0, 0, 0, 0, flags);
-                if (!restored)
-                    restored = SetWindowPos(_owner.Handle, HwndNoTopMost, 0, 0, 0, 0, flags);
-                Record("Temporary startup visibility pulse; raised=" + raised +
-                    "; topmost removed=" + restored + "; " + Snapshot());
-            }
-        }
-
-        private void Stop(string reason)
+        private void Stop(string reason, bool requestAttention = false)
         {
             Record("Startup activation stopped after " + _attempts + " attempt(s); " + reason +
                 "; " + Snapshot());
             Dispose();
+            if (requestAttention && GetForegroundWindow() != _owner.Handle)
+            {
+                RequestAttention(_owner);
+                _attention?.Invoke(AttentionMessage);
+            }
         }
 
         public void Dispose()

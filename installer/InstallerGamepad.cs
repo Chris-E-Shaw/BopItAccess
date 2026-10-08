@@ -14,7 +14,7 @@ internal sealed class InstallerGamepad : IDisposable
     private const int StickPress = 11000, StickRelease = 7500;
     private const int WmKeyDown = 0x0100, WmKeyUp = 0x0101, WmClose = 0x0010,
         WmNextDialogControl = 0x0028, WmCopy = 0x0301, BmClick = 0x00F5,
-        EmGetSelection = 0x00B0, EmGetCaretIndex = 0x1512,
+        EmGetSelection = 0x00B0, EmSetSelection = 0x00B1, EmGetCaretIndex = 0x1512,
         EmPositionFromChar = 0x00D6, EmFindWordBreak = 0x044C;
     private readonly Form _owner;
     private readonly Action _quit;
@@ -119,7 +119,11 @@ internal sealed class InstallerGamepad : IDisposable
         }
         if ((pressed & LeftBumper) != 0) { MoveFocus(target, false); return; }
         if ((pressed & RightBumper) != 0) { MoveFocus(target, true); return; }
-        if ((pressed & Y) != 0 && target.Form == _owner) { _advanced?.Invoke(); return; }
+        if ((pressed & Y) != 0)
+        {
+            if (SelectAllText(target)) return;
+            if (target.Form == _owner) { _advanced?.Invoke(); return; }
+        }
         if ((pressed & X) != 0)
         {
             CopySelection(target);
@@ -198,6 +202,33 @@ internal sealed class InstallerGamepad : IDisposable
         _selectionBox = null;
         _verticalGoalX = null;
         _lastReviewMessage = null;
+    }
+
+    private bool SelectAllText(Target target)
+    {
+        if (FocusedControl(target.Form) is TextBoxBase box)
+        {
+            if (!IsFocusedTarget(target, box.Handle)) return true;
+            box.SelectAll();
+            // Select All anchors at the beginning, with the active end at the
+            // end of the text, so the next RT arrow can shrink or extend it.
+            _selectionBox = box;
+            _selectionAnchor = box.SelectionStart;
+            _selectionCaret = _selectionAnchor + box.SelectionLength;
+            _verticalGoalX = null;
+            _lastReviewMessage = null;
+            InstallerFeedback.Announce(box, box.SelectionLength > 0 ? "All text selected." : "No text to select.", important: true);
+            return true;
+        }
+        if (target.Form is not null) return false;
+        nint focus = NativeFocus(target.Window);
+        if (!IsFocusedTarget(target, focus) || !IsTextWindow(focus)) return false;
+        ResetSelection();
+        SendMessage(focus, EmSetSelection, 0, -1);
+        if (!IsFocusedTarget(target, focus)) return true;
+        SendMessageGetSelection(focus, EmGetSelection, out int start, out int end);
+        InstallerFeedback.Announce(_owner, start != end ? "All text selected." : "No text to select.", important: true);
+        return true;
     }
 
     private void CopySelection(Target target)
