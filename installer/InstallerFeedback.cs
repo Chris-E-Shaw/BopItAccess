@@ -1,3 +1,4 @@
+using System.Runtime.InteropServices;
 using System.Windows.Forms.Automation;
 
 namespace BopItAccess.Installer;
@@ -5,31 +6,52 @@ namespace BopItAccess.Installer;
 /// <summary>Native Windows screen-reader notifications; never starts a second speech engine.</summary>
 internal static class InstallerFeedback
 {
+    private static long _requestGeneration;
+    private static long _postedGeneration;
+
+    internal static long PostedGeneration => Interlocked.Read(ref _postedGeneration);
+
     internal static bool Announce(Control source, string message, bool important = false,
-        bool logContent = true, bool replacePending = false)
+        bool logContent = true, nint activeNativeDialog = 0, bool allowBackground = false)
     {
-        if (string.IsNullOrWhiteSpace(message) || source.IsDisposed || !source.IsHandleCreated) return false;
+        if (string.IsNullOrWhiteSpace(message) || source.IsDisposed || source.Disposing || !source.IsHandleCreated) return false;
+        long generation = Interlocked.Increment(ref _requestGeneration);
         if (source.InvokeRequired)
         {
-            try { source.BeginInvoke(() => Announce(source, message, important, logContent, replacePending)); }
+            nint foreground = GetForegroundWindow();
+            try
+            {
+                source.BeginInvoke((Action)(() =>
+                {
+                    // A newer request or a window change makes this queued
+                    // message stale. Do not let it cancel fresh user feedback.
+                    if (generation != Interlocked.Read(ref _requestGeneration) || GetForegroundWindow() != foreground) return;
+                    PostNotification(source, message, important, logContent, activeNativeDialog, allowBackground);
+                }));
+            }
             catch (InvalidOperationException) { return false; }
-            return true;
+            return false; // Queued is not confirmation that Windows posted it.
         }
+        return PostNotification(source, message, important, logContent, activeNativeDialog, allowBackground);
+    }
+
+    private static bool PostNotification(Control source, string message, bool important,
+        bool logContent, nint activeNativeDialog, bool allowBackground)
+    {
+        if (source.IsDisposed || source.Disposing || !source.IsHandleCreated) return false;
         try
         {
-            // Routine controller review may replace older review without
-            // requesting urgency. Focus handoff explicitly requests both.
-            AutomationNotificationProcessing processing = (important, replacePending) switch
-            {
-                (true, true) => AutomationNotificationProcessing.ImportantMostRecent,
-                (false, true) => AutomationNotificationProcessing.MostRecent,
-                (true, false) => AutomationNotificationProcessing.ImportantAll,
-                (false, false) => AutomationNotificationProcessing.CurrentThenMostRecent
-            };
+            if (!CanAnnounce(source, activeNativeDialog, allowBackground)) return false;
+            // Every installer announcement replaces earlier speech. Never use
+            // ImportantAll or CurrentThenMostRecent, which can queue behind it.
+            AutomationNotificationProcessing processing = important
+                ? AutomationNotificationProcessing.ImportantMostRecent
+                : AutomationNotificationProcessing.MostRecent;
             bool raised = source.AccessibilityObject.RaiseAutomationNotification(
                 AutomationNotificationKind.Other,
                 processing,
                 message);
+            if (raised) Interlocked.Increment(ref _postedGeneration);
             InstallerDiagnostics.Current?.Write("ACCESSIBILITY", raised
                 ? logContent ? "Posted Windows screen-reader notification: " + message : "Posted controller accessibility notification."
                 : logContent ? "Windows could not post the screen-reader notification; the message remains visible: " + message
@@ -42,6 +64,27 @@ internal static class InstallerFeedback
             return false;
         }
     }
+
+    private static bool CanAnnounce(Control source, nint activeNativeDialog, bool allowBackground)
+    {
+        Form? form = source as Form ?? source.FindForm();
+        if (form is null || form.IsDisposed || form.Disposing || !form.IsHandleCreated || !form.Visible) return false;
+        if (allowBackground) return true; // Only explicit window-attention requests use this.
+        nint foreground = GetForegroundWindow();
+        if (foreground == form.Handle) return true;
+        if (activeNativeDialog == 0 || foreground != activeNativeDialog) return false;
+        GetWindowThreadProcessId(foreground, out uint process);
+        if (process != Environment.ProcessId) return false;
+        // Controller copy/select feedback can use the installer provider while
+        // its owned native Browse/Save dialog is active, never another process.
+        for (nint owner = foreground; owner != 0; owner = GetWindow(owner, 4))
+            if (owner == form.Handle) return true;
+        return false;
+    }
+
+    [DllImport("user32.dll")] private static extern nint GetForegroundWindow();
+    [DllImport("user32.dll")] private static extern uint GetWindowThreadProcessId(nint window, out uint process);
+    [DllImport("user32.dll")] private static extern nint GetWindow(nint window, uint command);
 
     // Compiler output, checksums and per-file details belong in diagnostics.
     // The reviewable status field instead tells the player what is happening.

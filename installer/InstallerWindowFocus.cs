@@ -161,7 +161,7 @@ internal static class InstallerWindowFocus
         if (!Activate(owner) && GetForegroundWindow() != ActivationTarget(owner.Handle))
         {
             RequestAttention(owner);
-            InstallerFeedback.Announce(owner, AttentionMessage, important: true, replacePending: true);
+            InstallerFeedback.Announce(owner, AttentionMessage, important: true, allowBackground: true);
         }
         message.Result = 0;
         return true;

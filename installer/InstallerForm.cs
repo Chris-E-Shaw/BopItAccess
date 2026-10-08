@@ -248,7 +248,7 @@ internal sealed class InstallerForm : Form
                 message =>
                 {
                     AppendStatus(message);
-                    InstallerFeedback.Announce(this, message, important: true, replacePending: true);
+                    InstallerFeedback.Announce(this, message, important: true, allowBackground: true);
                 });
             _gamepad = new InstallerGamepad(this, RequestQuit,
                 () => _showAdvanced.Checked = !_showAdvanced.Checked,

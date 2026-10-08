@@ -324,7 +324,7 @@ internal static class OfflineBuildReferences
         Assembly.GetExecutingAssembly().GetManifestResourceStream(
             "BopItAccess.Installer.BuildReferenceGenerator." + name)
         ?? throw new InvalidDataException("The installer is missing its offline build helper template: " + name +
-            ". Download the latest installer preview. No game files have been changed.");
+            ". Download the latest installer. No game files have been changed.");
 
     private static async Task WriteResourceAsync(string name, string destination, CancellationToken cancellation) =>
         await File.WriteAllTextAsync(destination, await ReadResourceAsync(name, cancellation), new UTF8Encoding(false), cancellation);

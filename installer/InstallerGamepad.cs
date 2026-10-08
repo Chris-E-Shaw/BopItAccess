@@ -33,7 +33,6 @@ internal sealed class InstallerGamepad : IDisposable
     private string? _navigationText;
     private int[] _textElements = [];
     private string? _lastReviewMessage;
-    private Control? _controllerSpeechSource;
     private PendingFocusFeedback? _pendingFocusFeedback;
     private long _focusFeedbackGeneration;
 
@@ -60,15 +59,14 @@ internal sealed class InstallerGamepad : IDisposable
         {
             _activeWindow = 0;
             ResetSelection();
-            ClearControllerSpeech();
+            ClearFocusFeedback();
             return;
         }
         bool changedWindow = target.Window != _activeWindow;
         _activeWindow = target.Window;
-        if (changedWindow) ClearControllerSpeech();
+        if (changedWindow) ClearFocusFeedback();
         else
         {
-            if (!ReferenceEquals(FocusedControl(target.Form), _controllerSpeechSource)) _controllerSpeechSource = null;
             if (_pendingFocusFeedback is { } pending && !IsFocusFeedbackTarget(pending)) _pendingFocusFeedback = null;
         }
         if (changedWindow || !ReferenceEquals(FocusedControl(target.Form), _selectionBox)) ResetSelection();
@@ -204,7 +202,6 @@ internal sealed class InstallerGamepad : IDisposable
     private void MoveFocus(Target target, bool forward)
     {
         Control? previous = FocusedControl(target.Form);
-        bool leavingControllerSpeech = previous is not null && ReferenceEquals(previous, _controllerSpeechSource);
         // Carry an undelivered replacement through rapid bumper moves, even
         // when the intermediate control is not a text field.
         bool pendingHandoff = _pendingFocusFeedback is { } pending && IsFocusFeedbackTarget(pending);
@@ -212,7 +209,6 @@ internal sealed class InstallerGamepad : IDisposable
         ResetSelection();
         if (target.Form is null)
         {
-            _controllerSpeechSource = null;
             PostMessage(target.Window, WmNextDialogControl, forward ? 0 : 1, 0);
             return;
         }
@@ -220,13 +216,13 @@ internal sealed class InstallerGamepad : IDisposable
             target.Form.SelectNextControl(previous, forward, true, true, true);
         Control? destination = FocusedControl(target.Form);
         bool moved = !ReferenceEquals(previous, destination);
-        if (moved) _controllerSpeechSource = null;
-        if (destination is not null && (pendingHandoff || leavingControllerSpeech && moved)) QueueFocusFeedback(target, destination);
+        // Every successful controller focus move replaces notification speech,
+        // including action confirmations raised by a different control.
+        if (destination is not null && (pendingHandoff || moved)) QueueFocusFeedback(target, destination);
     }
 
-    private void ClearControllerSpeech()
+    private void ClearFocusFeedback()
     {
-        _controllerSpeechSource = null;
         _pendingFocusFeedback = null;
         _focusFeedbackGeneration++;
     }
@@ -246,7 +242,8 @@ internal sealed class InstallerGamepad : IDisposable
     private void QueueFocusFeedback(Target target, Control destination)
     {
         if (!destination.IsHandleCreated) return;
-        var pending = new PendingFocusFeedback(target, destination, destination.Handle, _focusFeedbackGeneration);
+        var pending = new PendingFocusFeedback(target, destination, destination.Handle, _focusFeedbackGeneration,
+            InstallerFeedback.PostedGeneration);
         if (!IsFocusFeedbackTarget(pending)) return;
         _pendingFocusFeedback = pending;
         try
@@ -258,14 +255,11 @@ internal sealed class InstallerGamepad : IDisposable
             {
                 if (!ReferenceEquals(_pendingFocusFeedback, pending) || pending.Generation != _focusFeedbackGeneration) return;
                 _pendingFocusFeedback = null;
-                if (!IsFocusFeedbackTarget(pending)) return;
+                if (pending.AnnouncementGeneration != InstallerFeedback.PostedGeneration || !IsFocusFeedbackTarget(pending)) return;
                 try
                 {
                     bool raised = InstallerFeedback.Announce(destination, FocusDescription(destination), important: true,
-                        logContent: false, replacePending: true);
-                    // This destination message is also notification speech.
-                    // Later bumper moves must replace it just like text review.
-                    if (raised) _controllerSpeechSource = destination;
+                        logContent: false);
                     InstallerDiagnostics.Current?.Write("ACCESSIBILITY",
                         $"Controller focus handoff {(raised ? "posted" : "unavailable")} for {destination.GetType().Name}.");
                 }
@@ -330,7 +324,8 @@ internal sealed class InstallerGamepad : IDisposable
         SendMessage(focus, EmSetSelection, 0, -1);
         if (!IsFocusedTarget(target, focus)) return true;
         SendMessageGetSelection(focus, EmGetSelection, out int start, out int end);
-        InstallerFeedback.Announce(_owner, start != end ? "All text selected." : "No text to select.", important: true);
+        InstallerFeedback.Announce(_owner, start != end ? "All text selected." : "No text to select.", important: true,
+            activeNativeDialog: target.Window);
         return true;
     }
 
@@ -358,14 +353,19 @@ internal sealed class InstallerGamepad : IDisposable
         nint focus = NativeFocus(target.Window);
         if (!IsFocusedTarget(target, focus) || !IsTextWindow(focus)) return;
         SendMessageGetSelection(focus, EmGetSelection, out int start, out int end);
-        if (start == end) { InstallerFeedback.Announce(_owner, "No text selected.", important: true); return; }
+        if (start == end)
+        {
+            InstallerFeedback.Announce(_owner, "No text selected.", important: true, activeNativeDialog: target.Window);
+            return;
+        }
         uint sequence = GetClipboardSequenceNumber();
         if (!IsFocusedTarget(target, focus)) return;
         SendMessage(focus, WmCopy, 0, 0);
         // WM_COPY has no success return value. A new clipboard sequence owned
         // by this edit control confirms that it published the selection.
         bool copied = GetClipboardSequenceNumber() != sequence && GetClipboardOwner() == focus;
-        InstallerFeedback.Announce(_owner, copied ? "Text copied to clipboard." : "Could not copy text.", important: true);
+        InstallerFeedback.Announce(_owner, copied ? "Text copied to clipboard." : "Could not copy text.", important: true,
+            activeNativeDialog: target.Window);
     }
 
     private void MoveCaret(Target target, TextBoxBase box, Direction direction, bool byUnit, bool extend)
@@ -491,7 +491,7 @@ internal sealed class InstallerGamepad : IDisposable
         // NVDA's arrow scripts speak the navigation unit; a local window
         // message does not trigger those scripts. Announce collapsed movement
         // through native UIA, without writing reviewed text into diagnostics.
-        if (InstallerFeedback.Announce(box, message, logContent: false, replacePending: true)) _controllerSpeechSource = box;
+        InstallerFeedback.Announce(box, message, logContent: false);
     }
 
     private static string CharacterName(string character) => character switch
@@ -731,7 +731,7 @@ internal sealed class InstallerGamepad : IDisposable
     {
         if (_disposed) return;
         _disposed = true;
-        ClearControllerSpeech();
+        ClearFocusFeedback();
         _timer.Stop();
         _timer.Tick -= Poll;
         _timer.Dispose();
@@ -740,7 +740,7 @@ internal sealed class InstallerGamepad : IDisposable
 
     private enum Direction { None, Up, Down, Left, Right }
     private sealed record Target(nint Window, Form? Form);
-    private sealed record PendingFocusFeedback(Target Target, Control Destination, nint Handle, long Generation);
+    private sealed record PendingFocusFeedback(Target Target, Control Destination, nint Handle, long Generation, long AnnouncementGeneration);
     private sealed class ControllerHistory
     {
         internal bool Connected;
