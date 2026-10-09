@@ -248,6 +248,13 @@
 <li>使用仅查询 GitHub SHA 的精简请求，避免将提交补丁存入缓冲区，并在明确的大小限制内以流式方式读取元数据。准确区分 HTTP 错误、连接失败、取消操作和响应过大导致的失败。玩家安装界面的控件和安装流程保持不变。 将git/ref/heads/main读取为具有40位ASCII十六进制SHA的commit对象。响应限制为8 MiB，标头、正文和解析共用30秒期限。在下载SDK／依赖项及共享Microsoft安装之前确认并固定Alpha的SHA。</li>
 <li>安装程序0.2.6发布成功，警告和错误均为零。静态检查确认，三个嵌入资源均与源码完全一致，捆绑的主DLL与检查过的DLL一致，且不包含安装程序专用语言卫星程序集。未进行自动化测试，也未运行安装程序、卸载程序、游戏、控制器或屏幕阅读器；新的查询和网络行为仍待人工验证。主Mod仍为0.9.12，构建次数为59，DLL未变。未创建公开发行版或标签。</li>
 </ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/c46a77811be8a1175d3dd6305f21568bc59d616b">源代码提交</a> · 无GitHub Release</p></article>
+      <article class="commit" id="installer-0-2-7"><div class="meta"><span class="version">Installer 0.2.7</span><span class="kind">fix · accessibility · feedback · docs</span></div><h3>fix(installer)：精简焦点朗读，并为按钮操作提供即时反馈</h3><ul>
+<li>用户确认安装程序0.2.6已成功完成安装。在0.2.7中，获得焦点时将提供简短摘要，取代先前的朗读，而不是自动朗读完整的欢迎文本；文本仍可随时查阅。保留系统原生的编辑字段角色、通过Value和TextPattern访问完整文本的能力，以及只读和多行状态。焦点公告的准确顺序和措辞仍由Windows及屏幕阅读器决定。</li>
+<li>将获得焦点的文本框名称缩短为 Welcome and controls 和 Status log，删除冗长、重复的辅助功能说明。保留系统原生的只读和多行状态、键盘快捷键、可选择的文本，以及使用控制器浏览文本的操作。完整的欢迎和操作说明仍可在欢迎文本框中随时查阅。</li>
+<li>安装程序的每个操作按钮都向屏幕阅读器提供即时反馈，并中断先前的朗读。反馈涵盖操作启动和结果，以及确认和取消。保留各项操作特有的错误消息和对话框。</li>
+<li>更新10种语言的文档，将当前安装程序标为0.2.7。所有既往构建历史文章和用户指南的页内链接目标均原样保留。</li>
+<li>独立运行的 Windows x64 安装程序 0.2.7 已编译并发布，没有警告或错误。静态检查确认三个嵌入式资源与源文件完全一致，捆绑的主DLL与检查过的DLL一致，并且没有安装程序专用的语言附属程序集。验证仅限于编译和静态检查：不进行自动化测试，也不运行安装程序、卸载程序、控制器、屏幕阅读器或游戏。实际反馈的措辞和时机仍需人工验证。主mod保持0.9.12版本和59次mod构建，DLL不变。不创建公开发布或标签。</li>
+</ul><p class="artifacts"><a href="https://github.com/Chris-E-Shaw/BopItAccess/commit/4632c06b3701f0fe8e5224241b395422a0f498ba">源代码提交</a> · 无GitHub Release</p></article>
 </section>
 </main>
 <footer><div class="wrap"><p>37 个本地源档案用于重建公共源提交。安装包保留在本地并且不是 GitHub 版本。 v0.5.4重新绑定预览和v0.5.18 SAPI修剪实验被记录为历史实现；后来的条目说明了它们是如何改变的。</p><p><a href="#history">返回创建历史</a></p></div></footer>
