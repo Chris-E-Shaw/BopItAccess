@@ -2,7 +2,7 @@
 
 Bop It Access 是为 Windows x64 平台 Steam 版 **Bop It! The Video Game** 制作的盲人无障碍模组。它使用 [MelonLoader](https://github.com/LavaGang/MelonLoader) 和 [Prism](https://github.com/ethindp/prism)，为游戏的菜单和界面提供语音朗读与盲文输出，并通过额外的操作和设置让游戏体验更舒适。
 
-当前源代码版本：**模组 0.9.13** 和 **安装程序 0.2.8**。首个公开发行版正在筹备中。
+**Windows x64 版 1.0 已公开发布。** 模组和安装程序的源代码版本均为 **1.0.0**。下载[安装程序](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-Installer.exe)并按说明安装，或使用[编译好的 ZIP](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-v1.0.zip)手动安装。
 
 ## 主要功能
 
@@ -18,7 +18,16 @@ Bop It Access 是为 Windows x64 平台 Steam 版 **Bop It! The Video Game** 制
 
 主要功能已基本完成。项目将根据需要持续维护，依据玩家反馈修复问题并改进体验。目前支持 Windows x64 平台。
 
-此仓库包含源代码和文档。**目前尚未发布公开发行版。** 即将发布的版本将提供 `BopItAccess-Installer.exe` 和已编译的 `BopItAccess-v1.0.zip`。GitHub 自动生成的源代码 ZIP 和 TAR.GZ 包含的是源代码，并非可以直接安装的模组。首个发行版发布之前，可通过安装程序的 **显示高级选项 > 安装 Alpha 版** 从 `main` 分支的最新源代码进行构建。
+[首个公开发行版 v1.0](https://github.com/Chris-E-Shaw/BopItAccess/releases/tag/v1.0)提供以下四种下载：
+
+| 下载 | 用途 |
+| --- | --- |
+| [BopItAccess-Installer.exe](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-Installer.exe) | 无障碍安装程序，可查找游戏、安装所需组件和最新稳定版模组，并管理更新与卸载。 |
+| [BopItAccess-v1.0.zip](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-v1.0.zip) | 用于手动安装的编译版模组。 |
+| [Source code (zip)](https://github.com/Chris-E-Shaw/BopItAccess/archive/refs/tags/v1.0.zip) | 供阅读或自行编译此发行版的源代码文件。 |
+| [Source code (tar.gz)](https://github.com/Chris-E-Shaw/BopItAccess/archive/refs/tags/v1.0.tar.gz) | 相同源代码的另一种压缩格式。 |
+
+在安装程序中选择 **Install**，即可安装最新稳定版。**Show advanced > Install alpha** 是可选的实验功能，会在确认后编译 `main` 分支的最新源代码。GitHub 的源代码压缩包包含代码和文档；要安装编译好的模组，请使用编译版 ZIP 或安装程序。
 
 Git 提交就是本项目的历史记录。最初的 37 个构建已分别导入为独立的源代码快照；这些提交的日期记录的是导入时间，而非原始构建时间。此仓库不包含已编译的二进制文件、游戏文件或 MelonLoader 为游戏生成的程序集。
 

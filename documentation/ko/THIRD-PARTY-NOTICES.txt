@@ -1,4 +1,4 @@
-Bop It Access 0.9.0은 다음 타사 런타임 라이브러리를 사용합니다.
+Bop It Access 1.0은 다음 타사 런타임 라이브러리를 사용합니다.
 
 0Harmony.dll - Harmony 별도 설치로 제공되는 패치 라이브러리
 MelonLoader. Bop It Access는 이를 사용하여 게임 설정이 끝나는 시점을 관찰합니다.
@@ -47,6 +47,8 @@ MelonLoader가 제공합니다. Unity 빌드 참조 라이브러리에는 Unity 
 임시 로컬 빌드 입력으로 다운로드하거나 재사용합니다. 바이너리와 생성된 게임 프록시는 소스 저장소나 모드 패키지에 포함하지 않습니다. 내장 도우미 소스는 외부 라이브러리를 호출하며 바이너리를
 내장하지 않습니다. 공개 버전에 없는 런타임은 공식 Microsoft .NET 6 ZIP에서 가져옵니다. 동봉 라이선스와 제삼자 고지를 유지하세요. .NET 소스는 MIT이며 Microsoft 배포
 조건도 적용됩니다. 설치된 구성 요소와 함께 고지를 유지합니다.
+
+Windows x64용 자체 포함 Bop It Access 설치 프로그램에는 .NET 10 런타임이 들어 있으므로 실행을 위해 .NET 10을 별도로 설치할 필요가 없습니다. Microsoft 런타임 라이선스 전문과 타사 고지 사항은 설치 프로그램 EXE에 포함되어 있습니다. 이 구성 요소에는 Microsoft와 원저작자의 조건이 계속 적용되며, 이 프로젝트의 MIT 라이선스가 이를 대체하지 않습니다. 게임 모드는 계속 .NET 6을 사용합니다.
 
 Cpp2IL: https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LICENSE
 Il2CppInterop: https://github.com/BepInEx/Il2CppInterop/blob/master/LICENSE

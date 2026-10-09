@@ -5,7 +5,7 @@ Downloads and stages the pinned Windows x64 Prism runtime.
 Use a fresh staging directory for each package. The script refuses a staging
 directory containing the Tolk or NVDA client DLLs from earlier mod versions.
 .EXAMPLE
-.\scripts\prepare_prism.ps1 -StageDirectory .\package\v0.9.0
+.\scripts\prepare_prism.ps1 -StageDirectory .\package\v1.0
 #>
 param(
     [Parameter(Mandatory = $true)]

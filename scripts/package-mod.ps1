@@ -9,10 +9,16 @@ Game binaries, generated proxies, MelonLoader and Microsoft .NET stay outside
 the ZIP. Nothing is published and the game is never launched.
 .EXAMPLE
 pwsh -File .\scripts\package-mod.ps1
+.EXAMPLE
+pwsh -File .\scripts\package-mod.ps1 -ReleaseTag v1.0
+Packages a compiled 1.0.0 mod as BopItAccess-v1.0.zip. The release tag must
+represent the same numeric version as the compiled mod.
 #>
 param(
     [string]$BuildDirectory,
-    [string]$OutputDirectory
+    [string]$OutputDirectory,
+    [ValidatePattern('^v\d+\.\d+(?:\.\d+){0,2}$')]
+    [string]$ReleaseTag
 )
 
 Set-StrictMode -Version Latest
@@ -66,6 +72,18 @@ function Read-ModVersion([string]$dllPath) {
     finally { $pe.Dispose(); $stream.Dispose() }
 }
 
+# GitHub tags may omit zero patch/revision components (v1.0 versus 1.0.0).
+# Normalize only numeric versions; a release tag can never add a path or name
+# an archive that disagrees with the DLL being shipped.
+function Normalize-ReleaseVersion([string]$numericVersion) {
+    $parsed = $null
+    if (-not [Version]::TryParse($numericVersion, [ref]$parsed)) {
+        throw "Unsupported numeric release version: $numericVersion"
+    }
+    return [Version]::new($parsed.Major, $parsed.Minor,
+        [Math]::Max(0, $parsed.Build), [Math]::Max(0, $parsed.Revision))
+}
+
 $modDll = Join-Path $buildRoot 'BopItAccess.dll'
 Assert-PlainPath $modDll
 Assert-PlainPath $outputRoot
@@ -74,7 +92,14 @@ $version = Read-ModVersion $modDll
 $sourceText = [IO.File]::ReadAllText((Join-Path $repoRoot 'src\BopItAccessMod.cs'))
 $sourceVersion = [regex]::Match($sourceText, 'MelonInfo\([^\r\n]*?,\s*"Bop It Access"\s*,\s*"(?<version>[0-9.]+)"').Groups['version'].Value
 if ($version -cne $sourceVersion) { throw "The compiled mod is $version but source is $sourceVersion. Rebuild before packaging." }
-$archivePath = Join-Path $outputRoot "BopItAccess-v$version.zip"
+$archiveTag = "v$version"
+if ($PSBoundParameters.ContainsKey('ReleaseTag')) {
+    if ((Normalize-ReleaseVersion ($ReleaseTag.Substring(1))) -ne (Normalize-ReleaseVersion $version)) {
+        throw "Release tag $ReleaseTag does not match the compiled mod version $version."
+    }
+    $archiveTag = $ReleaseTag
+}
+$archivePath = Join-Path $outputRoot "BopItAccess-$archiveTag.zip"
 Assert-PlainPath $archivePath
 if (Test-Path -LiteralPath $archivePath) { throw "An archive already exists: $archivePath. Keep it or choose another output directory." }
 New-Item -ItemType Directory -Force -Path $outputRoot | Out-Null

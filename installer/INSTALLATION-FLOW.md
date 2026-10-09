@@ -1,6 +1,6 @@
 # Installer installation flow
 
-Installer **0.2.8** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod is **0.9.13** (**60 mod builds**). The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game. After a successful installation, **Play Bop It! The Video Game** (Alt+P) offers a separate, explicitly requested Steam launch; it is never invoked automatically as an installation step.
+Installer **1.0.0** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod is **1.0.0** (**61 mod builds**). The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game. After a successful installation, **Play Bop It! The Video Game** (Alt+P) offers a separate, explicitly requested Steam launch; it is never invoked automatically as an installation step.
 
 ## Evidence and scope
 
@@ -172,7 +172,7 @@ During preparation of preview **0.2.2**, the user had confirmed **0.2.1** contro
 
 At the earliest managed startup, request `AllowSetForegroundWindow` for the installer's own PID and record grant/denial. This preserves existing legitimate permission when possible, without creating missing permission or changing Windows policy. Record the earliest managed foreground executable name/handle, administrator-token state and native process age, using executable names only and omitting other applications' titles, paths and command lines. Process context does not establish the exact reason for a foreground denial or directly observe preceding UAC interaction.
 
-Observe startup on a 125 ms timer for at most two seconds. Request activation once per distinct foreground window, at most three requests; confirm foreground before setting keyboard focus and require 250 ms of stable foreground/control focus before completing. Stop for fresh user input, deliberate enabled-control focus changes, operations and owned popups. Remove the temporary topmost pulse. If the deadline or transition limit leaves another window active, flash the caption/taskbar three times and append visible Alt+Tab guidance, using an important, recent native UI Automation notification to supersede lengthy welcome speech. In 0.2.2, the full welcome was kept in the log; current 0.2.8 keeps it in the separate **Welcome and controls** field (Alt+W), while Status log (Alt+L) holds operation messages. A denied second launch uses the same attention guidance and keeps an existing popup's focused control.
+Observe startup on a 125 ms timer for at most two seconds. Request activation once per distinct foreground window, at most three requests; confirm foreground before setting keyboard focus and require 250 ms of stable foreground/control focus before completing. Stop for fresh user input, deliberate enabled-control focus changes, operations and owned popups. Remove the temporary topmost pulse. If the deadline or transition limit leaves another window active, flash the caption/taskbar three times and append visible Alt+Tab guidance, using an important, recent native UI Automation notification to supersede lengthy welcome speech. In 0.2.2, the full welcome was kept in the log; current 1.0.0 keeps it in the separate **Welcome and controls** field (Alt+W), while Status log (Alt+L) holds operation messages. A denied second launch uses the same attention guidance and keeps an existing popup's focused control.
 
 Y, the top face button, selects all in a focused installer text field, including local native edit controls. Confirm “All text selected.” or “No text to select.” Managed selection retains its start anchor and active end so subsequent RT directions can adjust it. Outside text fields on the main window, Y toggles Show advanced; it does not change advanced controls in other dialogs. X continues copying only the current selection. Foreground scoping remains required.
 
@@ -194,7 +194,7 @@ Installer **0.2.3** publishes with zero warnings and zero errors; the whitespace
 
 ## Recent announcement replacement in installer 0.2.4
 
-Historical delivery record: installer **0.2.4** compiled to `build/installer/BopItAccess.Installer.exe`. The copies `BopItAccess-Installer-0.2.4.exe` and the identical `BopItAccess-Installer.exe` were delivered separately in `C:\Users\Chris\Documents\Codex`, without a preview label. No public binary, GitHub Release or tag was published. The current supplied build is **0.2.8**, with the separate Welcome field described below.
+Historical delivery record: installer **0.2.4** compiled to `build/installer/BopItAccess.Installer.exe`. The copies `BopItAccess-Installer-0.2.4.exe` and the identical `BopItAccess-Installer.exe` were delivered separately in `C:\Users\Chris\Documents\Codex`, without a preview label. No public binary, GitHub Release or tag was published. The current public build is **1.0.0**, with the separate Welcome field described below.
 
 Every speech announcement emitted by the installer requests replacement of earlier installer speech. The central policy uses `ImportantMostRecent` for important feedback and `MostRecent` for ordinary feedback, including controller text review; there is no per-call `replacePending` opt-in. Select All, selected-text copy, Show advanced state, diagnostics confirmations, welcome/update/dialog messages and attention all use that policy. Status-log announcement frequency is unchanged, so appending a status line does not necessarily speak it.
 
@@ -206,7 +206,7 @@ These requests aim to interrupt earlier speech; native automatic focus, checkbox
 
 Installer **0.2.5** gives initial keyboard/controller focus to the permanent read-only, selectable **Welcome and controls** field above Game folder. Alt+W returns to it; its accessible name is **Installer welcome and controls**. The changing Status log remains Alt+L and no longer receives the welcome text. After successful startup focus confirmation, one guarded full welcome announcement uses the existing recent-replacement policy. The welcome field supports the same review, selection and copy controls as other installer text fields.
 
-The compiled release asset must match the public release tag: `v1.0` selects `BopItAccess-v1.0.zip`, later `v1.1` selects `BopItAccess-v1.1.zip`, with optional leading v/V normalized. The standalone `BopItAccess-Installer.exe` and GitHub Source code (zip)/(tar.gz) remain separate choices for users; none is a compiled mod package. Public assets and a release/tag remain upcoming.
+The compiled release asset must match the public release tag: `v1.0` selects `BopItAccess-v1.0.zip`, later `v1.1` selects `BopItAccess-v1.1.zip`, with optional leading v/V normalized. The standalone `BopItAccess-Installer.exe` and GitHub Source code (zip)/(tar.gz) remain separate choices for users; none is a compiled mod package. The stable public release **v1.0** provides these four downloads: two uploaded packages and GitHub's two generated source archives.
 
 Manual ZIP users install official x64 MelonLoader 0.7.3 Open-Beta and the Windows x64 .NET 6 runtime separately; no SDK is needed for the compiled route. With the game closed, place the ZIP’s mod in Mods and Prism beside the game EXE, copy complete documentation/licences, and merge only the two Loader.cfg flags when that configuration exists. Put the mod in place before the first game launch generates assemblies. The ZIP omits loader/runtime/game/generated/source payloads. Source or Install alpha still needs the SDK and targeting pack.
 
@@ -216,7 +216,7 @@ The manual route creates no installer ownership record, helper or Windows uninst
 
 Static inspection of the 0.2.5 executable confirmed source revision fabc32d48754bf53f266656d67b356bc9d0841d3, three exact embedded-resource source matches, the matching bundled main DLL and no installer-specific language satellites.
 
-The local compiled **0.9.12** ZIP has now been created successfully with `scripts/package-mod.ps1`. It contains the **70 documentation files**, the mod and Prism DLLs, the declared configuration/shortcut files and Prism notices/licences. This local archive is separate from the still-upcoming public v1.0 release. Package creation and static inspection do not verify installation or speech; no automated tests or app/game execution was performed.
+Historical package record: the local compiled **0.9.12** ZIP was created successfully with `scripts/package-mod.ps1`. It contains the **70 documentation files**, the mod and Prism DLLs, the declared configuration/shortcut files and Prism notices/licences. This is a historical prerelease package; the v1.0 compiled release uses the current player-only documentation layout described below. Package creation and static inspection do not verify installation or speech; no automated tests or app/game execution was performed.
 
 ## Source-reference preparation and metadata bounds in 0.2.6
 
@@ -242,7 +242,7 @@ The user confirms that installer **0.2.6** installs successfully. The next insta
 
 Installer **0.2.7** published with zero warnings and errors from source revision 4632c06b3701f0fe8e5224241b395422a0f498ba. Static PE inspection confirms that all three embedded resources match source exactly: uninstall.ps1 **8,810 bytes**, Program.cs.txt **3,202 bytes**, and BuildReferenceGenerator.csproj.txt **529 bytes**. The **254-file** single-file bundle contains the matching inspected **323,584-byte** main DLL and no installer-specific language satellite assemblies. FileVersion is **0.2.7.0**; ProductVersion includes the same source revision. The final executable SHA-256 is **B019270FAA5E8DD8DF92125EE2B8A476AD60571F7A439A3A72DC17ADA53A4A45**. These are compilation and static inspection results. No automated tests or installer, uninstaller, controller, screen-reader or game execution is performed. Actual notification timing and reader wording await human verification. The main mod remains **0.9.12**, with **59 mod builds** and its DLL unchanged; no public release or tag is created.
 
-## User documentation and MIT licensing in installer 0.2.8
+## User documentation and MIT licensing
 
 The source repository is now MIT-licensed by Christopher Shaw. The canonical LICENSE is embedded in the mod and installer and copied into compiled documentation as BopItAccess-LICENSE.txt. Third-party components retain their separate licences.
 
@@ -252,4 +252,18 @@ An update retires only old installer-owned developer-document paths at the docum
 
 The manual ZIP keeps the UserData/Loader.cfg template for the two loader presentation defaults, the mod and Prism DLLs, documentation, third-party licences and uninstall shortcut. Copying its complete contents and merging folders/replacing supplied files is sufficient after installing x64 MelonLoader 0.7.3 Open-Beta and the x64 .NET 6 runtime. The package contains no saved mod/game preferences, README, generated game proxies, MelonLoader, .NET SDK or game binaries.
 
-The mod build is 0.9.13 (60 builds); the installer build is 0.2.8. Controller hint sentence starts and Replay speech cancellation are recorded in the corresponding source commit. Compilation and static packaging results are recorded with delivery; screen-reader, controller, game and installer behavior require human verification. No automated tests or public release/tag are created for this update.
+Controller hint sentence starts and Replay speech cancellation were added in source commit `64141142a87d3038529efa62299b8a3e6c2741d2`, before the first public release. Compilation and static packaging inspection supplement human gameplay and screen-reader verification; no automated tests were added.
+
+## First public release: v1.0
+
+Bop It Access **1.0.0** and installer **1.0.0** are distributed in the stable [v1.0 GitHub release](https://github.com/Chris-E-Shaw/BopItAccess/releases/tag/v1.0). The release offers four downloads:
+
+- `BopItAccess-Installer.exe`: the self-contained Windows x64 installer.
+- `BopItAccess-v1.0.zip`: the compiled manual-install package.
+- `Source code (zip)` and `Source code (tar.gz)`: GitHub's generated archives of the tagged source commit.
+
+The compiled package contains 37 files: the mod and Prism DLLs, loader configuration and uninstall shortcut, 21 player documentation/license files, and the official Prism notice and 11 dependency licence files. It excludes game files, generated proxy assemblies, development documentation and the installer executable. Install selects this exact ZIP for tag `v1.0`; Install alpha remains an optional advanced route that builds the latest source.
+
+Packaging a compiled `1.0.0` mod with `scripts/package-mod.ps1 -ReleaseTag v1.0` verifies that the tag and assembly versions agree and writes the exact required asset name. The source commit, binary versions, embedded licence resources, guide anchors, package contents and uploaded asset sizes/SHA-256 digests are checked before publication. GitHub's source archives remain source-only. Publication uses a draft until both uploaded assets have been verified, then marks the release stable and latest.
+
+The self-contained installer embeds the complete Microsoft .NET and Windows Desktop runtime licences and third-party notices from the official 10.0.11 runtime packs. Text-only originals and provenance are kept under `installer/third-party`; these components retain their upstream terms. All eight mandatory embedded resources are validated as culture-neutral at build time and inspected against their source bytes before distribution.

@@ -117,7 +117,7 @@ internal sealed class InstallerService
                     Log("Checking GitHub for the latest Bop It Access release.");
                     _release = await InstallerNetwork.LatestReleaseAsync(cancellation);
                     Log(_release is null
-                        ? "No downloadable release is published yet. Install alpha is available from the latest source commit."
+                        ? "No compatible release package is currently available. Please try again later, or use Show advanced to install the latest source."
                         : $"Latest release: {_release.Tag} ({_release.AssetName}).");
                 }
                 catch (OperationCanceledException) when (cancellation.IsCancellationRequested) { throw; }
@@ -247,7 +247,7 @@ internal sealed class InstallerService
                 throw new InvalidOperationException("Finish the pending uninstall preference cleanup before installing again.");
             var release = _release;
             if (!alpha && release is null)
-                throw new InvalidOperationException("No GitHub release package exists yet. Use Install alpha until the first release is published.");
+                throw new InvalidOperationException("A compatible GitHub release package is currently unavailable. Please try again later, or choose Install alpha under Show advanced.");
             if (IsGameRunning())
                 throw new InvalidOperationException("Close Bop It! before installing or updating the mod.");
 
@@ -510,7 +510,7 @@ internal sealed class InstallerService
             : !valid && installed ? "The base game is missing; Uninstall can still remove the mod and its settings."
             : !valid ? "Choose a valid Bop It! game folder."
             : _busy ? "Installer is working. Review the status log for each step."
-            : _release is null ? "No GitHub release is published yet. Install alpha builds the latest source."
+            : _release is null ? "A compatible release is currently unavailable. Please try again later, or choose Show advanced for Install alpha."
             : installed ? (update ? $"An update ({_release.Tag}) is available." : "Bop It Access is installed.")
             : $"Ready to install release {_release.Tag}.";
         var state = new InstallerState(gamePath, valid, installed, _release is not null,

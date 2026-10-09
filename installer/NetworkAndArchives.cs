@@ -24,7 +24,8 @@ internal static class InstallerNetwork
     private static HttpClient CreateClient()
     {
         var client = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
-        client.DefaultRequestHeaders.UserAgent.ParseAdd("BopItAccessInstaller/0.1 (+https://github.com/Chris-E-Shaw/BopItAccess)");
+        string version = typeof(InstallerNetwork).Assembly.GetName().Version?.ToString(3) ?? "1.0.0";
+        client.DefaultRequestHeaders.UserAgent.ParseAdd($"BopItAccessInstaller/{version} (+https://github.com/Chris-E-Shaw/BopItAccess)");
         client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
         return client;
     }

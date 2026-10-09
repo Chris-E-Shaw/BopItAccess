@@ -1,4 +1,4 @@
-Bop It Access 0.9.0 使用以下第三方运行时库：
+Bop It Access 1.0 使用以下第三方运行时库：
 
 0Harmony.dll - Harmony 单独安装提供的补丁库
 MelonLoader. Bop It Access 用它来观察游戏设置何时完成
@@ -46,6 +46,8 @@ Byass（SamboyCoding）及贡献者的Cpp2IL和StrippedCodeRegSupport插件，�
 Software
 Terms和附带声明，本项目不授予其许可证。Alpha下载或重用这些组件作为临时本地编译输入。其二进制文件和生成的游戏代理程序集不包含在源码仓库或Mod包中。内置辅助工具源码调用外部库，不内置其二进制文件。公开版缺少的运行时来自Microsoft官方.NET
 6 ZIP。请保留其中的许可证和第三方声明。.NET源码使用MIT，Microsoft附带的发行条款仍适用。声明随安装组件保留。
+
+适用于 Windows x64 的 Bop It Access 独立安装程序包含 .NET 10 运行时，因此无需单独安装 .NET 10 即可运行安装程序。完整的 Microsoft 运行时许可证和第三方声明已嵌入安装程序 EXE。这些组件仍受 Microsoft 及其原作者的条款约束，本项目的 MIT 许可证不会替代这些条款。游戏模组仍使用 .NET 6。
 
 Cpp2IL: https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LICENSE
 Il2CppInterop: https://github.com/BepInEx/Il2CppInterop/blob/master/LICENSE

@@ -2,7 +2,7 @@
 
 Bop It Access は、Windows x64 向け Steam 版 **Bop It! The Video Game** を目の見えない方にも遊びやすくするアクセシビリティ MOD です。[MelonLoader](https://github.com/LavaGang/MelonLoader) と [Prism](https://github.com/ethindp/prism) を使い、ゲームのメニューや画面に音声読み上げと点字出力を追加します。より快適に遊べるよう、追加の操作や設定も用意しています。
 
-現在のソースのバージョンは **MOD 0.9.13** と **インストーラー 0.2.8** です。初めての一般公開リリースを準備しています。
+**Windows x64 用のバージョン 1.0 を公開しました。** MOD とインストーラーのソースのバージョンは **1.0.0** です。[インストーラー](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-Installer.exe)で案内に従って導入するか、[コンパイル済み ZIP](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-v1.0.zip)で手動導入してください。
 
 ## 主な機能
 
@@ -18,7 +18,16 @@ Bop It Access は、Windows x64 向け Steam 版 **Bop It! The Video Game** を�
 
 主な機能はほぼ完成しています。プレイヤーからのフィードバックをもとに、不具合の修正や改善を行い、必要に応じてプロジェクトを維持していきます。現在対応している環境は Windows x64 です。
 
-このリポジトリにはソースコードとドキュメントが入っています。**一般公開リリースはまだありません。** 予定しているリリースには、`BopItAccess-Installer.exe` とコンパイル済みの `BopItAccess-v1.0.zip` が含まれます。GitHub が自動生成するソース ZIP と TAR.GZ はソースコードであり、そのままインストールできる MOD ではありません。最初のリリースまでは、インストーラーの **詳細設定を表示 > アルファ版をインストール** で `main` の最新ソースからビルドできます。
+[初めての一般公開リリース v1.0](https://github.com/Chris-E-Shaw/BopItAccess/releases/tag/v1.0)には、次の 4 種類のダウンロードがあります。
+
+| ダウンロード | 用途 |
+| --- | --- |
+| [BopItAccess-Installer.exe](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-Installer.exe) | ゲームを検出し、必要な部品と最新の安定版 MOD を導入し、更新と削除を管理するアクセシブルなインストーラー。 |
+| [BopItAccess-v1.0.zip](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-v1.0.zip) | 手動導入用のコンパイル済み MOD。 |
+| [Source code (zip)](https://github.com/Chris-E-Shaw/BopItAccess/archive/refs/tags/v1.0.zip) | このリリースのコードを読んだりビルドしたりするためのソースファイル。 |
+| [Source code (tar.gz)](https://github.com/Chris-E-Shaw/BopItAccess/archive/refs/tags/v1.0.tar.gz) | 同じソースファイルを別の形式でまとめたアーカイブ。 |
+
+最新の安定版を導入するにはインストーラーで **Install** を選んでください。**Show advanced > Install alpha** は任意の実験的な選択肢です。確認後に `main` の最新ソースからビルドします。GitHub のソースアーカイブにはコードと文書が含まれます。ビルド済みの MOD を導入するには、コンパイル済み ZIP またはインストーラーを使用してください。
 
 Git のコミットがこのプロジェクトの履歴です。最初の 37 ビルドは、それぞれ別のソーススナップショットとして取り込まれました。そのコミット日時は、元のビルド日時ではなく、取り込みを行った日時を示します。コンパイル済みの実行ファイル、ゲームのファイル、MelonLoader が生成するゲームのアセンブリは、このリポジトリには含まれません。
 

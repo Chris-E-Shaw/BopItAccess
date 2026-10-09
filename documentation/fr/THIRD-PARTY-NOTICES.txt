@@ -1,4 +1,4 @@
-Bop It Access 0.9.0 utilise ces bibliothèques d'exécution tierces :
+Bop It Access 1.0 utilise ces bibliothèques d'exécution tierces :
 
 Bibliothèque de correctifs 0Harmony.dll - Harmony fournie par le logiciel installé séparément
 MelonLoader. Bop It Access l'utilise pour observer la fin des paramètres du jeu.
@@ -52,6 +52,8 @@ sans intégrer leurs binaires. Un environnement d’exécution manquant pour une
 officiel Microsoft .NET 6. Conserver sa licence et ses notices tierces ; le code source .NET est sous MIT, et
 les conditions de distribution fournies par Microsoft continuent de s’appliquer. Les notices restent avec les
 composants installés.
+
+L’installateur autonome Windows x64 de Bop It Access inclut l’environnement d’exécution .NET 10 ; il n’est pas nécessaire d’installer .NET 10 séparément pour l’utiliser. La licence Microsoft complète et les notices des tiers sont intégrées au fichier EXE de l’installateur. Ces composants restent soumis aux conditions de Microsoft et de leurs auteurs d’origine ; la licence MIT de ce projet ne les remplace pas. Le mod du jeu utilise toujours .NET 6.
 
 Cpp2IL: https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LICENSE
 Il2CppInterop: https://github.com/BepInEx/Il2CppInterop/blob/master/LICENSE

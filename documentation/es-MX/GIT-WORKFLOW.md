@@ -10,6 +10,10 @@ La dirección de GitHub sin respuesta de Christopher Shaw se usa como autor de l
 
 Las DLL compiladas, instaladores, ZIP de publicación, ensamblados generados del juego, registros personales y archivos temporales de compilación quedan fuera del historial de código fuente de Git. Las etiquetas de versión locales no se publican automáticamente. Crear una versión en GitHub es un paso separado y deliberado.
 
+## Primera versión pública
+
+[La versión 1.0](https://github.com/Chris-E-Shaw/BopItAccess/releases/tag/v1.0) es la primera publicación pública, identificada por la etiqueta `v1.0`. Las versiones fuente del mod y del instalador son `1.0.0`. La publicación incluye `BopItAccess-Installer.exe` y `BopItAccess-v1.0.zip`; GitHub también ofrece Source code (zip) y Source code (tar.gz), con cuatro descargas en total. Las descargas compiladas son archivos de la publicación, no archivos incluidos en los commits de la rama fuente.
+
 ## Comandos útiles
 
 Abre PowerShell en el repositorio y ejecuta:

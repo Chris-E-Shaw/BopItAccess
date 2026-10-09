@@ -1,4 +1,4 @@
-Bop It Access 0.9.0 uses these third-party runtime libraries:
+Bop It Access 1.0 uses these third-party runtime libraries:
 
 0Harmony.dll - Harmony patching library supplied by the separately installed
 MelonLoader. Bop It Access uses it to observe when the game's settings finish
@@ -51,6 +51,8 @@ source repository or mod package. The installer’s embedded helper source calls
 does not embed their binaries. A missing release runtime uses Microsoft’s official .NET 6 runtime ZIP.
 Preserve its included license and third-party notices; .NET source is MIT-licensed and distribution terms
 remain those supplied by Microsoft. Loader and runtime notices remain with the installed components.
+
+The self-contained Windows x64 Bop It Access installer includes the .NET 10 runtime; users do not need to install .NET 10 separately to run it. The complete Microsoft runtime license and third-party notices are embedded in the installer EXE. These components remain subject to Microsoft's and their upstream authors' terms; this project's MIT License does not replace them. The game mod continues to use .NET 6.
 
 Cpp2IL: https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LICENSE
 Il2CppInterop: https://github.com/BepInEx/Il2CppInterop/blob/master/LICENSE

@@ -10,6 +10,10 @@ Git 保存本项目源代码和文档的历史记录。**提交（commit）**是
 
 已编译的 DLL、安装程序、发行 ZIP、生成的游戏程序集、个人日志和临时构建输出不进入 Git 的源代码历史。本地版本标签不会自动发布。创建 GitHub 发行版是需要另行明确执行的操作。
 
+## 首个公开发行版
+
+[1.0 版](https://github.com/Chris-E-Shaw/BopItAccess/releases/tag/v1.0)是首个公开发行版，标签为 `v1.0`。模组和安装程序的源代码版本均为 `1.0.0`。发行版提供 `BopItAccess-Installer.exe` 和 `BopItAccess-v1.0.zip`；加上 GitHub 的 Source code (zip) 和 Source code (tar.gz)，共有四种下载。编译版文件作为发行版附件提供，不提交到源代码分支。
+
 ## 常用命令
 
 在仓库文件夹中打开 PowerShell，然后运行：

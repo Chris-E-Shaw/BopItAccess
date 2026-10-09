@@ -10,6 +10,10 @@ Git은 이 프로젝트의 소스 코드와 문서 변경 기록을 보관합니
 
 컴파일된 DLL, 설치 프로그램, 릴리스 ZIP, 생성된 게임 어셈블리, 개인 로그, 임시 빌드 결과물은 Git 소스 기록에 넣지 않습니다. 로컬 버전 태그는 자동으로 게시되지 않습니다. GitHub 릴리스 생성은 별도로 의도하여 수행하는 작업입니다.
 
+## 첫 공개 릴리스
+
+[버전 1.0](https://github.com/Chris-E-Shaw/BopItAccess/releases/tag/v1.0)은 첫 공개 릴리스이며 태그는 `v1.0`입니다. 모드와 설치 프로그램의 소스 버전은 `1.0.0`입니다. 릴리스에 `BopItAccess-Installer.exe`와 `BopItAccess-v1.0.zip`이 첨부되고, GitHub의 Source code (zip)과 Source code (tar.gz)를 합쳐 네 가지 다운로드가 제공됩니다. 컴파일된 파일은 릴리스 첨부 파일이며 소스 브랜치의 커밋에는 포함하지 않습니다.
+
 ## 유용한 명령어
 
 저장소 폴더에서 PowerShell을 열고 다음을 실행합니다.

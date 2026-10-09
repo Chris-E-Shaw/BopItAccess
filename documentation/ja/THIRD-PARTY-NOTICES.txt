@@ -1,4 +1,4 @@
-Bop It Access 0.9.0 は、次のサードパーティのランタイム ライブラリを使用します。
+Bop It Access 1.0 は、次のサードパーティのランタイム ライブラリを使用します。
 
 0Harmony.dll - Harmony 別途インストールされたパッチ適用ライブラリ
 MelonLoader. Bop It Access は、ゲームの設定がいつ終了するかを観察するために使用します
@@ -46,6 +46,8 @@ Byass（SamboyCoding）と協力者のCpp2ILおよびStrippedCodeRegSupportプ�
 Software
 Termsと付属の通知が適用され、このプロジェクトがライセンスを付与するものではありません。Alphaはこれらを一時的なローカルビルド入力として取得または再利用します。そのバイナリや生成されたゲームプロキシはソースリポジトリやModパッケージに含めません。内蔵ヘルパーのソースは外部ライブラリを呼び出し、バイナリを内蔵しません。公開版で不足するランタイムはMicrosoft公式.NET
 6 ZIPから取得します。付属ライセンスと第三者通知を維持してください。.NETソースはMITであり、Microsoftの配布条件も適用されます。通知は導入したコンポーネントに保持します。
+
+Windows x64 用の自己完結型 Bop It Access インストーラーには .NET 10 ランタイムが含まれるため、実行するために .NET 10 を別途インストールする必要はありません。Microsoft のランタイムライセンス全文と第三者ソフトウェアの通知は、インストーラーの EXE に埋め込まれています。これらの構成要素には Microsoft および元の著作者の条件が引き続き適用され、このプロジェクトの MIT ライセンスで置き換えられることはありません。ゲームの MOD は引き続き .NET 6 を使用します。
 
 Cpp2IL: https://github.com/SamboyCoding/Cpp2IL/blob/2022.1.0-pre-release.21/LICENSE
 Il2CppInterop: https://github.com/BepInEx/Il2CppInterop/blob/master/LICENSE

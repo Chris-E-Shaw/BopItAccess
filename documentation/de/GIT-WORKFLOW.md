@@ -10,6 +10,10 @@ Als Commitautor wird Christopher Shaws GitHub-No-Reply-Adresse verwendet. KI-unt
 
 Kompilierte DLLs, Installer, Veröffentlichungs-ZIPs, erzeugte Spielassemblies, persönliche Protokolle und vorübergehende Buildausgaben bleiben außerhalb der Git-Quellcodegeschichte. Lokale Versionstags werden nicht automatisch veröffentlicht. Eine GitHub-Veröffentlichung zu erstellen ist ein gesonderter, bewusster Schritt.
 
+## Erste öffentliche Veröffentlichung
+
+[Version 1.0](https://github.com/Chris-E-Shaw/BopItAccess/releases/tag/v1.0) ist die erste öffentliche Veröffentlichung mit dem Tag `v1.0`. Die Quellcodeversionen von Mod und Installer sind `1.0.0`. Die Veröffentlichung stellt `BopItAccess-Installer.exe` und `BopItAccess-v1.0.zip` bereit; GitHub ergänzt Source code (zip) und Source code (tar.gz), insgesamt vier Downloads. Die kompilierten Downloads gehören zur Veröffentlichung und werden nicht in den Quellcodebranch eingecheckt.
+
 ## Nützliche Befehle
 
 Öffne PowerShell im Repository und führe Folgendes aus:

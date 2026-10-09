@@ -99,7 +99,7 @@ internal static class InstallerFeedback
         if (raw.StartsWith("That folder does not contain", StringComparison.Ordinal)) return "Bop It! was not found in that folder. Choose the folder that contains the game.";
         if (raw.StartsWith("Checking GitHub for", StringComparison.Ordinal)) return "Checking for the latest Bop It Access release.";
         if (raw.StartsWith("Latest release:", StringComparison.Ordinal)) return "The latest Bop It Access release is available.";
-        if (raw.StartsWith("No downloadable release", StringComparison.Ordinal)) return "A public release is not available yet. Show advanced to install the alpha version.";
+        if (raw.StartsWith("No compatible release package", StringComparison.Ordinal)) return "A release package is currently unavailable. Please try again later, or choose Show advanced for Install alpha.";
         const string releaseCheckFailure = "Could not check GitHub releases: ";
         if (raw.StartsWith(releaseCheckFailure, StringComparison.Ordinal)) return "Could not check for updates. " + raw[releaseCheckFailure.Length..];
         if (raw.StartsWith("Could not check GitHub", StringComparison.Ordinal)) return "Could not check for updates. Try again or save diagnostics for review.";

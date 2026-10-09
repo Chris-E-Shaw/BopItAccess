@@ -1,0 +1,27 @@
+Microsoft runtime notices for the Bop It Access Installer
+
+The self-contained Windows x64 installer includes Microsoft.NETCore.App
+and Microsoft.WindowsDesktop.App runtime components, version 10.0.11.
+The following licence and notice files are copied byte-for-byte from the
+official Microsoft NuGet runtime packs used by this installer build.
+These are redistribution notices, not licences for Bop It Access itself.
+
+dotnet/LICENSE.txt
+  Package source: microsoft.netcore.app.runtime.win-x64/10.0.11/LICENSE.TXT
+  SHA256: d7a68596ab69b06f51ca278a6545148e4269a9381c26d597c13df5d88e08cf5b
+
+dotnet/THIRD-PARTY-NOTICES.txt
+  Package source: microsoft.netcore.app.runtime.win-x64/10.0.11/THIRD-PARTY-NOTICES.TXT
+  SHA256: 6d15e10a101c6bfff2ab4429ed061bf76c456fc4b23ad6b03e0d0f8377148a21
+
+windowsdesktop/LICENSE.txt
+  Package source: microsoft.windowsdesktop.app.runtime.win-x64/10.0.11/LICENSE
+  SHA256: a89886665765362eb77e0f8e26602c924520041d1711b2eedc136434fe4d01ab
+
+Official packages:
+https://www.nuget.org/packages/Microsoft.NETCore.App.Runtime.win-x64/10.0.11
+https://www.nuget.org/packages/Microsoft.WindowsDesktop.App.Runtime.win-x64/10.0.11
+
+The Windows Desktop runtime pack supplies its MIT licence and does not
+supply a separate third-party notices file. The .NET runtime notices are
+included in full. Microsoft retains all applicable copyrights.

@@ -10,6 +10,10 @@ Christopher Shaw's GitHub no-reply address is the commit author. AI-assisted com
 
 Compiled DLLs, installers, release ZIPs, generated game assemblies, personal logs and temporary build output stay out of Git's source history. Local version tags are not published automatically. Creating a GitHub release is a separate, deliberate step.
 
+## First public release
+
+[Version 1.0](https://github.com/Chris-E-Shaw/BopItAccess/releases/tag/v1.0) is the first public release, identified by the `v1.0` tag. Its mod and installer source versions are `1.0.0`. The release attaches `BopItAccess-Installer.exe` and `BopItAccess-v1.0.zip`; GitHub also provides Source code (zip) and Source code (tar.gz), for four downloads in total. Compiled downloads are release assets, not files committed to the source branch.
+
 ## Useful commands
 
 Open PowerShell in the repository, then run:

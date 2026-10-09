@@ -2,7 +2,7 @@
 
 Bop It Access est un mod d'accessibilité pour les personnes aveugles, destiné à la version Steam Windows x64 de **Bop It! The Video Game**. Il utilise [MelonLoader](https://github.com/LavaGang/MelonLoader) et [Prism](https://github.com/ethindp/prism) pour rendre les menus et écrans du jeu accessibles par la parole et le braille, avec des commandes et réglages supplémentaires pour jouer plus confortablement.
 
-Versions actuelles du code source : **mod 0.9.13** et **installateur 0.2.8**. La première version publique sera bientôt disponible.
+**La version 1.0 est disponible pour Windows x64.** Le mod et l’installateur utilisent la version source **1.0.0**. Téléchargez l’[installateur](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-Installer.exe) pour une installation guidée ou le [ZIP compilé](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-v1.0.zip) pour une installation manuelle.
 
 ## Fonctionnalités
 
@@ -18,7 +18,16 @@ Versions actuelles du code source : **mod 0.9.13** et **installateur 0.2.8**. La
 
 L'essentiel des fonctionnalités est terminé. Le projet sera maintenu selon les besoins, et les retours des joueurs guideront les corrections et améliorations. Windows x64 est actuellement la plateforme prise en charge.
 
-Ce dépôt contient le code source et la documentation. **Aucune version publique n'a encore été publiée.** La prochaine publication proposera `BopItAccess-Installer.exe` et une archive compilée `BopItAccess-v1.0.zip`. Les archives de code source ZIP et TAR.GZ générées automatiquement par GitHub contiennent le code, pas un mod prêt à installer. Jusqu'à la première publication, l'option **Afficher les options avancées > Installer l'alpha** de l'installateur compile le dernier code source de `main`.
+La [première version publique, v1.0](https://github.com/Chris-E-Shaw/BopItAccess/releases/tag/v1.0), propose quatre téléchargements :
+
+| Téléchargement | Utilisation |
+| --- | --- |
+| [BopItAccess-Installer.exe](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-Installer.exe) | Installateur accessible qui trouve le jeu, installe les dépendances et le dernier mod stable, et gère les mises à jour et la désinstallation. |
+| [BopItAccess-v1.0.zip](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-v1.0.zip) | Mod compilé pour une installation manuelle. |
+| [Source code (zip)](https://github.com/Chris-E-Shaw/BopItAccess/archive/refs/tags/v1.0.zip) | Fichiers source pour lire ou compiler cette version. |
+| [Source code (tar.gz)](https://github.com/Chris-E-Shaw/BopItAccess/archive/refs/tags/v1.0.tar.gz) | Les mêmes sources dans un autre format d’archive. |
+
+Choisissez **Install** dans l’installateur pour obtenir la dernière version stable. **Show advanced > Install alpha** est une option expérimentale et facultative qui compile les dernières sources de `main`, après confirmation. Les archives source de GitHub contiennent le code et la documentation ; utilisez le ZIP compilé ou l’installateur pour installer le mod déjà compilé.
 
 Les commits Git constituent l'historique du projet. Les 37 premiers builds ont été importés sous forme d'instantanés distincts du code source ; les dates de ces commits correspondent à l'importation, et non aux dates des builds d'origine. Ce dépôt ne contient ni fichiers binaires compilés, ni fichiers du jeu, ni assemblages du jeu générés par MelonLoader.
 

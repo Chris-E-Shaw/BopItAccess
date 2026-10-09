@@ -2,7 +2,7 @@
 
 Bop It Access는 Windows x64용 Steam 버전 **Bop It! The Video Game**을 시각장애인이 즐길 수 있도록 돕는 접근성 모드입니다. [MelonLoader](https://github.com/LavaGang/MelonLoader)와 [Prism](https://github.com/ethindp/prism)을 사용해 게임의 메뉴와 화면에 음성 읽기와 점자 출력을 추가하며, 더 편안하게 즐길 수 있도록 추가 조작과 설정도 제공합니다.
 
-현재 소스 버전은 **모드 0.9.13**과 **설치 프로그램 0.2.8**입니다. 첫 공개 릴리스를 준비하고 있습니다.
+**Windows x64용 버전 1.0이 공개되었습니다.** 모드와 설치 프로그램의 소스 버전은 **1.0.0**입니다. 안내에 따라 설치하려면 [설치 프로그램](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-Installer.exe)을, 수동으로 설치하려면 [컴파일된 ZIP](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-v1.0.zip)을 다운로드하세요.
 
 ## 주요 기능
 
@@ -18,7 +18,16 @@ Bop It Access는 Windows x64용 Steam 버전 **Bop It! The Video Game**을 시�
 
 핵심 기능은 대부분 완성되었습니다. 플레이어의 의견을 바탕으로 수정과 개선을 진행하며, 필요에 따라 프로젝트를 유지 관리할 예정입니다. 현재 지원하는 플랫폼은 Windows x64입니다.
 
-이 저장소에는 소스 코드와 문서가 들어 있습니다. **아직 공개 릴리스는 게시되지 않았습니다.** 예정된 릴리스에는 `BopItAccess-Installer.exe`와 컴파일된 `BopItAccess-v1.0.zip`이 제공됩니다. GitHub가 자동으로 생성하는 소스 ZIP과 TAR.GZ에는 소스 코드가 들어 있으며, 바로 설치할 수 있는 모드가 아닙니다. 첫 릴리스 전까지는 설치 프로그램의 **고급 옵션 표시 > 알파 설치** 옵션으로 `main`의 최신 소스를 빌드할 수 있습니다.
+[첫 공개 릴리스 v1.0](https://github.com/Chris-E-Shaw/BopItAccess/releases/tag/v1.0)에는 다음 네 가지 다운로드가 있습니다.
+
+| 다운로드 | 용도 |
+| --- | --- |
+| [BopItAccess-Installer.exe](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-Installer.exe) | 게임을 찾고 필요한 구성 요소와 최신 안정판 모드를 설치하며 업데이트와 제거를 관리하는 접근성 설치 프로그램. |
+| [BopItAccess-v1.0.zip](https://github.com/Chris-E-Shaw/BopItAccess/releases/download/v1.0/BopItAccess-v1.0.zip) | 수동 설치용으로 컴파일된 모드. |
+| [Source code (zip)](https://github.com/Chris-E-Shaw/BopItAccess/archive/refs/tags/v1.0.zip) | 이 릴리스의 코드를 읽거나 빌드하기 위한 소스 파일. |
+| [Source code (tar.gz)](https://github.com/Chris-E-Shaw/BopItAccess/archive/refs/tags/v1.0.tar.gz) | 같은 소스 파일을 다른 형식으로 묶은 압축 파일. |
+
+최신 안정판을 설치하려면 설치 프로그램에서 **Install**을 선택하세요. **Show advanced > Install alpha**는 선택 사항인 실험용 기능으로, 확인을 받은 뒤 `main`의 최신 소스를 빌드합니다. GitHub 소스 압축 파일에는 코드와 문서가 들어 있습니다. 빌드된 모드를 설치하려면 컴파일된 ZIP이나 설치 프로그램을 사용하세요.
 
 Git 커밋이 프로젝트의 변경 기록입니다. 처음 37개 빌드는 각각 별도의 소스 스냅샷으로 가져왔으며, 해당 커밋 날짜는 원래 빌드 날짜가 아니라 가져온 날짜를 나타냅니다. 컴파일된 바이너리, 게임 파일, MelonLoader가 생성한 게임 어셈블리는 이 저장소에 포함되지 않습니다.
 
