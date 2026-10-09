@@ -1,6 +1,6 @@
 Bop It Access 0.9.12 - Prism Parole et Braille
 
-Builds source actuels : mod 0.9.12 (59 builds du mod), installateur 0.2.5. La première publication publique reste à venir.
+Builds source actuels : mod 0.9.12 (59 builds du mod), installateur 0.2.6. La première publication publique reste à venir.
 
 Qu'est-ce que cela fait
 --------------
@@ -481,7 +481,7 @@ SmartScreen est un avertissement séparé. Si vous faites confiance à cet EXE e
 
 Étapes vérifiées le 9 octobre 2026 pour Windows 11 25H2, build 26200.9550. Les libellés peuvent varier ; aucun essai de l’interface n’a été effectué.
 
-Programme d’installation Windows 0.2.5
+Programme d’installation Windows 0.2.6
 --------------------------------------
 
 Installer, mettre à jour ou supprimer avec l’installateur
@@ -493,17 +493,17 @@ Installer, mettre à jour ou supprimer avec l’installateur
 
 Le tableau suivant décrit toutes les actions et tous les champs de texte de la fenêtre principale. Installer status et Installation progress sont des informations, pas des boutons. Welcome and controls contient les instructions réutilisables ; Status log contient les messages changeants. Abort demande confirmation avant d’annuler une installation active ; Quit suit les mêmes règles d’arrêt sûr. Les dialogues proposent Keep open/Quit, confirmation/annulation et les deux portées de préférences à supprimer. Show advanced change seulement les actions visibles.
 
-Utilisez BopItAccess-Installer-0.2.5.exe ou BopItAccess-Installer.exe fourni par le projet. Les deux noms contiennent le même programme d’installation autonome pour Windows x64. Le projet comprend son code source ; aucun binaire compilé public ni GitHub Release n’est encore publié.
+Utilisez BopItAccess-Installer-0.2.6.exe ou BopItAccess-Installer.exe fourni par le projet. Les deux noms contiennent le même programme d’installation autonome pour Windows x64. Le projet comprend son code source ; aucun binaire compilé public ni GitHub Release n’est encore publié.
 
 Fermez Bop It!, ouvrez le programme d’installation et approuvez la demande d’autorisation administrateur de Windows. Le programme d’installation vous accueille, recherche le jeu dans les bibliothèques Steam de tous les lecteurs disponibles et tente de placer sa fenêtre au premier plan. Vérifiez le dossier du jeu affiché ; utilisez Browse si vous devez choisir un autre dossier. La touche Tab permet de passer d’une commande à l’autre. Le journal d’état est un champ de texte en lecture seule : placez-y le focus pour consulter les messages avec les touches de déplacement du curseur, sélectionner du texte ou le copier.
 
-Le programme d’installation 0.2.5 demande brièvement l’activation au premier plan et le focus du clavier au démarrage. Si une autre fenêtre reste active à la fin de sa courte observation initiale, son titre et son bouton de barre des tâches clignotent et il demande de passer au programme d’installation avec Alt+Tab. Activez-le avant d’utiliser ses commandes au clavier ou à la manette. Alt+G place le focus sur le champ du dossier du jeu.
+Le programme d’installation 0.2.6 demande brièvement l’activation au premier plan et le focus du clavier au démarrage. Si une autre fenêtre reste active à la fin de sa courte observation initiale, son titre et son bouton de barre des tâches clignotent et il demande de passer au programme d’installation avec Alt+Tab. Activez-le avant d’utiliser ses commandes au clavier ou à la manette. Alt+G place le focus sur le champ du dossier du jeu.
 
 Show advanced est décoché à l’ouverture du programme d’installation. Cette case affiche Install alpha, Save diagnostics et Copy diagnostics. Install télécharge la dernière version publique publiée sur GitHub lorsqu’il en existe une. Aucune version publique n’est encore disponible ; les testeurs doivent donc actuellement utiliser Show advanced et Install alpha. L’installation alpha demande confirmation, télécharge les sources les plus récentes et les compile sur votre ordinateur. Update apparaît lorsqu’une version publique plus récente est détectée pour une copie déjà installée.
 
 Les messages d’état expliquent simplement ce qui est en cours de téléchargement, d’installation ou de finalisation. Une seule barre indique la progression estimée de l’ensemble de l’installation, sans revenir à zéro pour chaque téléchargement ou fichier. Elle avance par incréments de cinq points de pourcentage ; certaines étapes de préparation peuvent prendre du temps sans changement visible. Le message d’accueil, la disponibilité d’une nouvelle mise à jour et la confirmation de la copie des diagnostics sont transmis à votre lecteur d’écran par les notifications d’accessibilité de Windows. Leur lecture à voix haute dépend de votre lecteur d’écran et de sa prise en charge des notifications Windows.
 
-Le programme d’installation 0.2.5 ne lance jamais Bop It! pendant l’installation. L’installation alpha réutilise les fichiers de compilation locaux correspondants ou prépare des fichiers temporaires à partir de votre propre jeu installé, qui reste fermé. Le programme d’installation place ensuite MelonLoader dans le dossier du jeu et ajoute immédiatement Mods/BopItAccess.dll, puis Prism, les paramètres, la documentation complète et les éléments nécessaires à la désinstallation. Attendez le message de réussite, puis lancez vous-même le jeu depuis Steam lorsque vous êtes prêt.
+Le programme d’installation 0.2.6 ne lance jamais Bop It! pendant l’installation. L’installation alpha réutilise les fichiers de compilation locaux correspondants ou prépare des fichiers temporaires à partir de votre propre jeu installé, qui reste fermé. Le programme d’installation place ensuite MelonLoader dans le dossier du jeu et ajoute immédiatement Mods/BopItAccess.dll, puis Prism, les paramètres, la documentation complète et les éléments nécessaires à la désinstallation. Attendez le message de réussite, puis lancez vous-même le jeu depuis Steam lorsque vous êtes prêt.
 
 Après une installation réussie, Play Bop It! The Video Game apparaît. Activez ce bouton pour lancer vous-même le jeu depuis Steam lorsque vous êtes prêt. Le programme d’installation ne démarre jamais le jeu automatiquement pendant l’installation.
 
@@ -548,7 +548,7 @@ B revient en arrière ou annule une boîte de dialogue ; dans la fenêtre princi
 
 Le champ Welcome and controls séparé liste les raccourcis de lecture du texte à la manette ; Alt+W y revient et Alt+L ouvre le Status log changeant. Les deux champs sont en lecture seule, sélectionnables et consultables. Show advanced annonce coché ou décoché. Tout sélectionner confirme la réussite ou un champ vide. Au clavier, Ctrl+A sélectionne tout le texte et Ctrl+C copie la sélection.
 
-Le programme d’installation 0.2.5 demande que chaque annonce vocale émise remplace la parole précédente de l’installateur, notamment la lecture du texte, Tout sélectionner, l’état coché/décoché de Show advanced, Copy diagnostics et les autres confirmations. LB/RB continue d’annoncer la nouvelle commande ayant le focus. La fréquence des annonces d’état reste identique ; chaque entrée du journal n’est pas lue automatiquement. L’interruption réelle dépend de la prise en charge des notifications Windows par le lecteur d’écran et attend encore une vérification humaine.
+Le programme d’installation 0.2.6 demande que chaque annonce vocale émise remplace la parole précédente de l’installateur, notamment la lecture du texte, Tout sélectionner, l’état coché/décoché de Show advanced, Copy diagnostics et les autres confirmations. LB/RB continue d’annoncer la nouvelle commande ayant le focus. La fréquence des annonces d’état reste identique ; chaque entrée du journal n’est pas lue automatiquement. L’interruption réelle dépend de la prise en charge des notifications Windows par le lecteur d’écran et attend encore une vérification humaine.
 
 Diagnostics du programme d’installation
 ---------------------------------------

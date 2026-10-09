@@ -1,6 +1,6 @@
 Bop It Access 0.9.12 - Prism Sprache und Blindenschrift
 
-Aktuelle Quell-Builds: Mod 0.9.12 (59 Mod-Builds), Installer 0.2.5. Die erste öffentliche Veröffentlichung ist weiterhin geplant.
+Aktuelle Quell-Builds: Mod 0.9.12 (59 Mod-Builds), Installer 0.2.6. Die erste öffentliche Veröffentlichung ist weiterhin geplant.
 
 Was das bewirkt
 --------------
@@ -481,7 +481,7 @@ SmartScreen ist eine separate Warnung. Vertrauen Sie genau dieser EXE und bietet
 
 Schritte geprüft am 9. Oktober 2026 für Windows 11 25H2, Build 26200.9550. Beschriftungen können abweichen; kein UI-Durchlauf wurde durchgeführt.
 
-Windows-Installationsprogramm 0.2.5
+Windows-Installationsprogramm 0.2.6
 -----------------------------------
 
 Mit dem Installer installieren, aktualisieren oder entfernen
@@ -493,17 +493,17 @@ Mit dem Installer installieren, aktualisieren oder entfernen
 
 Die folgende Tabelle nennt jede Aktion und jedes Textfeld im Hauptfenster. Installer status und Installation progress sind Informationen, keine Schaltflächen. Welcome and controls enthält die wiederverwendbaren Anweisungen; Status log die wechselnden Vorgangsmeldungen. Abort fragt vor dem Rückgängigmachen einer laufenden Installation; Quit verwendet dieselben sicheren Abbruchregeln. Dialoge bieten Keep open/Quit, Bestätigung/Abbrechen und die beiden Deinstallationsbereiche. Show advanced ändert nur, welche Aktionen sichtbar sind.
 
-Verwenden Sie die bereitgestellte BopItAccess-Installer-0.2.5.exe oder BopItAccess-Installer.exe. Beide Namen enthalten dasselbe eigenständige Windows-x64-Installationsprogramm. Der Quellcode ist im Projekt enthalten; eine öffentliche kompilierte Datei oder ein GitHub Release wurde noch nicht veröffentlicht.
+Verwenden Sie die bereitgestellte BopItAccess-Installer-0.2.6.exe oder BopItAccess-Installer.exe. Beide Namen enthalten dasselbe eigenständige Windows-x64-Installationsprogramm. Der Quellcode ist im Projekt enthalten; eine öffentliche kompilierte Datei oder ein GitHub Release wurde noch nicht veröffentlicht.
 
 Schließen Sie Bop It!, öffnen Sie das Installationsprogramm und bestätigen Sie die Windows-Abfrage für Administratorrechte. Das Installationsprogramm begrüßt Sie, sucht in den Steam-Bibliotheken auf allen verfügbaren Laufwerken nach dem Spiel und versucht, sein Fenster in den Vordergrund zu bringen. Prüfen Sie den angezeigten Spielordner; verwenden Sie Browse, wenn Sie einen anderen Ordner auswählen müssen. Mit Tab wechseln Sie zwischen den Bedienelementen. Das Statusprotokoll ist ein schreibgeschütztes Textfeld: Setzen Sie den Fokus darauf, um Meldungen mit den Cursortasten zu lesen, Text auszuwählen oder ihn zu kopieren.
 
-Das Installationsprogramm 0.2.5 fordert beim Start kurz Vordergrundaktivierung und Tastaturfokus an. Ist am Ende der begrenzten Startbeobachtung noch ein anderes Fenster aktiv, blinken sein Fenstertitel und seine Taskleistenschaltfläche, und es fordert zum Wechsel mit Alt+Tab auf. Aktivieren Sie das Installationsprogramm, bevor Sie seine Tastatur- oder Controller-Steuerung verwenden. Alt+G setzt den Fokus auf das Spielordnerfeld.
+Das Installationsprogramm 0.2.6 fordert beim Start kurz Vordergrundaktivierung und Tastaturfokus an. Ist am Ende der begrenzten Startbeobachtung noch ein anderes Fenster aktiv, blinken sein Fenstertitel und seine Taskleistenschaltfläche, und es fordert zum Wechsel mit Alt+Tab auf. Aktivieren Sie das Installationsprogramm, bevor Sie seine Tastatur- oder Controller-Steuerung verwenden. Alt+G setzt den Fokus auf das Spielordnerfeld.
 
 Show advanced ist beim Öffnen des Installationsprogramms nicht aktiviert. Damit werden Install alpha, Save diagnostics und Copy diagnostics eingeblendet. Install lädt die neueste öffentliche GitHub-Version herunter, sofern eine vorhanden ist. Es gibt noch keine öffentliche Version, daher benötigen Tester derzeit Show advanced und Install alpha. Die Alpha-Installation bittet um Bestätigung, lädt den neuesten Quellcode herunter und kompiliert ihn auf Ihrem Computer. Update erscheint, wenn für eine installierte Kopie eine neuere öffentliche Version gefunden wird.
 
 Die Statusmeldungen erklären in verständlicher Sprache, was heruntergeladen, installiert oder abgeschlossen wird. Eine einzige Fortschrittsanzeige zeigt den geschätzten Fortschritt der gesamten Installation, ohne für jeden Download oder jede Datei zurückgesetzt zu werden. Sie steigt in Schritten von fünf Prozentpunkten; manche Vorbereitungsschritte können Zeit benötigen, ohne dass eine sichtbare Änderung erfolgt. Die Begrüßung, ein neu verfügbares Update und die Bestätigung, dass Diagnosedaten kopiert wurden, werden über die Windows-Benachrichtigungen zur Barrierefreiheit an Ihren Screenreader gesendet. Ob sie vorgelesen werden, hängt von Ihrem Screenreader und seiner Unterstützung für Windows-Benachrichtigungen ab.
 
-Das Installationsprogramm 0.2.5 startet Bop It! während der Installation niemals. Die Alpha-Installation verwendet passende lokale Builddateien erneut oder bereitet temporäre Dateien aus Ihrem eigenen installierten Spiel vor, während dieses geschlossen bleibt. Anschließend legt das Installationsprogramm MelonLoader im Spielordner ab und fügt sofort Mods/BopItAccess.dll hinzu, gefolgt von Prism, Einstellungen, der vollständigen Dokumentation und der Unterstützung für die Deinstallation. Warten Sie auf die Erfolgsmeldung und starten Sie das Spiel anschließend selbst über Steam, wenn Sie bereit sind.
+Das Installationsprogramm 0.2.6 startet Bop It! während der Installation niemals. Die Alpha-Installation verwendet passende lokale Builddateien erneut oder bereitet temporäre Dateien aus Ihrem eigenen installierten Spiel vor, während dieses geschlossen bleibt. Anschließend legt das Installationsprogramm MelonLoader im Spielordner ab und fügt sofort Mods/BopItAccess.dll hinzu, gefolgt von Prism, Einstellungen, der vollständigen Dokumentation und der Unterstützung für die Deinstallation. Warten Sie auf die Erfolgsmeldung und starten Sie das Spiel anschließend selbst über Steam, wenn Sie bereit sind.
 
 Nach einer erfolgreichen Installation erscheint Play Bop It! The Video Game. Aktivieren Sie diese Schaltfläche, um das Spiel selbst über Steam zu starten, wenn Sie bereit sind. Das Installationsprogramm startet das Spiel während der Installation niemals automatisch.
 
@@ -548,7 +548,7 @@ B geht zurück oder bricht einen Dialog ab; im Hauptfenster des Installationspro
 
 Das separate Welcome and controls-Textfeld nennt die Controller-Textbefehle; Alt+W führt dorthin zurück und Alt+L zum wechselnden Status log. Beide Felder sind schreibgeschützt, auswählbar und überprüfbar. Show advanced meldet aktiviert oder deaktiviert. Alles auswählen bestätigt Erfolg oder ein leeres Feld. Strg+A wählt mit der Tastatur den gesamten Text aus; Strg+C kopiert die Auswahl.
 
-Das Installationsprogramm 0.2.5 fordert für jede ausgegebene Sprachnachricht die Ersetzung früherer Installer-Sprachausgabe an, einschließlich Textprüfung, Alles auswählen, aktiviertem/deaktiviertem Show advanced, Copy diagnostics und weiteren Bestätigungen. LB/RB sagt weiterhin das neue Bedienelement mit Fokus an. Die Häufigkeit der Statusansagen bleibt gleich; nicht jeder Protokolleintrag wird automatisch gesprochen. Die tatsächliche Unterbrechung hängt von der Windows-Benachrichtigungsunterstützung des Screenreaders ab und erfordert noch menschliche Prüfung.
+Das Installationsprogramm 0.2.6 fordert für jede ausgegebene Sprachnachricht die Ersetzung früherer Installer-Sprachausgabe an, einschließlich Textprüfung, Alles auswählen, aktiviertem/deaktiviertem Show advanced, Copy diagnostics und weiteren Bestätigungen. LB/RB sagt weiterhin das neue Bedienelement mit Fokus an. Die Häufigkeit der Statusansagen bleibt gleich; nicht jeder Protokolleintrag wird automatisch gesprochen. Die tatsächliche Unterbrechung hängt von der Windows-Benachrichtigungsunterstützung des Screenreaders ab und erfordert noch menschliche Prüfung.
 
 Diagnose des Installationsprogramms
 -----------------------------------

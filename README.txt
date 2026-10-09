@@ -1,6 +1,6 @@
 Bop It Access 0.9.12 - Prism Speech and Braille
 
-Current source builds: mod 0.9.12 (59 mod builds), installer 0.2.5. The first public release is still upcoming.
+Current source builds: mod 0.9.12 (59 mod builds), installer 0.2.6. The first public release is still upcoming.
 
 What this does
 --------------
@@ -506,7 +506,7 @@ SmartScreen is a separate warning. If you trust the specific downloaded EXE and 
 
 Steps reviewed on 9 October 2026 for Windows 11 25H2, build 26200.9550. Labels can vary; no UI trial was performed.
 
-Windows installer 0.2.5
+Windows installer 0.2.6
 -----------------------
 
 Install, update or remove with the installer
@@ -518,17 +518,17 @@ Install, update or remove with the installer
 
 The table below lists every main-window action and text field. Installer status and Installation progress are information, not buttons. Welcome and controls contains the reusable instructions; Status log contains changing operation messages. Abort asks before reversing an active installation; Quit uses the same safe cancellation rules. Dialog choices include Keep open/ Quit, confirmation/cancel, and the two uninstall preference scopes. Show advanced only changes which actions are visible.
 
-Use the supplied BopItAccess-Installer-0.2.5.exe or BopItAccess-Installer.exe. Both names provide the same self-contained Windows x64 installer. Its source is included in the project; no public compiled binary or GitHub Release is published yet.
+Use the supplied BopItAccess-Installer-0.2.6.exe or BopItAccess-Installer.exe. Both names provide the same self-contained Windows x64 installer. Its source is included in the project; no public compiled binary or GitHub Release is published yet.
 
 Close Bop It!, open the installer and approve the Windows administrator prompt. The installer welcomes you, looks for the game in Steam libraries on all available drives, and tries to bring its window to the foreground. Check the displayed game folder; use Browse if you need to choose another folder. Tab moves between controls. The status log is a read-only text field: focus it to review messages with cursor keys, select text, or copy it.
 
-Installer 0.2.5 briefly requests foreground activation and keyboard focus. If its bounded startup observation ends with another window still active, it flashes its title and taskbar button and asks you to use Alt+Tab to switch to the installer. Activate the installer before using its keyboard or controller controls. Alt+G focuses the game-folder field.
+Installer 0.2.6 briefly requests foreground activation and keyboard focus. If its bounded startup observation ends with another window still active, it flashes its title and taskbar button and asks you to use Alt+Tab to switch to the installer. Activate the installer before using its keyboard or controller controls. Alt+G focuses the game-folder field.
 
 Show advanced is unchecked when the installer opens. It reveals Install alpha, Save diagnostics and Copy diagnostics. Install downloads the latest public GitHub release when one exists. There is no public release yet, so testers currently need Show advanced and Install alpha. Alpha asks for confirmation, downloads the latest source and builds it on your computer. Update appears when a newer public release is found for an installed copy.
 
 Status messages explain what is downloading, installing or finishing in plain language. One progress bar shows estimated progress for the whole installation, without resetting for each download or file. It advances in five-percentage-point increments; some preparation stages may take time without a visible change. The welcome message, a newly available update and confirmation that diagnostics were copied are sent through Windows accessibility notifications to your screen reader. Whether these are spoken depends on your screen reader and its Windows notification support.
 
-Installer 0.2.5 never launches Bop It! during installation. Alpha reuses matching local build files or prepares temporary files from your own installed game while it stays closed. The installer then places MelonLoader in the game folder and immediately adds Mods/BopItAccess.dll, followed by Prism, settings, the complete documentation and uninstall support. Wait for the success message, then launch the game yourself through Steam when you are ready.
+Installer 0.2.6 never launches Bop It! during installation. Alpha reuses matching local build files or prepares temporary files from your own installed game while it stays closed. The installer then places MelonLoader in the game folder and immediately adds Mods/BopItAccess.dll, followed by Prism, settings, the complete documentation and uninstall support. Wait for the success message, then launch the game yourself through Steam when you are ready.
 
 After a successful installation, Play Bop It! The Video Game appears. Activate it to launch the game yourself through Steam when you are ready. The installer never starts the game automatically during installation.
 
@@ -573,7 +573,7 @@ B goes back or cancels a dialog; on the main installer window it asks to abort a
 
 The separate Welcome and controls text field lists the controller text-review shortcuts; use Alt+W to return to it and Alt+L for the changing Status log. Both fields are read-only, selectable and reviewable. Changing Show advanced announces checked or unchecked. Selecting all confirms success or an empty field. Keyboard Ctrl+A selects all text; Ctrl+C copies the selection.
 
-Installer 0.2.5 requests that every speech announcement it emits replace earlier installer speech, including text review, Select All, Show advanced checked/unchecked, Copy diagnostics and other confirmations. LB/RB continues to announce the newly focused control. Status messages keep their existing announcement frequency; not every log entry is spoken automatically. Actual interruption depends on the screen reader’s Windows notification support and still needs human verification.
+Installer 0.2.6 requests that every speech announcement it emits replace earlier installer speech, including text review, Select All, Show advanced checked/unchecked, Copy diagnostics and other confirmations. LB/RB continues to announce the newly focused control. Status messages keep their existing announcement frequency; not every log entry is spoken automatically. Actual interruption depends on the screen reader’s Windows notification support and still needs human verification.
 
 Installer diagnostics
 ---------------------

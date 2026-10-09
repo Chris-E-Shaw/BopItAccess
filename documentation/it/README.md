@@ -1,6 +1,6 @@
 # Bop It Access
 
-Build sorgente attuali: mod 0.9.12 (59 build del mod), installer 0.2.5. La prima pubblicazione pubblica è ancora futura.
+Build sorgente attuali: mod 0.9.12 (59 build del mod), installer 0.2.6. La prima pubblicazione pubblica è ancora futura.
 
 Bop It Access è una mod di accessibilità non ufficiale per la versione Windows Steam di **Bop It!**. Utilizza MelonLoader e [Prism](https://github.com/ethindp/prism) per aggiungere feedback vocale e braille ai menu e alle schermate di gioco. Le funzionalità attuali includono una schermata di benvenuto di prima esecuzione, una guida per l'utente in-game, titolo parlato e schermate di pausa, impostazioni e controlli, selezione di brani, punteggi finali e classifiche, risultati, crediti, suggerimenti sui pulsanti, testo tutorial su richiesta con i controlli correnti assegnazioni prima di un round e descrizioni delle quattro fasi. La versione 0.9.0 utilizza Prism per l'output vocale e braille. La mod segue la lingua selezionata dal gioco e include una guida per ogni lingua offerta dal gioco.
 
@@ -182,7 +182,7 @@ SmartScreen è un avviso separato. Se ti fidi di quel preciso EXE e Windows lo o
 
 Passaggi verificati il 9 ottobre 2026 per Windows 11 25H2, build 26200.9550. Le etichette possono variare; nessuna prova dell’interfaccia è stata eseguita.
 
-## Programma di installazione Windows 0.2.5
+## Programma di installazione Windows 0.2.6
 
 ### Installare, aggiornare o rimuovere con l’installer
 
@@ -193,17 +193,17 @@ Passaggi verificati il 9 ottobre 2026 per Windows 11 25H2, build 26200.9550. Le 
 
 La tabella seguente elenca ogni azione e campo di testo della finestra principale. Installer status e Installation progress sono informazioni, non pulsanti. Welcome and controls contiene istruzioni riutilizzabili; Status log contiene i messaggi variabili. Abort chiede prima di annullare un’installazione attiva; Quit usa le stesse regole di cancellazione sicura. I dialoghi includono Keep open/Quit, conferma/annulla e i due ambiti delle preferenze da rimuovere. Show advanced cambia solo le azioni visibili.
 
-Usa BopItAccess-Installer-0.2.5.exe oppure BopItAccess-Installer.exe fornito dal progetto. Entrambi i nomi contengono lo stesso programma di installazione autonomo per Windows x64. Il progetto include il codice sorgente; non è ancora pubblicato alcun binario compilato pubblico o GitHub Release.
+Usa BopItAccess-Installer-0.2.6.exe oppure BopItAccess-Installer.exe fornito dal progetto. Entrambi i nomi contengono lo stesso programma di installazione autonomo per Windows x64. Il progetto include il codice sorgente; non è ancora pubblicato alcun binario compilato pubblico o GitHub Release.
 
 Chiudi Bop It!, apri il programma di installazione e approva la richiesta di autorizzazione come amministratore di Windows. Il programma di installazione ti dà il benvenuto, cerca il gioco nelle librerie Steam di tutte le unità disponibili e tenta di portare la propria finestra in primo piano. Controlla la cartella del gioco visualizzata; usa Browse se devi scegliere un’altra cartella. Tab passa da un controllo all’altro. Il registro di stato è un campo di testo di sola lettura: portaci il focus per esaminare i messaggi con i tasti di spostamento del cursore, selezionare il testo o copiarlo.
 
-Il programma di installazione 0.2.5 richiede brevemente attivazione in primo piano e focus della tastiera all’avvio. Se al termine della sua breve osservazione iniziale è ancora attiva un’altra finestra, fa lampeggiare il titolo e il pulsante sulla barra delle applicazioni e chiede di passare al programma con Alt+Tab. Attivalo prima di usare i suoi comandi da tastiera o controller. Alt+G porta il focus sul campo della cartella del gioco.
+Il programma di installazione 0.2.6 richiede brevemente attivazione in primo piano e focus della tastiera all’avvio. Se al termine della sua breve osservazione iniziale è ancora attiva un’altra finestra, fa lampeggiare il titolo e il pulsante sulla barra delle applicazioni e chiede di passare al programma con Alt+Tab. Attivalo prima di usare i suoi comandi da tastiera o controller. Alt+G porta il focus sul campo della cartella del gioco.
 
 Show advanced è deselezionato all’apertura del programma di installazione. Mostra Install alpha, Save diagnostics e Copy diagnostics. Install scarica l’ultima versione pubblica di GitHub quando disponibile. Non esiste ancora una versione pubblica, quindi al momento chi esegue i test deve usare Show advanced e Install alpha. L’installazione alpha chiede conferma, scarica i sorgenti più recenti e li compila sul tuo computer. Update compare quando viene trovata una versione pubblica più recente per una copia installata.
 
 I messaggi di stato spiegano con parole semplici cosa viene scaricato, installato o completato. Una sola barra mostra l’avanzamento stimato dell’intera installazione, senza azzerarsi per ogni download o file. Avanza a incrementi di cinque punti percentuali; alcune fasi di preparazione possono richiedere tempo senza cambiamenti visibili. Il messaggio di benvenuto, la disponibilità di un nuovo aggiornamento e la conferma della copia della diagnostica vengono inviati al lettore di schermo tramite le notifiche di accessibilità di Windows. La loro lettura ad alta voce dipende dal lettore di schermo e dal suo supporto alle notifiche di Windows.
 
-Il programma di installazione 0.2.5 non avvia mai Bop It! durante l’installazione. L’installazione alpha riutilizza i file locali di compilazione corrispondenti oppure prepara file temporanei dalla tua copia del gioco installata, che rimane chiusa. Il programma di installazione colloca quindi MelonLoader nella cartella del gioco e aggiunge subito Mods/BopItAccess.dll, seguito da Prism, impostazioni, documentazione completa e supporto alla disinstallazione. Attendi il messaggio di riuscita, poi avvia tu il gioco tramite Steam quando sei pronto.
+Il programma di installazione 0.2.6 non avvia mai Bop It! durante l’installazione. L’installazione alpha riutilizza i file locali di compilazione corrispondenti oppure prepara file temporanei dalla tua copia del gioco installata, che rimane chiusa. Il programma di installazione colloca quindi MelonLoader nella cartella del gioco e aggiunge subito Mods/BopItAccess.dll, seguito da Prism, impostazioni, documentazione completa e supporto alla disinstallazione. Attendi il messaggio di riuscita, poi avvia tu il gioco tramite Steam quando sei pronto.
 
 Dopo un’installazione riuscita compare Play Bop It! The Video Game. Attiva questo pulsante per avviare tu il gioco tramite Steam quando sei pronto. Il programma di installazione non avvia mai automaticamente il gioco durante l’installazione.
 
@@ -248,7 +248,7 @@ B torna indietro o annulla una finestra di dialogo; nella finestra principale de
 
 Il campo Welcome and controls separato elenca le scorciatoie di lettura con controller; Alt+W vi ritorna e Alt+L apre il Status log variabile. Entrambi sono di sola lettura, selezionabili e consultabili. Show advanced annuncia selezionato o non selezionato. Seleziona tutto conferma il successo o un campo vuoto. Da tastiera, Ctrl+A seleziona tutto il testo e Ctrl+C copia la selezione.
 
-Il programma di installazione 0.2.5 richiede che ogni annuncio vocale emesso sostituisca la voce precedente dell’installer, inclusi lettura del testo, Seleziona tutto, stato selezionato/non selezionato di Show advanced, Copy diagnostics e altre conferme. LB/RB continua ad annunciare il nuovo controllo con il focus. La frequenza degli annunci di stato resta invariata; non ogni voce del registro viene letta automaticamente. L’interruzione effettiva dipende dal supporto delle notifiche Windows del lettore di schermo e richiede ancora una verifica umana.
+Il programma di installazione 0.2.6 richiede che ogni annuncio vocale emesso sostituisca la voce precedente dell’installer, inclusi lettura del testo, Seleziona tutto, stato selezionato/non selezionato di Show advanced, Copy diagnostics e altre conferme. LB/RB continua ad annunciare il nuovo controllo con il focus. La frequenza degli annunci di stato resta invariata; non ogni voce del registro viene letta automaticamente. L’interruzione effettiva dipende dal supporto delle notifiche Windows del lettore di schermo e richiede ancora una verifica umana.
 
 ### Diagnostica del programma di installazione
 

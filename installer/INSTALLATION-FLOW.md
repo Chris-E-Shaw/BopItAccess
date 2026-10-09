@@ -1,6 +1,6 @@
 # Installer installation flow
 
-Installer **0.2.5** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod is **0.9.12** (**59 mod builds**). The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game. After a successful installation, **Play Bop It! The Video Game** (Alt+P) offers a separate, explicitly requested Steam launch; it is never invoked automatically as an installation step.
+Installer **0.2.6** prepares and deploys Bop It Access without launching `BopIt!.exe`. The mod is **0.9.12** (**59 mod builds**). The installer process can run dependency installers and background assembly/compiler tools; the player decides when to launch the game. After a successful installation, **Play Bop It! The Video Game** (Alt+P) offers a separate, explicitly requested Steam launch; it is never invoked automatically as an installation step.
 
 ## Evidence and scope
 
@@ -11,7 +11,7 @@ The installer formerly started the game to generate source-build references. Tha
 ## Common preparation
 
 1. Validate the selected Steam game folder, existing ownership ledger and whether the game is already running. Installation or update requires the game to be closed.
-2. Create a unique temporary working folder outside the game directory. Inspect prerequisites for the selected release or alpha action.
+2. Create a unique temporary working folder outside the game directory. Inspect prerequisites for the selected release or alpha action. For alpha, validate and pin the latest main-branch SHA before dependency downloads or shared Microsoft setup.
 3. Reuse the pinned MelonLoader installation when its required files match, or download and extract the verified official x64 MelonLoader **0.7.3 Open-Beta** archive into temporary staging.
 4. Prepare the official Windows x64 Prism **0.18.3** payload and notices, verifying the archive and DLL. A matching installed DLL is reused, while notices are still supplied.
 5. Download the mod payload: the latest published GitHub release ZIP for Install/Update, or the exact latest `main` commit's source archive for Install alpha. The alpha warning remains required.
@@ -172,7 +172,7 @@ During preparation of preview **0.2.2**, the user had confirmed **0.2.1** contro
 
 At the earliest managed startup, request `AllowSetForegroundWindow` for the installer's own PID and record grant/denial. This preserves existing legitimate permission when possible, without creating missing permission or changing Windows policy. Record the earliest managed foreground executable name/handle, administrator-token state and native process age, using executable names only and omitting other applications' titles, paths and command lines. Process context does not establish the exact reason for a foreground denial or directly observe preceding UAC interaction.
 
-Observe startup on a 125 ms timer for at most two seconds. Request activation once per distinct foreground window, at most three requests; confirm foreground before setting keyboard focus and require 250 ms of stable foreground/control focus before completing. Stop for fresh user input, deliberate enabled-control focus changes, operations and owned popups. Remove the temporary topmost pulse. If the deadline or transition limit leaves another window active, flash the caption/taskbar three times and append visible Alt+Tab guidance, using an important, recent native UI Automation notification to supersede lengthy welcome speech. In 0.2.2, the full welcome was kept in the log; current 0.2.5 keeps it in the separate **Welcome and controls** field (Alt+W), while Status log (Alt+L) holds operation messages. A denied second launch uses the same attention guidance and keeps an existing popup's focused control.
+Observe startup on a 125 ms timer for at most two seconds. Request activation once per distinct foreground window, at most three requests; confirm foreground before setting keyboard focus and require 250 ms of stable foreground/control focus before completing. Stop for fresh user input, deliberate enabled-control focus changes, operations and owned popups. Remove the temporary topmost pulse. If the deadline or transition limit leaves another window active, flash the caption/taskbar three times and append visible Alt+Tab guidance, using an important, recent native UI Automation notification to supersede lengthy welcome speech. In 0.2.2, the full welcome was kept in the log; current 0.2.6 keeps it in the separate **Welcome and controls** field (Alt+W), while Status log (Alt+L) holds operation messages. A denied second launch uses the same attention guidance and keeps an existing popup's focused control.
 
 Y, the top face button, selects all in a focused installer text field, including local native edit controls. Confirm “All text selected.” or “No text to select.” Managed selection retains its start anchor and active end so subsequent RT directions can adjust it. Outside text fields on the main window, Y toggles Show advanced; it does not change advanced controls in other dialogs. X continues copying only the current selection. Foreground scoping remains required.
 
@@ -194,7 +194,7 @@ Installer **0.2.3** publishes with zero warnings and zero errors; the whitespace
 
 ## Recent announcement replacement in installer 0.2.4
 
-Historical delivery record: installer **0.2.4** compiled to `build/installer/BopItAccess.Installer.exe`. The copies `BopItAccess-Installer-0.2.4.exe` and the identical `BopItAccess-Installer.exe` were delivered separately in `C:\Users\Chris\Documents\Codex`, without a preview label. No public binary, GitHub Release or tag was published. The current supplied build is **0.2.5**, with the separate Welcome field described below.
+Historical delivery record: installer **0.2.4** compiled to `build/installer/BopItAccess.Installer.exe`. The copies `BopItAccess-Installer-0.2.4.exe` and the identical `BopItAccess-Installer.exe` were delivered separately in `C:\Users\Chris\Documents\Codex`, without a preview label. No public binary, GitHub Release or tag was published. The current supplied build is **0.2.6**, with the separate Welcome field described below.
 
 Every speech announcement emitted by the installer requests replacement of earlier installer speech. The central policy uses `ImportantMostRecent` for important feedback and `MostRecent` for ordinary feedback, including controller text review; there is no per-call `replacePending` opt-in. Select All, selected-text copy, Show advanced state, diagnostics confirmations, welcome/update/dialog messages and attention all use that policy. Status-log announcement frequency is unchanged, so appending a status line does not necessarily speak it.
 
@@ -214,6 +214,20 @@ The manual route creates no installer ownership record, helper or Windows uninst
 
 `scripts/package-mod.ps1` prepares the known compiled mod/configuration/documentation/Prism payload from an already built matching DLL, checks source/DLL versions, and keeps staging/archive local; it compiles nothing. The main mod is **0.9.12**, with **59 mod builds**. The new history entries record compile/static evidence separately from pending human verification. No automated tests or installer/game/UI execution is performed, and no GitHub Release or tag is published.
 
-Static inspection of the final executable confirms source revision fabc32d48754bf53f266656d67b356bc9d0841d3, three exact embedded-resource source matches, the matching bundled main DLL and no installer-specific language satellites.
+Static inspection of the 0.2.5 executable confirmed source revision fabc32d48754bf53f266656d67b356bc9d0841d3, three exact embedded-resource source matches, the matching bundled main DLL and no installer-specific language satellites.
 
 The local compiled **0.9.12** ZIP has now been created successfully with `scripts/package-mod.ps1`. It contains the **70 documentation files**, the mod and Prism DLLs, the declared configuration/shortcut files and Prism notices/licences. This local archive is separate from the still-upcoming public v1.0 release. Package creation and static inspection do not verify installation or speech; no automated tests or app/game execution was performed.
+
+## Source-reference preparation and metadata bounds in 0.2.6
+
+The **0.2.5** tester log downloaded the Microsoft SDK, MelonLoader and Prism successfully, then failed at the latest-source lookup: `/commits/main` returned commit metadata and patches exceeding the one-megabyte client buffer. That response-limit failure does not demonstrate that Internet access was unavailable.
+
+For Install alpha, **0.2.6** first verifies the embedded templates and resolves `/git/ref/heads/main` to the expected main ref, a `commit` object and a 40-character ASCII hexadecimal SHA. The 1–3% **Checking the latest alpha version** phase occurs before dependency downloads and shared Microsoft installation. Reuse that exact SHA for the later source archive instead of resolving it after those side effects. Existing preparation, deployment and rollback rules remain.
+
+Metadata requests use `ResponseHeadersRead`, an **8 MiB** declared/streamed-byte limit and one **30-second deadline** across response headers, body and JSON parsing. HTTPS, JSON media type, body completeness, parse validity and object shape are checked; user cancellation is preserved separately from timeout. Release metadata uses the same bounded path, with the normal no-public-release case retained. Binary package downloads keep their separate policy.
+
+Failure feedback identifies HTTP status classes, transport/TLS/proxy failures, response limits, invalid metadata and timeouts without treating every request exception as an offline connection. Startup update checks use that classification, with full technical exceptions in diagnostics. This changes metadata preparation and failure accuracy, not the player’s controls or installation choices.
+
+Human verification of the new lookup and installation remains pending. No automated tests or installer, uninstaller, game, controller or screen-reader execution is performed. Only the installer changes: the main mod remains **0.9.12**, with **59 mod builds**, and no new mod DLL, public release or tag is created.
+
+Installer **0.2.6** published with zero warnings and errors from source revision c46a77811be8a1175d3dd6305f21568bc59d616b. Static inspection confirms that all three embedded resources exactly match source, the single-file bundle contains the matching inspected main DLL, and no installer-specific language satellite resources are present. Independent read-only review accepted the change. These are compilation and static results, not runtime verification; the mod DLL remains unchanged.
