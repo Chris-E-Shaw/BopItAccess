@@ -25,8 +25,8 @@ internal sealed class InstallerForm : Form
     private readonly Button _quit = new();
     private readonly Label _stateLabel = new();
     private readonly ProgressBar _progress = new();
-    private readonly TextBox _statusLog = new();
-    private readonly TextBox _welcomeText = new();
+    private readonly InstallerReviewTextBox _statusLog = new("Status log.", "Alt+L");
+    private readonly InstallerReviewTextBox _welcomeText = new("Welcome and controls.", "Alt+W");
     private InstallerState _state = new(null, false, false, false, false, false, null);
     private CancellationTokenSource? _operationCancellation;
     private readonly CancellationTokenSource _initializationCancellation = new();
@@ -101,8 +101,6 @@ internal sealed class InstallerForm : Form
         _welcomeText.ScrollBars = ScrollBars.Vertical;
         _welcomeText.WordWrap = true;
         _welcomeText.Text = WelcomeText;
-        _welcomeText.AccessibleName = "Installer welcome and controls";
-        _welcomeText.AccessibleDescription = "Read-only, selectable welcome instructions. Alt+W returns here. Arrow keys or the controller D-pad review text; LT moves by word or paragraph, RT selects, Y selects all, and X copies the selection. Bumpers move between fields.";
         _welcomeText.TabIndex = 1;
         _welcomeText.Select(0, 0);
         welcomePanel.Controls.Add(welcomeLabel, 0, 0);
@@ -165,19 +163,22 @@ internal sealed class InstallerForm : Form
         };
         ConfigureAction(_install, "&Install", "Install the latest release", 3,
             async () => await RunOperationAsync(_service.InstallReleaseAsync,
-                "Bop It Access was installed."));
+                "Bop It Access was installed.", "Installing Bop It Access."));
         ConfigureAction(_installAlpha, "Install &alpha", "Install an alpha build", 4,
             async () =>
             {
                 if (!Confirm("You are about to install bleeding-edge code from the latest GitHub commit. It may be unstable. Continue?",
                         "Install alpha"))
+                {
+                    ReportAction("Alpha installation cancelled.");
                     return;
+                }
                 await RunOperationAsync(_service.InstallAlphaAsync,
-                    "The Bop It Access alpha was installed.");
+                    "The Bop It Access alpha was installed.", "Installing the Bop It Access alpha.");
             });
         ConfigureAction(_update, "&Update", "Update Bop It Access", 5,
             async () => await RunOperationAsync(_service.UpdateAsync,
-                "Bop It Access was updated."));
+                "Bop It Access was updated.", "Updating Bop It Access."));
         ConfigureAction(_uninstall, "U&ninstall", "Uninstall Bop It Access", 6,
             UninstallRequestedAsync);
         _abort.Text = "Abo&rt";
@@ -232,8 +233,6 @@ internal sealed class InstallerForm : Form
         _statusLog.MaxLength = int.MaxValue;
         _statusLog.ScrollBars = ScrollBars.Vertical;
         _statusLog.WordWrap = true;
-        _statusLog.AccessibleName = "Installer status log";
-        _statusLog.AccessibleDescription = "Read-only, selectable operation messages. Controller D-pad reviews text; LT moves by word or paragraph, RT selects, Y selects all, and X copies the selection. Bumpers move between fields.";
         _statusLog.TabIndex = 1;
         logPanel.Controls.Add(logLabel, 0, 0);
         logPanel.Controls.Add(_statusLog, 0, 1);
@@ -295,7 +294,7 @@ internal sealed class InstallerForm : Form
                     AppendStatus(message);
                     InstallerFeedback.Announce(this, message, important: true, allowBackground: true);
                 },
-                _ => AnnounceInitialWelcome());
+                _ => _welcomeText.AnnounceFocus());
             _gamepad = new InstallerGamepad(this, RequestQuit,
                 () => _showAdvanced.Checked = !_showAdvanced.Checked,
                 () => { if (_operationCancellation != null && _allowAbort) RequestAbortWithConfirmation(); else RequestQuit(); });
@@ -320,25 +319,6 @@ internal sealed class InstallerForm : Form
         Size = new Size(Math.Min(Width, working.Width), Math.Min(Height, working.Height));
         Location = new Point(working.Left + (working.Width - Width) / 2,
             working.Top + (working.Height - Height) / 2);
-    }
-
-    private void AnnounceInitialWelcome()
-    {
-        long generation = InstallerFeedback.PostedGeneration;
-        try
-        {
-            // Let the native focus event arrive first, then replace it with
-            // one full welcome message. A user's next action takes priority.
-            _welcomeText.BeginInvoke((Action)(() =>
-            {
-                if (IsDisposed || Disposing || !_welcomeText.Focused ||
-                    _welcomeText.SelectionStart != 0 || _welcomeText.SelectionLength != 0 ||
-                    InstallerFeedback.PostedGeneration != generation) return;
-                InstallerFeedback.Announce(_welcomeText, WelcomeText, important: true);
-            }));
-        }
-        catch (InvalidOperationException) when (IsDisposed || Disposing || !_welcomeText.IsHandleCreated)
-        { /* The form closed before its startup announcement was posted. */ }
     }
 
     private void ConfigureAction(Button button, string text, string accessibleName,
@@ -386,10 +366,16 @@ internal sealed class InstallerForm : Form
             ShowNewFolderButton = false,
             SelectedPath = Directory.Exists(_gamePath.Text) ? _gamePath.Text : string.Empty
         };
+        ReportAction("Choose the Bop It! game folder.");
         if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            ReportAction("Game folder selection cancelled.");
             return;
+        }
         _gamePath.Text = dialog.SelectedPath;
         ApplyGamePath();
+        ReportAction(_state.ValidGamePath ? "Bop It! game folder selected."
+            : "Bop It! was not found in that folder. Choose the folder that contains the game.");
     }
 
     private void ApplyGamePath()
@@ -415,21 +401,31 @@ internal sealed class InstallerForm : Form
     {
         if (!Confirm("Uninstall Bop It Access from the selected game folder?",
                 "Confirm uninstall"))
+        {
+            ReportAction("Uninstallation cancelled.");
             return;
+        }
         string account = UninstallRequestUser.ResolveName(_uninstallUserSid);
         using var scopeDialog = new InstallerDialog("Uninstall preferences",
             "Mod files in this game folder will be removed for everyone. Shared support needed by other mods will be kept. Choose whose Windows preference settings to remove. " +
             $"Uninstall for me removes preferences for {account}. Uninstall for everyone removes preferences from all local Windows profiles. The .NET SDK remains installed.",
             new[] { ("Uninstall for &me", DialogResult.Yes), ("Uninstall for &everyone", DialogResult.No), ("&Cancel", DialogResult.Cancel) }, DialogResult.Cancel);
         DialogResult choice = scopeDialog.ShowDialog(this);
-        if (choice is not (DialogResult.Yes or DialogResult.No)) return;
+        if (choice is not (DialogResult.Yes or DialogResult.No))
+        {
+            ReportAction("Uninstallation cancelled.");
+            return;
+        }
         var scope = choice == DialogResult.Yes ? UninstallPreferenceScope.CurrentUser : UninstallPreferenceScope.AllUsers;
         await RunOperationAsync(ct => _service.UninstallAsync(scope, ct, _uninstallUserSid),
-            "Bop It Access was uninstalled.", uninstall: true);
+            "Bop It Access was uninstalled.",
+            scope == UninstallPreferenceScope.CurrentUser
+                ? "Uninstalling Bop It Access and your preferences."
+                : "Uninstalling Bop It Access and preferences for everyone.", uninstall: true);
     }
 
     private async Task RunOperationAsync(Func<CancellationToken, Task> operation,
-        string successMessage, bool uninstall = false)
+        string successMessage, string startingMessage, bool uninstall = false)
     {
         if (_operationCancellation != null || _state.Busy)
             return;
@@ -438,7 +434,7 @@ internal sealed class InstallerForm : Form
             (uninstall && !_state.Installed && _service.LastUninstallWarningCount == 0))
         {
             _gamePath.Focus();
-            AppendStatus("Select a valid Bop It game folder first.");
+            ReportAction("Select a valid Bop It game folder first.");
             return;
         }
 
@@ -455,6 +451,7 @@ internal sealed class InstallerForm : Form
         UpdateActions();
         try
         {
+            ReportAction(startingMessage);
             _backendTask = Task.Run(() => operation(cancellation.Token), cancellation.Token);
             await _backendTask;
             // Normal return means installation committed or uninstall finished.
@@ -504,15 +501,22 @@ internal sealed class InstallerForm : Form
             return;
         CancellationTokenSource operation = _operationCancellation;
         if (!Confirm("Abort the current operation?", "Confirm abort"))
+        {
+            ReportAction("Abort cancelled. No abort was requested.");
             return;
+        }
         // The modal confirmation pumps UI messages. The operation can finish
         // and dispose its token while the player is deciding what to do.
-        if (!ReferenceEquals(_operationCancellation, operation) || _backendTask?.IsCompleted != false || _service.IsInstallationCommitted) return;
+        if (!ReferenceEquals(_operationCancellation, operation) || _backendTask?.IsCompleted != false || _service.IsInstallationCommitted)
+        {
+            ReportAction("The operation has already finished or stopped. Nothing was aborted.");
+            return;
+        }
         _abortRequested = true;
         _abort.Enabled = false;
         _service.RequestAbort();
         operation.Cancel();
-        AppendStatus("Stopping installation and undoing changes. Please wait.");
+        ReportAction("Stopping installation and undoing changes. Please wait.");
     }
 
     private void RequestQuit()
@@ -541,6 +545,7 @@ internal sealed class InstallerForm : Form
             if (choice != DialogResult.Yes)
             {
                 if (_deferredCompletion is string deferred) { _deferredCompletion = null; InstallerDialog.ShowMessage(this, deferred); }
+                else ReportAction("Installer kept open.");
                 return;
             }
             if (_operationCancellation != null && _backendTask?.IsCompleted == false)
@@ -551,22 +556,28 @@ internal sealed class InstallerForm : Form
                     _abortRequested = true;
                     _service.RequestAbort();
                     _operationCancellation.Cancel();
-                    AppendStatus("Stopping installation and undoing changes before closing. Please wait.");
+                    ReportAction("Stopping installation and undoing changes before closing. Please wait.");
                 }
-                else AppendStatus("The installer will close when the current operation finishes.");
+                else ReportAction("The installer will close when the current operation finishes.");
                 UpdateActions();
                 return;
             }
             // A completed backend must finish its UI bookkeeping before disposal.
-            if (_operationCancellation != null) { _exitAfterOperation = true; return; }
+            if (_operationCancellation != null)
+            {
+                _exitAfterOperation = true;
+                ReportAction("The installer will close when the current operation finishes.");
+                return;
+            }
         }
         if (_initializationRunning)
         {
             _closeAfterInitialization = true;
             _initializationCancellation.Cancel();
-            AppendStatus("Closing the installer. Please wait for the current check to stop.");
+            ReportAction("Closing the installer. Please wait for the current check to stop.");
             return;
         }
+        ReportAction("Closing the installer.");
         _quitApproved = true;
         Close();
     }
@@ -629,6 +640,9 @@ internal sealed class InstallerForm : Form
         ApplyGamePath();
         try
         {
+            // Steam can immediately take foreground focus. Post the requested
+            // action while this window is still active; never speak over the game.
+            ReportAction("Opening Bop It! through Steam.");
             _service.PlayGame();
             AppendStatus("Opening Bop It! through Steam. The game may take a minute or longer to prepare the mod on its first launch.");
         }
@@ -691,6 +705,12 @@ internal sealed class InstallerForm : Form
         }
     }
 
+    private void ReportAction(string message)
+    {
+        AppendStatus(message);
+        InstallerFeedback.Announce(this, message, important: true);
+    }
+
     private void SaveDiagnostics()
     {
         using var dialog = new SaveFileDialog
@@ -702,7 +722,12 @@ internal sealed class InstallerForm : Form
             FileName = "BopItAccess-Installer-" + _service.Diagnostics.SessionId + ".log",
             InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments)
         };
-        if (dialog.ShowDialog(this) != DialogResult.OK) return;
+        ReportAction("Choose where to save installer diagnostics.");
+        if (dialog.ShowDialog(this) != DialogResult.OK)
+        {
+            ReportAction("Saving diagnostics cancelled.");
+            return;
+        }
         try
         {
             _service.Diagnostics.SaveRecording(dialog.FileName);

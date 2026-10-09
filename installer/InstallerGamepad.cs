@@ -241,6 +241,13 @@ internal sealed class InstallerGamepad : IDisposable
 
     private void QueueFocusFeedback(Target target, Control destination)
     {
+        // These fields supply the same concise focus feedback for keyboard and
+        // controller users. A second handoff must not repeat that announcement.
+        if (destination is InstallerReviewTextBox review)
+        {
+            review.AnnounceFocus();
+            return;
+        }
         if (!destination.IsHandleCreated) return;
         var pending = new PendingFocusFeedback(target, destination, destination.Handle, _focusFeedbackGeneration,
             InstallerFeedback.PostedGeneration);
@@ -280,6 +287,7 @@ internal sealed class InstallerGamepad : IDisposable
             name = control is TextBoxBase ? "Text" : control.Text.Replace("&", string.Empty, StringComparison.Ordinal);
         return control switch
         {
+            InstallerReviewTextBox review => review.FocusAnnouncement,
             CheckBox check => $"{name}, checkbox, {check.CheckState switch { CheckState.Checked => "checked", CheckState.Indeterminate => "mixed", _ => "unchecked" }}.",
             RadioButton radio => $"{name}, radio button, {(radio.Checked ? "checked" : "unchecked")}.",
             TextBoxBase box when box.Multiline => $"{name}, {(box.ReadOnly ? "read only " : string.Empty)}multiline text field" +

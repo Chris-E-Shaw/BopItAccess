@@ -8,6 +8,7 @@ internal sealed class InstallerDialog : Form
     private readonly TextBox _message = new();
     private readonly Dictionary<DialogResult, Button> _buttons = new();
     private readonly System.Windows.Forms.Timer? _refresh;
+    private bool _choiceAnnounced;
 
     internal InstallerDialog(string title, string message,
         IEnumerable<(string Label, DialogResult Result)> choices, DialogResult defaultChoice,
@@ -40,6 +41,14 @@ internal sealed class InstallerDialog : Form
         {
             var button = new Button { Text = choice.Label, AutoSize = true, DialogResult = choice.Result, TabIndex = index++ };
             button.AccessibleName = choice.Label.Replace("&", "", StringComparison.Ordinal);
+            button.Click += (_, _) =>
+            {
+                // Post synchronously on the still-visible dialog. A queued
+                // callback would lose its provider when ShowDialog returns.
+                _choiceAnnounced = true;
+                _refresh?.Stop();
+                InstallerFeedback.Announce(this, button.AccessibleName + ".", important: true);
+            };
             actions.Controls.Add(button);
             _buttons.Add(choice.Result, button);
         }
@@ -80,6 +89,19 @@ internal sealed class InstallerDialog : Form
         using var dialog = new InstallerDialog(title, question,
             new[] { ("&Yes", DialogResult.Yes), ("&No", DialogResult.No) }, DialogResult.No);
         return dialog.ShowDialog(owner) == DialogResult.Yes;
+    }
+
+    protected override void OnFormClosing(FormClosingEventArgs e)
+    {
+        _refresh?.Stop();
+        base.OnFormClosing(e);
+        if (e.Cancel || _choiceAnnounced) return;
+        // Escape/controller Back and the title-bar close button also dismiss
+        // a dialog. Report that response even without a managed Click event.
+        string response = _buttons.TryGetValue(DialogResult, out var selected)
+            ? selected.AccessibleName + "." : "Dialog closed.";
+        InstallerFeedback.Announce(this, response, important: true);
+        _choiceAnnounced = true;
     }
 
     protected override void Dispose(bool disposing)
