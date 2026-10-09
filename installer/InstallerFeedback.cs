@@ -100,7 +100,9 @@ internal static class InstallerFeedback
         if (raw.StartsWith("Checking GitHub for", StringComparison.Ordinal)) return "Checking for the latest Bop It Access release.";
         if (raw.StartsWith("Latest release:", StringComparison.Ordinal)) return "The latest Bop It Access release is available.";
         if (raw.StartsWith("No downloadable release", StringComparison.Ordinal)) return "A public release is not available yet. Show advanced to install the alpha version.";
-        if (raw.StartsWith("Could not check GitHub", StringComparison.Ordinal)) return "Could not check for updates. Check your internet connection and try again.";
+        const string releaseCheckFailure = "Could not check GitHub releases: ";
+        if (raw.StartsWith(releaseCheckFailure, StringComparison.Ordinal)) return "Could not check for updates. " + raw[releaseCheckFailure.Length..];
+        if (raw.StartsWith("Could not check GitHub", StringComparison.Ordinal)) return "Could not check for updates. Try again or save diagnostics for review.";
         if (raw.StartsWith("Preparing a single-pass", StringComparison.Ordinal)) return "Preparing installation. You can launch the game yourself when installation finishes.";
         if (raw.StartsWith("Reusing an existing SDK", StringComparison.Ordinal)) return "The required Microsoft .NET components are already installed.";
         if (raw.StartsWith("Verified the existing .NET", StringComparison.Ordinal)) return "The required Microsoft .NET runtime is already installed.";
@@ -190,8 +192,16 @@ internal static class InstallerFeedback
             return "Close Bop It!, then reopen this installer to finish undoing the installation.";
         if (error is UnauthorizedAccessException)
             return "Windows did not allow access to a needed file. Close the game and check that you have permission to change its folder.";
-        if (error is HttpRequestException)
-            return "A download could not finish. Check your internet connection and try again.";
+        if (error is HttpRequestException request)
+            return NetworkFailureStatus(request);
+        if (error is HttpIOException response)
+            return NetworkTransportFailureStatus(response.HttpRequestError);
+        if (error is InvalidDataException && error.Message.StartsWith("GitHub ", StringComparison.Ordinal))
+            return "GitHub returned information the installer could not use. Save diagnostics for review.";
+        if (error is TimeoutException && error.Message.StartsWith("GitHub ", StringComparison.Ordinal))
+            return "GitHub took too long to respond. Try again or save diagnostics for review.";
+        if (error is TimeoutException && error.Message.StartsWith("The download stopped responding", StringComparison.Ordinal))
+            return "The download stopped responding. Try again or save diagnostics for review.";
         if (error.Message.StartsWith("The game drive is unavailable", StringComparison.Ordinal))
             return "The game drive is unavailable. Reconnect it and try again.";
         if (error.Message.StartsWith("Uninstall stopped because installed files", StringComparison.Ordinal))
@@ -200,6 +210,36 @@ internal static class InstallerFeedback
             return "Choose Uninstall to finish removing saved settings before installing again.";
         return "The operation could not finish.";
     }
+
+    private static string NetworkFailureStatus(HttpRequestException request)
+    {
+        // An HTTP failure means a server answered. It does not establish that
+        // the computer is offline. Keep request details in diagnostics.
+        if (request.StatusCode is System.Net.HttpStatusCode.TooManyRequests)
+            return "The download service is limiting requests. Wait a few minutes and try again.";
+        if (request.StatusCode is System.Net.HttpStatusCode.Unauthorized or System.Net.HttpStatusCode.Forbidden)
+            return "The download service refused this request. Try again later or save diagnostics for review.";
+        if (request.StatusCode is System.Net.HttpStatusCode.NotFound or System.Net.HttpStatusCode.Gone)
+            return "The requested download is unavailable. Try a newer installer or save diagnostics for review.";
+        if (request.StatusCode is { } status && (int)status >= 500)
+            return "The download service returned an error. Try again later.";
+        if (request.StatusCode != null)
+            return "The download service could not complete this request. Try again or save diagnostics for review.";
+
+        return NetworkTransportFailureStatus(request.HttpRequestError);
+    }
+
+    private static string NetworkTransportFailureStatus(HttpRequestError error) =>
+        error switch
+        {
+            HttpRequestError.NameResolutionError => "The download server's address could not be found. Check your network settings and try again.",
+            HttpRequestError.ConnectionError => "The installer could not connect to the download server. Check your network or firewall settings and try again.",
+            HttpRequestError.SecureConnectionError => "A secure connection to the download server could not be established. Save diagnostics for review.",
+            HttpRequestError.UserAuthenticationError or HttpRequestError.ProxyTunnelError => "The network or proxy refused this connection. Check its settings or save diagnostics for review.",
+            HttpRequestError.ConfigurationLimitExceeded => "The server response exceeded an installer limit. Save diagnostics for review.",
+            HttpRequestError.InvalidResponse or HttpRequestError.ResponseEnded or HttpRequestError.HttpProtocolError => "The server's response could not be read completely. Try again or save diagnostics for review.",
+            _ => "The download request failed. Try again or save diagnostics for review."
+        };
 }
 
 /// <summary>Weighted whole-operation progress. Percentages never reset between steps.</summary>

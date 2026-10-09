@@ -124,7 +124,7 @@ internal sealed class InstallerService
                 catch (Exception ex)
                 {
                     Diagnostics.Error("GitHub release check failed", ex);
-                    Log("Could not check GitHub releases: " + ex.Message);
+                    Log("Could not check GitHub releases: " + InstallerFeedback.FailureStatus(ex));
                 }
             }
             _initialized = true;
@@ -245,7 +245,8 @@ internal sealed class InstallerService
                 throw new InvalidOperationException("The installer already manages another game folder: " + existing.GameDirectory);
             if (existing?.UninstallFilesRemoved == true)
                 throw new InvalidOperationException("Finish the pending uninstall preference cleanup before installing again.");
-            if (!alpha && _release is null)
+            var release = _release;
+            if (!alpha && release is null)
                 throw new InvalidOperationException("No GitHub release package exists yet. Use Install alpha until the first release is published.");
             if (IsGameRunning())
                 throw new InvalidOperationException("Close Bop It! before installing or updating the mod.");
@@ -257,11 +258,19 @@ internal sealed class InstallerService
             try
             {
                 Log("Preparing a single-pass installation. Bop It! will not be launched by the installer.");
+                string reference;
                 if (alpha)
                 {
                     OfflineBuildReferences.ValidateEmbeddedTemplates();
                     Log("Verified both embedded offline build helper templates.");
+                    // Resolve a small, validated source reference before any
+                    // dependency downloads or shared Microsoft installations.
+                    SetPhase("Checking the latest alpha version", 1, 3);
+                    Log("Checking the latest commit on the main branch.");
+                    reference = await InstallerNetwork.LatestCommitAsync(ct);
+                    Log("Latest source commit: " + reference);
                 }
+                else reference = release!.Tag;
                 SetPhase("Checking Microsoft .NET components", 3, 25);
                 var dependencies = await SdkAndBuild.EnsureDependenciesAsync(alpha, game, temp, Log, Progress, ct);
                 SetPhase("Preparing MelonLoader", 25, 33);
@@ -302,13 +311,9 @@ internal sealed class InstallerService
                 else Log("Official Prism 0.18.3 is already installed; its license notices will still be installed.");
 
                 string sourceRoot;
-                string reference;
                 SetPhase(alpha ? "Downloading the latest alpha version" : "Downloading Bop It Access", 39, 45);
                 if (alpha)
                 {
-                    Log("Checking the latest commit on the main branch.");
-                    reference = await InstallerNetwork.LatestCommitAsync(ct);
-                    Log("Latest source commit: " + reference);
                     var sourceZip = Path.Combine(temp, "source.zip");
                     await InstallerNetwork.DownloadAsync(
                         new Uri($"https://github.com/Chris-E-Shaw/BopItAccess/archive/{reference}.zip"), sourceZip,
@@ -320,10 +325,12 @@ internal sealed class InstallerService
                 }
                 else
                 {
-                    reference = _release!.Tag;
+                    // Use the same release captured and validated at the start
+                    // rather than reading a shared field again after awaits.
+                    GitHubRelease package = release!;
                     var releaseZip = Path.Combine(temp, "release.zip");
-                    Log("Downloading release package " + _release.AssetName + ".");
-                    await InstallerNetwork.DownloadAsync(_release.AssetUrl, releaseZip,
+                    Log("Downloading release package " + package.AssetName + ".");
+                    await InstallerNetwork.DownloadAsync(package.AssetUrl, releaseZip,
                         (done, total) => Progress("Downloading release", done, total), ct);
                     var extracted = Path.Combine(temp, "release");
                     SafeZip.Extract(releaseZip, extracted,

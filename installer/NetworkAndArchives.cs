@@ -18,12 +18,12 @@ internal static class InstallerNetwork
     internal const string SdkSha512 = "a6706b5c03187922e92fa9307b155255139546d081bf1623faff496035eb707440f13c21798aae06fe8fcfeadcfa046c8606dd452db92e5ed48e2005eb421842";
     internal const string RuntimeUrl = "https://builds.dotnet.microsoft.com/dotnet/Runtime/6.0.36/dotnet-runtime-6.0.36-win-x64.zip";
     internal const string RuntimeSha512 = "935db5c6cee19f2c016e67168bfae7b491044735de76c673abb3b125dd325fd5e779d7efe12ba80178d46689ae70a25e558a3fa846417d44c5f4ca256e7f4bf2";
+    private const int MaximumMetadataBytes = 8 * 1024 * 1024;
     private static readonly HttpClient Client = CreateClient();
 
     private static HttpClient CreateClient()
     {
         var client = new HttpClient { Timeout = Timeout.InfiniteTimeSpan };
-        client.MaxResponseContentBufferSize = 1024 * 1024;
         client.DefaultRequestHeaders.UserAgent.ParseAdd("BopItAccessInstaller/0.1 (+https://github.com/Chris-E-Shaw/BopItAccess)");
         client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
         return client;
@@ -31,27 +31,28 @@ internal static class InstallerNetwork
 
     internal static async Task<GitHubRelease?> LatestReleaseAsync(CancellationToken cancellation)
     {
-        using var response = await MetadataAsync("https://api.github.com/repos/Chris-E-Shaw/BopItAccess/releases/latest", cancellation);
-        if (response.StatusCode == System.Net.HttpStatusCode.NotFound) return null;
-        response.EnsureSuccessStatusCode();
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellation);
-        using var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellation);
+        using var json = await MetadataAsync("https://api.github.com/repos/Chris-E-Shaw/BopItAccess/releases/latest", cancellation, allowNotFound: true);
+        if (json is null) return null;
         var root = json.RootElement;
-        var tag = root.GetProperty("tag_name").GetString() ?? throw new InvalidDataException("Release tag is missing.");
+        var tag = MetadataString(root, "tag_name") ?? throw new InvalidDataException("GitHub release metadata is missing its tag.");
         var version = tag.StartsWith('v') || tag.StartsWith('V') ? tag[1..] : tag;
         if (version.Length == 0 || !char.IsAsciiDigit(version[0]) ||
             version.Any(character => !char.IsAsciiLetterOrDigit(character) && character is not '.' and not '-' and not '+'))
-            throw new InvalidDataException("Release tag does not identify a valid mod package version.");
+            throw new InvalidDataException("GitHub release tag does not identify a valid mod package version.");
+        if (!root.TryGetProperty("assets", out var assets) || assets.ValueKind != JsonValueKind.Array)
+            throw new InvalidDataException("GitHub release metadata is missing its asset list.");
         string expectedAsset = "BopItAccess-v" + version + ".zip";
-        foreach (var asset in root.GetProperty("assets").EnumerateArray())
+        foreach (var asset in assets.EnumerateArray())
         {
-            var name = asset.GetProperty("name").GetString() ?? "";
+            var name = MetadataString(asset, "name") ?? "";
             // Select only this release's compiled mod package. The installer,
             // other ZIP uploads and GitHub's generated source archives are
             // separate downloads and must never become Install/Update input.
             if (!string.Equals(name, expectedAsset, StringComparison.Ordinal)) continue;
-            if (asset.GetProperty("state").GetString() != "uploaded" || asset.GetProperty("size").GetInt64() <= 0) continue;
-            var url = asset.GetProperty("browser_download_url").GetString();
+            if (MetadataString(asset, "state") != "uploaded" ||
+                !asset.TryGetProperty("size", out var size) || size.ValueKind != JsonValueKind.Number ||
+                !size.TryGetInt64(out var length) || length <= 0) continue;
+            var url = MetadataString(asset, "browser_download_url");
             if (url is not null && Uri.TryCreate(url, UriKind.Absolute, out var uri) && uri.Scheme == Uri.UriSchemeHttps)
             {
                 InstallerDiagnostics.Current?.Write("network", $"Selected compiled release package: tag={tag}; asset={name}.");
@@ -64,14 +65,22 @@ internal static class InstallerNetwork
 
     internal static async Task<string> LatestCommitAsync(CancellationToken cancellation)
     {
-        using var response = await MetadataAsync("https://api.github.com/repos/Chris-E-Shaw/BopItAccess/commits/main", cancellation);
-        response.EnsureSuccessStatusCode();
-        await using var stream = await response.Content.ReadAsStreamAsync(cancellation);
-        using var json = await JsonDocument.ParseAsync(stream, cancellationToken: cancellation);
-        var sha = json.RootElement.GetProperty("sha").GetString() ?? "";
-        if (sha.Length != 40 || !sha.All(Uri.IsHexDigit)) throw new InvalidDataException("GitHub returned an invalid commit ID.");
-        return sha;
+        // The commit endpoint includes file changes and patches. The single-ref
+        // endpoint returns only the branch target, independent of commit size.
+        using var json = await MetadataAsync("https://api.github.com/repos/Chris-E-Shaw/BopItAccess/git/ref/heads/main", cancellation);
+        var root = json?.RootElement ?? throw new InvalidDataException("GitHub returned no main-branch metadata.");
+        if (MetadataString(root, "ref") != "refs/heads/main" ||
+            !root.TryGetProperty("object", out var commit) || MetadataString(commit, "type") != "commit")
+            throw new InvalidDataException("GitHub returned an invalid main-branch reference.");
+        var sha = MetadataString(commit, "sha") ?? "";
+        if (sha.Length != 40 || !sha.All(char.IsAsciiHexDigit))
+            throw new InvalidDataException("GitHub returned an invalid commit ID.");
+        return sha.ToLowerInvariant();
     }
+
+    private static string? MetadataString(JsonElement element, string property) =>
+        element.ValueKind == JsonValueKind.Object && element.TryGetProperty(property, out var value) &&
+        value.ValueKind == JsonValueKind.String ? value.GetString() : null;
 
     internal static async Task DownloadAsync(Uri url, string destination, Action<long, long?> progress, CancellationToken cancellation)
     {
@@ -129,37 +138,76 @@ internal static class InstallerNetwork
         }
     }
 
-    private static async Task<HttpResponseMessage> MetadataAsync(string url, CancellationToken cancellation)
+    private static async Task<JsonDocument?> MetadataAsync(string url, CancellationToken cancellation, bool allowNotFound = false)
     {
         var elapsed = Stopwatch.StartNew();
+        long completed = 0;
         InstallerDiagnostics.Current?.Write("network", $"Metadata request started: {url}.");
         using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
         deadline.CancelAfter(TimeSpan.FromSeconds(30));
         try
         {
-            HttpResponseMessage response = await Client.GetAsync(url, deadline.Token);
+            // Stream explicitly: GetAsync's default completion option buffers the
+            // entire body before returning, outside our own size checks.
+            using var response = await Client.GetAsync(url, HttpCompletionOption.ResponseHeadersRead, deadline.Token);
             RecordResponse("Metadata", url, response, elapsed.ElapsedMilliseconds);
+            ValidateHttpsResponse(response);
+            if (allowNotFound && response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                InstallerDiagnostics.Current?.Write("network", $"Metadata request completed: {url}; result=not_found; elapsed_ms={elapsed.ElapsedMilliseconds}.");
+                return null;
+            }
+            response.EnsureSuccessStatusCode();
+            var mediaType = response.Content.Headers.ContentType?.MediaType;
+            if (mediaType is not null && !string.Equals(mediaType, "application/json", StringComparison.OrdinalIgnoreCase) &&
+                !mediaType.EndsWith("+json", StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("GitHub returned a response that is not JSON metadata. Check for a proxy or network sign-in page and retry.");
+            var total = response.Content.Headers.ContentLength;
+            if (total is > MaximumMetadataBytes)
+                throw new InvalidDataException("GitHub metadata exceeds the eight megabyte safety limit.");
+            await using var input = await response.Content.ReadAsStreamAsync(deadline.Token);
+            using var body = new MemoryStream();
+            var buffer = new byte[16 * 1024];
+            int count;
+            while ((count = await input.ReadAsync(buffer, deadline.Token)) > 0)
+            {
+                completed += count;
+                if (completed > MaximumMetadataBytes)
+                    throw new InvalidDataException("GitHub metadata exceeds the eight megabyte safety limit.");
+                body.Write(buffer, 0, count);
+            }
+            if (total is not null && completed != total.Value)
+                throw new InvalidDataException("GitHub metadata response was incomplete. Check your connection and retry.");
+            body.Position = 0;
+            JsonDocument json;
+            try { json = await JsonDocument.ParseAsync(body, cancellationToken: deadline.Token); }
+            catch (JsonException ex)
+            {
+                throw new InvalidDataException("GitHub returned invalid JSON metadata. Check for a proxy or network sign-in page and retry.", ex);
+            }
             try
             {
-                ValidateHttpsResponse(response);
-                InstallerDiagnostics.Current?.Write("network", $"Metadata request completed: {url}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
-                return response;
+                deadline.Token.ThrowIfCancellationRequested();
+                if (json.RootElement.ValueKind != JsonValueKind.Object)
+                    throw new InvalidDataException("GitHub returned an invalid metadata object.");
+                InstallerDiagnostics.Current?.Write("network", $"Metadata request completed: {url}; bytes={completed}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
+                return json;
             }
-            catch { response.Dispose(); throw; }
+            catch { json.Dispose(); throw; }
         }
         catch (OperationCanceledException ex) when (!cancellation.IsCancellationRequested)
         {
-            InstallerDiagnostics.Current?.Error($"Metadata request timed out: {url}; elapsed_ms={elapsed.ElapsedMilliseconds}", ex);
-            throw new TimeoutException("GitHub did not respond within thirty seconds. Check your connection and retry.", ex);
+            InstallerDiagnostics.Current?.Error($"Metadata request timed out: {url}; bytes={completed}; elapsed_ms={elapsed.ElapsedMilliseconds}", ex);
+            throw new TimeoutException("GitHub metadata did not finish downloading within thirty seconds. Check your connection and retry.", ex);
         }
         catch (OperationCanceledException)
         {
-            InstallerDiagnostics.Current?.Write("network", $"Metadata request cancelled: {url}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
+            InstallerDiagnostics.Current?.Write("network", $"Metadata request cancelled: {url}; bytes={completed}; elapsed_ms={elapsed.ElapsedMilliseconds}.");
             throw;
         }
         catch (Exception ex)
         {
-            InstallerDiagnostics.Current?.Error($"Metadata request failed: {url}; elapsed_ms={elapsed.ElapsedMilliseconds}", ex);
+            InstallerDiagnostics.Current?.Error($"Metadata request failed: {url}; bytes={completed}; elapsed_ms={elapsed.ElapsedMilliseconds}", ex);
             throw;
         }
     }
