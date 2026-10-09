@@ -16,15 +16,22 @@
          its documentation folder and does not require a rebuilt DLL when the
          guide text changes. -->
     <None Include="..\BopItAccess-user-guide.html" Link="documentation\BopItAccess-user-guide.html" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\BopItAccess-release-review.html" Link="documentation\BopItAccess-release-review.html" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\BopItAccess-build-history.html" Link="documentation\BopItAccess-build-history.html" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\README.md" Link="documentation\README.md" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\README.txt" Link="documentation\README.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\GIT-WORKFLOW.md" Link="documentation\GIT-WORKFLOW.md" CopyToOutputDirectory="PreserveNewest" />
     <None Include="..\THIRD-PARTY-NOTICES.txt" Link="documentation\THIRD-PARTY-NOTICES.txt" CopyToOutputDirectory="PreserveNewest" />
-    <None Include="..\documentation\**\*" Link="documentation\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\LICENSE" Link="documentation\BopItAccess-LICENSE.txt" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="..\documentation\**\BopItAccess-user-guide.html;..\documentation\**\THIRD-PARTY-NOTICES.txt"
+          Link="documentation\%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="locales\*.json" LogicalName="BopItAccess.locales.%(Filename)%(Extension)" />
+    <EmbeddedResource Include="..\LICENSE" LogicalName="BopItAccess.LICENSE" />
   </ItemGroup>
+
+  <!-- Incremental builds must not retain development documents copied by an
+       older project file. Delete only the explicitly retired document names. -->
+  <Target Name="RemoveRetiredBuildDocumentation" BeforeTargets="CopyFilesToOutputDirectory">
+    <ItemGroup>
+      <_RetiredBuildDocument Include="$(OutDir)documentation\**\BopItAccess-build-history.html;$(OutDir)documentation\**\BopItAccess-release-review.html;$(OutDir)documentation\**\GIT-WORKFLOW.md;$(OutDir)documentation\**\README.md;$(OutDir)documentation\**\README.txt" />
+    </ItemGroup>
+    <Delete Files="@(_RetiredBuildDocument)" />
+  </Target>
 
   <ItemGroup>
     <Reference Include="MelonLoader">

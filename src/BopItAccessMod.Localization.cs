@@ -91,6 +91,17 @@ public sealed partial class BopItAccessMod
     {
         if (string.IsNullOrWhiteSpace(display))
             return display ?? string.Empty;
+        // Unity can expose the internal camel-case control name instead of
+        // its display name for these buttons. Normalize only the spoken
+        // label so it can use the existing translated button-name keys.
+        display = display.Trim() switch
+        {
+            string value when value.Equals("selectButton",
+                StringComparison.OrdinalIgnoreCase) => "Select",
+            string value when value.Equals("startButton",
+                StringComparison.OrdinalIgnoreCase) => "Start",
+            _ => display
+        };
         if (CurrentGameLocale == "en")
             return display;
         // Several button names are ordinary game words too. A binding must

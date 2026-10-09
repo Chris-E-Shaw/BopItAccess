@@ -748,15 +748,25 @@ internal sealed class InstallerService
         transaction.CreateDirectory(target);
         var sourceDocs = Path.Combine(root, "documentation");
         if (Directory.Exists(sourceDocs))
-            await InstallTreeAsync(transaction, sourceDocs, target, cancellation);
-        foreach (var name in new[] { "BopItAccess-user-guide.html", "BopItAccess-build-history.html",
-                     "README.md", "README.txt", "GIT-WORKFLOW.md", "THIRD-PARTY-NOTICES.txt" })
+            foreach (var file in Directory.EnumerateFiles(sourceDocs, "*", SearchOption.AllDirectories))
+            {
+                cancellation.ThrowIfCancellationRequested();
+                string relative = Path.GetRelativePath(sourceDocs, file);
+                if (ReleaseDocumentation.IsPackageFile(relative))
+                    await transaction.InstallFileAsync(file, Path.Combine(target, relative), cancellation);
+            }
+        foreach (var name in new[] { "BopItAccess-user-guide.html", "THIRD-PARTY-NOTICES.txt" })
         {
             var file = Path.Combine(root, name);
             if (File.Exists(file)) await transaction.InstallFileAsync(file, Path.Combine(target, name), cancellation);
         }
+        var modLicense = Path.Combine(root, "LICENSE");
+        if (File.Exists(modLicense))
+            await transaction.InstallFileAsync(modLicense,
+                Path.Combine(target, ReleaseDocumentation.ModLicenseName), cancellation);
         if (!File.Exists(Path.Combine(target, "BopItAccess-user-guide.html")))
             throw new InvalidDataException("The package has no English user guide.");
+        await transaction.RetireDevelopmentDocumentationAsync(cancellation);
         Log("Installed game documentation and translated guides.");
     }
 

@@ -279,6 +279,17 @@ public sealed class InstallTransaction
                 StringComparison.OrdinalIgnoreCase))
             throw new IOException($"An installed file was modified outside the installer: {destination}");
 
+        string? original = null;
+        if (old.OriginalBackupPath is not null)
+        {
+            original = ValidateBackup(old.OriginalBackupPath, _stateDirectory);
+            if (!File.Exists(original) || string.IsNullOrWhiteSpace(old.OriginalSha256) ||
+                !string.Equals(await Sha256Async(original, cancellationToken), old.OriginalSha256,
+                    StringComparison.OrdinalIgnoreCase))
+                throw new IOException($"The original file backup failed integrity validation: {destination}");
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+
         bool existed = File.Exists(destination);
         string? rollbackBackup = null;
         if (existed)
@@ -293,15 +304,43 @@ public sealed class InstallTransaction
             Existed = existed,
             RollbackBackupPath = rollbackBackup
         });
-        if (old.OriginalBackupPath is not null)
-        {
-            string original = ValidateBackup(old.OriginalBackupPath, _stateDirectory);
+        if (original is not null)
             File.Copy(original, destination, overwrite: true);
-        }
         else if (existed)
             File.Delete(destination);
         _files.Remove(destination);
         _log($"Removed obsolete installer file: {destination}");
+    }
+
+    /// <summary>
+    /// Retire only recorded development documents from earlier installs.
+    /// Unrelated and user-modified documents remain untouched. Each removal
+    /// uses the ordinary journal so abort and crash recovery restore it.
+    /// </summary>
+    internal async Task RetireDevelopmentDocumentationAsync(CancellationToken cancellationToken)
+    {
+        ThrowIfFinished();
+        string documentation = Path.Combine(_gameDirectory, "documentation");
+        string[] retired = _files.Keys.Where(file =>
+            ReleaseDocumentation.IsRetiredInstalledPath(documentation, file)).ToArray();
+        bool preservedChanges = false;
+        foreach (string file in retired)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            string destination = ValidateDestination(file);
+            InstalledFile installed = _files[destination];
+            if (File.Exists(destination) &&
+                !string.Equals(await Sha256Async(destination, cancellationToken), installed.Sha256,
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                _log($"Preserved modified development document: {destination}");
+                preservedChanges = true;
+                continue;
+            }
+            await RemoveInstalledFileAsync(destination, cancellationToken);
+        }
+        if (preservedChanges)
+            _log("Some older documents were kept because they have been changed.");
     }
 
     /// <summary>

@@ -1,37 +1,43 @@
-# Flux de travail Git pour Bop It Access
+# Méthode de travail Git pour Bop It Access
 
-Git conserve un historique des modifications apportées au code source et aux documents du projet. Un **commit** est un instantané nommé que vous pouvez inspecter ou auquel vous pouvez revenir. GitHub publie cet historique des sources afin que d'autres puissent lire le code et créer eux-mêmes le mod. Le référentiel ne contient pas de fichiers mod compilés ni de versions GitHub.
+Git conserve l'historique du code source et de la documentation de ce projet. Un **commit** est un instantané nommé que vous pouvez consulter ou retrouver. GitHub publie ces commits pour permettre aux autres de lire les changements et de compiler eux-mêmes le projet. Un commit ne crée pas automatiquement une version publique.
 
-## À propos de l'histoire existante
+## À propos de l'historique existant
 
-Les archives sources des builds `v0.1.0` à travers `v0.6.12` ont été importés sous forme de 37 commits Git successifs. Chaque commit décrit les modifications de la source à l'aide de l'entrée correspondante dans [BopItAccess-build-history.html](BopItAccess-build-history.html). Ces commits ont été créés lors de l'importation Git, donc leurs horodatages Git ne correspondent **pas** aux dates de construction d'origine. Leurs sujets décrivent les modifications sans numéros de version ; le document d'historique de construction enregistre quel instantané source appartient à chaque version.
+Les 37 premiers builds du code source, de `0.1.0` à `0.6.12`, ont été importés en commits distincts à partir des archives disponibles et de leurs notes de changement d'origine. Leurs horodatages Git correspondent à l'importation et non aux dates des builds d'origine. Le travail ultérieur est enregistré directement dans les commits du code source. Git et GitHub constituent désormais l'historique des changements du projet ; aucun document d'historique des builds séparé n'est tenu à jour.
 
-Les fichiers ZIP de publication, les DLL compilées et les résultats de build temporaires restent en dehors de l'historique des sources de Git. La page d'historique de construction renvoie aux validations sources GitHub correspondantes. Les balises de version existantes restent locales et ne font pas partie de la publication GitHub initiale. Aucune balise de version ou version GitHub n'est encore publiée.
+L'adresse GitHub sans réponse de Christopher Shaw est utilisée pour l'auteur des commits. Les commits assistés par l'IA incluent une ligne `Co-authored-by` indiquant le modèle qui a réellement contribué. Les comptes rendus de session identifient GPT-6 Luna pour le premier build historique et GPT-6 Sol pour les 36 suivants. Utilisez le nom actuel du modèle ayant contribué pour les futurs commits.
 
-Git s'engage à utiliser l'adresse de non-réponse GitHub de Christopher Shaw comme auteur. Les commits écrits avec Codex incluent également un `Co-authored-by` bande-annonce nommant le modèle qui a contribué au travail. Les enregistrements de session identifient GPT-6 Luna pour la première version historique et GPT-6 Sol pour les 36 suivantes. Si le modèle change pour une validation ultérieure, utilisez son nouveau nom dans la fin de cette validation.
+Les DLL compilées, installateurs, ZIP de publication, assemblages générés du jeu, journaux personnels et fichiers de compilation temporaires restent hors de l'historique du code source Git. Les étiquettes de version locales ne sont pas publiées automatiquement. Créer une version GitHub est une étape séparée et volontaire.
 
 ## Commandes utiles
 
-Ouvrez PowerShell dans ce répertoire de projet, puis exécutez :
+Ouvrez PowerShell dans le dépôt, puis exécutez :
 
 ```powershell
-git status                         # See changed, added, and untracked files
-git diff                           # See changes that have not been staged
-git log --oneline                   # Browse source commits
-git show --stat HEAD~1             # See files changed in the preceding commit
+git status                 # See changed, added and untracked files
+git diff                   # Inspect changes that are not staged
+git log --oneline           # Browse commits
+git show --stat HEAD~1      # Inspect the previous commit's changed files
 ```
 
-Ces commandes inspectent uniquement le référentiel ; ils ne changent ni le mod ni le jeu installé.
+`git status` affiche les fichiers modifiés, ajoutés et non suivis. `git diff` montre les changements non indexés. `git log --oneline` permet de parcourir les commits. `git show --stat HEAD~1` affiche les fichiers modifiés par le commit précédent.
 
-## Pour chaque future build
+Ces commandes consultent le dépôt sans modifier le mod installé ni le jeu.
 
-1. Apportez les modifications à la source et choisissez le numéro de version de build suivant.
-2. Construisez le mod et préparez les archives locales comme d'habitude. Inclure l'intégralité `documentation` dossier, avec le guide en anglais et chaque sous-dossier de langue traduite, dans chaque archive d'installation. Copiez ce dossier dans l'installation du jeu lors de l'installation d'une version. Le guide du jeu lit le code HTML de la langue actuelle du jeu à chaque ouverture. Inspectez le résultat avant d’enregistrer la construction comme terminée. Les archives compilées restent en dehors du GitHub.
-3. Courir `git status` et `git diff`. Vérifiez quels fichiers ont été modifiés. Organisez les modifications prévues dans la source et la documentation, puis examinez-les avec `git diff --cached`.
-4. Créez un commit source descriptif sans numéro de version dans son sujet. Inclure un `Co-authored-by` bande-annonce avec le nom réel du modèle lorsque Codex a écrit le commit. Par exemple, `git commit -m "feat(speech): add example setting" -m "Co-authored-by: MODEL NAME <noreply@openai.com>"`; remplacer `MODEL NAME` avec le modèle utilisé pour ce commit.
-5. Ajouter une entrée pour la construction à `BopItAccess-build-history.html`, en utilisant le format de style commit existant. Décrivez le changement réel, sa raison et toutes les limitations pertinentes, et liez la validation source de l'étape 4. Mettez à jour les copies traduites correspondantes avant l'empaquetage. Validez l’historique mis à jour avec le même auteur et une bande-annonce précise du co-auteur. Actualisez le dossier de documentation local et l'archive si le fichier historique y a déjà été copié.
-6. Publiez les commits source et historique avec `git push origin main` quand il est prêt. Cela pousse uniquement la branche ; il ne pousse pas les balises de version locale et ne crée pas de versions GitHub.
+## Pour chaque changement futur
 
-Un petit travail qui ne produit pas de build peut avoir son propre commit. Le prochain commit de build peut alors le suivre. Conservez les journaux personnels, les installations de jeux, les binaires générés et autres fichiers spécifiques à la machine hors des validations. Si les versions GitHub deviennent utiles plus tard, décidez des balises et des téléchargements compilés à ce moment-là.
+1. Effectuez les changements souhaités dans le code source et la documentation. Pour un nouveau build, mettez sa version à jour.
+2. Mettez à jour chaque guide traduit concerné. Conservez la documentation des joueurs et les notices de licence avec les fichiers compilés ; les README de développement et cette méthode de travail ne sont pas destinés aux versions pour joueurs.
+3. Compilez lorsque le changement nécessite un nouveau binaire et préparez les fichiers locaux. Les essais en jeu sont réalisés par des joueurs humains lorsqu'ils sont demandés ; une compilation réussie ne constitue pas une vérification de l'exécution.
+4. Exécutez `git status` et `git diff`. Ajoutez les fichiers voulus à l'index, puis examinez `git diff --cached`. N'ajoutez pas de binaires générés, de journaux privés ni de références du jeu aux changements indexés.
+5. Créez un commit descriptif dont le titre ne contient aucun numéro de version. Dans son corps, expliquez les changements et leur raison, ainsi que les vérifications et limites pertinentes. Mentionnez le véritable modèle d'IA dans une ligne de coauteur s'il a contribué :
 
-Git ne télécharge pas automatiquement les nouveaux travaux. Après chaque commit local, poussez-le délibérément lorsqu'il est prêt à être vu par d'autres personnes.
+   ```text
+   Co-authored-by: MODEL NAME <noreply@openai.com>
+   ```
+
+   Remplacez `MODEL NAME` par le modèle qui a écrit le travail. Gardez Christopher Shaw comme auteur, avec l'adresse `336230252+Chris-E-Shaw@users.noreply.github.com`.
+6. Lorsque les changements sont prêts à être publiés, exécutez `git push origin main`. Cela publie les commits de la branche sans envoyer les étiquettes locales ni créer une version.
+
+Un changement cohérent peut réunir son code source et sa documentation dans un même commit. Des commits distincts restent utiles pour des changements indépendants. Git n'envoie pas automatiquement le travail : publiez-le volontairement lorsqu'il est prêt à être lu par d'autres.

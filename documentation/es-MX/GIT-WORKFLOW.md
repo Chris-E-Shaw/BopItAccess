@@ -1,37 +1,43 @@
 # Flujo de trabajo de Git para Bop It Access
 
-Git mantiene un historial de cambios en el código fuente y los documentos del proyecto. Una **confirmación** es una instantánea con nombre que puede inspeccionar o regresar. GitHub publica este historial fuente para que otros puedan leer el código y crear el mod ellos mismos. El repositorio no contiene archivos mod compilados ni versiones GitHub.
+Git conserva el historial del código fuente y la documentación de este proyecto. Un **commit** es una instantánea con nombre que puedes consultar o recuperar. GitHub publica estos commits para que otras personas puedan leer los cambios y compilar el proyecto por sí mismas. Un commit no crea automáticamente una versión pública.
 
-## Sobre la historia existente
+## Sobre el historial existente
 
-Los archivos fuente para las compilaciones. `v0.1.0` a través de `v0.6.12` se importaron como 37 confirmaciones de Git sucesivas. Cada confirmación describe los cambios de fuente utilizando la entrada correspondiente en [BopItAccess-build-history.html](BopItAccess-build-history.html). Estas confirmaciones se crearon durante la importación de Git, por lo que sus marcas de tiempo de Git **no** son las fechas de compilación originales. Sus sujetos describen los cambios sin números de versión; el documento del historial de compilación registra qué instantánea de origen pertenece a cada versión.
+Las primeras 37 compilaciones del código fuente, de `0.1.0` a `0.6.12`, se importaron como commits separados a partir de los archivos de código disponibles y sus notas originales de cambios. Sus marcas de tiempo en Git indican la importación, no las fechas de las compilaciones originales. El trabajo posterior se registra directamente en los commits del código fuente. Git y GitHub son ahora el historial de cambios del proyecto; ya no se mantiene un documento separado con el historial de compilaciones.
 
-Los archivos ZIP, las DLL compiladas y los resultados de compilación temporales permanecen fuera del historial fuente de Git. La página del historial de compilación enlaza con las confirmaciones de origen GitHub correspondientes. Las etiquetas de versión existentes permanecen locales y no forman parte de la publicación inicial GitHub. Aún no se han publicado etiquetas de versión GitHub ni lanzamientos.
+La dirección de GitHub sin respuesta de Christopher Shaw se usa como autor de los commits. Los commits realizados con ayuda de IA incluyen una línea `Co-authored-by` con el modelo que realmente contribuyó. Los registros de las sesiones identifican a GPT-6 Luna en la primera compilación histórica y a GPT-6 Sol en las 36 siguientes. Utiliza el nombre actual del modelo que contribuyó en los futuros commits.
 
-Las confirmaciones de Git utilizan la dirección sin respuesta GitHub de Christopher Shaw como autor. Las confirmaciones escritas con Codex también incluyen un `Co-authored-by` tráiler nombrando el modelo que contribuyó al trabajo. Los registros de sesión identifican GPT-6 Luna para la primera compilación histórica y GPT-6 Sol para las siguientes 36. Si el modelo cambia para una confirmación posterior, use su nuevo nombre en el avance de esa confirmación.
+Las DLL compiladas, instaladores, ZIP de publicación, ensamblados generados del juego, registros personales y archivos temporales de compilación quedan fuera del historial de código fuente de Git. Las etiquetas de versión locales no se publican automáticamente. Crear una versión en GitHub es un paso separado y deliberado.
 
 ## Comandos útiles
 
-Abra PowerShell en este directorio de proyecto, luego ejecute:
+Abre PowerShell en el repositorio y ejecuta:
 
 ```powershell
-git status                         # See changed, added, and untracked files
-git diff                           # See changes that have not been staged
-git log --oneline                   # Browse source commits
-git show --stat HEAD~1             # See files changed in the preceding commit
+git status                 # See changed, added and untracked files
+git diff                   # Inspect changes that are not staged
+git log --oneline           # Browse commits
+git show --stat HEAD~1      # Inspect the previous commit's changed files
 ```
 
-Estos comandos sólo inspeccionan el repositorio; no cambian el mod ni el juego instalado.
+`git status` muestra archivos modificados, añadidos y sin seguimiento. `git diff` muestra cambios que no están preparados. `git log --oneline` permite consultar los commits. `git show --stat HEAD~1` muestra los archivos modificados en el commit anterior.
 
-## Para cada construcción futura
+Estos comandos consultan el repositorio sin modificar el mod instalado ni el juego.
 
-1. Realice los cambios de origen y elija el siguiente número de versión de compilación.
-2. Construye el mod y prepara los archivos locales como de costumbre. Incluir todo el `documentation` carpeta, con la guía en inglés y cada subcarpeta de idioma traducido, en cada archivo de instalación. Copie esa carpeta en la instalación del juego cuando instale una compilación. La guía del juego lee el HTML del idioma actual del juego en cada apertura. Inspeccione el resultado antes de registrar la construcción como completa. Los archivos compilados permanecen fuera del GitHub.
-3. correr `git status` y `git diff`. Compruebe qué archivos cambiaron. Organice los cambios previstos en la fuente y la documentación y luego revíselos con `git diff --cached`.
-4. Cree una confirmación de fuente descriptiva sin un número de versión en su asunto. Incluir un `Co-authored-by` remolque con el nombre del modelo real cuando Codex escribió la confirmación. Por ejemplo, `git commit -m "feat(speech): add example setting" -m "Co-authored-by: MODEL NAME <noreply@openai.com>"`; reemplazar `MODEL NAME` con el modelo utilizado para ese compromiso.
-5. Agregue una entrada para la compilación a `BopItAccess-build-history.html`, utilizando el formato de estilo de confirmación existente. Describa el cambio real, su motivo y cualquier limitación relevante, y vincule la confirmación de origen del paso 4. Actualice las copias traducidas correspondientes antes del empaquetado. Confirme el historial actualizado con el mismo autor y un avance preciso del coautor. Actualice la carpeta de documentación local y archive si el archivo de historial ya se copió en ellos.
-6. Publicar confirmaciones tanto de origen como de historial con `git push origin main` cuando esté listo. Esto empuja sólo la rama; no envía etiquetas de versión local ni crea versiones GitHub.
+## Para cada cambio futuro
 
-Los trabajos pequeños que no producen una compilación pueden tener su propio compromiso. La siguiente confirmación de compilación puede seguirla. Mantenga los registros personales, las instalaciones de juegos, los archivos binarios generados y otros archivos específicos de la máquina fuera de las confirmaciones. Si las versiones GitHub resultan útiles más adelante, decida las etiquetas y las descargas compiladas en ese momento.
+1. Haz los cambios previstos en el código fuente y la documentación. Para una nueva compilación, actualiza su versión.
+2. Actualiza todas las guías traducidas afectadas. Mantén la documentación de los jugadores y los avisos de licencia junto a los archivos compilados; los README para desarrolladores y este flujo de trabajo no forman parte de las versiones para jugadores.
+3. Compila cuando el cambio necesite un nuevo binario y prepara los archivos locales. Las pruebas del juego las realizan jugadores humanos cuando se solicitan; no afirmes que el funcionamiento se ha verificado solo por haber compilado.
+4. Ejecuta `git status` y `git diff`. Añade los archivos previstos al área de preparación y después revisa `git diff --cached`. No incluyas binarios generados, registros privados ni referencias del juego entre los cambios preparados.
+5. Crea un commit descriptivo cuyo título no tenga número de versión. En el cuerpo, explica qué cambió y por qué, así como las comprobaciones y limitaciones pertinentes. Incluye el modelo real de IA en una línea de coautor cuando haya contribuido:
 
-Git no carga automáticamente nuevos trabajos. Después de cada confirmación local, presiónelo deliberadamente cuando esté listo para que otras personas lo vean.
+   ```text
+   Co-authored-by: MODEL NAME <noreply@openai.com>
+   ```
+
+   Sustituye `MODEL NAME` por el modelo que escribió el trabajo. Mantén a Christopher Shaw como autor, con `336230252+Chris-E-Shaw@users.noreply.github.com`.
+6. Cuando los cambios estén listos para publicarse, ejecuta `git push origin main`. Esto publica los commits de la rama sin enviar las etiquetas locales ni crear una versión.
+
+Un cambio coherente puede incluir el código fuente y la documentación en el mismo commit. Los commits separados siguen siendo útiles para cambios independientes. Git no sube el trabajo automáticamente: envíalo de forma deliberada cuando esté listo para que otros lo lean.

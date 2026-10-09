@@ -1,275 +1,109 @@
 # Bop It Access
 
-Build sorgente attuali: mod 0.9.12 (59 build del mod), installer 0.2.7. La prima pubblicazione pubblica è ancora futura.
+Bop It Access è una mod di accessibilità per persone cieche, destinata alla versione Steam per Windows x64 di **Bop It! The Video Game**. Utilizza [MelonLoader](https://github.com/LavaGang/MelonLoader) e [Prism](https://github.com/ethindp/prism) per rendere accessibili con voce e braille i menu e le schermate del gioco, con comandi e impostazioni aggiuntivi per un'esperienza più confortevole.
 
-Bop It Access è una mod di accessibilità non ufficiale per la versione Windows Steam di **Bop It!**. Utilizza MelonLoader e [Prism](https://github.com/ethindp/prism) per aggiungere feedback vocale e braille ai menu e alle schermate di gioco. Le funzionalità attuali includono una schermata di benvenuto di prima esecuzione, una guida per l'utente in-game, titolo parlato e schermate di pausa, impostazioni e controlli, selezione di brani, punteggi finali e classifiche, risultati, crediti, suggerimenti sui pulsanti, testo tutorial su richiesta con i controlli correnti assegnazioni prima di un round e descrizioni delle quattro fasi. La versione 0.9.0 utilizza Prism per l'output vocale e braille. La mod segue la lingua selezionata dal gioco e include una guida per ogni lingua offerta dal gioco.
+Versioni attuali del codice sorgente: **mod 0.9.13** e **programma di installazione 0.2.8**. La prima versione pubblica è in arrivo.
 
-## Modificare il file delle impostazioni
+## Funzionalità
 
-Se una lingua sconosciuta, l’audio troppo forte o una voce problematica rendono difficili da usare i menu, puoi cambiare le impostazioni fuori dal gioco. Dopo l’avvio, il mod crea automaticamente UserData/BopItAccess.ini nella cartella di Bop It!, usando le impostazioni attuali. È un file di testo che puoi aprire con un editor come Blocco note.
-
-Il file include lingua, volumi di musica, effetti e voce, vibrazione, schermo intero, risoluzione e latenza audio del gioco; preferenze di sintesi vocale, braille, suggerimenti e altro del mod; profili vocali separati per OneCore e SAPI; e assegnazioni dei comandi del gioco e del mod destinati ai giocatori. Risoluzioni disponibili e voci installate sono elencate nei commenti.
-
-Chiudi il gioco prima di modificare il file. Trova la sezione interessata e cambia il valore della voce già presente, salva il file e riavvia il gioco. Le modifiche vengono lette all’avvio, non immediatamente durante la partita. Le modifiche fatte nei menu aggiornano automaticamente il file.
-
-I nomi delle sezioni e delle impostazioni restano in inglese in tutte le lingue. On e Off sono i valori consigliati per le opzioni attivabili; sono accettati anche True/False, Yes/No e 1/0. I commenti spiegano le scelte e gli intervalli. Le voci mancanti o non valide lasciano invariata l’impostazione salvata corrispondente, mentre le altre modifiche valide vengono applicate. Le assegnazioni duplicate dei comandi vengono rifiutate.
-
-I commenti e le voci sconosciute vengono conservati. Se un altro programma modifica il file mentre il gioco è aperto, il mod smette di salvarlo per il resto della sessione, per proteggere le modifiche. Chiudi e riapri il gioco per applicarle. Puoi conservare una copia di sicurezza prima di cambiare il file.
-
-Per un problema di voce, imposta Voice=System default nella sezione OneCore o SAPI. Le voci OneCore usano nome | lingua; SAPI accetta il nome visualizzato di una voce installata o il suo identificatore completo nel Registro. Il file elenca le scelte disponibili. OutputMode=Auto prova un lettore di schermo compatibile attivo, poi OneCore e infine SAPI.
-
-L’esempio seguente ripristina l’inglese, un audio di gioco più basso e l’uscita vocale automatica con le voci predefinite del sistema. Modifica le voci corrispondenti già presenti nel file: è un estratto di riferimento, non un altro blocco da aggiungere. Mantieni le altre impostazioni.
-
-```ini
-[Game]
-Language=en
-MusicVolume=30
-SfxVolume=30
-VoiceOverVolume=30
-
-[Mod]
-SpeechOutput=On
-OutputMode=Auto
-
-[OneCore]
-Voice=System default
-
-[SAPI]
-Voice=System default
-```
-
-Dopo aver confermato Uninstall, scegli Uninstall for me oppure Uninstall for everyone. Entrambe le opzioni rimuovono i file condivisi della mod da questa cartella del gioco, quindi la mod non sarà più disponibile per nessuno che usi quell’installazione. La scelta determina di chi vengono rimosse le preferenze Windows salvate della mod: solo dell’account che ha richiesto l’operazione, oppure di tutti i profili Windows locali, compresi quelli con sessione disconnessa. Le preferenze del gioco originale vengono conservate. L’SDK .NET rimane installato.
-
-Quando il programma di installazione rimuove la propria installazione di MelonLoader e nessun’altra mod ne ha bisogno, rimuove anche i file noti Loader.cfg e MelonPreferences.cfg e le cartelle Plugins, UserLibs e UserData se vuote. Vengono rimossi le impostazioni di Bop It Access, i registri noti, le guide e i file del programma di installazione. Le altre mod, i file condivisi del loader già presenti e i file non riconosciuti vengono protetti. Questo significa anche che un file sconosciuto può lasciare una cartella sul disco; il programma di installazione lo segnala nella diagnostica invece di eliminare dati estranei.
-
-La pagina App installate di Windows usa gli stessi passaggi di conferma, scelta delle preferenze e pulizia. Il programma di installazione fornisce BopItAccess-uninstall.ps1 nella cartella del gioco come collegamento al programma di disinstallazione installato; anche le future compilazioni dai sorgenti includeranno questo script nei file prodotti. Copiare manualmente uno script non installa il programma di disinstallazione stesso. Per una precedente installazione manuale priva di un registro di proprietà dei file, il programma di installazione rimuove i file identificabili della mod e conserva i file condivisi di cui non è possibile stabilire l’origine.
-
-Se la pulizia non può essere completata in sicurezza, il programma di installazione lo spiega e conserva le informazioni necessarie per riprovare. Per un’installazione gestita, la voce di disinstallazione di Windows e il punto di ripresa della pulizia rimangono finché la rimozione non riesce. Una vecchia copia manuale non ha un registro persistente di proprietà dei file; nel programma di installazione ancora aperto, riprova le operazioni segnalate dagli avvisi. Non installare, aggiornare o rimuovere la mod mentre Bop It! è in esecuzione.
+- Voce per menu, impostazioni, tutorial, classifiche, obiettivi, crediti, schermate di pausa e risultati.
+- Lettura su richiesta di punteggi, descrizioni degli scenari e suggerimenti che rispettano le assegnazioni correnti dei comandi.
+- Voce e guida integrata in tutte le lingue offerte dal gioco.
+- Uscita per lettori di schermo e braille, con OneCore e SAPI come opzioni di sintesi vocale del sistema.
+- Livello di dettaglio della voce, tempi e ripetizioni dei suggerimenti regolabili, oltre a scorciatoie vocali riassegnabili.
+- Assegnazioni aggiuntive dei comandi del gioco, limite alla frequenza dei fotogrammi, controlli audio in background e file delle impostazioni leggibile.
+- Programma di installazione accessibile con tastiera e controller, per installare, aggiornare e disinstallare.
 
 ## Stato del progetto
 
-Questo progetto è sostanzialmente completo e non sono previsti contenuti o funzionalità importanti. Verrà mantenuto secondo necessità, con il feedback dei giocatori che guiderà i miglioramenti. Il repository GitHub contiene codice sorgente e documentazione tecnica. **Non sono ancora disponibili versioni GitHub.** Il codice sorgente ora contiene anche un progetto di installazione Windows. Fino alla pubblicazione di una versione, il pulsante **Installa** spiega che non è disponibile alcuna versione; **Installa alpha** crea l'ultimo commit del ramo principale dal sorgente.
+Le funzionalità principali sono sostanzialmente complete. Il progetto sarà mantenuto secondo necessità, con i riscontri dei giocatori a guidare correzioni e miglioramenti. La piattaforma attualmente supportata è Windows x64.
 
-La cronologia dei commit include snapshot di origine ricostruiti di 37 build precedenti. I commit sono stati creati quando tali archivi sono stati importati in Git; le loro date non sono le date di costruzione originali. Il [storia tecnica della costruzione](BopItAccess-build-history.html) descrive il lavoro dietro ogni istantanea.
+Questo repository contiene codice sorgente e documentazione. **Non è ancora stata pubblicata una versione pubblica.** La prossima pubblicazione offrirà `BopItAccess-Installer.exe` e un archivio compilato `BopItAccess-v1.0.zip`. Gli archivi del codice sorgente ZIP e TAR.GZ generati automaticamente da GitHub contengono il codice, non una mod pronta da installare. Fino alla prima pubblicazione, l'opzione **Mostra opzioni avanzate > Installa alpha** del programma di installazione compila il codice sorgente più recente da `main`.
+
+I commit Git costituiscono la cronologia del progetto. Le prime 37 build sono state importate come istantanee separate del codice sorgente; le date di quei commit indicano l'importazione, non le date delle build originali. Questo repository non contiene file binari compilati, file del gioco o assembly del gioco generati da MelonLoader.
+
+## Documentazione
+
+[Leggi la guida utente in inglese](../../BopItAccess-user-guide.html) per installazione, aggiornamenti, disinstallazione, comandi, impostazioni, menu e tutte le modalità di gioco. La guida integrata usa automaticamente la lingua corrente del gioco.
 
 ## Requisiti
 
-- Windows x64 e la tua installazione di Bop It! per Steam.
-- MelonLoader installato nella directory del gioco. Lo sviluppo ha utilizzato MelonLoader **0.7.3 Open-Beta** con la build del gioco x64 Unity **2022.3.50f1**. Altre combinazioni non sono state verificate.
-- Un SDK .NET con il **.NET 6 targeting pack**, perché la mod ha come target `net6.0`.
-- Per l'installazione, il numero ufficiale Windows x64 Prism v0.18.3 `prism.dll`. Questo file binario di terze parti non è presente in questo repository.
+- Windows x64 e una propria installazione Steam acquistata legalmente di Bop It! The Video Game.
+- **MelonLoader 0.7.3 Open-Beta**, x64. Lo sviluppo utilizza la build del gioco con Unity 2022.3.50f1.
+- Il **runtime .NET 6** per Windows x64, per eseguire la mod.
+- Il file ufficiale Windows x64 **Prism v0.18.3** `prism.dll`, installato accanto all'eseguibile del gioco.
+- Per compilare la mod dal codice sorgente: un SDK .NET compatibile con il **targeting pack .NET 6** e i riferimenti generati da MelonLoader a partire dal proprio gioco.
+- Per compilare il programma di installazione dal codice sorgente: l'**SDK .NET 10** su Windows.
 
-La mod fa riferimento alle DLL generate o installate da MelonLoader nella directory del gioco. Non include né ridistribuisce gli assembly di gioco.
+Il programma di installazione ottiene le dipendenze dalle loro fonti ufficiali. Installare una versione compilata non richiede un SDK di sviluppo; Installa alpha lo richiede.
 
 <a id="build-from-source"></a>
-## Costruisci dalla fonte
+## Compilare dal codice sorgente
 
-1. Installa MelonLoader, avvia Bop It! una volta, quindi chiudi il gioco. MelonLoader dovrebbe creare `MelonLoader\Il2CppAssemblies` sotto la directory del gioco.
-2. Clona o scarica questo repository. Apri PowerShell nella directory principale del repository.
-3. Impostato `$gameDir` nella **tua** directory di installazione Bop It!, quindi crea:
+1. Installa MelonLoader 0.7.3 Open-Beta nella cartella del gioco. Avvia il gioco una volta, attendi che MelonLoader prepari i suoi file e poi chiudilo. I riferimenti generati dovrebbero trovarsi in `MelonLoader\Il2CppAssemblies`, nella cartella del gioco.
+2. Scarica o clona questo repository e apri PowerShell nella sua cartella principale.
+3. Sostituisci il percorso di esempio qui sotto con quello del tuo gioco, poi esegui:
 
    ```powershell
    $gameDir = 'C:\Program Files (x86)\Steam\steamapps\common\Bop It!'
    dotnet build .\src\BopItAccess.csproj -c Release "-p:BopItGameDir=$gameDir"
    ```
 
-   Il percorso di esempio è la solita posizione Windows di Steam. Cambialo se la tua libreria Steam è altrove. Il progetto verifica la presenza del numero MelonLoader richiesto e delle DLL di gioco generate e segnala un percorso mancante prima della compilazione.
+La DLL compilata è `src\bin\Release\net6.0\BopItAccess.dll`. Il progetto segnala eventuali riferimenti al gioco o al loader mancanti prima di compilare. Se l'SDK segnala l'assenza del targeting pack .NET 6, installa un SDK che lo contenga. Il file `NuGet.Config` del progetto non configura fonti di pacchetti online.
 
-4. La DLL mod creata sarà in `src\bin\Release\net6.0\BopItAccess.dll`.
-
-Se l'SDK segnala un pacchetto di targeting .NET 6 mancante, installa un SDK che includa quel pacchetto. Quello del progetto `NuGet.Config` non configura i feed dei pacchetti online.
+Il percorso alpha del programma di installazione prepara i propri riferimenti locali di compilazione senza avviare il gioco. Questi riferimenti sono elementi temporanei necessari alla compilazione; non vengono mai inclusi nei commit o in una versione compilata della mod.
 
 <a id="install-your-build"></a>
-## Installa la tua build
+## Installare la propria build
 
-1. Chiudi il gioco. Copia il costruito `BopItAccess.dll` in `<game directory>\Mods\`. Crea il `Mods` directory se MelonLoader non l'ha creata.
-2. Ottieni la versione ufficiale di Prism v0.18.3 per Windows x64 (`prism.dll`) dalla [pagina delle versioni di Prism](https://github.com/ethindp/prism/releases), oppure compila la stessa versione dal codice sorgente. Metti `prism.dll` accanto al file eseguibile del gioco, nella cartella principale del gioco, non nella cartella `Mods`.
-3. Copia l'intero build `src\bin\Release\net6.0\documentation\` cartella nella directory del gioco. Contiene la guida inglese alla radice e le guide tradotte sotto `fr`, `it`, `de`, `es`, `es-MX`, `ja`, `ko`, `zh`, e `pt-BR`. Conserva quelle sottocartelle e i documenti associati. La guida in-game legge l'HTML per la lingua del gioco corrente ogni volta che si apre, quindi la sostituzione di una guida ne aggiorna il contenuto senza ricostruire la DLL.
-4. Avvia lo screen reader prima del gioco. Se non ne è in esecuzione uno compatibile, Prism preferisce OneCore e usa SAPI se OneCore non è disponibile.
+Con il gioco chiuso:
 
-Il comando build Bop It Access compila solo questa mod; non crea né scarica Prism. Se la sintesi vocale non si avvia, controlla `<game directory>\Mods\BopItAccess.log`. Il registro registra l'inizializzazione e l'invio vocale Prism, sebbene un invio riuscito da solo non possa dimostrare che l'audio sia stato ascoltato.
+1. Copia il file `BopItAccess.dll` compilato nella cartella `Mods` del gioco, creandola se necessario.
+2. Scarica Prism v0.18.3 ufficiale per Windows x64 dalle [versioni di Prism](https://github.com/ethindp/prism/releases). Metti `prism.dll` accanto all'eseguibile del gioco.
+3. Copia la cartella `src\bin\Release\net6.0\documentation` della build nella cartella del gioco, mantenendo tutte le sottocartelle delle lingue. Conserva i file di licenza Prism pertinenti quando distribuisci il suo binario.
+4. Avvia il tuo lettore di schermo, se ne usi uno, poi avvia il gioco tramite Steam. Attendi l'annuncio di avvio e poi quello del titolo, della schermata di benvenuto o del menu principale prima di usare i comandi del gioco.
 
-Al primo avvio, viene visualizzata la schermata di benvenuto dopo che il menu principale del gioco è pronto. Le sue scelte aprono le Impostazioni Mod, leggi la guida dell'utente nel gioco o continua il gioco. Mod Impostazioni offre anche **Apri Guida per l'utente** e un'azione confermata **Ripristina schermata di benvenuto** che mostra la schermata di benvenuto al prossimo avvio. Nella guida, usa Su/Giù per scegliere gli argomenti o leggere le righe e Conferma per aprire un argomento. All'interno delle tabelle, Sinistra sposta una colonna a sinistra, Destra sposta una colonna a destra e Su/Giù mantiene la colonna corrente mentre si cambiano le righe. Le intestazioni delle colonne etichettano le celle anziché apparire come righe di dati; la tabella viene annunciata in entrata e la sua fine in uscita. Indietro lascia un argomento o la guida.
+La compilazione della mod non scarica né compila Prism. Se la voce non parte, consulta `Mods\BopItAccess.log` nella cartella del gioco. Un invio riuscito nel registro conferma che la mod ha inviato testo; non può dimostrare che l'audio sia stato ascoltato.
 
-Scegli una lingua nella riga **Impostazioni > Lingua** del gioco. Il discorso mod segue quella selezione. La guida del gioco utilizza il documento HTML tradotto corrispondente, con l'inglese come fallback se la copia selezionata è mancante o illeggibile. Il testo non inglese fornito in bundle è un primo passaggio tradotto automaticamente; sono gradite correzioni da parte di chi parla fluentemente.
+Per lo ZIP di una versione compilata, copia **tutto il suo contenuto** nella cartella del gioco e unisci le cartelle o sostituisci i file quando richiesto. Lo ZIP include la mod, Prism, le guide e gli avvisi di licenza; MelonLoader e .NET si installano separatamente. Consulta la guida utente per le istruzioni complete di installazione manuale.
 
-Le azioni usano le traduzioni del gioco. Shapes, Space, City e Office mantengono i nomi inglesi delle scene. Per OneCore o SAPI, scegli nelle Impostazioni mod una voce installata adatta alla lingua del gioco se quella predefinita non va bene. Voce, Volume, Velocità e Tono regolano l’uscita OneCore o SAPI effettivamente in uso, anche in modalità Auto. Appaiono solo i controlli supportati; con le altre uscite vengono nascosti. Ogni motore conserva le proprie impostazioni separatamente.
+## Modificare le impostazioni fuori dal gioco
 
-Leggi le posizioni nei menu. Questa opzione salvata, attiva per impostazione predefinita, legge la posizione dell’elemento nel menu. Il feedback uno a uno viene salvato ed è attivo per impostazione predefinita. Annuncia il colore attivo all’inizio e quando cambia. Quando si perde una vita, annuncia il numero di vite rimaste. Quando si guadagna una vita, annuncia il colore del giocatore e il nuovo totale, per esempio “Verde, 3 vite”, così entrambi sanno chi è stato più veloce. Questi annunci sono disattivati quando il feedback uno a uno è disattivato. Il limite di tre vite del gioco resta invariato. Questa funzione opera solo durante una partita uno contro uno. Dopo l’ultimo input di calibrazione, il mod dice subito “Fatto!”. Smetti di colpire e attendi il risultato misurato. Se la calibrazione fallisce perché non è stato dato alcun input, dice “Calibrazione fallita.”.
+Dopo l'avvio, `UserData\BopItAccess.ini`, nella cartella del gioco, contiene impostazioni leggibili del gioco e della mod, profili delle voci e assegnazioni dei comandi destinati ai giocatori. Chiudi il gioco, apri il file nel Blocco note, modifica le voci esistenti e salvalo. La mod legge le modifiche al successivo avvio. I commenti spiegano le opzioni e gli intervalli validi.
 
-**Formatta il parlato**: Rende più naturale il testo tutto maiuscolo per voce e braille. Nella guida del gioco aggiunge una pausa con tre puntini prima del numero di riga, se il testo termina senza punteggiatura. Il testo visibile resta invariato. Disattivala per leggere il testo così com’è.
+Per esempio, imposta `Language=en` in `[Game]` per ripristinare l'inglese, riduci `MusicVolume`, `SfxVolume` e `VoiceOverVolume`, oppure imposta `Voice=System default` in `[OneCore]` o `[SAPI]` per sostituire una voce inadatta. Imposta `SpeechOutput=On` e `OutputMode=Auto` in `[Mod]` per ripristinare la voce automatica. Mantieni le altre voci; non aggiungere sezioni duplicate.
 
-### MelonLoader finestre di avvio
+## Compilare il programma di installazione
 
-Il modello Loader.cfg fornito nasconde la schermata iniziale e la console separate di MelonLoader. L’installer applica queste due impostazioni prima che tu avvii personalmente il gioco. Non vengono saltate la schermata del titolo né quella di benvenuto del mod.
+Su Windows con l'SDK .NET 10, esegui:
 
-A gioco chiuso, apri `UserData/Loader.cfg` nella cartella del gioco. Se il file esiste già, imposta `disable_start_screen` su `true` nella sezione `[loader]` esistente e `hide_console` su `true` nella sezione `[console]` esistente. Mantieni tutte le altre voci. Se il file non esiste, copia il modello `UserData/Loader.cfg` fornito con la compilazione, oppure `configuration/Loader.cfg` dal codice sorgente. Non sostituire mai un Loader.cfg esistente con il modello completo.
-
-```ini
-[loader]
-disable_start_screen = true
-
-[console]
-hide_console = true
+```powershell
+dotnet restore .\installer\BopItAccess.Installer.csproj --source https://api.nuget.org/v3/index.json
+dotnet publish .\installer\BopItAccess.Installer.csproj -c Release -o .\build\installer --no-restore
 ```
 
-La mod non reimposta queste opzioni a ogni avvio. Per risolvere problemi puoi riportare manualmente una delle due impostazioni a false. Se la disinstallazione conserva un’installazione condivisa di MelonLoader, ripristina solo i flag modificati dal programma di installazione che non sono stati successivamente cambiati e conserva le altre modifiche. Se rimuove la propria installazione inutilizzata di MelonLoader, elimina anche i file noti Loader.cfg e MelonPreferences.cfg.
+Il risultato è `build\installer\BopItAccess.Installer.exe`. È un eseguibile autonomo per Windows x64, quindi gli utenti non hanno bisogno di .NET 10 per eseguirlo. Il programma di installazione fornito non è firmato. La guida utente illustra i suoi comandi e le richieste di sicurezza di Windows.
 
-## Documentazione
+`scripts/package-mod.ps1` prepara uno ZIP di pubblicazione da una mod già compilata e della versione corrispondente. Include guide, avvisi e licenze necessari ai giocatori. I README per sviluppatori, le note sul flusso di lavoro Git, i riferimenti generati del gioco e gli installer compilati sono esclusi dallo ZIP. La preparazione del pacchetto non compila la mod e non pubblica una versione su GitHub.
 
-- [Guida per l'utente del gioco e della mod (inglese)](BopItAccess-user-guide.html) - una panoramica dettagliata di controlli, impostazioni, menu e modalità di gioco adatta ai principianti.
-- [Guida per l'utente giapponese (日本語)](../ja/BopItAccess-user-guide.html). Altre guide tradotte sono disponibili nelle cartelle delle lingue sotto [`documentation/`](../).
-- [Guida dettagliata alle funzionalità e ai controlli](README.txt). La sua sezione di installazione descrive gli ZIP di installazione preparati localmente; questo repository GitHub fornisce solo la fonte.
-- [Storia tecnica della costruzione](BopItAccess-build-history.html).
-- [Revisione del codice in preparazione della pubblicazione](BopItAccess-release-review.html) — problemi risolti, file esaminati, risultati della compilazione e limiti rimanenti.
-- [Flusso di lavoro Git per questo progetto](GIT-WORKFLOW.md).
-- [Avvisi di terzi](THIRD-PARTY-NOTICES.txt).
+## Nota di trasparenza sull'IA
 
-Le copie tradotte dei documenti sopra si trovano in [`documentation/`](../) sotto il codice di ogni lingua supportata. La sorgente è in inglese; `scripts/translate_documents.py` può rigenerare le bozze tradotte automaticamente dopo le modifiche alla sorgente.
+Questa mod è stata realizzata con il «vibe coding». Tutto il codice è stato generato e ricercato interamente dall'intelligenza artificiale, con una comprensione tecnica umana limitata dell'architettura sottostante. Usa questa mod a tuo rischio.
 
-## Cosa potrebbe accadere dopo
+Detto questo, ogni singola funzionalità e decisione di progettazione della mod è stata ideata e approvata da esseri umani. I test non sono mai stati automatizzati: sono stati eseguiti con cura e in modo approfondito da veri giocatori e tester umani.
 
-Questo progetto è sostanzialmente completo e non sono previsti contenuti o funzionalità importanti. Tuttavia, questa mod verrà mantenuta e aggiornata attivamente nel tempo secondo necessità, con il feedback dei giocatori che guida questi miglioramenti. Il potenziale lavoro futuro include ulteriori revisioni e correzioni di bug, perfezionamento del codice e continui miglioramenti alla reattività vocale. Prism crea un possibile percorso verso altre piattaforme in futuro, ma questa mod attualmente supporta solo Windows x64. Il repository del progetto è il luogo in cui seguire gli ulteriori sviluppi.
+Nota: i testi e la documentazione multilingue sono stati generati dall'IA e non sono stati revisionati da madrelingua. Sono da aspettarsi notevoli imprecisioni nelle traduzioni. Senza la programmazione tramite agenti di IA, questo progetto non esisterebbe. Grazie per dargli una possibilità!
 
-## Nota sulla trasparenza dell'IA
+## Licenza e note legali
 
-Questa mod è stata realizzata con il « vibe coding ». Tutto il codice è stato completamente generato e ricercato dall'intelligenza artificiale, con una comprensione umana limitata della sua architettura sottostante. Si prega di utilizzare questa mod a proprio rischio.
+Il codice sorgente proprio di Bop It Access e la sua documentazione sono distribuiti sotto la **[licenza MIT](../../LICENSE)**. Copyright © 2026 Christopher Shaw. Le dipendenze mantengono le proprie licenze; la licenza MIT non le sostituisce e non concede diritti sulle risorse del gioco. Consulta [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt) per gli avvisi relativi alle dipendenze.
 
-Detto questo, ogni singola funzionalità della mod e decisione progettuale è stata creata e approvata da esseri umani. I test non sono mai stati automatizzati; sono stati eseguiti con attenzione e in modo approfondito da veri giocatori e tester umani.
+Bop It Access è un progetto non ufficiale creato da un fan. Non è realizzato, approvato o sostenuto da Hasbro, Alliance, lo sviluppatore/editore del gioco, Valve, Microsoft, Unity, MelonLoader, Prism o alcun produttore di lettori di schermo. **Bop It!** e i relativi personaggi, illustrazioni, suoni e marchi appartengono a Hasbro e ai rispettivi titolari dei diritti. Steam appartiene a Valve. Gli altri nomi di prodotti, marchi e software rimangono proprietà dei rispettivi titolari.
 
-Nota: il testo e la documentazione multilingue sono stati generati dall'intelligenza artificiale e non sono stati revisionati da madrelingua. È prevedibile un'elevata imprecisione della traduzione. Senza la codifica degli agenti, questo progetto non esisterebbe. Grazie per avergli dato una possibilità!
+Devi procurarti una tua copia legale del gioco. Questo repository non include il gioco o le sue risorse e non concede alcun diritto su di essi. Per le informazioni sui diritti del gioco originale, consulta il [sito ufficiale di Bop It!](https://bopitthevideogame.com/) e la [pagina Steam](https://store.steampowered.com/app/3214360/).
 
 ## Grazie
 
-A coloro che hanno testato questa mod prima del rilascio e hanno contribuito a portarla dov'è ora, grazie. Sapete tutti chi siete. Ai giocatori che offrono feedback, provano la mod per la prima volta o credono in me e in questo progetto, grazie. Il tuo sostegno mi motiva a continuare a creare cose in un mondo che può sembrare folle e profondamente imperfetto. Spero che questo progetto ti renda più facile goderti il ​​gioco e giocare con gli altri. Grazie mille a tutti. Divertitevi Bop It!
+A chi ha provato questa mod prima del rilascio e ha contribuito a portarla fin qui: grazie. Sapete chi siete. Ai giocatori che offrono riscontri, provano la mod per la prima volta o credono in me e in questo progetto: grazie. Il vostro sostegno mi motiva a continuare a creare in questo mondo folle in cui viviamo. Spero che questo progetto vi aiuti a godervi il gioco e a giocare con gli altri. Grazie di cuore a tutti. Buon divertimento con Bop It!
 
 — Christopher Shaw
-
-## Licenza
-
-Non è stata ancora selezionata una licenza per la sorgente Bop It Access. Prism ha la propria licenza; vedere il [avvisi di terzi](THIRD-PARTY-NOTICES.txt). Bop It! e il suo patrimonio appartengono ai rispettivi proprietari e non sono qui inclusi.
-
-
-## Scegliere il download giusto
-
-La prima pubblicazione pubblica su GitHub prevede i quattro download seguenti. Sono file futuri, non ancora disponibili; non è stata pubblicata alcuna release pubblica o tag. Nel frattempo usa un installer fornito o il codice sorgente. Un archivio sorgente non è lo ZIP di installazione compilato.
-
-[GitHub Releases](https://github.com/Chris-E-Shaw/BopItAccess/releases)
-
-- BopItAccess-Installer.exe: L’installer autonomo per Windows x64. Trova il gioco e gestisce dipendenze, installazione, aggiornamenti, diagnostica e rimozione. Non è firmato.
-- BopItAccess-v1.0.zip: Il pacchetto compilato del mod per installazione manuale senza eseguire l’EXE Bop It Access. Include Mods/BopItAccess.dll, prism.dll, tutti i documenti e le licenze Prism, un modello Loader.cfg, README.txt e il collegamento di disinstallazione. Non include MelonLoader, .NET, file del gioco o assembly generati.
-- Source code (zip): Lo ZIP del codice sorgente della release generato automaticamente da GitHub. Serve a leggere o compilare il codice; non è il pacchetto compilato del mod.
-- Source code (tar.gz): Lo stesso codice sorgente come archivio tar compresso con gzip. Un formato sorgente alternativo, non un altro installer del mod.
-
-### Installer non firmato e avvisi di sicurezza Windows 11
-
-Questo installer non è firmato. Un programma non firmato o poco conosciuto può generare avvisi SmartScreen o antivirus, inclusi possibili falsi positivi; non dimostra che ogni rilevamento sia errato. Ottienilo soltanto dal progetto ufficiale Bop It Access o da una consegna diretta affidabile e decidi se fidarti del file. Lo ZIP compilato evita questo EXE. Non disattivare l’antivirus né escludere un’intera unità o cartella del gioco.
-[Microsoft: unsigned apps and SmartScreen](https://learn.microsoft.com/en-us/windows/apps/package-and-deploy/publish-first-app)
-
-### Consentire uno specifico rilevamento Defender
-
-Premi Win+I e apri Privacy e sicurezza > Sicurezza di Windows > Apri Sicurezza di Windows > Protezione da virus e minacce > Cronologia della protezione (talvolta detta cronologia delle minacce). Espandi la voce relativa all’installer. Con Tab raggiungi Azioni o Altre azioni, premi Invio e scegli Consenti nel dispositivo o Consenti; approva la richiesta amministratore se appare. Un file in quarantena può richiedere prima Ripristina e poi il consenso se rilevato nuovamente. Se rimosso, scaricalo di nuovo dal progetto ufficiale. Controlla la voce esatta prima di consentire.
-[Microsoft: Protection history](https://support.microsoft.com/en-us/windows/security/windows-security/protection-history-in-the-windows-security-app) · [Microsoft Defender FAQ](https://support.microsoft.com/en-us/defender/antivirus-and-antimalware-software-faq)
-
-### Esclusioni Defender facoltative e limitate
-
-In Protezione da virus e minacce scegli Gestisci impostazioni sotto le impostazioni di protezione, poi Esclusioni > Aggiungi o rimuovi esclusioni. Approva con Sì la richiesta amministratore se presente. Scegli Aggiungi un’esclusione > Processo, digita esattamente BopItAccess-Installer.exe e premi Invio. Il nome deve corrispondere all’eseguibile effettivamente avviato.
-
-L’esclusione Processo Microsoft riguarda i file aperti da quel processo; non esclude l’EXE dell’installer, ripristina file in quarantena o evita SmartScreen. Se Defender rileva l’EXE stesso e ti fidi, un’esclusione File facoltativa per quel preciso EXE scaricato è l’alternativa limitata pertinente. Rimuovi le eccezioni non più necessarie.
-[Microsoft: exclusions overview](https://learn.microsoft.com/en-us/defender-endpoint/microsoft-defender-antivirus-exclusions-overview)
-
-SmartScreen è un avviso separato. Se ti fidi di quel preciso EXE e Windows lo offre, scegli Ulteriori informazioni > Esegui comunque. Il consenso Defender o l’esclusione Processo non evita questo avviso; un criterio può impedire l’esecuzione.
-
-Passaggi verificati il 9 ottobre 2026 per Windows 11 25H2, build 26200.9550. Le etichette possono variare; nessuna prova dell’interfaccia è stata eseguita.
-
-## Programma di installazione Windows 0.2.7
-
-### Installare, aggiornare o rimuovere con l’installer
-
-1. Chiudi il gioco, avvia BopItAccess-Installer.exe e approva la richiesta amministratore Windows. Leggi il campo Welcome and controls, poi controlla Game folder o usa Browse. Welcome and controls è di sola lettura, selezionabile e riceve il primo focus; Alt+W vi ritorna.
-2. Scegli Install per l’ultima release pubblica compilata quando disponibile. Prima della prima pubblicazione, Show advanced mostra Install alpha, che chiede conferma e compila le ultime sorgenti sul computer. Attendi il messaggio di successo. Play Bop It! The Video Game avvia poi il gioco con Steam solo quando lo scegli.
-3. Per un’installazione esistente, apri l’installer con il gioco chiuso e controlla lo stato. Update appare se trova una release pubblica più recente. Scegli Update e attendi il termine; mantiene le impostazioni salvate. Install alpha è la scelta separata per le ultime sorgenti, non l’aggiornamento pubblico.
-4. Per rimuovere il mod, scegli Uninstall e conferma, poi Uninstall for me oppure Uninstall for everyone. Entrambi rimuovono i file condivisi del mod da questa cartella del gioco. La scelta determina se eliminare le preferenze Windows del mod per il tuo account o tutti i profili locali; le preferenze originali del gioco restano. App installate di Windows usa lo stesso flusso. Controlla il risultato prima di Quit.
-
-La tabella seguente elenca ogni azione e campo di testo della finestra principale. Installer status e Installation progress sono informazioni, non pulsanti. Welcome and controls contiene istruzioni riutilizzabili; Status log contiene i messaggi variabili. Abort chiede prima di annullare un’installazione attiva; Quit usa le stesse regole di cancellazione sicura. I dialoghi includono Keep open/Quit, conferma/annulla e i due ambiti delle preferenze da rimuovere. Show advanced cambia solo le azioni visibili.
-
-Usa BopItAccess-Installer-0.2.7.exe oppure BopItAccess-Installer.exe fornito dal progetto. Entrambi i nomi contengono lo stesso programma di installazione autonomo per Windows x64. Il progetto include il codice sorgente; non è ancora pubblicato alcun binario compilato pubblico o GitHub Release.
-
-Chiudi Bop It!, apri il programma di installazione e approva la richiesta di autorizzazione come amministratore di Windows. Il programma di installazione ti dà il benvenuto, cerca il gioco nelle librerie Steam di tutte le unità disponibili e tenta di portare la propria finestra in primo piano. Controlla la cartella del gioco visualizzata; usa Browse se devi scegliere un’altra cartella. Tab passa da un controllo all’altro. Il registro di stato è un campo di testo di sola lettura: portaci il focus per esaminare i messaggi con i tasti di spostamento del cursore, selezionare il testo o copiarlo.
-
-Il programma di installazione 0.2.7 richiede brevemente attivazione in primo piano e focus della tastiera all’avvio. Se al termine della sua breve osservazione iniziale è ancora attiva un’altra finestra, fa lampeggiare il titolo e il pulsante sulla barra delle applicazioni e chiede di passare al programma con Alt+Tab. Attivalo prima di usare i suoi comandi da tastiera o controller. Alt+G porta il focus sul campo della cartella del gioco.
-
-Show advanced è deselezionato all’apertura del programma di installazione. Mostra Install alpha, Save diagnostics e Copy diagnostics. Install scarica l’ultima versione pubblica di GitHub quando disponibile. Non esiste ancora una versione pubblica, quindi al momento chi esegue i test deve usare Show advanced e Install alpha. L’installazione alpha chiede conferma, scarica i sorgenti più recenti e li compila sul tuo computer. Update compare quando viene trovata una versione pubblica più recente per una copia installata.
-
-I messaggi di stato spiegano con parole semplici cosa viene scaricato, installato o completato. Una sola barra mostra l’avanzamento stimato dell’intera installazione, senza azzerarsi per ogni download o file. Avanza a incrementi di cinque punti percentuali; alcune fasi di preparazione possono richiedere tempo senza cambiamenti visibili. La disponibilità di un nuovo aggiornamento e la conferma della copia della diagnostica vengono inviati al lettore di schermo tramite le notifiche di accessibilità di Windows. La loro lettura ad alta voce dipende dal lettore di schermo e dal suo supporto alle notifiche di Windows.
-
-Il programma di installazione 0.2.7 non avvia mai Bop It! durante l’installazione. L’installazione alpha riutilizza i file locali di compilazione corrispondenti oppure prepara file temporanei dalla tua copia del gioco installata, che rimane chiusa. Il programma di installazione colloca quindi MelonLoader nella cartella del gioco e aggiunge subito Mods/BopItAccess.dll, seguito da Prism, impostazioni, documentazione completa e supporto alla disinstallazione. Attendi il messaggio di riuscita, poi avvia tu il gioco tramite Steam quando sei pronto.
-
-Dopo un’installazione riuscita compare Play Bop It! The Video Game. Attiva questo pulsante per avviare tu il gioco tramite Steam quando sei pronto. Il programma di installazione non avvia mai automaticamente il gioco durante l’installazione.
-
-Una versione compilata richiede il runtime .NET 6 per Windows x64, non un SDK di sviluppo. I runtime completi già presenti vengono riutilizzati. Un runtime mancante viene scaricato da Microsoft e collocato in MelonLoader/Dependencies/dotnet. Install alpha richiede anche un SDK .NET compatibile e il targeting pack di .NET 6: viene riutilizzato un SDK esistente oppure installato l’SDK ufficiale di Microsoft a livello di sistema. Il programma di installazione non crea nuove cartelle SDK nella cartella principale del gioco. MelonLoader 0.7.3 Open-Beta e Prism 0.18.3 provengono dalle rispettive versioni ufficiali. I componenti condivisi di Microsoft .NET e gli SDK rimangono installati dopo l’interruzione o la disinstallazione.
-
-Quit chiude il programma di installazione. Se l’installazione è ancora in corso, chiede se interromperla e annullarne le modifiche prima di chiudere; Keep open prosegue normalmente. Se l’installazione termina mentre stai decidendo, la finestra di dialogo si aggiorna per indicarlo e Quit non annulla l’installazione completata. Una volta iniziata la rimozione, la disinstallazione viene completata in sicurezza prima dell’uscita. Anche Abort chiede conferma e annulla le modifiche ai file del gioco effettuate durante questo tentativo. L’annullamento durante l’installazione di Microsoft .NET attende che l’installazione di quei componenti condivisi termini in sicurezza.
-
-Dopo aver confermato Uninstall, scegli Uninstall for me oppure Uninstall for everyone. Entrambe le opzioni rimuovono i file condivisi della mod da questa cartella del gioco, quindi la mod non sarà più disponibile per nessuno che usi quell’installazione. La scelta determina di chi vengono rimosse le preferenze Windows salvate della mod: solo dell’account che ha richiesto l’operazione, oppure di tutti i profili Windows locali, compresi quelli con sessione disconnessa. Le preferenze del gioco originale vengono conservate. L’SDK .NET rimane installato.
-
-Quando il programma di installazione rimuove la propria installazione di MelonLoader e nessun’altra mod ne ha bisogno, rimuove anche i file noti Loader.cfg e MelonPreferences.cfg e le cartelle Plugins, UserLibs e UserData se vuote. Vengono rimossi le impostazioni di Bop It Access, i registri noti, le guide e i file del programma di installazione. Le altre mod, i file condivisi del loader già presenti e i file non riconosciuti vengono protetti. Questo significa anche che un file sconosciuto può lasciare una cartella sul disco; il programma di installazione lo segnala nella diagnostica invece di eliminare dati estranei.
-
-Il programma di installazione rimane aperto dopo la disinstallazione, così puoi esaminare il risultato, salvare la diagnostica o installare di nuovo. Scegli Quit quando hai finito. L’utilità di disinstallazione in esecuzione e i file di diagnostica automatici vengono eliminati dopo la chiusura della finestra. Una reinstallazione nella stessa finestra avvia un nuovo registro dell’installazione; la pulizia differita non può rimuovere la nuova installazione.
-
-La pagina App installate di Windows usa gli stessi passaggi di conferma, scelta delle preferenze e pulizia. Il programma di installazione fornisce BopItAccess-uninstall.ps1 nella cartella del gioco come collegamento al programma di disinstallazione installato; anche le future compilazioni dai sorgenti includeranno questo script nei file prodotti. Copiare manualmente uno script non installa il programma di disinstallazione stesso. Per una precedente installazione manuale priva di un registro di proprietà dei file, il programma di installazione rimuove i file identificabili della mod e conserva i file condivisi di cui non è possibile stabilire l’origine.
-
-Se la pulizia non può essere completata in sicurezza, il programma di installazione lo spiega e conserva le informazioni necessarie per riprovare. Per un’installazione gestita, la voce di disinstallazione di Windows e il punto di ripresa della pulizia rimangono finché la rimozione non riesce. Una vecchia copia manuale non ha un registro persistente di proprietà dei file; nel programma di installazione ancora aperto, riprova le operazioni segnalate dagli avvisi. Non installare, aggiornare o rimuovere la mod mentre Bop It! è in esecuzione.
-
-### Scorciatoie da tastiera del programma di installazione
-
-| Azione | Scorciatoia da tastiera | Funzione |
-| --- | --- | --- |
-| Welcome and controls | Alt+W | Il campo Welcome and controls separato elenca le scorciatoie di lettura con controller; Alt+W vi ritorna e Alt+L apre il Status log variabile. Entrambi sono di sola lettura, selezionabili e consultabili. Show advanced annuncia selezionato o non selezionato. Seleziona tutto conferma il successo o un campo vuoto. Da tastiera, Ctrl+A seleziona tutto il testo e Ctrl+C copia la selezione. |
-| Cartella del gioco | Alt+G | Assegnare il focus al campo della cartella del gioco. |
-| Browse | Alt+B | Scegliere la cartella del gioco. |
-| Install | Alt+I | Installare l’ultima versione pubblica quando disponibile. |
-| Install alpha | Alt+A | Confermare e compilare i sorgenti più recenti; visibile con Show advanced. |
-| Update | Alt+U | Installare una versione pubblica più recente quando viene proposta. |
-| Play Bop It! The Video Game | Alt+P | Avviare il gioco tramite Steam; disponibile dopo un’installazione riuscita. |
-| Uninstall | Alt+N | Confermare la rimozione e scegliere di chi rimuovere le preferenze Windows della mod. |
-| Abort | Alt+R | Confermare l’annullamento dell’installazione corrente. |
-| Registro di stato | Alt+L | Assegnare il focus ai messaggi di stato di sola lettura con testo selezionabile. |
-| Show advanced | Alt+V | Mostrare o nascondere l’installazione alpha e gli strumenti di diagnostica. |
-| Save diagnostics | Alt+D | Salvare la sessione diagnostica completa e continuare a registrarla; visibile con Show advanced. |
-| Copy diagnostics | Alt+C | Copiare l’istantanea diagnostica completa; visibile con Show advanced. |
-| Quit | Alt+Q | Chiudere, gestendo l’annullamento in sicurezza se un’operazione è in corso. |
-
-### Uso di un controller nel programma di installazione
-
-Il programma di installazione supporta i controller di tipo Xbox e gli altri controller che Windows rende disponibili tramite XInput. I suoi comandi sono separati dai comandi rimappabili del gioco. La croce direzionale o la levetta sinistra passa da un controllo all’altro; quando un campo di testo ha il focus, le direzioni servono invece a scorrerne il testo. I pulsanti dorsali passano sempre al controllo precedente o successivo che può ricevere il focus. A attiva il pulsante o la casella di controllo con il focus. L’input del controller viene gestito solo quando questo programma di installazione o una delle sue finestre di dialogo è in primo piano.
-
-B torna indietro o annulla una finestra di dialogo; nella finestra principale del programma di installazione chiede di interrompere un’installazione in corso, altrimenti esegue Quit. Start esegue Quit nella finestra principale e torna indietro in una finestra di dialogo. Y (il pulsante frontale superiore) seleziona tutto il testo quando un campo di testo del programma di installazione ha il focus. Fuori dai campi di testo della finestra principale, Y attiva o disattiva Show advanced. Nel registro di stato o in un altro campo di testo del programma di installazione, la croce direzionale o la levetta sinistra funziona come le frecce: Sinistra/Destra si sposta per caratteri e Su/Giù per righe. Tieni premuto LT come Ctrl: Sinistra/Destra si sposta per parole e Su/Giù per paragrafi. Tieni premuto RT come Maiusc per estendere la selezione; tieni premuti LT e RT insieme per selezionare parole o paragrafi. X copia solo il testo selezionato; seleziona prima la parte desiderata. Ctrl+C sulla tastiera continua a copiare la selezione. Quando non è selezionato del testo, il programma di installazione invia anche notifiche accessibili per il carattere, la parola, la riga o il paragrafo nella posizione del cursore. Il programma di installazione invia una conferma accessibile quando il testo viene copiato e segnala una selezione vuota o un errore di copia. L’annuncio vocale dipende dal supporto del lettore di schermo per le notifiche di Windows. La navigazione con controller nelle finestre di dialogo native di Windows per le cartelle e il salvataggio richiede ancora una verifica umana. È sempre possibile usare una tastiera per inserire una cartella o un nome di file. Questa implementazione non copre i controller privi del supporto a XInput.
-
-Il campo Welcome and controls separato elenca le scorciatoie di lettura con controller; Alt+W vi ritorna e Alt+L apre il Status log variabile. Entrambi sono di sola lettura, selezionabili e consultabili. Show advanced annuncia selezionato o non selezionato. Seleziona tutto conferma il successo o un campo vuoto. Da tastiera, Ctrl+A seleziona tutto il testo e Ctrl+C copia la selezione.
-
-Quando Welcome and controls (Alt+W) o Status log (Alt+L) riceve il focus, il campo ha un nome breve. Le istruzioni rimangono consultabili in Welcome and controls. L’attivazione di un pulsante dell’installer invia subito un riscontro al lettore di schermo e richiede l’interruzione della voce precedente dell’installer. Conferme, annullamenti ed errori vengono ancora segnalati. Non tutti i messaggi di stato vengono letti automaticamente. Il modo in cui viene letto questo riscontro dipende dal supporto delle notifiche Windows del lettore di schermo.
-
-### Diagnostica del programma di installazione
-
-Show advanced mostra Save diagnostics (Alt+D) e Copy diagnostics (Alt+C). I registri automatici UTF-8 vengono conservati localmente in %ProgramData%\BopItAccess\diagnostics. Save diagnostics scrive l’intera sessione corrente nel file .log o .txt scelto e continua a registrare fino alla chiusura del programma di installazione; Copy diagnostics copia un’istantanea e fornisce una conferma accessibile. Salva prima di una prova di installazione o disinstallazione, così la registrazione sopravvive alla pulizia dei registri automatici. Qui vengono conservati i dettagli tecnici relativi a file, download, compilatore ed errori, anche se il campo di stato usa messaggi più brevi. Non viene caricato nulla online. I registri possono contenere nomi utente Windows e percorsi completi: controllali prima di condividerli. Le copie esportate intenzionalmente rimangono dopo la disinstallazione.
-
-Al primo avvio manuale dopo l’installazione di MelonLoader, quest’ultimo può scaricare file di supporto e preparare gli assembly del gioco. Attendi circa un minuto, o più a lungo su alcuni sistemi. La mod non può parlare finché MelonLoader non la carica. Lascia aperto il gioco e attendi l’annuncio di avvio di Bop It Access, seguito dall’annuncio della schermata del titolo, di benvenuto o del menu principale prima di usare i comandi del gioco.
-
-
-### Installare lo ZIP compilato senza l’EXE Bop It Access
-
-Quando BopItAccess-v1.0.zip sarà pubblicato, questo percorso userà la DLL già compilata e non richiederà il .NET SDK. Occorrono comunque il gioco acquistato Windows x64, MelonLoader ufficiale x64 0.7.3 Open-Beta e il runtime .NET 6 Windows x64. Segui le istruzioni ufficiali di MelonLoader e Microsoft; lo ZIP non fornisce questi prerequisiti.
-
-[MelonLoader](https://github.com/LavaGang/MelonLoader#how-to-use-the-installer) · [.NET 6 Windows x64 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/6.0)
-
-1. Installa il gioco con Steam e trova la sua cartella. Chiudi Bop It! prima di cambiare i file; usa se necessario la funzione Steam per sfogliare i file installati.
-2. Installa MelonLoader ufficiale x64 in quella cartella e assicurati che il runtime .NET 6 x64 sia installato. Non avviare ancora il gioco: colloca prima il mod.
-3. Estrai BopItAccess-v1.0.zip compilato in una cartella temporanea. Copia Mods/BopItAccess.dll in Mods del gioco, creando o unendo la cartella senza eliminare altri mod. Copia prism.dll accanto a BopIt!.exe.
-4. Copia per intero documentation e THIRD-PARTY-LICENSES, incluse tutte le lingue e le note/licenze Prism. Copia README.txt e BopItAccess-uninstall.ps1 del pacchetto. Lo script è soltanto un collegamento a un uninstaller gestito dall’installer; copiarlo non crea un uninstaller funzionante o una registrazione in App installate.
-5. Per UserData/Loader.cfg: se assente, copia il modello. Se esiste, unisci solo [loader] disable_start_screen=true e [console] hide_console=true nelle sezioni corrispondenti e mantieni le altre impostazioni. Non sovrascrivere una configurazione esistente con il modello.
-6. Avvia il lettore di schermo se usato, poi il gioco tramite Steam. MelonLoader può scaricare file di supporto e generare assembly al primo avvio, con il mod già in Mods. Attendi gli annunci di avvio del mod e del menu prima di usare i controlli.
-
-Per un aggiornamento manuale, chiudi il gioco e copia mod, Prism, documenti e licenze del nuovo pacchetto negli stessi percorsi. Mantieni BopItAccess.ini, altri mod e file estranei; unisci Loader.cfg come sopra. Per disattivare/rimuovere il mod manuale, elimina solo Mods/BopItAccess.dll. Per una pulizia ulteriore, rimuovi soltanto i file copiati per questo mod e UserData/BopItAccess.ini o il suo .tmp; mantieni Prism/MelonLoader se condivisi. Le preferenze Windows possono restare. Lo ZIP manuale non ha registro di proprietà né uninstaller registrato. Se poi scegli l’installer, Uninstall può riconoscere una vecchia copia manuale e pulire le preferenze proteggendo i file di provenienza sconosciuta. I log del mod sono Mods/BopItAccess.log e Mods/BopItAccess.log.previous; nella pulizia elimina soltanto questi log noti.
-
-Pacchettizzazione avanzata: scripts/package-mod.ps1 impacchetta un mod già compilato corrispondente e file noti di documentazione/configurazione/Prism. Verifica versioni sorgente/DLL ed esclude file del gioco, generati o precedenti; non compila. Archivio e preparazione restano locali.

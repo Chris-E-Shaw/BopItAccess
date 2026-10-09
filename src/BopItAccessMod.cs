@@ -8,7 +8,7 @@ using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 
-[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.12", "Bop It Access project")]
+[assembly: MelonInfo(typeof(BopItAccess.BopItAccessMod), "Bop It Access", "0.9.13", "Bop It Access project")]
 
 namespace BopItAccess;
 
@@ -768,8 +768,8 @@ public sealed partial class BopItAccessMod : MelonMod
         {
             if (!_speechEnabled || _speechSuppressedForBackground)
                 return;
-            // Bop has started play. Drop any unsent song-selection message
-            // and silence one that has already reached the screen reader.
+            // A round has started or resumed. Drop every unsent menu, hint,
+            // description and result, and silence already dispatched speech.
             _pendingSpeech = null;
             _pendingSpeechQueuedAt = 0;
             _pendingPrioritySpeech = null;
@@ -780,6 +780,8 @@ public sealed partial class BopItAccessMod : MelonMod
             // A just-enabled status message must not mask the game's verbal
             // cues if Bop starts play immediately afterward.
             _pendingToggleSpeechNotice = null;
+            Volatile.Write(ref _gameOverScoreSpeechProtectedUntil, 0);
+            Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
             _silenceRequested = true;
             _speechGeneration++;
             _sapiRenderSerial++;
@@ -974,7 +976,8 @@ public sealed partial class BopItAccessMod : MelonMod
                             generation == Interlocked.Read(ref _speechGeneration) &&
                             OutputSpeechOnWorker(priority, true,
                                 protectedCapture: true);
-                        CompleteGameOverScoreSpeechDispatch(priority, scoreAccepted);
+                        CompleteGameOverScoreSpeechDispatch(priority, scoreAccepted,
+                            generation);
                         priorityDispatchCompleted = true;
                         WriteStatus($"Priority speech announcement '{priority}' {(scoreAccepted ? "accepted" : "rejected")} by output backend.");
                     }

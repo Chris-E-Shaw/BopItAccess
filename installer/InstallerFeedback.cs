@@ -133,6 +133,7 @@ internal static class InstallerFeedback
         if (raw.StartsWith("Installing verified Prism", StringComparison.Ordinal)) return "Installing Prism speech support.";
         if (raw.StartsWith("Installed Prism and bundled", StringComparison.Ordinal)) return "Prism speech support and its license information are installed.";
         if (raw.StartsWith("Installed game documentation", StringComparison.Ordinal)) return "The user's guide and translated documentation are installed.";
+        if (raw == "Some older documents were kept because they have been changed.") return raw;
         if (raw.StartsWith("Registered an Apps & Features", StringComparison.Ordinal) || raw.StartsWith("Registered Bop It Access in Windows", StringComparison.Ordinal)) return "Bop It Access is registered in Windows Installed Apps.";
         if (raw.StartsWith("Committing the installation", StringComparison.Ordinal)) return "Finishing installation.";
         if (raw.StartsWith("Bop It Access installation completed", StringComparison.Ordinal)) return "Bop It Access is installed. Launch Bop It! when you are ready. The first launch may take a minute or longer while the game prepares the mod.";

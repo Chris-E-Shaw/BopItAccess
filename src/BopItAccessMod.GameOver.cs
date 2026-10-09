@@ -1,3 +1,5 @@
+using System.Runtime.Versioning;
+using HarmonyLib;
 using Il2Cpp;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -26,6 +28,43 @@ public sealed partial class BopItAccessMod
     private readonly List<string> _deferredGameOverResultUpdates = new();
     private readonly List<string> _gameOverResultChanges = new(2);
     private string? _deferredGameOverMenuUpdate;
+    private long _nextRoundSpeechCancellationErrorAt;
+
+    internal static void NoteRoundSpeechStarting(string reason)
+    {
+        BopItAccessMod? mod = Volatile.Read(ref _activeNativeAudioMod);
+        if (mod == null || mod._modStopping)
+            return;
+
+        try
+        {
+            // Observe native Replay and PlayingStart directly: the result
+            // panel can hide before the state transition, and Replay skips
+            // the song-selection panel that formerly owned cancellation.
+            // PlayingStart also runs before the new round's spoken colour.
+            mod.StopSpeechForGameStart();
+            mod.ResetGameOverFocus();
+            mod.ResetTrackSelectFocus();
+            mod._trackSelectStartTransitionUntil = 0;
+            mod._buttonHintContextKey = null;
+            mod._cachedButtonHintContext = null;
+            mod._nextButtonHintContextProbeAt = 0;
+            mod.ResetButtonHintTimers(Environment.TickCount64);
+            WriteStatus(reason +
+                "; cleared and interrupted all menu and result speech.");
+        }
+        catch (Exception ex)
+        {
+            // Optional speech observation must never block Replay or native
+            // gameplay, even if a Unity object disappears during transition.
+            long now = Environment.TickCount64;
+            if (now >= mod._nextRoundSpeechCancellationErrorAt)
+            {
+                mod._nextRoundSpeechCancellationErrorAt = now + 5000;
+                WriteStatus("Round-start speech cancellation failed: " + ex.Message);
+            }
+        }
+    }
 
     // The final score belongs to the kill-screen panel. Its displayed TMP
     // number animates from zero, so read the stored final score instead.
@@ -44,6 +83,16 @@ public sealed partial class BopItAccessMod
             _gameOverUi = UnityEngine.Object.FindFirstObjectByType<GameUIManager>();
             if (_gameOverUi == null)
                 return false;
+        }
+
+        // Native hide animations can leave the old result panel visible in
+        // the first replay frame. Do not queue that old score after the
+        // round-start hook has just cancelled it.
+        GameManager? game = _gameOverUi.gameManager;
+        if (game == null || game.GameState != GameState.GameOver)
+        {
+            ResetGameOverFocus();
+            return false;
         }
 
         FinalScorePanel? final = _gameOverUi.finalScorePanel;
@@ -289,33 +338,34 @@ public sealed partial class BopItAccessMod
         return Math.Clamp(estimate, 2200L, 6000L);
     }
 
-    private void CompleteGameOverScoreSpeechDispatch(string score, bool accepted)
+    private void CompleteGameOverScoreSpeechDispatch(string score, bool accepted,
+        long generation)
     {
-        if (_speechSuppressedForBackground)
+        lock (_speechLock)
         {
-            Volatile.Write(ref _gameOverScoreSpeechProtectedUntil, 0);
-            Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
-            return;
-        }
-        if (!accepted)
-        {
-            // Do not hold menu focus for a score that never reached output.
-            // A newer score can have replaced this worker batch meanwhile;
-            // its pending deadline belongs to that newer request.
-            lock (_speechLock)
+            // Replay may cancel a score while its output driver is returning.
+            // That old dispatch must not restore a hold in the new round.
+            if (generation != _speechGeneration)
+                return;
+            if (_speechSuppressedForBackground)
             {
+                Volatile.Write(ref _gameOverScoreSpeechProtectedUntil, 0);
+                Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
+                return;
+            }
+            if (!accepted)
+            {
+                // A newer score can have replaced this batch. Its pending
+                // deadline belongs to that newer request.
                 if (_pendingPrioritySpeech == null)
                 {
                     Volatile.Write(ref _gameOverScoreSpeechProtectedUntil, 0);
                     Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
                 }
+                return;
             }
-            return;
-        }
-        ExtendGameOverScoreProtection(EstimateGameOverScoreSpeechMs(score));
-        // Publish the deadline before releasing the hold on menu focus.
-        lock (_speechLock)
-        {
+            ExtendGameOverScoreProtection(EstimateGameOverScoreSpeechMs(score));
+            // Publish the deadline before releasing the hold on menu focus.
             if (_pendingPrioritySpeech == null)
                 Volatile.Write(ref _gameOverScoreDispatchPendingUntil, 0);
         }
@@ -505,4 +555,22 @@ public sealed partial class BopItAccessMod
         _deferredGameOverResultUpdates.Clear();
         _deferredGameOverMenuUpdate = null;
     }
+}
+
+[HarmonyPatch(typeof(GameUIManager), "Replay")]
+[SupportedOSPlatform("windows")]
+internal static class ReplaySpeechCancellationPatch
+{
+    [HarmonyPrefix]
+    private static void BeforeReplay() =>
+        BopItAccessMod.NoteRoundSpeechStarting("Replay selected");
+}
+
+[HarmonyPatch(typeof(GameManager), "PlayingStart")]
+[SupportedOSPlatform("windows")]
+internal static class PlayingStartSpeechCancellationPatch
+{
+    [HarmonyPrefix]
+    private static void BeforePlayingStart() =>
+        BopItAccessMod.NoteRoundSpeechStarting("Gameplay started");
 }

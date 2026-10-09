@@ -366,8 +366,10 @@ public sealed partial class BopItAccessMod
 
     private string HintLeaderboardRows(bool controllerMoveAvailable)
     {
-        string keyboard = L("Page Up and Page Down, read score rows.");
-        string bothKeyboard = L("Page Up and Page Down on keyboard, read score rows.");
+        string keyboard = CapitalizeHintSentenceStart(
+            L("Page Up and Page Down, read score rows."));
+        string bothKeyboard = CapitalizeHintSentenceStart(
+            L("Page Up and Page Down on keyboard, read score rows."));
         if (!controllerMoveAvailable)
             return EffectiveHintDevice switch
             {
@@ -378,10 +380,11 @@ public sealed partial class BopItAccessMod
         InputAction? move = HintUiMoveAction();
         string? controller = ReadHintDirections(move, "up", "down", true, true);
         string controllerHint = controller == null ? string.Empty :
-            LF("{0}, read score rows.", LocalizeBindingDisplay(controller));
+            CapitalizeHintSentenceStart(LF("{0}, read score rows.",
+                LocalizeBindingDisplay(controller)));
         string bothController = controller == null ? string.Empty :
-            LF("{0} on controller, read score rows.",
-                LocalizeBindingDisplay(controller));
+            CapitalizeHintSentenceStart(LF("{0} on controller, read score rows.",
+                LocalizeBindingDisplay(controller)));
         return EffectiveHintDevice switch
         {
             HintDevice.Keyboard => keyboard,

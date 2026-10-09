@@ -28,7 +28,8 @@ public static class UninstallManager
     private static readonly string[] LegacyDocumentationNames =
     {
         "BopItAccess-user-guide.html", "BopItAccess-build-history.html", "BopItAccess-release-review.html",
-        "README.md", "README.txt", "GIT-WORKFLOW.md", "THIRD-PARTY-NOTICES.txt"
+        "README.md", "README.txt", "GIT-WORKFLOW.md", "THIRD-PARTY-NOTICES.txt",
+        ReleaseDocumentation.ModLicenseName
     };
     private static readonly string[] LegacyLocaleFolders =
     {

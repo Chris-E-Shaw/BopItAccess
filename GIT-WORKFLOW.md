@@ -1,37 +1,41 @@
 # Git workflow for Bop It Access
 
-Git keeps a history of changes to the project's source code and documents. A **commit** is a named snapshot you can inspect or return to. GitHub publishes this source history so others can read the code and build the mod themselves. The repository does not contain compiled mod files or GitHub Releases.
+Git keeps the history of this project's source code and documentation. A **commit** is a named snapshot you can inspect or return to. GitHub publishes these commits so others can read the changes and build the project themselves. A commit does not automatically create a public release.
 
 ## About the existing history
 
-The source archives for builds `v0.1.0` through `v0.6.12` were imported as 37 successive Git commits. Each commit describes the source changes using the corresponding entry in [BopItAccess-build-history.html](BopItAccess-build-history.html). These commits were created during the Git import, so their Git timestamps are **not** the original build dates. Their subjects describe the changes without version numbers; the build-history document records which source snapshot belongs to each version.
+The first 37 source builds, from `0.1.0` through `0.6.12`, were imported as separate commits using the available source archives and their original change notes. Their Git timestamps record the import rather than the original build dates. Later work is recorded directly in source commits. Git and GitHub are now the project's change history; no separate build-history document is maintained.
 
-Release ZIP files, compiled DLLs, and temporary build output stay outside Git's source history. The build-history page links to the corresponding GitHub source commits. Existing version tags remain local and are not part of the initial GitHub publication. No GitHub version tags or Releases are published yet.
+Christopher Shaw's GitHub no-reply address is the commit author. AI-assisted commits include a `Co-authored-by` trailer naming the actual model that contributed. Session records identify GPT-6 Luna for the first historical build and GPT-6 Sol for the following 36. Use the contributing model's current name for future commits.
 
-Git commits use Christopher Shaw's GitHub no-reply address as the author. Commits written with Codex also include a `Co-authored-by` trailer naming the model that contributed to the work. Session records identify GPT-6 Luna for the first historical build and GPT-6 Sol for the following 36. If the model changes for a later commit, use its new name in that commit's trailer.
+Compiled DLLs, installers, release ZIPs, generated game assemblies, personal logs and temporary build output stay out of Git's source history. Local version tags are not published automatically. Creating a GitHub release is a separate, deliberate step.
 
 ## Useful commands
 
-Open PowerShell in this project directory, then run:
+Open PowerShell in the repository, then run:
 
 ```powershell
-git status                         # See changed, added, and untracked files
-git diff                           # See changes that have not been staged
-git log --oneline                   # Browse source commits
-git show --stat HEAD~1             # See files changed in the preceding commit
+git status                 # See changed, added and untracked files
+git diff                   # Inspect changes that are not staged
+git log --oneline           # Browse commits
+git show --stat HEAD~1      # Inspect the previous commit's changed files
 ```
 
-These commands only inspect the repository; they do not change the mod or the installed game.
+These commands inspect the repository without changing the installed mod or game.
 
-## For each future build
+## For each future change
 
-1. Make the source changes and choose the next build version number.
-2. Build the mod and prepare local archives as usual. Include the entire `documentation` folder, with the English guide and every translated language subfolder, in every install archive. Copy that folder into the game installation when installing a build. The in-game guide reads the HTML for the current game language on every opening. Inspect the result before recording the build as complete. Compiled archives remain outside GitHub.
-3. Run `git status` and `git diff`. Check which files changed. Stage the intended source and documentation changes, then review them with `git diff --cached`.
-4. Create a descriptive source commit without a version number in its subject. Include a `Co-authored-by` trailer with the actual model name when Codex wrote the commit. For example, `git commit -m "feat(speech): add example setting" -m "Co-authored-by: MODEL NAME <noreply@openai.com>"`; replace `MODEL NAME` with the model used for that commit.
-5. Add an entry for the build to `BopItAccess-build-history.html`, using the existing commit-style format. Describe the actual change, its reason, and any relevant limitations, and link the source commit from step 4. Update the corresponding translated copies before packaging. Commit the updated history with the same author and accurate co-author trailer. Refresh the local documentation folder and archive if the history file was already copied into them.
-6. Publish both source and history commits with `git push origin main` when ready. This pushes the branch only; it does not push local version tags or create GitHub Releases.
+1. Make the intended source and documentation changes. For a new build, update its version.
+2. Update every affected translated guide. Keep the player documentation and license notices with the compiled output; developer READMEs and this workflow are not player-release files.
+3. Compile when the change needs a new binary and prepare local files. Gameplay testing is performed by human players when requested; do not claim runtime verification from compilation alone.
+4. Run `git status` and `git diff`. Stage the intended files, then inspect `git diff --cached`. Keep generated binaries, private logs and game references out of the staged changes.
+5. Make a descriptive commit whose subject has no version number. In its body, explain what changed and why, plus any relevant checks and limitations. Include the actual AI model in a co-author trailer when it contributed:
 
-Small work that does not produce a build can have its own commit. The next build commit can then follow it. Keep personal logs, game installations, generated binaries, and other machine-specific files out of commits. If GitHub Releases become useful later, decide on tags and compiled downloads at that time.
+   ```text
+   Co-authored-by: MODEL NAME <noreply@openai.com>
+   ```
 
-Git does not automatically upload new work. After each local commit, push it deliberately when it is ready for other people to see.
+   Replace `MODEL NAME` with the model that wrote the work. Keep Christopher Shaw as the author, using `336230252+Chris-E-Shaw@users.noreply.github.com`.
+6. When the changes are ready to publish, run `git push origin main`. This publishes the branch commits, without pushing local tags or creating a release.
+
+One coherent change can contain its source and documentation in the same commit. Separate commits remain useful when they describe independent changes. Git does not upload work automatically: push deliberately when it is ready for others to read.

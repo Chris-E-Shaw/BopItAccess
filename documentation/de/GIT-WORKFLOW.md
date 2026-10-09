@@ -1,37 +1,43 @@
-# Git-Workflow für Bop It Access
+# Git-Arbeitsablauf für Bop It Access
 
-Git führt einen Verlauf der Änderungen am Quellcode und an den Dokumenten des Projekts. Ein **Commit** ist ein benannter Snapshot, den Sie überprüfen oder zu dem Sie zurückkehren können. GitHub veröffentlicht diesen Quellverlauf, damit andere den Code lesen und den Mod selbst erstellen können. Das Repository enthält keine kompilierten Mod-Dateien oder GitHub-Releases.
+Git bewahrt die Geschichte des Quellcodes und der Dokumentation dieses Projekts auf. Ein **Commit** ist ein benannter Stand, den du ansehen oder zu dem du zurückkehren kannst. GitHub veröffentlicht diese Commits, damit andere die Änderungen lesen und das Projekt selbst erstellen können. Ein Commit erstellt nicht automatisch eine öffentliche Veröffentlichung.
 
-## Über die bestehende Geschichte
+## Zur bestehenden Geschichte
 
-Die Quellarchive für Builds `v0.1.0` durch `v0.6.12` wurden als 37 aufeinanderfolgende Git-Commits importiert. Jeder Commit beschreibt die Quelländerungen mithilfe des entsprechenden Eintrags in [BopItAccess-build-history.html](BopItAccess-build-history.html). Diese Commits wurden während des Git-Imports erstellt, daher sind ihre Git-Zeitstempel **nicht** die ursprünglichen Erstellungsdaten. Ihre Themen beschreiben die Änderungen ohne Versionsnummern; Im Build-History-Dokument wird aufgezeichnet, welcher Quell-Snapshot zu jeder Version gehört.
+Die ersten 37 Quellcode-Builds von `0.1.0` bis `0.6.12` wurden anhand der verfügbaren Quellcodearchive und ihrer ursprünglichen Änderungshinweise als einzelne Commits importiert. Ihre Git-Zeitstempel beziehen sich auf den Import, nicht auf die ursprünglichen Builddaten. Spätere Arbeiten werden direkt in Quellcode-Commits erfasst. Git und GitHub bilden jetzt die Änderungsgeschichte des Projekts; ein separates Buildgeschichtsdokument wird nicht mehr gepflegt.
 
-Release-ZIP-Dateien, kompilierte DLLs und temporäre Build-Ausgaben bleiben außerhalb des Quellverlaufs von Git. Die Seite mit dem Build-Verlauf enthält Links zu den entsprechenden Quell-Commits GitHub. Vorhandene Versions-Tags bleiben lokal und sind nicht Teil der ursprünglichen GitHub-Veröffentlichung. Es sind noch keine GitHub Versions-Tags oder Releases veröffentlicht.
+Als Commitautor wird Christopher Shaws GitHub-No-Reply-Adresse verwendet. KI-unterstützte Commits enthalten eine `Co-authored-by`-Zeile mit dem tatsächlichen Modell, das mitgewirkt hat. Die Sitzungsaufzeichnungen nennen GPT-6 Luna für den ersten historischen Build und GPT-6 Sol für die folgenden 36. Verwende bei zukünftigen Commits den aktuellen Namen des mitwirkenden Modells.
 
-Git-Commits verwenden Christopher Shaws No-Reply-Adresse GitHub als Autor. Mit Codex geschriebene Commits umfassen auch a `Co-authored-by` Trailer mit Nennung des Modells, das zu der Arbeit beigetragen hat. Sitzungsdatensätze identifizieren GPT-6 Luna für den ersten historischen Build und GPT-6 Sol für die folgenden 36. Wenn sich das Modell für einen späteren Commit ändert, verwenden Sie seinen neuen Namen im Trailer dieses Commits.
+Kompilierte DLLs, Installer, Veröffentlichungs-ZIPs, erzeugte Spielassemblies, persönliche Protokolle und vorübergehende Buildausgaben bleiben außerhalb der Git-Quellcodegeschichte. Lokale Versionstags werden nicht automatisch veröffentlicht. Eine GitHub-Veröffentlichung zu erstellen ist ein gesonderter, bewusster Schritt.
 
 ## Nützliche Befehle
 
-Öffnen Sie PowerShell in diesem Projektverzeichnis und führen Sie dann Folgendes aus:
+Öffne PowerShell im Repository und führe Folgendes aus:
 
 ```powershell
-git status                         # See changed, added, and untracked files
-git diff                           # See changes that have not been staged
-git log --oneline                   # Browse source commits
-git show --stat HEAD~1             # See files changed in the preceding commit
+git status                 # See changed, added and untracked files
+git diff                   # Inspect changes that are not staged
+git log --oneline           # Browse commits
+git show --stat HEAD~1      # Inspect the previous commit's changed files
 ```
 
-Diese Befehle prüfen nur das Repository; Sie ändern weder den Mod noch das installierte Spiel.
+`git status` zeigt geänderte, hinzugefügte und noch nicht erfasste Dateien. `git diff` zeigt Änderungen außerhalb des Staging-Bereichs. `git log --oneline` zeigt die Commits. `git show --stat HEAD~1` zeigt die vom vorherigen Commit geänderten Dateien.
 
-## Für jeden zukünftigen Build
+Diese Befehle zeigen Informationen zum Repository an, ohne die installierte Mod oder das Spiel zu verändern.
 
-1. Nehmen Sie die Quelländerungen vor und wählen Sie die nächste Build-Versionsnummer.
-2. Erstellen Sie den Mod und bereiten Sie die lokalen Archive wie gewohnt vor. Schließen Sie das Ganze ein `documentation` Ordner mit der englischen Anleitung und jedem übersetzten Sprachunterordner in jedem Installationsarchiv. Kopieren Sie diesen Ordner in die Spielinstallation, wenn Sie einen Build installieren. Der In-Game-Guide liest bei jeder Eröffnung den HTML-Code für die aktuelle Spielsprache vor. Überprüfen Sie das Ergebnis, bevor Sie den Build als abgeschlossen protokollieren. Zusammengestellte Archive bleiben außerhalb von GitHub.
-3. Lauf `git status` und `git diff`. Überprüfen Sie, welche Dateien geändert wurden. Stellen Sie die beabsichtigten Quell- und Dokumentationsänderungen bereit und überprüfen Sie sie dann mit `git diff --cached`.
-4. Erstellen Sie einen beschreibenden Quell-Commit ohne eine Versionsnummer im Betreff. Fügen Sie ein `Co-authored-by` Trailer mit dem tatsächlichen Modellnamen, als Codex den Commit schrieb. Zum Beispiel, `git commit -m "feat(speech): add example setting" -m "Co-authored-by: MODEL NAME <noreply@openai.com>"`; ersetzen `MODEL NAME` mit dem für diesen Commit verwendeten Modell.
-5. Fügen Sie einen Eintrag für den Build hinzu `BopItAccess-build-history.html`, unter Verwendung des vorhandenen Commit-Formats. Beschreiben Sie die tatsächliche Änderung, ihren Grund und alle relevanten Einschränkungen und verknüpfen Sie den Quell-Commit aus Schritt 4. Aktualisieren Sie die entsprechenden übersetzten Kopien vor dem Verpacken. Übermitteln Sie den aktualisierten Verlauf mit demselben Autor und einem genauen Co-Autor-Trailer. Aktualisieren Sie den lokalen Dokumentationsordner und das Archiv, wenn die Verlaufsdatei bereits dorthin kopiert wurde.
-6. Veröffentlichen Sie sowohl Quell- als auch Verlaufs-Commits mit `git push origin main` wenn es fertig ist. Dadurch wird nur der Zweig gepusht; Es werden keine lokalen Versions-Tags übertragen oder GitHub-Releases erstellt.
+## Für jede zukünftige Änderung
 
-Kleinere Arbeiten, die keinen Build erzeugen, können einen eigenen Commit haben. Darauf kann dann der nächste Build-Commit folgen. Halten Sie persönliche Protokolle, Spielinstallationen, generierte Binärdateien und andere maschinenspezifische Dateien von Commits fern. Wenn GitHub-Releases später nützlich werden, entscheiden Sie sich zu diesem Zeitpunkt für Tags und kompilierte Downloads.
+1. Nimm die vorgesehenen Änderungen am Quellcode und an der Dokumentation vor. Aktualisiere bei einem neuen Build die Version.
+2. Aktualisiere jede betroffene übersetzte Anleitung. Lege Spielerdokumentation und Lizenzhinweise der kompilierten Ausgabe bei; Entwickler-READMEs und dieser Arbeitsablauf gehören nicht zu Spieler-Veröffentlichungen.
+3. Kompiliere, wenn die Änderung eine neue Binärdatei erfordert, und bereite die lokalen Dateien vor. Spieltests werden auf Anfrage von menschlichen Spielern durchgeführt; behaupte keine Laufzeitprüfung allein aufgrund einer erfolgreichen Kompilierung.
+4. Führe `git status` und `git diff` aus. Nimm die vorgesehenen Dateien in den Staging-Bereich auf und prüfe anschließend `git diff --cached`. Erzeugte Binärdateien, private Protokolle und Spielreferenzen dürfen nicht unter den vorgemerkten Änderungen sein.
+5. Erstelle einen beschreibenden Commit, dessen Betreff keine Versionsnummer enthält. Erkläre im Nachrichtentext, was sich geändert hat und warum, sowie relevante Prüfungen und Einschränkungen. Wenn eine KI mitgewirkt hat, nenne das tatsächliche Modell in einer Co-Autor-Zeile:
 
-Git lädt neue Arbeiten nicht automatisch hoch. Pushen Sie es nach jedem lokalen Commit bewusst, wenn es für andere Leute sichtbar ist.
+   ```text
+   Co-authored-by: MODEL NAME <noreply@openai.com>
+   ```
+
+   Ersetze `MODEL NAME` durch das Modell, das die Arbeit geschrieben hat. Behalte Christopher Shaw als Autor mit der Adresse `336230252+Chris-E-Shaw@users.noreply.github.com` bei.
+6. Wenn die Änderungen veröffentlicht werden können, führe `git push origin main` aus. Dadurch werden die Branch-Commits veröffentlicht, ohne lokale Tags zu übertragen oder eine Veröffentlichung zu erstellen.
+
+Eine zusammenhängende Änderung kann ihren Quellcode und ihre Dokumentation im selben Commit enthalten. Separate Commits sind weiterhin nützlich, wenn sie unabhängige Änderungen beschreiben. Git lädt Arbeit nicht automatisch hoch: Übertrage sie bewusst, wenn sie für andere lesbar sein soll.

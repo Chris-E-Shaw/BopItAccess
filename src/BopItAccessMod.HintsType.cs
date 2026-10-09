@@ -122,7 +122,7 @@ public sealed partial class BopItAccessMod
         string action = L(purpose.Trim().TrimEnd('.'));
         string keyboardName = LocalizeBindingDisplay(keyboard);
         string controllerName = LocalizeBindingDisplay(controller);
-        return EffectiveHintDevice switch
+        string hint = EffectiveHintDevice switch
         {
             HintDevice.Keyboard => LF("{0}, {1}.",
                 keyboardName, action),
@@ -131,6 +131,23 @@ public sealed partial class BopItAccessMod
             _ => LF("{0} on keyboard; {1} on controller, {2}.",
                 keyboardName, controllerName, action)
         };
+        return CapitalizeHintSentenceStart(hint);
+    }
+
+    private static string CapitalizeHintSentenceStart(string hint)
+    {
+        // Runtime binding display names and translated fallbacks may begin
+        // in lower case. Each complete hint is a sentence, regardless of the
+        // speech-formatting preference. Keep the rest of the label intact.
+        for (int index = 0; index < hint.Length; index++)
+        {
+            if (!char.IsLetter(hint[index]))
+                continue;
+            char capital = char.ToUpperInvariant(hint[index]);
+            return capital == hint[index] ? hint :
+                hint[..index] + capital + hint[(index + 1)..];
+        }
+        return hint;
     }
 
     private string FormatHintUse(string keyboard, string controller, string purpose) =>

@@ -28,10 +28,7 @@ from bs4 import (
 ROOT = Path(__file__).resolve().parent.parent
 DOCUMENTS = (
     "BopItAccess-user-guide.html",
-    "BopItAccess-build-history.html",
-    "BopItAccess-release-review.html",
     "README.md",
-    "README.txt",
     "GIT-WORKFLOW.md",
     "THIRD-PARTY-NOTICES.txt",
 )
@@ -552,6 +549,12 @@ def main() -> None:
         if filename == "README.md":
             # From a language folder, the parent is documentation/.
             translated = translated.replace("(documentation/", "(../")
+            # The source README intentionally links only the English guide.
+            # Keep that target and the canonical project license valid from
+            # each translated source-document folder.
+            translated = translated.replace("(BopItAccess-user-guide.html)",
+                "(../../BopItAccess-user-guide.html)").replace("(LICENSE)",
+                "(../../LICENSE)")
             # The HTML guide links into these sections. Markdown heading
             # slugs change when their text is translated, so give every
             # localized README stable, language-independent targets.

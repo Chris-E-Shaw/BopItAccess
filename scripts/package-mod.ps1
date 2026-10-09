@@ -84,17 +84,19 @@ New-Item -ItemType Directory -Path $stage | Out-Null
 
 $copies = @(
     @{ Source=$modDll; Relative='Mods\BopItAccess.dll' },
-    @{ Source=(Join-Path $repoRoot 'README.txt'); Relative='README.txt' },
     @{ Source=(Join-Path $repoRoot 'configuration\Loader.cfg'); Relative='UserData\Loader.cfg' },
-    @{ Source=(Join-Path $repoRoot 'installer\uninstall.ps1'); Relative='BopItAccess-uninstall.ps1' }
+    @{ Source=(Join-Path $repoRoot 'installer\uninstall.ps1'); Relative='BopItAccess-uninstall.ps1' },
+    @{ Source=(Join-Path $repoRoot 'LICENSE'); Relative='documentation\BopItAccess-LICENSE.txt' }
 )
-$documentNames = @('BopItAccess-user-guide.html','BopItAccess-release-review.html','BopItAccess-build-history.html','README.md','README.txt','GIT-WORKFLOW.md','THIRD-PARTY-NOTICES.txt')
+$documentNames = @('BopItAccess-user-guide.html','THIRD-PARTY-NOTICES.txt')
 foreach ($name in $documentNames) { $copies += @{ Source=(Join-Path $repoRoot $name); Relative=('documentation\' + $name) } }
 $documentRoot = Join-Path $repoRoot 'documentation'
 Assert-PlainPath $documentRoot
-foreach ($file in Get-ChildItem -LiteralPath $documentRoot -File -Recurse) {
-    $relative = $file.FullName.Substring($documentRoot.Length + 1)
-    $copies += @{ Source=$file.FullName; Relative=('documentation\' + $relative) }
+foreach ($locale in @('de','es','es-MX','fr','it','ja','ko','pt-BR','zh')) {
+    foreach ($name in $documentNames) {
+        $relative = Join-Path $locale $name
+        $copies += @{ Source=(Join-Path $documentRoot $relative); Relative=('documentation\' + $relative) }
+    }
 }
 foreach ($copy in $copies) {
     Assert-PlainPath $copy.Source
@@ -111,7 +113,10 @@ $dlls = @(Get-ChildItem -LiteralPath $stage -File -Recurse -Filter '*.dll')
 if ($dlls.Count -ne 2 -or -not (Test-Path -LiteralPath (Join-Path $stage 'prism.dll'))) { throw 'Only BopItAccess.dll and prism.dll may be included.' }
 foreach ($file in Get-ChildItem -LiteralPath $stage -File -Recurse) {
     Assert-PlainPath $file.FullName
-    if ($file.Extension -in @('.exe','.pdb') -or $file.Name -in @('Tolk.dll','nvdaControllerClient64.dll')) { throw ('Unexpected package file: ' + $file.Name) }
+    if ($file.Extension -in @('.exe','.pdb') -or $file.Name -in @('Tolk.dll','nvdaControllerClient64.dll',
+            'BopItAccess-build-history.html','BopItAccess-release-review.html','GIT-WORKFLOW.md','README.md','README.txt')) {
+        throw ('Unexpected package file: ' + $file.Name)
+    }
 }
 [IO.Compression.ZipFile]::CreateFromDirectory($stage, $archivePath, [IO.Compression.CompressionLevel]::Optimal, $false)
 Write-Output ('Prepared local compiled package: ' + $archivePath)
