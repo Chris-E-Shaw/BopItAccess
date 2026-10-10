@@ -33,7 +33,7 @@ I commit Git costituiscono la cronologia del progetto. Le prime 37 build sono st
 
 ## Documentazione
 
-[Leggi la guida utente in inglese](../../BopItAccess-user-guide.html) per installazione, aggiornamenti, disinstallazione, comandi, impostazioni, menu e tutte le modalità di gioco. La guida integrata usa automaticamente la lingua corrente del gioco.
+[Leggi la guida utente in inglese](https://chris-e-shaw.github.io/BopItAccess/BopItAccess-user-guide.html) per installazione, aggiornamenti, disinstallazione, comandi, impostazioni, menu e tutte le modalità di gioco. La guida integrata usa automaticamente la lingua corrente del gioco.
 
 ## Requisiti
 

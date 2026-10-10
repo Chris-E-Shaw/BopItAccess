@@ -33,7 +33,7 @@ Les commits Git constituent l'historique du projet. Les 37 premiers builds ont �
 
 ## Documentation
 
-[Lire le guide en anglais](../../BopItAccess-user-guide.html) pour l'installation, les mises à jour, la désinstallation, les commandes, les réglages, les menus et tous les modes de jeu. Le guide intégré utilise automatiquement la langue actuelle du jeu.
+[Lire le guide en anglais](https://chris-e-shaw.github.io/BopItAccess/BopItAccess-user-guide.html) pour l'installation, les mises à jour, la désinstallation, les commandes, les réglages, les menus et tous les modes de jeu. Le guide intégré utilise automatiquement la langue actuelle du jeu.
 
 ## Prérequis
 

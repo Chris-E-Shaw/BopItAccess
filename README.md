@@ -33,7 +33,7 @@ Git commits are the project history. The first 37 builds were imported as separa
 
 ## Documentation
 
-[Read the English user's guide](BopItAccess-user-guide.html) for installation, updates, removal, controls, settings, menus and every game mode. The in-game guide automatically uses the current game language.
+[Read the English user's guide](https://chris-e-shaw.github.io/BopItAccess/BopItAccess-user-guide.html) for installation, updates, removal, controls, settings, menus and every game mode. The in-game guide automatically uses the current game language.
 
 ## Requirements
 

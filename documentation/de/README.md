@@ -33,7 +33,7 @@ Die Git-Commits bilden die Projektgeschichte. Die ersten 37 Builds wurden als ei
 
 ## Dokumentation
 
-[Die englische Benutzeranleitung lesen](../../BopItAccess-user-guide.html): Sie erklärt Installation, Updates, Deinstallation, Steuerung, Einstellungen, Menüs und alle Spielmodi. Die Anleitung im Spiel verwendet automatisch die aktuelle Spielsprache.
+[Die englische Benutzeranleitung lesen](https://chris-e-shaw.github.io/BopItAccess/BopItAccess-user-guide.html): Sie erklärt Installation, Updates, Deinstallation, Steuerung, Einstellungen, Menüs und alle Spielmodi. Die Anleitung im Spiel verwendet automatisch die aktuelle Spielsprache.
 
 ## Voraussetzungen
 

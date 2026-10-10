@@ -33,7 +33,7 @@ Los commits de Git constituyen el historial del proyecto. Las primeras 37 compil
 
 ## Documentación
 
-[Lee la guía de usuario en inglés](../../BopItAccess-user-guide.html) para conocer la instalación, las actualizaciones, la desinstalación, los controles, los ajustes, los menús y todos los modos de juego. La guía integrada usa automáticamente el idioma actual del juego.
+[Lee la guía de usuario en inglés](https://chris-e-shaw.github.io/BopItAccess/BopItAccess-user-guide.html) para conocer la instalación, las actualizaciones, la desinstalación, los controles, los ajustes, los menús y todos los modos de juego. La guía integrada usa automáticamente el idioma actual del juego.
 
 ## Requisitos
 

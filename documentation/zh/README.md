@@ -33,7 +33,7 @@ Git 提交就是本项目的历史记录。最初的 37 个构建已分别导入
 
 ## 文档
 
-有关安装、更新、卸载、操作、设置、菜单以及所有游戏模式，请阅读[英文用户指南](../../BopItAccess-user-guide.html)。游戏内指南会自动使用当前游戏语言。
+有关安装、更新、卸载、操作、设置、菜单以及所有游戏模式，请阅读[英文用户指南](https://chris-e-shaw.github.io/BopItAccess/BopItAccess-user-guide.html)。游戏内指南会自动使用当前游戏语言。
 
 ## 所需环境
 
